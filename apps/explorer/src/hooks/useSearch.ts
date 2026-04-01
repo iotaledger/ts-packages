@@ -26,6 +26,7 @@ import {
     tryDIDParse,
     tryEncodeDidToUrl,
 } from '~/lib/utils/trust-framework/client';
+import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useIdentityClient, useNotarizationClient } from '~/contexts';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
@@ -60,11 +61,23 @@ const getResultsForDid = async (
     if (identityClient == null) return null; // client not available
     if (!isIdentityEnabled) return null; // feature flag disabled
 
+    let didDocument = null;
     const didParsed = await tryDIDParse(query);
-    const did = didParsed ?? (await tryGenerateDidFromObjectId(query, identityClient.network()));
-    if (did == null) return null; // either invalid parsing or invalid objectId
 
-    const didDocument = await identityClient.resolveDid(did!);
+    try {
+        if (didParsed == null) {
+            const identity = await identityClient.getIdentity(query);
+            didDocument = identity.toFullFledged()?.didDocument();
+        } else {
+            didDocument = await identityClient.resolveDid(didParsed);
+        }
+    } catch {
+        // DO NOTHING! We are not interested in this error because the consequence
+        // for it to fail is only not show a selection option in the search result
+    }
+
+    if (didDocument == null) return null; // Nothing to show
+
     const didUrlEncoded = await tryEncodeDidToUrl(didDocument.id());
     if (didUrlEncoded == null) {
         throw new Error(
