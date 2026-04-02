@@ -1,0 +1,9 @@
+[package]
+name = "iota_names_temp_subname_proxy"
+edition = "2024"
+
+[dependencies]
+iota_names_subnames = { local = "../subnames" }
+
+[addresses]
+iota_names_temp_subname_proxy = "0x0"

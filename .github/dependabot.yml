@@ -4,17 +4,19 @@
 
 version: 2
 updates:
-  - package-ecosystem: "cargo"
-    directory: "/"
-    schedule:
-      interval: "daily"
-
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
     # Disable version updates for npm dependencies
     open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "@iota/iota-sdk"
 
   - package-ecosystem: "github-actions"
     directory: "/"
