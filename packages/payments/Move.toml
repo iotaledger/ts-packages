@@ -1,9 +1,0 @@
-[package]
-name = "iota_names_payments"
-edition = "2024"
-
-[dependencies]
-iota_names = { local = "../iota-names" }
-
-[addresses]
-iota_names_payments = "0x0"
