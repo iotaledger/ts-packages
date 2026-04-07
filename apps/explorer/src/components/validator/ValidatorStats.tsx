@@ -4,8 +4,12 @@
 
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
-import { getValidatorCommission, useFormatCoin } from '@iota/core';
-import { useIotaClientQuery } from '@iota/dapp-kit';
+import {
+    EFFECTIVE_COMMISSION_TOOLTIP,
+    formatPercentageDisplay,
+    getValidatorEffectiveCommission,
+    useFormatCoin,
+} from '@iota/core';
 
 type StatsCardProps = {
     validatorData: IotaValidatorSummary;
@@ -21,20 +25,14 @@ export function ValidatorStats({
     apy,
     tallyingScore,
 }: StatsCardProps): JSX.Element {
-    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
     // TODO: Add logic for validator stats https://github.com/iotaledger/iota/issues/2449
     const networkStakingParticipation = 0;
     const votedLastRound = 0;
 
     const totalStake = Number(validatorData.stakingPoolIotaBalance);
 
-    // Temporarily needed to compute the effectiveCommissionRate until infra exposes it in commissionRate directly
-    const hasEffectiveCommissionRate = Number(systemState?.protocolVersion ?? 0) >= 20;
-    const effectiveCommissionRate = getValidatorCommission(
-        validatorData,
-        hasEffectiveCommissionRate,
-    );
-    const commission = getValidatorCommission(validatorData);
+    const effectiveCommissionRate = getValidatorEffectiveCommission(validatorData);
+    const commission = formatPercentageDisplay(Number(validatorData.commissionRate) / 100, '--');
     const rewardsPoolBalance = Number(validatorData.rewardsPool);
 
     const [formattedTotalStakeAmount, totalStakeSymbol] = useFormatCoin({ balance: totalStake });
@@ -66,15 +64,13 @@ export function ValidatorStats({
                         />
                     </div>
                     <div className="grid grid-rows-1 gap-md">
-                        {hasEffectiveCommissionRate && (
-                            <LabelText
-                                size={LabelTextSize.Medium}
-                                label="Effective Commission Rate"
-                                text={effectiveCommissionRate}
-                                tooltipText="The share of rewards retained by the validator. This rate includes a protocol-enforced minimum to help maintain network decentralization."
-                                tooltipPosition={TooltipPosition.Right}
-                            />
-                        )}
+                        <LabelText
+                            size={LabelTextSize.Medium}
+                            label="Effective Commission Rate"
+                            text={effectiveCommissionRate}
+                            tooltipText={EFFECTIVE_COMMISSION_TOOLTIP}
+                            tooltipPosition={TooltipPosition.Right}
+                        />
                         <LabelText
                             size={LabelTextSize.Medium}
                             label="Commission"
@@ -108,7 +104,7 @@ export function ValidatorStats({
                         tooltipText={
                             Number(rewardsPoolBalance) <= 0
                                 ? 'Coming soon'
-                                : 'The current balance in this validator’s reward pool.'
+                                : 'The current balance in this validator's reward pool.'
                         }
                         tooltipPosition={TooltipPosition.Right}
                     />
@@ -136,7 +132,7 @@ export function ValidatorStats({
                             tooltipText={
                                 !votedLastRound
                                     ? 'Coming soon'
-                                    : 'This validator’s participation in the voting for the most recent round.'
+                                    : 'This validator's participation in the voting for the most recent round.'
                             }
                             tooltipPosition={TooltipPosition.Right}
                         />
@@ -149,7 +145,7 @@ export function ValidatorStats({
                             tooltipText={
                                 !tallyingScore
                                     ? 'Coming soon'
-                                    : 'A score created by validators to assess each other’s performance during IOTA’s standard operations.'
+                                    : 'A score created by validators to assess each other's performance during IOTA's standard operations.'
                             }
                             tooltipPosition={TooltipPosition.Right}
                         />
