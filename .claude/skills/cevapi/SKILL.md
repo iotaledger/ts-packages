@@ -200,30 +200,54 @@ Read this file at the start of every run. If both commit fields are `null`, this
 
    **Ask the user to confirm before proceeding with the sync.** If the user declines, stop and clean up.
 
-### Step 1: Copy from iota (primary source)
+### Step 1: Build the commit queue
 
-Copy directories and files as listed in the Source 1 section above.
+Collect all upstream commits to port, sorted chronologically (oldest first), interleaved across both repos.
 
-### Step 2: Copy from iota-names (secondary source)
+For each commit, record:
+- Source repo (`iota` or `iota-names`)
+- Commit hash
+- Commit message
+- Author name and email (from `git log --format="%an <%ae>"`)
+- Files changed (from `git diff --name-only <hash>^..<hash>`)
 
-Copy with the path remappings (`dapp/` → `apps/names/`, `sdk/` → `sdk/names/`).
+Filter out commits that touch only files outside the sync scope (e.g., Rust-only changes). If a commit touches both in-scope and out-of-scope files, include it but only port the in-scope files.
 
-### Step 3: Adapt config files
+Present the full ordered queue to the user before starting, e.g.:
+```
+## Commit queue (8 commits, oldest → newest)
+1. [iota] 22e7eb81 feat(ts-sdk): add support for effective commission rate — Bran
+2. [iota] f15c61dc feat(dapps): update dapps effective commission rate — Bran
+3. [iota-names] 749b7d4f chore(names-sdk): Rework names sdk release workflow — Marc Espin
+...
+```
 
-Merge workspace configs, turbo pipelines, workflows, etc. as described in the post-sync section.
+### Step 2: Port commits one by one
 
-### Step 4: Report summary
+For each commit in the queue:
 
-Report what changed:
-- New files added
-- Files modified
-- Files deleted (if they existed here but were removed upstream)
-- Config adaptations made
-- Any conflicts or issues encountered
+1. **Identify the files to copy** — run `git diff --name-only <hash>^..<hash>` on the source repo. Apply path remappings for iota-names files (`dapp/` → `apps/names/`, `sdk/` → `sdk/names/`, etc.). Skip files that are out of scope per the exclusion rules.
 
-### Step 5: Update sync state
+2. **Check if the commit is already incorporated** — if all changed files already match the upstream content, skip this commit and note it as "already incorporated".
 
-Record the current HEAD commits of both source repos into `${CLAUDE_SKILL_DIR}/state.json`:
+3. **Copy the files** — read each file from the source clone and write it to the correct destination path in this repo.
+
+4. **Apply any necessary adaptations** — if the commit touches a config file that requires merging (e.g., `pnpm-workspace.yaml`, `package.json`, `turbo.json`), apply only the delta from this commit rather than overwriting with the upstream version wholesale.
+
+5. **Create a commit** — stage the ported files and commit with:
+   - The original commit message (verbatim)
+   - A `Co-Authored-By` trailer with the original author: `Co-Authored-By: <name> <<email>>`
+
+   ```bash
+   git add <files>
+   git commit -m "<original message>" --trailer "Co-Authored-By: <name> <<email>>"
+   ```
+
+6. **Report** what was ported and move to the next commit.
+
+### Step 3: Update sync state
+
+After all commits are ported, record the HEAD commits into `${CLAUDE_SKILL_DIR}/state.json`:
 ```json
 {
   "last_sync": "<current ISO timestamp>",
@@ -232,25 +256,7 @@ Record the current HEAD commits of both source repos into `${CLAUDE_SKILL_DIR}/s
 }
 ```
 
-### Step 6: Post-sync build check
-
-Run the following to verify the synced repo is healthy:
-
-```
-pnpm i
-pnpm turbo build
-```
-
-If either command fails, report the errors to the user and attempt to fix them before proceeding. Common issues to watch for:
-- Missing workspace references from packages that were excluded (e.g., `move-bytecode-template`)
-- Conflicting dependency versions between the two source repos
-- Broken imports due to path remapping (`dapp/` → `apps/names/`, `sdk/` → `sdk/names/`)
-
-### Step 7: Do NOT auto-commit
-
-Leave the changes unstaged so the user can review before committing.
-
-### Step 8: Clean up
+### Step 4: Clean up
 
 Remove the temporary clones when done.
 
