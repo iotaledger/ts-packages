@@ -215,7 +215,7 @@ jobs:
           iota client switch --env localnet
           iota client faucet
           sleep 5
-          cd externals/names/scripts
+          cd external/names/scripts
           pnpm install
           export NETWORK=localnet
           pnpm ts-node init/init.ts localnet
