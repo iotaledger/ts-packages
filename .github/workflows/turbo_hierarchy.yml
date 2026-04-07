@@ -169,7 +169,7 @@ jobs:
 
   names-sdk-test:
     name: Names SDK Tests
-    needs: diff
+    needs: [diff, build]
     if: (!cancelled() && !failure() && (needs.diff.outputs.isNamesSDK == 'true' || needs.diff.outputs.isNamesDapp == 'true') && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
     runs-on: ubuntu-latest
     services:
@@ -203,7 +203,7 @@ jobs:
       - name: Download IOTA Binary
         run: .github/scripts/download-iota-binary.sh
       - name: Build SDK
-        run: pnpm sdk build
+        run: pnpm names-sdk build
       - name: Prepare local network & run SDK tests
         env:
           IS_CI_JOB: true
