@@ -29,7 +29,7 @@ const LOCALNET_PRICING = {
 export function loadLocalnetConfig(): PackageInfo {
     try {
         // Resolve path to the generated localnet.json file
-        const localnetConfigPath = resolve(__dirname, '../../scripts/package-info/localnet.json');
+        const localnetConfigPath = resolve(__dirname, '../../../external/names/scripts/package-info/localnet.json');
 
         // Read the generated configuration file
         const localnetConfig = JSON.parse(readFileSync(localnetConfigPath, 'utf8'));
