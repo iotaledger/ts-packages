@@ -6,7 +6,7 @@ import { type IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { ArrowTopRight, IotaLogoMark } from '@iota/apps-ui-icons';
 import { AddressLink } from '~/components/ui';
 import { ImageIcon, ImageIconSize, useIsValidatorCommitteeMember } from '@iota/core';
-import type { InactiveValidatorData } from '@iota/core/src/types';
+import type { ValidatorOverviewData } from '@iota/core/src/types';
 import { onCopySuccess } from '~/lib/utils';
 
 type ValidatorMetaProps = {
@@ -14,7 +14,7 @@ type ValidatorMetaProps = {
     atRiskRemainingEpochs?: number | null;
 };
 
-export function InactiveValidators({
+export function ValidatorOverview({
     validatorData: {
         imageUrl,
         name,
@@ -25,7 +25,7 @@ export function InactiveValidators({
         validatorStakingPoolId,
     },
 }: {
-    validatorData: InactiveValidatorData;
+    validatorData: ValidatorOverviewData;
 }): JSX.Element {
     return (
         <div className="flex flex-col gap-y-md">

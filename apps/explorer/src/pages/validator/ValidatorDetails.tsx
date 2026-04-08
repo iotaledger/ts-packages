@@ -12,7 +12,7 @@ import {
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import {
-    InactiveValidators,
+    ValidatorOverview,
     PageLayout,
     ValidatorMeta,
     ValidatorStats,
@@ -116,7 +116,7 @@ function ValidatorDetails(): JSX.Element {
                             style={InfoBoxStyle.Elevated}
                         />
                         {inactiveValidatorData && (
-                            <InactiveValidators validatorData={inactiveValidatorData} />
+                            <ValidatorOverview validatorData={inactiveValidatorData} />
                         )}
                     </div>
                 }
@@ -135,7 +135,7 @@ function ValidatorDetails(): JSX.Element {
                             type={InfoBoxType.Default}
                             style={InfoBoxStyle.Elevated}
                         />
-                        <InactiveValidators validatorData={validatorCandidateData} />
+                        <ValidatorOverview validatorData={validatorCandidateData} />
                     </div>
                 }
             />
