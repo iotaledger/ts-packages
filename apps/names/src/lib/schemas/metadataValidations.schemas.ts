@@ -21,7 +21,7 @@ export const METADATA_KEYS = [
 
 // Zod schemas for validation mapped by allowedKey
 export type AllowedKey = (typeof METADATA_KEYS)[number]['allowedKey'];
-export const SCHEMAS: Record<AllowedKey, z.ZodString> = {
+export const SCHEMAS: Record<AllowedKey, z.ZodType<string>> = {
     twitterX: z
         .string()
         .min(2, 'Twitter handle too short')
