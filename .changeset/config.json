@@ -19,7 +19,8 @@
 		"sponsored-transactions",
 		"kiosk-demo",
 		"kiosk-cli",
-		"@iota/examples"
+		"@iota/examples",
+		"names-dapp"
 	],
 	"___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
 		"onlyUpdatePeerDependentsWhenOutOfRange": true
