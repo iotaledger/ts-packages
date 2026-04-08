@@ -62,7 +62,7 @@ jobs:
   localnet:
     name: Localnet
     if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay
-    runs-on: self-hosted-x64
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15
@@ -101,13 +101,9 @@ jobs:
           echo "runNamesDapp=${{ inputs.isNightly || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
           echo "runNamesDisplay=${{ inputs.isNightly || inputs.isNamesDisplay }}" >> $GITHUB_OUTPUT
 
-      - name: Install Homebrew
+      - name: Download IOTA Binary
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
-
-      - name: Install IOTA using Homebrew
-        run: brew install iotaledger/tap/iota
+          .github/scripts/download-iota-binary.sh
 
       - name: Install Nodejs
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0

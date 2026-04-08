@@ -55,7 +55,7 @@ jobs:
     permissions:
       contents: read
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
-    runs-on: [self-hosted-x64]
+    runs-on: ubuntu-latest
     env:
       APPS_BACKEND: ${{ secrets[needs.resolve-deploy-type.outputs.apps_backend_secret] }}
     strategy:
