@@ -55,6 +55,7 @@ concurrency:
 
 env:
   RUST_LOG: warn
+  RUST_BACKTRACE: 1
   VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
   VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
 
@@ -120,7 +121,7 @@ jobs:
       - name: Set environment variables
         run: |
           echo "VITE_IOTA_BIN=iota" >> $GITHUB_ENV
-          echo "E2E_RUN_LOCAL_NET_CMD=iota start --with-faucet --force-regenesis --with-indexer --with-graphql" >> $GITHUB_ENV
+          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql" >> $GITHUB_ENV
 
       # ─── Test groups ─────────────────────────────────────────────────────────
       # All steps below use: if: (!cancelled() && !failure()) && <group-condition>
@@ -256,7 +257,7 @@ jobs:
 
       - name: Run Local net
         if: (!cancelled() && !failure()) && (steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true')
-        run: iota start --force-regenesis --with-faucet --epoch-duration-ms 10000 &
+        run: iota-localnet start --force-regenesis --with-faucet --epoch-duration-ms 10000 &
 
       - name: Install Playwright Browsers for Wallet
         id: install-playwright-wallet
