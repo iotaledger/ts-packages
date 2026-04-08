@@ -814,6 +814,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.21.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.8.3)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.1
+        version: 4.3.1(vite@6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.5.1))
       dotenv:
         specifier: ^16.4.5
         version: 16.5.0
@@ -26468,6 +26471,17 @@ snapshots:
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
       vite: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitejs/plugin-react@4.3.1(vite@6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.5.1))':
+    dependencies:
+      '@babel/core': 7.26.10
+      '@babel/plugin-transform-react-jsx-self': 7.24.7(@babel/core@7.26.10)
+      '@babel/plugin-transform-react-jsx-source': 7.24.7(@babel/core@7.26.10)
+      '@types/babel__core': 7.20.5
+      react-refresh: 0.14.2
+      vite: 6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.5.1)
     transitivePeerDependencies:
       - supports-color
 
