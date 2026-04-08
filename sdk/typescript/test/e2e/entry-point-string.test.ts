@@ -35,7 +35,8 @@ describe('Test Move call with strings', () => {
     beforeAll(async () => {
         toolbox = await setup();
         const packagePath =
-            __dirname + '/../../../../external/iota/crates/iota-core/src/unit_tests/data/entry_point_types';
+            __dirname +
+            '/../../../../external/iota/crates/iota-core/src/unit_tests/data/entry_point_types';
         ({ packageId } = await publishPackage(packagePath));
     });
 
