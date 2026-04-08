@@ -97,6 +97,12 @@ jobs:
       group: turbo-build-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
     if: (!cancelled() && !failure() && (needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true' || needs.diff.outputs.isWallet == 'true' || needs.diff.outputs.isWalletDashboard == 'true' || needs.diff.outputs.isEvmBridge == 'true' || needs.diff.outputs.isNamesSDK == 'true' || needs.diff.outputs.isNamesDapp == 'true' || needs.diff.outputs.isNamesDisplay == 'true') && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
+    env:
+      VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
+      VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: "devnet"
+      NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
+        {"devnet":{"network":"devnet","namesDisplayUrl":"http://localhost","indexerUrl":"http://localhost:3030","baseUrl":"http://localhost:3005"}}
     steps:
       - name: Checkout
         uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
@@ -123,15 +129,8 @@ jobs:
       - name: Lint
         run: pnpm turbo lint
       - name: Build
-        env:
-          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: "devnet"
-          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
-            {"devnet":{"network":"devnet","namesDisplayUrl":"http://localhost","indexerUrl":"http://localhost:3030","baseUrl":"http://localhost:3005"}}
         run: pnpm turbo build
       - name: Test
-        env:
-          VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-          VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
         # @iota/ledgerjs-hw-app-iota is tested separately
         run: pnpm turbo test --filter '!@iota/ledgerjs-hw-app-iota'
       # Pack wallet extension and upload it as an artifact for easy developer use:
