@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { bcs } from '@iota/iota-sdk/bcs';
-import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
+import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
 import { fromBase64, toBase64 } from '@iota/iota-sdk/utils';
 import { blake2b } from '@noble/hashes/blake2b';
@@ -489,7 +489,7 @@ export class IotaNamesClient {
         return {
             name,
             nftId: nameRecord?.nft_id,
-            targetAddress: nameRecord?.target_address!,
+            targetAddress: nameRecord?.target_address ?? '',
             expirationDate: new Date(Number(nameRecord?.expiration_timestamp_ms)),
             data,
             avatar: data[ALLOWED_METADATA.avatar],

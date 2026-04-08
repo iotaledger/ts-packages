@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Coupon } from './types';
+import type { Coupon } from './types.js';
 
 export const INVALID_YEARS = 'Coupon is not valid for the given number of years.';
 export const INVALID_FOR_NAME_LENGTH = 'Coupon is not valid for the given name length.';
@@ -74,7 +74,7 @@ export function applyCouponToPrice(price: number, coupon?: Coupon): number {
     // 0 => percentage off
     // 1 => fixed amount off,
     if (coupon.kind === 0) {
-        let discountAmount = (price * couponAmount) / 100;
+        const discountAmount = (price * couponAmount) / 100;
         return price - discountAmount;
     } else if (coupon.kind === 1) {
         const discountedAmount = price - couponAmount;

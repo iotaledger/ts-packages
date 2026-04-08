@@ -17,12 +17,12 @@ import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { retry } from 'ts-retry-promise';
 
-//@ts-ignore-next-line
+// @ts-expect-error
 export const IOTA_BIN = process.env.VITE_IOTA_BIN ?? `iota`;
 
-//@ts-ignore-next-line
+// @ts-expect-error
 const DEFAULT_FAUCET_URL = process.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
-//@ts-ignore-next-line
+// @ts-expect-error
 const DEFAULT_GRAPHQL_URL = process.env.VITE_GRAPHQL_URL ?? getNetwork('localnet').graphql!;
 
 export class TestToolbox {

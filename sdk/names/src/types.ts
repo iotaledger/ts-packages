@@ -2,14 +2,14 @@
 // Modifications Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Network } from '@iota/iota-sdk/client';
-import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
+import type { Network } from '@iota/iota-sdk/client';
+import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import type {
     TransactionObjectArgument,
     TransactionObjectInput,
 } from '@iota/iota-sdk/transactions';
 
-import { CouponBcs, CouponHouseBcs } from './bcs';
+import type { CouponBcs, CouponHouseBcs } from './bcs.js';
 
 // Interfaces
 // -----------------

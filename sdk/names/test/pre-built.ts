@@ -11,9 +11,9 @@ import { expect } from 'vitest';
 import { ALLOWED_METADATA, IotaNamesClient, IotaNamesTransaction } from '../src/index.js';
 
 export const e2eLiveNetworkDryRunFlow = async (network_id: Network) => {
-    let network = getNetwork(network_id);
+    const network = getNetwork(network_id);
     const client = new IotaClient({ url: network.url });
-    let graphQlClient = new IotaGraphQLClient({
+    const graphQlClient = new IotaGraphQLClient({
         url: network.graphql!,
     });
 

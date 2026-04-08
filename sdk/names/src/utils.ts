@@ -40,7 +40,7 @@ export function normalizeIotaName(
 
     // Split in parts
     if (NAME_AT_REGEX.test(lowerCase)) {
-        let [path, name] = lowerCase.split('@');
+        const [path, name] = lowerCase.split('@');
         parts = [...(path ? path.split('.') : []), name];
     } else if (NAME_DOT_REGEX.test(lowerCase)) {
         parts = lowerCase.split('.').slice(0, -1);
