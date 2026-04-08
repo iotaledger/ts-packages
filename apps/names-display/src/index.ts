@@ -44,7 +44,7 @@ function getTemplate(timestamp: number, invalidated: boolean): string {
 }
 
 const handleRequest = async (req: FastifyRequest, reply: FastifyReply) => {
-    const params = await z.parseAsync(Params, req.params);
+    const params = await Params.parseAsync(req.params);
     const invalidated = isInvalidated(params.objectId);
     const templateSvg = getTemplate(params.timestamp, invalidated);
     try {

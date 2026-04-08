@@ -1,5 +1,5 @@
 {
-    "extends": "../sdk/build-scripts/tsconfig.shared.json",
+    "extends": "../../sdk/build-scripts/tsconfig.shared.json",
     "include": ["src", "types"],
     "compilerOptions": {
         "module": "ESNext",
