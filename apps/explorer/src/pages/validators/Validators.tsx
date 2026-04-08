@@ -28,8 +28,8 @@ import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard } from '~/compon
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useEnhancedRpcClient } from '~/hooks';
-import { sanitizePendingValidators } from '~/lib';
+import { useEnhancedRpcClient, useGetValidatorCandidates } from '~/hooks';
+import { sanitizeValidatorObjects } from '~/lib';
 import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorSearch, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
@@ -81,7 +81,11 @@ function ValidatorPageResult(): JSX.Element {
         showContent: true,
     });
 
-    const sanitizedPendingValidatorsData = sanitizePendingValidators(pendingValidatorsData);
+    const sanitizedPendingValidatorsData = sanitizeValidatorObjects(pendingValidatorsData, {
+        isPending: true,
+    });
+
+    const { data: sanitizedCandidateValidatorsData } = useGetValidatorCandidates();
 
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: totalSupplyData } = useIotaClientQuery('getTotalSupply', {
