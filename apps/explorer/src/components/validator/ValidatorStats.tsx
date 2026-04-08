@@ -104,7 +104,7 @@ export function ValidatorStats({
                         tooltipText={
                             Number(rewardsPoolBalance) <= 0
                                 ? 'Coming soon'
-                                : 'The current balance in this validator's reward pool.'
+                                : 'The current balance in this validator’s reward pool.'
                         }
                         tooltipPosition={TooltipPosition.Right}
                     />
@@ -132,7 +132,7 @@ export function ValidatorStats({
                             tooltipText={
                                 !votedLastRound
                                     ? 'Coming soon'
-                                    : 'This validator's participation in the voting for the most recent round.'
+                                    : 'This validator’s participation in the voting for the most recent round.'
                             }
                             tooltipPosition={TooltipPosition.Right}
                         />
@@ -145,7 +145,7 @@ export function ValidatorStats({
                             tooltipText={
                                 !tallyingScore
                                     ? 'Coming soon'
-                                    : 'A score created by validators to assess each other's performance during IOTA's standard operations.'
+                                    : "A score created by validators to assess each other’s performance during IOTA's standard operations."
                             }
                             tooltipPosition={TooltipPosition.Right}
                         />
