@@ -63,7 +63,7 @@ jobs:
   localnet:
     name: Localnet
     if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-x64
     services:
       postgres:
         image: postgres:15
