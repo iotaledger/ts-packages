@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["bin_version","git_revision","git_revision_abbrev","git_revision_long"],"mod":["_hidden"]};

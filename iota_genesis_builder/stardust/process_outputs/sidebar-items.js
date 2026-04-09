@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["is_participation_output","process_outputs_for_iota","scale_amount_for_iota"]};

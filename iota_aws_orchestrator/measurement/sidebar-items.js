@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["histogram_quantile","p50_latency","p99_latency"],"struct":["Measurement","MeasurementsCollection"],"type":["BucketId","ScraperId"]};

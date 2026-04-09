@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BuildCacheError"],"struct":["BuildCacheClient"],"type":["BuildCacheResult"]};

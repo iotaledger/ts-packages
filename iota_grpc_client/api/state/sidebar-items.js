@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["coin_info","dynamic_fields","owned_objects"]};

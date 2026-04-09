@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Feature"],"struct":["Attribute","FeatureFlags","Features","Irc27Metadata","Irc30Metadata","IssuerFeature","MetadataFeature","SenderFeature","TagFeature"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DERIVED_OBJECT_MODULE_NAME","DERIVED_OBJECT_STRUCT_NAME"],"fn":["derive_object_id"]};

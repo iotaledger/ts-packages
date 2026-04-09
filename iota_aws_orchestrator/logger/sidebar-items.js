@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["init_logger","is_loop","log"],"static":["IS_LOOP"],"struct":["SwappableWriter"]};

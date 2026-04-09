@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CloudProvider"],"fn":["build_cargo_command","default_results_dir","default_working_dir","join_non_empty_strings","parse_url","resolve_env"],"struct":["BinaryBuildConfig","BuildCache","BuildCacheServer","BuildGroup","Repository","Settings"],"type":["BuildGroups"]};

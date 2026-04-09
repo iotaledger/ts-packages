@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_coin"],"struct":["BasicOutput"],"trait":["BasicOutputExt"]};

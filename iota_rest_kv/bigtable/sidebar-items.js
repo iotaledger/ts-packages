@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["fetch_checkpoint_summary_by_digests","multi_get_cell"],"struct":["KvStoreClient","KvStoreConfig"]};

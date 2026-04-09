@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Address"],"struct":["AliasAddress","Bech32Address","Ed25519Address","Hrp","NftAddress"],"trait":["ToBech32Ext"]};

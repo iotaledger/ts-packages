@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ExecutedTransaction","ExecutedTransactionFieldPathBuilder","ExecutedTransactions","ExecutedTransactionsFieldPathBuilder","Transaction","TransactionEffects","TransactionEffectsFieldPathBuilder","TransactionEvents","TransactionEventsFieldPathBuilder","TransactionFieldPathBuilder"]};

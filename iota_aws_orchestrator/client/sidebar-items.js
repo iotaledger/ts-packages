@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["InstanceLifecycle","InstanceRole"],"mod":["aws"],"struct":["Instance"],"trait":["ServerProviderClient"]};

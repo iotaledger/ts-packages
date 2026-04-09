@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LoadType","RunInterval"],"struct":["BenchmarkParameters","BenchmarkParametersGenerator","OtelConfig"],"trait":["BenchmarkType"]};

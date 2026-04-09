@@ -1,0 +1,437 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/iota-genesis-builder/src/stake.rs`."><title>stake.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-77263533.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="iota_genesis_builder" data-themes="" data-resource-suffix="" data-rustdoc-version="1.94.1 (e408947bf 2026-03-25)" data-channel="1.94.1" data-search-js="search-9e2438ea.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-7bab91a1.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-ffcac47a.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">iota_genesis_builder/</div>stake.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="comment">// Copyright (c) 2024 IOTA Stiftung
+<a href=#2 id=2 data-nosnippet>2</a>// SPDX-License-Identifier: Apache-2.0
+<a href=#3 id=3 data-nosnippet>3</a>
+<a href=#4 id=4 data-nosnippet>4</a></span><span class="doccomment">//! Logic and types to account for stake delegation during genesis.
+<a href=#5 id=5 data-nosnippet>5</a></span><span class="kw">use </span>anyhow::bail;
+<a href=#6 id=6 data-nosnippet>6</a><span class="kw">use </span>iota_config::genesis::{
+<a href=#7 id=7 data-nosnippet>7</a>    Delegations, TokenAllocation, TokenDistributionSchedule, TokenDistributionScheduleBuilder,
+<a href=#8 id=8 data-nosnippet>8</a>    ValidatorAllocation,
+<a href=#9 id=9 data-nosnippet>9</a>};
+<a href=#10 id=10 data-nosnippet>10</a><span class="kw">use </span>iota_types::{
+<a href=#11 id=11 data-nosnippet>11</a>    base_types::{IotaAddress, ObjectRef},
+<a href=#12 id=12 data-nosnippet>12</a>    object::Object,
+<a href=#13 id=13 data-nosnippet>13</a>};
+<a href=#14 id=14 data-nosnippet>14</a>
+<a href=#15 id=15 data-nosnippet>15</a><span class="kw">use </span><span class="kw">crate</span>::stardust::{
+<a href=#16 id=16 data-nosnippet>16</a>    migration::{ExpirationTimestamp, MigrationObjects},
+<a href=#17 id=17 data-nosnippet>17</a>    types::coin_kind::get_gas_balance_maybe,
+<a href=#18 id=18 data-nosnippet>18</a>};
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a><span class="attr">#[derive(Default, Debug, Clone)]
+<a href=#21 id=21 data-nosnippet>21</a></span><span class="kw">pub struct </span>GenesisStake {
+<a href=#22 id=22 data-nosnippet>22</a>    token_allocation: Vec&lt;TokenAllocation&gt;,
+<a href=#23 id=23 data-nosnippet>23</a>    gas_coins_to_destroy: Vec&lt;ObjectRef&gt;,
+<a href=#24 id=24 data-nosnippet>24</a>    timelocks_to_destroy: Vec&lt;ObjectRef&gt;,
+<a href=#25 id=25 data-nosnippet>25</a>    timelocks_to_split: Vec&lt;(ObjectRef, u64, IotaAddress)&gt;,
+<a href=#26 id=26 data-nosnippet>26</a>}
+<a href=#27 id=27 data-nosnippet>27</a>
+<a href=#28 id=28 data-nosnippet>28</a><span class="kw">impl </span>GenesisStake {
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="doccomment">/// Take the inner gas-coin objects that must be destroyed.
+<a href=#30 id=30 data-nosnippet>30</a>    ///
+<a href=#31 id=31 data-nosnippet>31</a>    /// This follows the semantics of [`std::mem::take`].
+<a href=#32 id=32 data-nosnippet>32</a>    </span><span class="kw">pub fn </span>take_gas_coins_to_destroy(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;ObjectRef&gt; {
+<a href=#33 id=33 data-nosnippet>33</a>        std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.gas_coins_to_destroy)
+<a href=#34 id=34 data-nosnippet>34</a>    }
+<a href=#35 id=35 data-nosnippet>35</a>
+<a href=#36 id=36 data-nosnippet>36</a>    <span class="doccomment">/// Take the inner timelock objects that must be destroyed.
+<a href=#37 id=37 data-nosnippet>37</a>    ///
+<a href=#38 id=38 data-nosnippet>38</a>    /// This follows the semantics of [`std::mem::take`].
+<a href=#39 id=39 data-nosnippet>39</a>    </span><span class="kw">pub fn </span>take_timelocks_to_destroy(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;ObjectRef&gt; {
+<a href=#40 id=40 data-nosnippet>40</a>        std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.timelocks_to_destroy)
+<a href=#41 id=41 data-nosnippet>41</a>    }
+<a href=#42 id=42 data-nosnippet>42</a>
+<a href=#43 id=43 data-nosnippet>43</a>    <span class="doccomment">/// Take the inner timelock objects that must be split.
+<a href=#44 id=44 data-nosnippet>44</a>    ///
+<a href=#45 id=45 data-nosnippet>45</a>    /// This follows the semantics of [`std::mem::take`].
+<a href=#46 id=46 data-nosnippet>46</a>    </span><span class="kw">pub fn </span>take_timelocks_to_split(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; Vec&lt;(ObjectRef, u64, IotaAddress)&gt; {
+<a href=#47 id=47 data-nosnippet>47</a>        std::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.timelocks_to_split)
+<a href=#48 id=48 data-nosnippet>48</a>    }
+<a href=#49 id=49 data-nosnippet>49</a>
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#51 id=51 data-nosnippet>51</a>        <span class="self">self</span>.token_allocation.is_empty()
+<a href=#52 id=52 data-nosnippet>52</a>            &amp;&amp; <span class="self">self</span>.gas_coins_to_destroy.is_empty()
+<a href=#53 id=53 data-nosnippet>53</a>            &amp;&amp; <span class="self">self</span>.timelocks_to_destroy.is_empty()
+<a href=#54 id=54 data-nosnippet>54</a>            &amp;&amp; <span class="self">self</span>.timelocks_to_split.is_empty()
+<a href=#55 id=55 data-nosnippet>55</a>    }
+<a href=#56 id=56 data-nosnippet>56</a>
+<a href=#57 id=57 data-nosnippet>57</a>    <span class="doccomment">/// Calculate the total amount of token allocations.
+<a href=#58 id=58 data-nosnippet>58</a>    </span><span class="kw">pub fn </span>sum_token_allocation(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+<a href=#59 id=59 data-nosnippet>59</a>        <span class="self">self</span>.token_allocation
+<a href=#60 id=60 data-nosnippet>60</a>            .iter()
+<a href=#61 id=61 data-nosnippet>61</a>            .map(|allocation| allocation.amount_nanos)
+<a href=#62 id=62 data-nosnippet>62</a>            .sum()
+<a href=#63 id=63 data-nosnippet>63</a>    }
+<a href=#64 id=64 data-nosnippet>64</a>
+<a href=#65 id=65 data-nosnippet>65</a>    <span class="doccomment">/// Create a new valid [`TokenDistributionSchedule`] from the
+<a href=#66 id=66 data-nosnippet>66</a>    /// inner token allocations.
+<a href=#67 id=67 data-nosnippet>67</a>    </span><span class="kw">pub fn </span>to_token_distribution_schedule(
+<a href=#68 id=68 data-nosnippet>68</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#69 id=69 data-nosnippet>69</a>        total_supply_nanos: u64,
+<a href=#70 id=70 data-nosnippet>70</a>    ) -&gt; TokenDistributionSchedule {
+<a href=#71 id=71 data-nosnippet>71</a>        <span class="kw">let </span><span class="kw-2">mut </span>builder = TokenDistributionScheduleBuilder::new();
+<a href=#72 id=72 data-nosnippet>72</a>
+<a href=#73 id=73 data-nosnippet>73</a>        <span class="kw">let </span>pre_minted_supply = <span class="self">self</span>.calculate_pre_minted_supply(total_supply_nanos);
+<a href=#74 id=74 data-nosnippet>74</a>
+<a href=#75 id=75 data-nosnippet>75</a>        builder.set_pre_minted_supply(pre_minted_supply);
+<a href=#76 id=76 data-nosnippet>76</a>
+<a href=#77 id=77 data-nosnippet>77</a>        <span class="kw">for </span>allocation <span class="kw">in </span><span class="self">self</span>.token_allocation.clone() {
+<a href=#78 id=78 data-nosnippet>78</a>            builder.add_allocation(allocation);
+<a href=#79 id=79 data-nosnippet>79</a>        }
+<a href=#80 id=80 data-nosnippet>80</a>        builder.build()
+<a href=#81 id=81 data-nosnippet>81</a>    }
+<a href=#82 id=82 data-nosnippet>82</a>
+<a href=#83 id=83 data-nosnippet>83</a>    <span class="doccomment">/// Extend a [`TokenDistributionSchedule`] without migration with the
+<a href=#84 id=84 data-nosnippet>84</a>    /// inner token allocations.
+<a href=#85 id=85 data-nosnippet>85</a>    ///
+<a href=#86 id=86 data-nosnippet>86</a>    /// The resulting schedule is guaranteed to contain allocations
+<a href=#87 id=87 data-nosnippet>87</a>    /// that sum up the initial total supply of IOTA in nanos.
+<a href=#88 id=88 data-nosnippet>88</a>    ///
+<a href=#89 id=89 data-nosnippet>89</a>    /// ## Errors
+<a href=#90 id=90 data-nosnippet>90</a>    ///
+<a href=#91 id=91 data-nosnippet>91</a>    /// The method fails if the resulting schedule contains is invalid.
+<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="kw">pub fn </span>extend_token_distribution_schedule_without_migration(
+<a href=#93 id=93 data-nosnippet>93</a>        <span class="kw-2">&amp;</span><span class="self">self</span>,
+<a href=#94 id=94 data-nosnippet>94</a>        <span class="kw-2">mut </span>schedule_without_migration: TokenDistributionSchedule,
+<a href=#95 id=95 data-nosnippet>95</a>        total_supply_nanos: u64,
+<a href=#96 id=96 data-nosnippet>96</a>    ) -&gt; TokenDistributionSchedule {
+<a href=#97 id=97 data-nosnippet>97</a>        schedule_without_migration
+<a href=#98 id=98 data-nosnippet>98</a>            .allocations
+<a href=#99 id=99 data-nosnippet>99</a>            .extend(<span class="self">self</span>.token_allocation.clone());
+<a href=#100 id=100 data-nosnippet>100</a>        schedule_without_migration.pre_minted_supply =
+<a href=#101 id=101 data-nosnippet>101</a>            <span class="self">self</span>.calculate_pre_minted_supply(total_supply_nanos);
+<a href=#102 id=102 data-nosnippet>102</a>        schedule_without_migration.validate();
+<a href=#103 id=103 data-nosnippet>103</a>        schedule_without_migration
+<a href=#104 id=104 data-nosnippet>104</a>    }
+<a href=#105 id=105 data-nosnippet>105</a>
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// Calculates the part of the IOTA supply that is pre-minted.
+<a href=#107 id=107 data-nosnippet>107</a>    </span><span class="kw">fn </span>calculate_pre_minted_supply(<span class="kw-2">&amp;</span><span class="self">self</span>, total_supply_nanos: u64) -&gt; u64 {
+<a href=#108 id=108 data-nosnippet>108</a>        total_supply_nanos - <span class="self">self</span>.sum_token_allocation()
+<a href=#109 id=109 data-nosnippet>109</a>    }
+<a href=#110 id=110 data-nosnippet>110</a>
+<a href=#111 id=111 data-nosnippet>111</a>    <span class="doccomment">/// Creates a `GenesisStake` using a `Delegations` containing the necessary
+<a href=#112 id=112 data-nosnippet>112</a>    /// allocations for validators by some delegators.
+<a href=#113 id=113 data-nosnippet>113</a>    ///
+<a href=#114 id=114 data-nosnippet>114</a>    /// This function invokes `delegate_genesis_stake` for each delegator found
+<a href=#115 id=115 data-nosnippet>115</a>    /// in `Delegations`.
+<a href=#116 id=116 data-nosnippet>116</a>    </span><span class="kw">pub fn </span>new_with_delegations(
+<a href=#117 id=117 data-nosnippet>117</a>        delegations: Delegations,
+<a href=#118 id=118 data-nosnippet>118</a>        migration_objects: <span class="kw-2">&amp;</span>MigrationObjects,
+<a href=#119 id=119 data-nosnippet>119</a>    ) -&gt; anyhow::Result&lt;<span class="self">Self</span>&gt; {
+<a href=#120 id=120 data-nosnippet>120</a>        <span class="kw">let </span><span class="kw-2">mut </span>stake = GenesisStake::default();
+<a href=#121 id=121 data-nosnippet>121</a>
+<a href=#122 id=122 data-nosnippet>122</a>        <span class="kw">for </span>(delegator, validators_allocations) <span class="kw">in </span>delegations.allocations {
+<a href=#123 id=123 data-nosnippet>123</a>            <span class="comment">// Fetch all timelock and gas objects owned by the delegator
+<a href=#124 id=124 data-nosnippet>124</a>            </span><span class="kw">let </span>timelocks_pool =
+<a href=#125 id=125 data-nosnippet>125</a>                migration_objects.get_sorted_timelocks_and_expiration_by_owner(delegator);
+<a href=#126 id=126 data-nosnippet>126</a>            <span class="kw">let </span>gas_coins_pool = migration_objects.get_gas_coins_by_owner(delegator);
+<a href=#127 id=127 data-nosnippet>127</a>            <span class="kw">if </span>timelocks_pool.is_none() &amp;&amp; gas_coins_pool.is_none() {
+<a href=#128 id=128 data-nosnippet>128</a>                <span class="macro">bail!</span>(<span class="string">"no timelocks or gas-coin objects found for delegator {delegator:?}"</span>);
+<a href=#129 id=129 data-nosnippet>129</a>            }
+<a href=#130 id=130 data-nosnippet>130</a>            stake.delegate_genesis_stake(
+<a href=#131 id=131 data-nosnippet>131</a>                <span class="kw-2">&amp;</span>validators_allocations,
+<a href=#132 id=132 data-nosnippet>132</a>                delegator,
+<a href=#133 id=133 data-nosnippet>133</a>                <span class="kw-2">&amp;mut </span>timelocks_pool.unwrap_or_default().into_iter(),
+<a href=#134 id=134 data-nosnippet>134</a>                <span class="kw-2">&amp;mut </span>gas_coins_pool
+<a href=#135 id=135 data-nosnippet>135</a>                    .unwrap_or_default()
+<a href=#136 id=136 data-nosnippet>136</a>                    .into_iter()
+<a href=#137 id=137 data-nosnippet>137</a>                    .map(|object| (object, <span class="number">0</span>)),
+<a href=#138 id=138 data-nosnippet>138</a>            )<span class="question-mark">?</span>;
+<a href=#139 id=139 data-nosnippet>139</a>        }
+<a href=#140 id=140 data-nosnippet>140</a>
+<a href=#141 id=141 data-nosnippet>141</a>        <span class="prelude-val">Ok</span>(stake)
+<a href=#142 id=142 data-nosnippet>142</a>    }
+<a href=#143 id=143 data-nosnippet>143</a>
+<a href=#144 id=144 data-nosnippet>144</a>    <span class="kw">fn </span>create_token_allocation(
+<a href=#145 id=145 data-nosnippet>145</a>        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+<a href=#146 id=146 data-nosnippet>146</a>        recipient_address: IotaAddress,
+<a href=#147 id=147 data-nosnippet>147</a>        amount_nanos: u64,
+<a href=#148 id=148 data-nosnippet>148</a>        staked_with_validator: <span class="prelude-ty">Option</span>&lt;IotaAddress&gt;,
+<a href=#149 id=149 data-nosnippet>149</a>        staked_with_timelock_expiration: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+<a href=#150 id=150 data-nosnippet>150</a>    ) {
+<a href=#151 id=151 data-nosnippet>151</a>        <span class="self">self</span>.token_allocation.push(TokenAllocation {
+<a href=#152 id=152 data-nosnippet>152</a>            recipient_address,
+<a href=#153 id=153 data-nosnippet>153</a>            amount_nanos,
+<a href=#154 id=154 data-nosnippet>154</a>            staked_with_validator,
+<a href=#155 id=155 data-nosnippet>155</a>            staked_with_timelock_expiration,
+<a href=#156 id=156 data-nosnippet>156</a>        });
+<a href=#157 id=157 data-nosnippet>157</a>    }
+<a href=#158 id=158 data-nosnippet>158</a>
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="doccomment">/// Create the necessary allocations for `validators_allocations` using the
+<a href=#160 id=160 data-nosnippet>160</a>    /// assets of the `delegator`.
+<a href=#161 id=161 data-nosnippet>161</a>    ///
+<a href=#162 id=162 data-nosnippet>162</a>    /// This function iterates in turn over [`TimeLock`] and
+<a href=#163 id=163 data-nosnippet>163</a>    /// [`GasCoin`][iota_types::gas_coin::GasCoin] objects created
+<a href=#164 id=164 data-nosnippet>164</a>    /// during stardust migration that are owned by the `delegator`.
+<a href=#165 id=165 data-nosnippet>165</a>    </span><span class="kw">pub fn </span>delegate_genesis_stake&lt;<span class="lifetime">'obj</span>&gt;(
+<a href=#166 id=166 data-nosnippet>166</a>        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+<a href=#167 id=167 data-nosnippet>167</a>        validators_allocations: <span class="kw-2">&amp;</span>[ValidatorAllocation],
+<a href=#168 id=168 data-nosnippet>168</a>        delegator: IotaAddress,
+<a href=#169 id=169 data-nosnippet>169</a>        timelocks_pool: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'obj </span>Object, ExpirationTimestamp)&gt;,
+<a href=#170 id=170 data-nosnippet>170</a>        gas_coins_pool: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'obj </span>Object, ExpirationTimestamp)&gt;,
+<a href=#171 id=171 data-nosnippet>171</a>    ) -&gt; anyhow::Result&lt;()&gt; {
+<a href=#172 id=172 data-nosnippet>172</a>        <span class="comment">// Temp stores for holding the surplus
+<a href=#173 id=173 data-nosnippet>173</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>timelock_surplus = SurplusCoin::default();
+<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw">let </span><span class="kw-2">mut </span>gas_surplus = SurplusCoin::default();
+<a href=#175 id=175 data-nosnippet>175</a>
+<a href=#176 id=176 data-nosnippet>176</a>        <span class="comment">// Then, try to create new token allocations for each validator using the
+<a href=#177 id=177 data-nosnippet>177</a>        // objects fetched above
+<a href=#178 id=178 data-nosnippet>178</a>        </span><span class="kw">for </span>validator_allocation <span class="kw">in </span>validators_allocations {
+<a href=#179 id=179 data-nosnippet>179</a>            <span class="comment">// The validator address
+<a href=#180 id=180 data-nosnippet>180</a>            </span><span class="kw">let </span>validator = validator_allocation.validator;
+<a href=#181 id=181 data-nosnippet>181</a>            <span class="comment">// The target amount of nanos to be staked, either with timelock or gas objects
+<a href=#182 id=182 data-nosnippet>182</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>target_stake_nanos = validator_allocation.amount_nanos_to_stake;
+<a href=#183 id=183 data-nosnippet>183</a>            <span class="comment">// The gas to pay to the validator
+<a href=#184 id=184 data-nosnippet>184</a>            </span><span class="kw">let </span>gas_to_pay_nanos = validator_allocation.amount_nanos_to_pay_gas;
+<a href=#185 id=185 data-nosnippet>185</a>
+<a href=#186 id=186 data-nosnippet>186</a>            <span class="comment">// Start filling allocations with timelocks
+<a href=#187 id=187 data-nosnippet>187</a>
+<a href=#188 id=188 data-nosnippet>188</a>            // Pick fresh timelock objects (if present) and possibly reuse the surplus
+<a href=#189 id=189 data-nosnippet>189</a>            // coming from the previous iteration.
+<a href=#190 id=190 data-nosnippet>190</a>            // The method `pick_objects_for_allocation` firstly checks if the
+<a href=#191 id=191 data-nosnippet>191</a>            // `timelock_surplus` can be used to reach or reduce the `target_stake_nanos`.
+<a href=#192 id=192 data-nosnippet>192</a>            // Then it iterates over the `timelocks_pool`. For each timelock object, its
+<a href=#193 id=193 data-nosnippet>193</a>            // balance is used to reduce the `target_stake_nanos` while its the object
+<a href=#194 id=194 data-nosnippet>194</a>            // reference is placed into a vector `to_destroy`. At the end, the
+<a href=#195 id=195 data-nosnippet>195</a>            // `pick_objects_for_allocation` method returns an `AllocationObjects` including
+<a href=#196 id=196 data-nosnippet>196</a>            // the list of objects to destroy, the list `staked_with_timelock` containing
+<a href=#197 id=197 data-nosnippet>197</a>            // the information for creating token allocations with timestamps
+<a href=#198 id=198 data-nosnippet>198</a>            // and a CoinSurplus (even empty).
+<a href=#199 id=199 data-nosnippet>199</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>timelock_allocation_objects = pick_objects_for_allocation(
+<a href=#200 id=200 data-nosnippet>200</a>                timelocks_pool,
+<a href=#201 id=201 data-nosnippet>201</a>                target_stake_nanos,
+<a href=#202 id=202 data-nosnippet>202</a>                <span class="kw-2">&amp;mut </span>timelock_surplus,
+<a href=#203 id=203 data-nosnippet>203</a>            );
+<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">if </span>!timelock_allocation_objects.staked_with_timelock.is_empty() {
+<a href=#205 id=205 data-nosnippet>205</a>                <span class="comment">// Inside this block some timelock objects were picked from the pool; so we can
+<a href=#206 id=206 data-nosnippet>206</a>                // save all the references to timelocks to destroy, if there are any
+<a href=#207 id=207 data-nosnippet>207</a>                </span><span class="self">self</span>.timelocks_to_destroy
+<a href=#208 id=208 data-nosnippet>208</a>                    .append(<span class="kw-2">&amp;mut </span>timelock_allocation_objects.to_destroy);
+<a href=#209 id=209 data-nosnippet>209</a>                <span class="comment">// Finally we create some token allocations based on timelock_allocation_objects
+<a href=#210 id=210 data-nosnippet>210</a>                </span>timelock_allocation_objects
+<a href=#211 id=211 data-nosnippet>211</a>                    .staked_with_timelock
+<a href=#212 id=212 data-nosnippet>212</a>                    .iter()
+<a href=#213 id=213 data-nosnippet>213</a>                    .for_each(|<span class="kw-2">&amp;</span>(timelocked_amount, expiration_timestamp)| {
+<a href=#214 id=214 data-nosnippet>214</a>                        <span class="comment">// For timelocks we create a `TokenAllocation` object with
+<a href=#215 id=215 data-nosnippet>215</a>                        // `staked_with_timelock` filled with entries
+<a href=#216 id=216 data-nosnippet>216</a>                        </span><span class="self">self</span>.create_token_allocation(
+<a href=#217 id=217 data-nosnippet>217</a>                            delegator,
+<a href=#218 id=218 data-nosnippet>218</a>                            timelocked_amount,
+<a href=#219 id=219 data-nosnippet>219</a>                            <span class="prelude-val">Some</span>(validator),
+<a href=#220 id=220 data-nosnippet>220</a>                            <span class="prelude-val">Some</span>(expiration_timestamp),
+<a href=#221 id=221 data-nosnippet>221</a>                        );
+<a href=#222 id=222 data-nosnippet>222</a>                    });
+<a href=#223 id=223 data-nosnippet>223</a>            }
+<a href=#224 id=224 data-nosnippet>224</a>            <span class="comment">// The remainder of the target stake after timelock objects were used.
+<a href=#225 id=225 data-nosnippet>225</a>            </span>target_stake_nanos -= timelock_allocation_objects.amount_nanos;
+<a href=#226 id=226 data-nosnippet>226</a>
+<a href=#227 id=227 data-nosnippet>227</a>            <span class="comment">// After allocating timelocked stakes, then
+<a href=#228 id=228 data-nosnippet>228</a>            // 1. allocate gas coin stakes (if timelocked funds were not enough)
+<a href=#229 id=229 data-nosnippet>229</a>            // 2. and/or allocate gas coin payments (if indicated in the validator
+<a href=#230 id=230 data-nosnippet>230</a>            //    allocation).
+<a href=#231 id=231 data-nosnippet>231</a>
+<a href=#232 id=232 data-nosnippet>232</a>            // The target amount of gas coin nanos to be allocated, either with staking or
+<a href=#233 id=233 data-nosnippet>233</a>            // to pay
+<a href=#234 id=234 data-nosnippet>234</a>            </span><span class="kw">let </span>target_gas_nanos = target_stake_nanos + gas_to_pay_nanos;
+<a href=#235 id=235 data-nosnippet>235</a>            <span class="comment">// Pick fresh gas coin objects (if present) and possibly reuse the surplus
+<a href=#236 id=236 data-nosnippet>236</a>            // coming from the previous iteration. The logic is the same as above with
+<a href=#237 id=237 data-nosnippet>237</a>            // timelocks.
+<a href=#238 id=238 data-nosnippet>238</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>gas_coin_objects =
+<a href=#239 id=239 data-nosnippet>239</a>                pick_objects_for_allocation(gas_coins_pool, target_gas_nanos, <span class="kw-2">&amp;mut </span>gas_surplus);
+<a href=#240 id=240 data-nosnippet>240</a>            <span class="kw">if </span>gas_coin_objects.amount_nanos &gt;= target_gas_nanos {
+<a href=#241 id=241 data-nosnippet>241</a>                <span class="comment">// Inside this block some gas coin objects were picked from the pool; so we can
+<a href=#242 id=242 data-nosnippet>242</a>                // save all the references to gas coins to destroy
+<a href=#243 id=243 data-nosnippet>243</a>                </span><span class="self">self</span>.gas_coins_to_destroy
+<a href=#244 id=244 data-nosnippet>244</a>                    .append(<span class="kw-2">&amp;mut </span>gas_coin_objects.to_destroy);
+<a href=#245 id=245 data-nosnippet>245</a>                <span class="comment">// Then
+<a href=#246 id=246 data-nosnippet>246</a>                // Case 1. allocate gas stakes
+<a href=#247 id=247 data-nosnippet>247</a>                </span><span class="kw">if </span>target_stake_nanos &gt; <span class="number">0 </span>{
+<a href=#248 id=248 data-nosnippet>248</a>                    <span class="comment">// For staking gas coins we create a `TokenAllocation` object with
+<a href=#249 id=249 data-nosnippet>249</a>                    // an empty `staked_with_timelock`
+<a href=#250 id=250 data-nosnippet>250</a>                    </span><span class="self">self</span>.create_token_allocation(
+<a href=#251 id=251 data-nosnippet>251</a>                        delegator,
+<a href=#252 id=252 data-nosnippet>252</a>                        target_stake_nanos,
+<a href=#253 id=253 data-nosnippet>253</a>                        <span class="prelude-val">Some</span>(validator),
+<a href=#254 id=254 data-nosnippet>254</a>                        <span class="prelude-val">None</span>,
+<a href=#255 id=255 data-nosnippet>255</a>                    );
+<a href=#256 id=256 data-nosnippet>256</a>                }
+<a href=#257 id=257 data-nosnippet>257</a>                <span class="comment">// Case 2. allocate gas payments
+<a href=#258 id=258 data-nosnippet>258</a>                </span><span class="kw">if </span>gas_to_pay_nanos &gt; <span class="number">0 </span>{
+<a href=#259 id=259 data-nosnippet>259</a>                    <span class="comment">// For gas coins payments we create a `TokenAllocation` object with
+<a href=#260 id=260 data-nosnippet>260</a>                    // `recipient_address` being the validator and no stake
+<a href=#261 id=261 data-nosnippet>261</a>                    </span><span class="self">self</span>.create_token_allocation(validator, gas_to_pay_nanos, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+<a href=#262 id=262 data-nosnippet>262</a>                }
+<a href=#263 id=263 data-nosnippet>263</a>            } <span class="kw">else </span>{
+<a href=#264 id=264 data-nosnippet>264</a>                <span class="comment">// It means the delegator finished all the timelock or gas funds
+<a href=#265 id=265 data-nosnippet>265</a>                </span><span class="macro">bail!</span>(<span class="string">"Not enough funds for delegator {:?}"</span>, delegator);
+<a href=#266 id=266 data-nosnippet>266</a>            }
+<a href=#267 id=267 data-nosnippet>267</a>        }
+<a href=#268 id=268 data-nosnippet>268</a>
+<a href=#269 id=269 data-nosnippet>269</a>        <span class="comment">// If some surplus amount is left, then return it to the delegator
+<a href=#270 id=270 data-nosnippet>270</a>        // In the case of a timelock object, it must be split during the `genesis` PTB
+<a href=#271 id=271 data-nosnippet>271</a>        // execution
+<a href=#272 id=272 data-nosnippet>272</a>        </span><span class="kw">if let </span>(<span class="prelude-val">Some</span>(surplus_timelock), surplus_nanos, <span class="kw">_</span>) = timelock_surplus.take() {
+<a href=#273 id=273 data-nosnippet>273</a>            <span class="self">self</span>.timelocks_to_split
+<a href=#274 id=274 data-nosnippet>274</a>                .push((surplus_timelock, surplus_nanos, delegator));
+<a href=#275 id=275 data-nosnippet>275</a>        }
+<a href=#276 id=276 data-nosnippet>276</a>        <span class="comment">// In the case of a gas coin, it must be destroyed and the surplus re-allocated
+<a href=#277 id=277 data-nosnippet>277</a>        // to the delegator (no split)
+<a href=#278 id=278 data-nosnippet>278</a>        </span><span class="kw">if let </span>(<span class="prelude-val">Some</span>(surplus_gas_coin), surplus_nanos, <span class="kw">_</span>) = gas_surplus.take() {
+<a href=#279 id=279 data-nosnippet>279</a>            <span class="self">self</span>.gas_coins_to_destroy.push(surplus_gas_coin);
+<a href=#280 id=280 data-nosnippet>280</a>            <span class="self">self</span>.create_token_allocation(delegator, surplus_nanos, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
+<a href=#281 id=281 data-nosnippet>281</a>        }
+<a href=#282 id=282 data-nosnippet>282</a>
+<a href=#283 id=283 data-nosnippet>283</a>        <span class="prelude-val">Ok</span>(())
+<a href=#284 id=284 data-nosnippet>284</a>    }
+<a href=#285 id=285 data-nosnippet>285</a>}
+<a href=#286 id=286 data-nosnippet>286</a>
+<a href=#287 id=287 data-nosnippet>287</a><span class="doccomment">/// The objects picked for token allocation during genesis
+<a href=#288 id=288 data-nosnippet>288</a></span><span class="attr">#[derive(Default, Debug, Clone)]
+<a href=#289 id=289 data-nosnippet>289</a></span><span class="kw">struct </span>AllocationObjects {
+<a href=#290 id=290 data-nosnippet>290</a>    <span class="doccomment">/// The list of objects to destroy for the allocations
+<a href=#291 id=291 data-nosnippet>291</a>    </span>to_destroy: Vec&lt;ObjectRef&gt;,
+<a href=#292 id=292 data-nosnippet>292</a>    <span class="doccomment">/// The total amount of nanos to be allocated from this
+<a href=#293 id=293 data-nosnippet>293</a>    /// collection of objects.
+<a href=#294 id=294 data-nosnippet>294</a>    </span>amount_nanos: u64,
+<a href=#295 id=295 data-nosnippet>295</a>    <span class="doccomment">/// A (possible empty) vector of (amount, timelock_expiration) pairs
+<a href=#296 id=296 data-nosnippet>296</a>    /// indicating the amount to timelock stake and its expiration
+<a href=#297 id=297 data-nosnippet>297</a>    </span>staked_with_timelock: Vec&lt;(u64, u64)&gt;,
+<a href=#298 id=298 data-nosnippet>298</a>}
+<a href=#299 id=299 data-nosnippet>299</a>
+<a href=#300 id=300 data-nosnippet>300</a><span class="doccomment">/// The surplus object that should be split for this allocation. Only part
+<a href=#301 id=301 data-nosnippet>301</a>/// of its balance will be used for this collection of this
+<a href=#302 id=302 data-nosnippet>302</a>/// `AllocationObjects`, the surplus might be used later.
+<a href=#303 id=303 data-nosnippet>303</a></span><span class="attr">#[derive(Default, Debug, Clone)]
+<a href=#304 id=304 data-nosnippet>304</a></span><span class="kw">struct </span>SurplusCoin {
+<a href=#305 id=305 data-nosnippet>305</a>    <span class="comment">// The reference of the coin to possibly split to get the surplus.
+<a href=#306 id=306 data-nosnippet>306</a>    </span>coin_object_ref: <span class="prelude-ty">Option</span>&lt;ObjectRef&gt;,
+<a href=#307 id=307 data-nosnippet>307</a>    <span class="doccomment">/// The surplus amount for that coin object.
+<a href=#308 id=308 data-nosnippet>308</a>    </span>surplus_nanos: u64,
+<a href=#309 id=309 data-nosnippet>309</a>    <span class="doccomment">/// Possibly indicate a timelock stake expiration.
+<a href=#310 id=310 data-nosnippet>310</a>    </span>timestamp: u64,
+<a href=#311 id=311 data-nosnippet>311</a>}
+<a href=#312 id=312 data-nosnippet>312</a>
+<a href=#313 id=313 data-nosnippet>313</a><span class="kw">impl </span>SurplusCoin {
+<a href=#314 id=314 data-nosnippet>314</a>    <span class="comment">// Check if the current surplus can be reused.
+<a href=#315 id=315 data-nosnippet>315</a>    // The surplus coin_object_ref is returned to be included in a `to_destroy` list
+<a href=#316 id=316 data-nosnippet>316</a>    // when surplus_nanos &lt;= target_amount_nanos. Otherwise it means the
+<a href=#317 id=317 data-nosnippet>317</a>    // target_amount_nanos is completely reached, so we can still keep
+<a href=#318 id=318 data-nosnippet>318</a>    // coin_object_ref as surplus coin and only reduce the surplus_nanos value.
+<a href=#319 id=319 data-nosnippet>319</a>    </span><span class="kw">pub fn </span>maybe_reuse_surplus(
+<a href=#320 id=320 data-nosnippet>320</a>        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+<a href=#321 id=321 data-nosnippet>321</a>        target_amount_nanos: u64,
+<a href=#322 id=322 data-nosnippet>322</a>    ) -&gt; (<span class="prelude-ty">Option</span>&lt;ObjectRef&gt;, u64, u64) {
+<a href=#323 id=323 data-nosnippet>323</a>        <span class="comment">// If the surplus is some, then we can use the surplus nanos
+<a href=#324 id=324 data-nosnippet>324</a>        </span><span class="kw">if </span><span class="self">self</span>.coin_object_ref.is_some() {
+<a href=#325 id=325 data-nosnippet>325</a>            <span class="comment">// If the surplus nanos are less or equal than the target, then use them all and
+<a href=#326 id=326 data-nosnippet>326</a>            // return the coin object to be destroyed
+<a href=#327 id=327 data-nosnippet>327</a>            </span><span class="kw">if </span><span class="self">self</span>.surplus_nanos &lt;= target_amount_nanos {
+<a href=#328 id=328 data-nosnippet>328</a>                <span class="kw">let </span>(coin_object_ref_opt, surplus, timestamp) = <span class="self">self</span>.take();
+<a href=#329 id=329 data-nosnippet>329</a>                (<span class="prelude-val">Some</span>(coin_object_ref_opt.unwrap()), surplus, timestamp)
+<a href=#330 id=330 data-nosnippet>330</a>            } <span class="kw">else </span>{
+<a href=#331 id=331 data-nosnippet>331</a>                <span class="comment">// If the surplus nanos more than the target, do not return the coin object
+<a href=#332 id=332 data-nosnippet>332</a>                </span><span class="self">self</span>.surplus_nanos -= target_amount_nanos;
+<a href=#333 id=333 data-nosnippet>333</a>                (<span class="prelude-val">None</span>, target_amount_nanos, <span class="self">self</span>.timestamp)
+<a href=#334 id=334 data-nosnippet>334</a>            }
+<a href=#335 id=335 data-nosnippet>335</a>        } <span class="kw">else </span>{
+<a href=#336 id=336 data-nosnippet>336</a>            (<span class="prelude-val">None</span>, <span class="number">0</span>, <span class="number">0</span>)
+<a href=#337 id=337 data-nosnippet>337</a>        }
+<a href=#338 id=338 data-nosnippet>338</a>    }
+<a href=#339 id=339 data-nosnippet>339</a>
+<a href=#340 id=340 data-nosnippet>340</a>    <span class="comment">// Destroy the `CoinSurplus` and take the fields.
+<a href=#341 id=341 data-nosnippet>341</a>    </span><span class="kw">pub fn </span>take(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; (<span class="prelude-ty">Option</span>&lt;ObjectRef&gt;, u64, u64) {
+<a href=#342 id=342 data-nosnippet>342</a>        <span class="kw">let </span>surplus = <span class="self">self</span>.surplus_nanos;
+<a href=#343 id=343 data-nosnippet>343</a>        <span class="self">self</span>.surplus_nanos = <span class="number">0</span>;
+<a href=#344 id=344 data-nosnippet>344</a>        <span class="kw">let </span>timestamp = <span class="self">self</span>.timestamp;
+<a href=#345 id=345 data-nosnippet>345</a>        <span class="self">self</span>.timestamp = <span class="number">0</span>;
+<a href=#346 id=346 data-nosnippet>346</a>        (<span class="self">self</span>.coin_object_ref.take(), surplus, timestamp)
+<a href=#347 id=347 data-nosnippet>347</a>    }
+<a href=#348 id=348 data-nosnippet>348</a>}
+<a href=#349 id=349 data-nosnippet>349</a>
+<a href=#350 id=350 data-nosnippet>350</a><span class="doccomment">/// Pick gas-coin like objects from a pool to cover
+<a href=#351 id=351 data-nosnippet>351</a>/// the `target_amount_nanos`. It might also make use of a previous coin
+<a href=#352 id=352 data-nosnippet>352</a>/// surplus.
+<a href=#353 id=353 data-nosnippet>353</a>///
+<a href=#354 id=354 data-nosnippet>354</a>/// This does not split any surplus balance, but delegates
+<a href=#355 id=355 data-nosnippet>355</a>/// splitting to the caller.
+<a href=#356 id=356 data-nosnippet>356</a></span><span class="kw">fn </span>pick_objects_for_allocation&lt;<span class="lifetime">'obj</span>&gt;(
+<a href=#357 id=357 data-nosnippet>357</a>    pool: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">'obj </span>Object, ExpirationTimestamp)&gt;,
+<a href=#358 id=358 data-nosnippet>358</a>    target_amount_nanos: u64,
+<a href=#359 id=359 data-nosnippet>359</a>    surplus_coin: <span class="kw-2">&amp;mut </span>SurplusCoin,
+<a href=#360 id=360 data-nosnippet>360</a>) -&gt; AllocationObjects {
+<a href=#361 id=361 data-nosnippet>361</a>    <span class="comment">// Vector used to keep track of timestamps while allocating timelock coins.
+<a href=#362 id=362 data-nosnippet>362</a>    // Will be left empty in the case of gas coins
+<a href=#363 id=363 data-nosnippet>363</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>staked_with_timelock = <span class="macro">vec!</span>[];
+<a href=#364 id=364 data-nosnippet>364</a>    <span class="comment">// Vector used to keep track of the coins to destroy.
+<a href=#365 id=365 data-nosnippet>365</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>to_destroy = <span class="macro">vec!</span>[];
+<a href=#366 id=366 data-nosnippet>366</a>    <span class="comment">// Variable used to keep track of allocated nanos during the picking.
+<a href=#367 id=367 data-nosnippet>367</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>allocation_amount_nanos = <span class="number">0</span>;
+<a href=#368 id=368 data-nosnippet>368</a>
+<a href=#369 id=369 data-nosnippet>369</a>    <span class="comment">// Maybe use the surplus coin passed as input.
+<a href=#370 id=370 data-nosnippet>370</a>    </span><span class="kw">let </span>(surplus_object_option, used_surplus_nanos, surplus_timestamp) =
+<a href=#371 id=371 data-nosnippet>371</a>        surplus_coin.maybe_reuse_surplus(target_amount_nanos);
+<a href=#372 id=372 data-nosnippet>372</a>
+<a href=#373 id=373 data-nosnippet>373</a>    <span class="comment">// If the surplus coin was used then allocate the nanos and maybe destroy it
+<a href=#374 id=374 data-nosnippet>374</a>    </span><span class="kw">if </span>used_surplus_nanos &gt; <span class="number">0 </span>{
+<a href=#375 id=375 data-nosnippet>375</a>        allocation_amount_nanos += used_surplus_nanos;
+<a href=#376 id=376 data-nosnippet>376</a>        <span class="kw">if </span>surplus_timestamp &gt; <span class="number">0 </span>{
+<a href=#377 id=377 data-nosnippet>377</a>            staked_with_timelock.push((used_surplus_nanos, surplus_timestamp));
+<a href=#378 id=378 data-nosnippet>378</a>        }
+<a href=#379 id=379 data-nosnippet>379</a>        <span class="comment">// If the `surplus_object` is returned by `maybe_reuse_surplus`, then it means
+<a href=#380 id=380 data-nosnippet>380</a>        // it used all its `used_surplus_nanos` and it can be destroyed.
+<a href=#381 id=381 data-nosnippet>381</a>        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(surplus_object) = surplus_object_option {
+<a href=#382 id=382 data-nosnippet>382</a>            to_destroy.push(surplus_object);
+<a href=#383 id=383 data-nosnippet>383</a>        }
+<a href=#384 id=384 data-nosnippet>384</a>    }
+<a href=#385 id=385 data-nosnippet>385</a>    <span class="comment">// Else, if the `surplus_object` was not completely drained, then we
+<a href=#386 id=386 data-nosnippet>386</a>    // don't need to continue. In this case `allocation_amount_nanos ==
+<a href=#387 id=387 data-nosnippet>387</a>    // target_amount_nanos`.
+<a href=#388 id=388 data-nosnippet>388</a>
+<a href=#389 id=389 data-nosnippet>389</a>    // Only if `allocation_amount_nanos` &lt; `target_amount_nanos` then pick an
+<a href=#390 id=390 data-nosnippet>390</a>    // object (if we still have objects in the pool). If this object's balance is
+<a href=#391 id=391 data-nosnippet>391</a>    // less than the difference required to reach the target, then push this
+<a href=#392 id=392 data-nosnippet>392</a>    // object's reference into the `to_destroy` list. Else, take out only the
+<a href=#393 id=393 data-nosnippet>393</a>    // required amount and set the object as a "surplus" (then break the loop).
+<a href=#394 id=394 data-nosnippet>394</a>    </span><span class="kw">while </span>allocation_amount_nanos &lt; target_amount_nanos {
+<a href=#395 id=395 data-nosnippet>395</a>        <span class="kw">if let </span><span class="prelude-val">Some</span>((object, timestamp)) = pool.next() {
+<a href=#396 id=396 data-nosnippet>396</a>            <span class="comment">// In here we pick an object
+<a href=#397 id=397 data-nosnippet>397</a>            </span><span class="kw">let </span>obj_ref = object.compute_object_reference();
+<a href=#398 id=398 data-nosnippet>398</a>            <span class="kw">let </span>object_balance = get_gas_balance_maybe(object)
+<a href=#399 id=399 data-nosnippet>399</a>                .expect(<span class="string">"the pool should only contain gas coins or timelock balance objects"</span>)
+<a href=#400 id=400 data-nosnippet>400</a>                .value();
+<a href=#401 id=401 data-nosnippet>401</a>
+<a href=#402 id=402 data-nosnippet>402</a>            <span class="comment">// Then we create the allocation
+<a href=#403 id=403 data-nosnippet>403</a>            </span><span class="kw">let </span>difference_from_target = target_amount_nanos - allocation_amount_nanos;
+<a href=#404 id=404 data-nosnippet>404</a>            <span class="kw">let </span>to_allocate = object_balance.min(difference_from_target);
+<a href=#405 id=405 data-nosnippet>405</a>            allocation_amount_nanos += to_allocate;
+<a href=#406 id=406 data-nosnippet>406</a>            <span class="kw">if </span>timestamp &gt; <span class="number">0 </span>{
+<a href=#407 id=407 data-nosnippet>407</a>                staked_with_timelock.push((to_allocate, timestamp));
+<a href=#408 id=408 data-nosnippet>408</a>            }
+<a href=#409 id=409 data-nosnippet>409</a>
+<a href=#410 id=410 data-nosnippet>410</a>            <span class="comment">// If the balance is less or equal than the difference from target, then
+<a href=#411 id=411 data-nosnippet>411</a>            // place `obj_ref` in `to_destroy` and continue
+<a href=#412 id=412 data-nosnippet>412</a>            </span><span class="kw">if </span>object_balance &lt;= difference_from_target {
+<a href=#413 id=413 data-nosnippet>413</a>                to_destroy.push(obj_ref);
+<a href=#414 id=414 data-nosnippet>414</a>            } <span class="kw">else </span>{
+<a href=#415 id=415 data-nosnippet>415</a>                <span class="comment">// Else, do NOT place `obj_ref` in `to_destroy` because it is reused in
+<a href=#416 id=416 data-nosnippet>416</a>                // the SurplusCoin and then BREAK, because we reached the target
+<a href=#417 id=417 data-nosnippet>417</a>                </span><span class="kw-2">*</span>surplus_coin = SurplusCoin {
+<a href=#418 id=418 data-nosnippet>418</a>                    coin_object_ref: <span class="prelude-val">Some</span>(obj_ref),
+<a href=#419 id=419 data-nosnippet>419</a>                    surplus_nanos: object_balance - difference_from_target,
+<a href=#420 id=420 data-nosnippet>420</a>                    timestamp,
+<a href=#421 id=421 data-nosnippet>421</a>                };
+<a href=#422 id=422 data-nosnippet>422</a>                <span class="kw">break</span>;
+<a href=#423 id=423 data-nosnippet>423</a>            }
+<a href=#424 id=424 data-nosnippet>424</a>        } <span class="kw">else </span>{
+<a href=#425 id=425 data-nosnippet>425</a>            <span class="comment">// We have no more objects to pick from the pool; the function will end with
+<a href=#426 id=426 data-nosnippet>426</a>            // allocation_amount_nanos &lt; target_amount_nanos
+<a href=#427 id=427 data-nosnippet>427</a>            </span><span class="kw">break</span>;
+<a href=#428 id=428 data-nosnippet>428</a>        }
+<a href=#429 id=429 data-nosnippet>429</a>    }
+<a href=#430 id=430 data-nosnippet>430</a>
+<a href=#431 id=431 data-nosnippet>431</a>    AllocationObjects {
+<a href=#432 id=432 data-nosnippet>432</a>        to_destroy,
+<a href=#433 id=433 data-nosnippet>433</a>        amount_nanos: allocation_amount_nanos,
+<a href=#434 id=434 data-nosnippet>434</a>        staked_with_timelock,
+<a href=#435 id=435 data-nosnippet>435</a>    }
+<a href=#436 id=436 data-nosnippet>436</a>}
+</code></pre></div></section></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["default_irc27_metadata"],"trait":["FixedPoint32Ext","Irc27MetadataExt","NftExt","NftOutputExt"]};

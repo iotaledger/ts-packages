@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["detect_x86_64_tier_from_cpuinfo","parse_cpu_target_from_rustc_output"],"struct":["BuildCacheService"]};

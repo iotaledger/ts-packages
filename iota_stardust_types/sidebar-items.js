@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["create_bitflags","impl_id","string_serde_impl"],"mod":["block"]};

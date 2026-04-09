@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["GRPC_INDEXES_DIR"],"enum":["OwnerV2TypeFilter","Watermark"],"struct":["CoinIndexInfoV2","CoinIndexKey","GrpcIndexesStore","IndexStoreTablesReadOnly","OwnerIndexInfo","OwnerIndexInfoV2","OwnerIndexKey","OwnerIndexKeyV2"]};

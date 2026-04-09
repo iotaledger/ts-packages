@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["aggregate_authenticator_input_objects","check_certificate_and_move_authenticator_input","check_certificate_input","check_dev_inspect_input","check_move_authenticator_input_for_signing","check_non_system_packages_to_be_published","check_transaction_input","check_transaction_input_with_given_gas"],"mod":["deny"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["OUTPUT_COUNT_MAX","OUTPUT_COUNT_RANGE","OUTPUT_INDEX_MAX","OUTPUT_INDEX_RANGE"],"enum":["ChainId","Output","TokenScheme"],"mod":["alias","basic","feature","foundry","nft","unlock_condition"],"struct":["AliasId","FoundryId","NativeToken","NativeTokens","NativeTokensBuilder","NftId","OutputId","SimpleTokenScheme","TokenId","TreasuryOutput"]};
