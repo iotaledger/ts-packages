@@ -208,7 +208,7 @@ jobs:
 
       - name: Build Wallet
         id: build-wallet
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true')
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm wallet build:rc
 
@@ -324,16 +324,8 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         env:
           DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
-        run: .github/scripts/setup-e2e-network.sh
-
-      - name: Download IOTA Wallet Extension for Names Dapp
-        id: download-wallet-names
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ./apps/names
-        run: pnpm run test:prepare
+          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+        run: .github/scripts/setup-names-network.sh
 
       - name: Install Names Dapp Playwright Browsers
         id: install-playwright-names
@@ -369,7 +361,7 @@ jobs:
 
       - name: Run Names Dapp e2e tests
         id: run-names-dapp
-        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         env:
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"

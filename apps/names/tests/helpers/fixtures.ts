@@ -8,8 +8,7 @@ import { test as base, chromium, Page, type BrowserContext } from '@playwright/t
 
 import { createPage } from './browser';
 
-// Path to the IOTA Wallet extension (downloaded via `pnpm run test:prepare`)
-const EXTENSION_PATH = path.join(__dirname, '../../wallet-dist');
+const EXTENSION_PATH = path.join(__dirname, '../../../wallet/dist');
 
 const COMMON_ARGS = ['--user-agent=Playwright', '--disable-dev-shm-usage', '--no-sandbox'];
 
