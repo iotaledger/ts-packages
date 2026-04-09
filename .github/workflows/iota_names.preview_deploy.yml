@@ -44,6 +44,9 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
+      - name: Enable corepack (creates pnpm shim for Vercel CLI subprocess)
+        run: corepack enable
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
