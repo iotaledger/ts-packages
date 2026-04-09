@@ -708,12 +708,9 @@ importers:
       '@amplitude/plugin-session-replay-browser':
         specifier: ^1.25.10
         version: 1.27.5(@amplitude/rrweb@2.0.0-alpha.39)(rollup@4.59.0)
-      '@growthbook/growthbook':
-        specifier: ^1.6.1
-        version: 1.6.5
-      '@growthbook/growthbook-react':
-        specifier: ^1.6.1
-        version: 1.6.5(react@18.3.1)
+      '@iota/apps-backend-client':
+        specifier: workspace:*
+        version: link:../apps-backend-client
       '@iota/apps-ui-icons':
         specifier: workspace:^
         version: link:../ui-icons
@@ -1966,9 +1963,6 @@ importers:
       tmp:
         specifier: ^0.2.3
         version: 0.2.5
-      ts-retry-promise:
-        specifier: ^0.8.1
-        version: 0.8.1
       typescript:
         specifier: ^5.5.3
         version: 5.8.3
@@ -2171,9 +2165,6 @@ importers:
       tmp:
         specifier: ^0.2.3
         version: 0.2.5
-      ts-retry-promise:
-        specifier: ^0.8.1
-        version: 0.8.1
       typescript:
         specifier: ^5.5.3
         version: 5.8.3
@@ -4650,16 +4641,6 @@ packages:
     resolution: {integrity: sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-
-  '@growthbook/growthbook-react@1.6.5':
-    resolution: {integrity: sha512-afi/RUbwazVNKv2acn6wDQz4BJNRAEpwIuHfggQup2/aE5PLAxy3+95gjjRMgCcPR0Pf3sFmhYGvOmxLD0ZRbQ==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: ^16.8.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0
-
-  '@growthbook/growthbook@1.6.5':
-    resolution: {integrity: sha512-mUaMsgeUTpRIUOTn33EUXHRK6j7pxBjwqH4WpQyq+pukjd1AIzWlEa6w7i6bInJUcweGgP2beXZmaP6b6UPn7A==}
-    engines: {node: '>=10'}
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -11047,10 +11028,6 @@ packages:
 
   dom-accessibility-api@0.6.3:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
-
-  dom-mutator@0.6.0:
-    resolution: {integrity: sha512-iCt9o0aYfXMUkz/43ZOAUFQYotjGB+GNbYJiJdz4TgXkyToXbbRy5S6FbTp72lRBtfpUMwEc1KmpFEU4CZeoNg==}
-    engines: {node: '>=10'}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -20550,15 +20527,6 @@ snapshots:
     dependencies:
       graphql: 16.9.0
 
-  '@growthbook/growthbook-react@1.6.5(react@18.3.1)':
-    dependencies:
-      '@growthbook/growthbook': 1.6.5
-      react: 18.3.1
-
-  '@growthbook/growthbook@1.6.5':
-    dependencies:
-      dom-mutator: 0.6.0
-
   '@hapi/hoek@9.3.0': {}
 
   '@hapi/topo@5.1.0':
@@ -29118,8 +29086,6 @@ snapshots:
   dom-accessibility-api@0.5.16: {}
 
   dom-accessibility-api@0.6.3: {}
-
-  dom-mutator@0.6.0: {}
 
   dom-serializer@2.0.0:
     dependencies:
