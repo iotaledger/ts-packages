@@ -228,9 +228,6 @@ importers:
       ts-loader:
         specifier: ^9.4.4
         version: 9.5.1(typescript@5.8.3)(webpack@5.94.0(@swc/core@1.7.28(@swc/helpers@0.5.18)))
-      ts-node:
-        specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.7.28(@swc/helpers@0.5.18))(@types/node@24.10.12)(typescript@5.8.3)
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
@@ -2165,6 +2162,9 @@ importers:
       tmp:
         specifier: ^0.2.3
         version: 0.2.5
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.7.28(@swc/helpers@0.5.18))(@types/node@24.10.12)(typescript@5.8.3)
       typescript:
         specifier: ^5.5.3
         version: 5.8.3
