@@ -144,6 +144,77 @@ jobs:
       # proxy for "foundational setup completed", skipping only if setup never
       # finished (in which case there are no reports to collect anyway).
 
+      # ─── Wallet build (shared) ───────────────────────────────────────────────
+
+      - name: Build Wallet
+        id: build-wallet
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm wallet build:rc
+
+      # ─── Names Dapp ──────────────────────────────────────────────────────────
+
+      - name: Setup E2E Network for Names Dapp
+        id: setup-names-network
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
+          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+        run: .github/scripts/setup-names-network.sh
+
+      - name: Install Names Dapp Playwright Browsers
+        id: install-playwright-names
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        working-directory: ./apps/names
+        run: pnpm run playwright:install
+
+      - name: Inject localnet config and start Names indexer
+        id: start-names-indexer
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: localnet
+          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
+            {"localnet":{"network":"localnet","namesDisplayUrl":"http://localhost","indexerUrl":"http://localhost:3030","baseUrl":"http://localhost:3005"}}
+        run: |
+          cd apps/names && pnpm inject-localnet && cd ..
+          INDEXER_ENV_FILE="$(mktemp)"
+          cd scripts && pnpm run envsForIndexer localnet bash "$INDEXER_ENV_FILE" && sed -i 's/^export //' "$INDEXER_ENV_FILE" && cd ..
+          docker pull ghcr.io/iotaledger/iota-names/iota-names-indexer:latest
+          docker rm -f localnet-iota-names-indexer || true
+          docker run -d \
+            --name localnet-iota-names-indexer \
+            --env-file "$INDEXER_ENV_FILE" \
+            --add-host host.docker.internal:host-gateway \
+            -p 3030:3030 -p 9189:9189 \
+            ghcr.io/iotaledger/iota-names/iota-names-indexer:latest \
+            start \
+            --node-url=http://host.docker.internal:9000 \
+            --checkpoint-url=http://host.docker.internal:9000 \
+            --reset-metrics
+
+      - name: Run Names Dapp e2e tests
+        id: run-names-dapp
+        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+        run: |
+          pnpm names-dapp build
+          cd apps/names
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- env ADMIN_MNEMONIC="$ADMIN_MNEMONIC" pnpm run test:e2e
+
+      - name: Upload Names Dapp Playwright report
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: true
+        with:
+          name: playwright-report-names-dapp
+          path: apps/names/playwright-report/
+          retention-days: 30
+
       # ─── TS SDK ──────────────────────────────────────────────────────────────
 
       - name: Run TS SDK e2e tests
@@ -206,12 +277,6 @@ jobs:
           retention-days: 30
 
       # ─── Dashboard ───────────────────────────────────────────────────────────
-
-      - name: Build Wallet
-        id: build-wallet
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm wallet build:rc
 
       - name: Build Dashboard
         id: build-dashboard
@@ -315,69 +380,6 @@ jobs:
         with:
           name: playwright-report-evm-bridge
           path: apps/evm-bridge/playwright-report/
-          retention-days: 30
-
-      # ─── Names Dapp ──────────────────────────────────────────────────────────
-
-      - name: Setup E2E Network for Names Dapp
-        id: setup-names-network
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        env:
-          DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
-          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
-        run: .github/scripts/setup-names-network.sh
-
-      - name: Install Names Dapp Playwright Browsers
-        id: install-playwright-names
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        working-directory: ./apps/names
-        run: pnpm run playwright:install
-
-      - name: Inject localnet config and start Names indexer
-        id: start-names-indexer
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        env:
-          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: localnet
-          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
-            {"localnet":{"network":"localnet","namesDisplayUrl":"http://localhost","indexerUrl":"http://localhost:3030","baseUrl":"http://localhost:3005"}}
-        run: |
-          cd apps/names && pnpm inject-localnet && cd ..
-          INDEXER_ENV_FILE="$(mktemp)"
-          cd scripts && pnpm run envsForIndexer localnet bash "$INDEXER_ENV_FILE" && sed -i 's/^export //' "$INDEXER_ENV_FILE" && cd ..
-          docker pull ghcr.io/iotaledger/iota-names/iota-names-indexer:latest
-          docker rm -f localnet-iota-names-indexer || true
-          docker run -d \
-            --name localnet-iota-names-indexer \
-            --env-file "$INDEXER_ENV_FILE" \
-            --add-host host.docker.internal:host-gateway \
-            -p 3030:3030 -p 9189:9189 \
-            ghcr.io/iotaledger/iota-names/iota-names-indexer:latest \
-            start \
-            --node-url=http://host.docker.internal:9000 \
-            --checkpoint-url=http://host.docker.internal:9000 \
-            --reset-metrics
-
-      - name: Run Names Dapp e2e tests
-        id: run-names-dapp
-        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        env:
-          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
-        run: |
-          pnpm names-dapp build
-          cd apps/names
-          xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- env ADMIN_MNEMONIC="$ADMIN_MNEMONIC" pnpm run test:e2e
-
-      - name: Upload Names Dapp Playwright report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-        if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: true
-        with:
-          name: playwright-report-names-dapp
-          path: apps/names/playwright-report/
           retention-days: 30
 
       # ─── Names Display ────────────────────────────────────────────────────────

@@ -63,7 +63,7 @@ start_initial_network() {
         --reset-db > indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
-    sleep 5
+    sleep 30
 
     iota-indexer \
         --db-url "$DB_URL" \
@@ -164,7 +164,7 @@ restart_with_configs() {
         --reset-db >> indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
-    sleep 5
+    sleep 30
 
     iota-indexer \
         --db-url "$DB_URL" \
