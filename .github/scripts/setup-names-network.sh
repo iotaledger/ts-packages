@@ -95,9 +95,10 @@ publish_iota_names() {
     iota client faucet
     sleep 5
 
-    bash external/names/dapp/scripts/update_auctions_constants.sh
+    bash "$(dirname "$0")/update-auctions-constants.sh"
 
     pushd external/names/scripts > /dev/null
+    pnpm install
     export NETWORK=localnet
     pnpm ts-node init/init.ts localnet
     pnpm ts-node tests/register-name.ts
