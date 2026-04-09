@@ -175,9 +175,10 @@ jobs:
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: |
-          cd apps/names && pnpm inject-localnet && cd ..
+          pnpm --filter names-dapp inject-localnet
           INDEXER_ENV_FILE="$(mktemp)"
-          cd scripts && pnpm run envsForIndexer localnet bash "$INDEXER_ENV_FILE" && sed -i 's/^export //' "$INDEXER_ENV_FILE" && cd ..
+          pnpm --dir external/names/scripts run envsForIndexer localnet bash "$INDEXER_ENV_FILE"
+          sed -i 's/^export //' "$INDEXER_ENV_FILE"
           docker pull ghcr.io/iotaledger/iota-names/iota-names-indexer:latest
           docker rm -f localnet-iota-names-indexer || true
           docker run -d \
