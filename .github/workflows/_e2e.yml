@@ -174,10 +174,6 @@ jobs:
         id: start-names-indexer
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        env:
-          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: localnet
-          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
-            {"localnet":{"network":"localnet","namesDisplayUrl":"http://localhost","indexerUrl":"http://localhost:3030","baseUrl":"http://localhost:3005"}}
         run: |
           cd apps/names && pnpm inject-localnet && cd ..
           INDEXER_ENV_FILE="$(mktemp)"
@@ -201,6 +197,16 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         env:
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: localnet
+          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
+            {
+              "localnet": {
+                "network": "localnet",
+                "namesDisplayUrl": "http://localhost",
+                "indexerUrl": "http://localhost:3030",
+                "baseUrl": "http://localhost:3005"
+              }
+            }
         run: |
           pnpm names-dapp build
           cd apps/names
