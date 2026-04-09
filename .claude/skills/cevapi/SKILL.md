@@ -208,7 +208,6 @@ For each commit, record:
 - Source repo (`iota` or `iota-names`)
 - Commit hash
 - Commit message
-- Author name and email (from `git log --format="%an <%ae>"`)
 - Files changed (from `git diff --name-only <hash>^..<hash>`)
 
 Filter out commits that touch only files outside the sync scope (e.g., Rust-only changes). If a commit touches both in-scope and out-of-scope files, include it but only port the in-scope files.
@@ -216,9 +215,9 @@ Filter out commits that touch only files outside the sync scope (e.g., Rust-only
 Present the full ordered queue to the user before starting, e.g.:
 ```
 ## Commit queue (8 commits, oldest → newest)
-1. [iota] 22e7eb81 feat(ts-sdk): add support for effective commission rate — Bran
-2. [iota] f15c61dc feat(dapps): update dapps effective commission rate — Bran
-3. [iota-names] 749b7d4f chore(names-sdk): Rework names sdk release workflow — Marc Espin
+1. [iota] 22e7eb81 feat(ts-sdk): add support for effective commission rate
+2. [iota] f15c61dc feat(dapps): update dapps effective commission rate
+3. [iota-names] 749b7d4f chore(names-sdk): Rework names sdk release workflow
 ...
 ```
 
@@ -234,13 +233,11 @@ For each commit in the queue:
 
 4. **Apply any necessary adaptations** — if the commit touches a config file that requires merging (e.g., `pnpm-workspace.yaml`, `package.json`, `turbo.json`), apply only the delta from this commit rather than overwriting with the upstream version wholesale.
 
-5. **Create a commit** — stage the ported files and commit with:
-   - The original commit message (verbatim)
-   - A `Co-Authored-By` trailer with the original author: `Co-Authored-By: <name> <<email>>`
+5. **Create a commit** — stage the ported files and commit with the original commit message (verbatim). Do **not** add any `Co-Authored-By` trailer.
 
    ```bash
    git add <files>
-   git commit -m "<original message>" --trailer "Co-Authored-By: <name> <<email>>"
+   git commit -m "<original message>"
    ```
 
 6. **Report** what was ported and move to the next commit.
