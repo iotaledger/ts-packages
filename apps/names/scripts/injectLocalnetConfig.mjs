@@ -8,8 +8,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const LOCALNET_JSON_PATH = join(__dirname, '../../scripts/package-info/localnet.json');
-const CONSTANTS_TS_PATH = join(__dirname, '../../sdk/src/constants.ts');
+const LOCALNET_JSON_PATH = join(
+    __dirname,
+    '../../../external/names/scripts/package-info/localnet.json',
+);
+const CONSTANTS_TS_PATH = join(__dirname, '../../../sdk/names/src/constants.ts');
 const PLACEHOLDER = 'REPLACE PLACEHOLDER';
 
 try {
