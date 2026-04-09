@@ -46,7 +46,7 @@ start_initial_network() {
     pkill -f "iota start" || true
     sleep 2
 
-    iota start \
+    iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
         --faucet-amount 100000000000000 > iota-node.log 2>&1 &
@@ -147,7 +147,7 @@ EOF
 restart_with_configs() {
     echo "=== Phase 4: Restarting with configs ==="
 
-    iota start \
+    iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
         --faucet-amount 100000000000000 >> iota-node.log 2>&1 &
