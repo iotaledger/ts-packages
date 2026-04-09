@@ -35,7 +35,8 @@ active_env: localnet
 `;
 
 const IOTA_BIN =
-    import.meta.env.VITE_IOTA_BIN ?? path.resolve(__dirname, '../../../../../external/iota/target/debug/iota');
+    import.meta.env.VITE_IOTA_BIN ??
+    path.resolve(__dirname, '../../../../../external/iota/target/debug/iota');
 
 export const DEFAULT_RECIPIENT =
     '0x0c567ffdf8162cb6d51af74be0199443b92e823d4ba6ced24de5c6c463797d46';

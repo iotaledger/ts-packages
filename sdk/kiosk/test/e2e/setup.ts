@@ -28,7 +28,8 @@ const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('loc
 const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
 //@ts-expect-error env not found on meta
 const IOTA_BIN =
-    import.meta.env.VITE_IOTA_BIN ?? path.resolve(__dirname, '../../../../external/iota/target/debug/iota');
+    import.meta.env.VITE_IOTA_BIN ??
+    path.resolve(__dirname, '../../../../external/iota/target/debug/iota');
 
 const CONFIG_DATA = `
 ---
