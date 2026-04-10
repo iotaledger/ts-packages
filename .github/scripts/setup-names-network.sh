@@ -46,6 +46,16 @@ start_initial_network() {
     pkill -f "iota start" || true
     sleep 2
 
+    # Generate network config first
+    mkdir -p "$CONFIG_DIR"
+    iota-localnet genesis \
+        --working-dir "$CONFIG_DIR" \
+        --epoch-duration-ms "$EPOCH_DURATION_MS"
+
+    # Enable gRPC API so the indexer can sync checkpoints from the node.
+    # Will be enabled by default in future: https://github.com/iotaledger/iota/issues/10777
+    sed -i 's/enable-grpc-api: false/enable-grpc-api: true/' "$CONFIG_DIR/fullnode.yaml"
+
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
@@ -58,8 +68,7 @@ start_initial_network() {
     iota-indexer \
         --db-url "$DB_URL" \
         indexer \
-        --live-checkpoints-store-url "http://127.0.0.1:9000" \
-        --remote-store-url "http://127.0.0.1:9000/api/v1" \
+        --remote-store-url "http://127.0.0.1:50051" \
         --reset-db > indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
@@ -69,14 +78,14 @@ start_initial_network() {
         --db-url "$DB_URL" \
         --metrics-address "0.0.0.0:9185" \
         json-rpc-service \
-        --rpc-client-url "http://127.0.0.1:9000" \
+        --rpc-client-url "http://127.0.0.1:50051" \
         --rpc-address "0.0.0.0:9124" > indexer-reader.log 2>&1 &
     PID_INDEXER_READER=$!
 
     wait_for_url "http://127.0.0.1:9124" "indexer-reader" "indexer-reader.log"
 
     iota-graphql-rpc start-server \
-        --node-rpc-url "http://127.0.0.1:9000" \
+        --node-rpc-url "http://127.0.0.1:50051" \
         --prom-port 9186 \
         --port 9125 > graphql.log 2>&1 &
     PID_GRAPHQL=$!
@@ -196,8 +205,7 @@ restart_with_configs() {
     iota-indexer \
         --db-url "$DB_URL" \
         indexer \
-        --live-checkpoints-store-url "http://127.0.0.1:9000" \
-        --remote-store-url "http://127.0.0.1:9000/api/v1" \
+        --remote-store-url "http://127.0.0.1:50051" \
         --reset-db >> indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
@@ -207,7 +215,7 @@ restart_with_configs() {
         --db-url "$DB_URL" \
         --metrics-address "0.0.0.0:9185" \
         json-rpc-service \
-        --rpc-client-url "http://127.0.0.1:9000" \
+        --rpc-client-url "http://127.0.0.1:50051" \
         --rpc-address "0.0.0.0:9124" \
         --iota-names-package-address "$IOTA_NAMES_PACKAGE_ADDRESS" \
         --iota-names-object-id "$IOTA_NAMES_OBJECT_ID" \
@@ -219,7 +227,7 @@ restart_with_configs() {
     wait_for_url "http://127.0.0.1:9124" "indexer-reader" "indexer-reader.log"
 
     iota-graphql-rpc start-server \
-        --node-rpc-url "http://127.0.0.1:9000" \
+        --node-rpc-url "http://127.0.0.1:50051" \
         --port 9125 \
         --prom-port 9186 \
         --config "$GRAPHQL_CONFIG" >> graphql.log 2>&1 &
