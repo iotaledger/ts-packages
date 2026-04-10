@@ -117,7 +117,7 @@ test.describe.serial('Purchase Name Tests', () => {
         await page.getByPlaceholder('Have a discount code?').fill(couponCode);
         await page.getByRole('button', { name: '+ Apply Coupon' }).click();
 
-        await expect(page.getByRole('button', { name: couponCode })).toBeVisible({
+        await expect(page.getByText(couponCode)).toBeVisible({
             timeout: 5_000,
         });
 
