@@ -1,1 +1,0 @@
-DROP INDEX CONCURRENTLY IF EXISTS idx_event_struct_package_tx_seq;

@@ -1,1 +1,0 @@
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tx_kinds_tx_seq ON tx_kinds (tx_sequence_number);

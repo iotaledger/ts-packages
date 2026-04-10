@@ -112,7 +112,9 @@
 		"DEPLOY_TYPE",
 		"SENTRY_AUTH_TOKEN",
 		"SENTRY_ENABLED",
-		"BUILD_ENV"
+		"BUILD_ENV",
+		"NEXT_PUBLIC_APPS_BACKEND",
+		"INVALIDATED_NAMES"
 	],
 	"globalDependencies": [
 		".eslintrc.js",

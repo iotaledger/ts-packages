@@ -1,1 +1,0 @@
-DROP INDEX CONCURRENTLY IF EXISTS idx_event_emit_package_tx_seq;
