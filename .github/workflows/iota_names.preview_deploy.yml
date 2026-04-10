@@ -44,25 +44,6 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
-      - name: Enable corepack (creates pnpm shim for Vercel CLI subprocess)
-        run: corepack enable
-
-      - name: Debug pnpm/corepack locations
-        run: |
-          echo "PATH=$PATH"
-          echo "---"
-          echo "which pnpm: $(which pnpm 2>&1)"
-          echo "which -a pnpm: $(which -a pnpm 2>&1 || true)"
-          echo "---"
-          echo "PNPM_HOME contents:"
-          ls -la "$PNPM_HOME" 2>&1 || echo "PNPM_HOME dir missing"
-          echo "---"
-          echo "Node bin contents (pnpm-related):"
-          ls -la "$(dirname "$(which node)")" 2>&1 | grep -iE "pnpm|corepack" || true
-          echo "---"
-          echo "corepack version: $(corepack --version 2>&1)"
-          echo "node version: $(node --version)"
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 

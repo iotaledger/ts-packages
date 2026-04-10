@@ -70,7 +70,7 @@ export async function createWallet(page: Page) {
     await page.getByRole('button', { name: 'Open Wallet' }).click();
 
     await page.getByLabel('Open settings menu').click();
-    await page.getByText('Network').click();
+    await page.getByText('Network', { exact: true }).click();
     await page.getByText('Custom RPC').click();
     const networkId = CONFIG.network;
     const networkConfig = getNetwork(networkId);
