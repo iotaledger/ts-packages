@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AppsBackendClient } from '@iota/apps-backend-client';
+import { getAppsBackend } from '@iota/core';
 
-export const appsBackendClient = new AppsBackendClient(process.env.NEXT_PUBLIC_APPS_BACKEND);
+export const appsBackendClient = new AppsBackendClient(getAppsBackend());
 appsBackendClient.refreshFeatures();

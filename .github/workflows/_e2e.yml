@@ -152,6 +152,36 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm wallet build:rc
 
+      # ─── TS SDK ──────────────────────────────────────────────────────────────
+
+      - name: Run TS SDK e2e tests
+        id: run-ts-sdk
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runTsSdk == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
+
+      # ─── RPC / GraphQL ───────────────────────────────────────────────────────
+
+      - name: Run RPC/GraphQL compatibility e2e tests
+        id: run-graphql
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runGraphql == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/graphql-transport test:e2e'
+
+      # ─── Apps Backend ────────────────────────────────────────────────────────
+
+      - name: Build apps-backend
+        id: build-apps-backend
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runAppsBackend == 'true' || steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm turbo --filter apps-backend build
+
+      - name: Run apps-backend e2e tests
+        id: run-apps-backend
+        if: (!cancelled() && !failure()) && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runAppsBackend == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm --filter apps-backend test:e2e
+
       # ─── Names Dapp ──────────────────────────────────────────────────────────
 
       - name: Setup E2E Network for Names Dapp
@@ -194,7 +224,7 @@ jobs:
 
       - name: Run Names Dapp e2e tests
         id: run-names-dapp
-        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         env:
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
@@ -221,36 +251,6 @@ jobs:
           name: playwright-report-names-dapp
           path: apps/names/playwright-report/
           retention-days: 30
-
-      # ─── TS SDK ──────────────────────────────────────────────────────────────
-
-      - name: Run TS SDK e2e tests
-        id: run-ts-sdk
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runTsSdk == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
-
-      # ─── RPC / GraphQL ───────────────────────────────────────────────────────
-
-      - name: Run RPC/GraphQL compatibility e2e tests
-        id: run-graphql
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runGraphql == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/graphql-transport test:e2e'
-
-      # ─── Apps Backend ────────────────────────────────────────────────────────
-
-      - name: Build apps-backend
-        id: build-apps-backend
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runAppsBackend == 'true' || steps.conditions.outputs.runDashboard == 'true'|| steps.conditions.outputs.runWallet == 'true')
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm turbo --filter apps-backend build
-
-      - name: Run apps-backend e2e tests
-        id: run-apps-backend
-        if: (!cancelled() && !failure()) && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runAppsBackend == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter apps-backend test:e2e
 
       # ─── Explorer ────────────────────────────────────────────────────────────
 

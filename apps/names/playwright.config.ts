@@ -71,10 +71,18 @@ export default defineConfig({
         //     dependencies: ['Auctions setup'],
         // },
     ],
-    webServer: {
-        command: process.env.CI ? 'pnpm start' : 'pnpm run dev',
-        port: 3005,
-        timeout: 30 * 1000,
-        reuseExistingServer: !process.env.CI,
-    },
+    webServer: [
+        {
+            command: process.env.CI ? 'pnpm start' : 'pnpm run dev',
+            port: 3005,
+            timeout: 30 * 1000,
+            reuseExistingServer: !process.env.CI,
+        },
+        {
+            command: 'cd ../apps-backend && pnpm run preview',
+            port: 3003,
+            timeout: 120 * 1000,
+            reuseExistingServer: !process.env.CI,
+        },
+    ],
 });
