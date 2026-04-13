@@ -1,6 +1,8 @@
 ---
-name: Request a feature for IOTA
-about: Request a feature
+name: Request a feature
+about: Suggest a new feature or improvement
+title: ""
+labels: enhancement
 ---
 
 ## Description
@@ -18,10 +20,6 @@ Write a list of what you want this feature to do.
 1.
 2.
 3.
-
-## Open questions (optional)
-
-Use this section to ask any questions that are related to the feature.
 
 ## Are you planning to do it yourself in a pull request?
 
