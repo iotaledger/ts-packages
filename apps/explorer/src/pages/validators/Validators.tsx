@@ -148,10 +148,14 @@ function ValidatorPageResult(): JSX.Element {
 
     const activeAndPendingValidators = useMemo(() => {
         if (!data) return [];
-        return Number(data.pendingActiveValidatorsSize) > 0
-            ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
-            : (activeValidators ?? []);
-    }, [data, activeValidators, sanitizedPendingValidatorsData]);
+        const pendingActiveValidators =
+            Number(data.pendingActiveValidatorsSize) > 0
+                ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
+                : (activeValidators ?? []);
+        const candidateValidators =
+            Number(sanitizedCandidateValidatorsData) > 0 ? sanitizedCandidateValidatorsData : [];
+        return [...pendingActiveValidators, ...candidateValidators];
+    }, [data, activeValidators, sanitizedPendingValidatorsData, sanitizedCandidateValidatorsData]);
 
     const atRiskAddresses = useMemo(
         () => new Set(data?.atRiskValidators?.map(([address]) => address) ?? []),
