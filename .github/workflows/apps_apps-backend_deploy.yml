@@ -89,7 +89,7 @@ jobs:
             PROD_APPS_BACKEND=${{ secrets.PROD_APPS_BACKEND }}
 
       - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.UPDATER_SSH_PRIVATE_KEY }}
 

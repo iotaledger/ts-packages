@@ -45,7 +45,7 @@ jobs:
 
       - name: Add SSH key
         if: ${{ github.event.inputs.deployment == 'true' }}
-        uses: webfactory/ssh-agent@v0.5.2
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.UPDATER_SSH_PRIVATE_KEY }}
 
