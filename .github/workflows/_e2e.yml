@@ -205,7 +205,7 @@ jobs:
         run: pnpm --filter iota-explorer playwright test
 
       - name: Upload Explorer test reports
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runExplorer == 'true'
         continue-on-error: true
         with:
@@ -234,7 +234,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter wallet-dashboard playwright test
 
       - name: Upload Dashboard test reports
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runDashboard == 'true'
         continue-on-error: true
         with:
@@ -275,7 +275,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter iota-wallet playwright test
 
       - name: Upload Wallet test reports
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runWallet == 'true'
         continue-on-error: true
         with:
@@ -311,7 +311,7 @@ jobs:
         working-directory: ./apps/evm-bridge
         run: DEBUG=pw:webserver xvfb-run --auto-servernum pnpm run test:e2e
 
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runEvmBridge == 'true'
         continue-on-error: true
         with:
@@ -381,7 +381,7 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- env ADMIN_MNEMONIC="$ADMIN_MNEMONIC" pnpm run test:e2e
 
       - name: Upload Names Dapp Playwright report
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: true
         with:
