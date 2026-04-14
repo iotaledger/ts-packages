@@ -19,8 +19,8 @@ import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
 
 interface GenerateValidatorsTableColumnsArgs {
-    allValidators?: IotaValidatorSummary[];
     committeeMembers?: string[];
+    candidateValidators?: string[];
     atRiskValidators?: [string, string][];
     maxCommitteeSize?: number;
     validatorEvents?: IotaEvent[];
@@ -50,9 +50,11 @@ function ValidatorWithImage({
 
     const statusBadges = validator.isPending
         ? [{ type: BadgeType.Warning, label: 'Pending' }]
-        : isValidatorCommitteeMember
-          ? [{ type: BadgeType.Success, label: 'Committee' }]
-          : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
+        : validator.isCandidate
+          ? [{ type: BadgeType.Neutral, label: 'Candidate' }]
+          : isValidatorCommitteeMember
+            ? [{ type: BadgeType.Success, label: 'Committee' }]
+            : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
 
     if (isAtRisk) {
         statusBadges.push({ type: BadgeType.Error, label: 'At Risk' });
@@ -138,6 +140,7 @@ function ValidatorWithImage({
 
 export function generateValidatorsTableColumns({
     committeeMembers = [],
+    candidateValidators = [],
     atRiskValidators = [],
     validatorEvents = [],
     rollingAverageApys,
@@ -147,7 +150,6 @@ export function generateValidatorsTableColumns({
     currentEpoch,
 }: GenerateValidatorsTableColumnsArgs): ColumnDef<IotaValidatorSummaryExtended>[] {
     const atRiskAddressSet = new Set(atRiskValidators.map(([address]) => address));
-
     let columns: ColumnDef<IotaValidatorSummaryExtended>[] = [
         {
             header: 'Validator',
@@ -263,27 +265,6 @@ export function generateValidatorsTableColumns({
                         <TableCellText>
                             {votingPower ? Number(votingPower) / 100 + '%' : '--'}
                         </TableCellText>
-                    </TableCellBase>
-                );
-            },
-        },
-        {
-            header: 'Next Epoch Stake',
-            accessorKey: 'nextEpochStake',
-            id: 'nextEpochStake',
-            enableSorting: true,
-            sortingFn: (rowA, rowB, columnId) =>
-                BigInt(rowA.getValue(columnId)) - BigInt(rowB.getValue(columnId)) > 0 ? 1 : -1,
-            cell({ getValue }) {
-                const nextEpochStake = getValue<string>();
-                const isValid = nextEpochStake && !isNaN(Number(nextEpochStake));
-                return (
-                    <TableCellBase>
-                        {isValid ? (
-                            <StakeColumn stake={nextEpochStake} />
-                        ) : (
-                            <TableCellText>--</TableCellText>
-                        )}
                     </TableCellBase>
                 );
             },

@@ -153,7 +153,7 @@ function ValidatorPageResult(): JSX.Element {
                 ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
                 : (activeValidators ?? []);
         const candidateValidators =
-            Number(sanitizedCandidateValidatorsData) > 0 ? sanitizedCandidateValidatorsData : [];
+            sanitizedCandidateValidatorsData.length > 0 ? sanitizedCandidateValidatorsData : [];
         return [...pendingActiveValidators, ...candidateValidators];
     }, [data, activeValidators, sanitizedPendingValidatorsData, sanitizedCandidateValidatorsData]);
 
@@ -222,8 +222,10 @@ function ValidatorPageResult(): JSX.Element {
         ];
 
         return generateValidatorsTableColumns({
-            allValidators: filteredValidators,
             committeeMembers: data.committeeMembers.map((validator) => validator.iotaAddress),
+            candidateValidators: sanitizedCandidateValidatorsData.map(
+                (validator) => validator.iotaAddress,
+            ),
             atRiskValidators: data.atRiskValidators,
             maxCommitteeSize,
             validatorEvents,
