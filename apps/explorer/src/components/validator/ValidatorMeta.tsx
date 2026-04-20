@@ -12,18 +12,13 @@ import { onCopySuccess } from '~/lib/utils';
 type ValidatorMetaProps = {
     validatorData: IotaValidatorSummary;
     atRiskRemainingEpochs?: number | null;
+    isCandidate?: boolean;
+    isPending?: boolean;
+    isInactive?: boolean;
 };
 
 export function ValidatorOverview({
-    validatorData: {
-        imageUrl,
-        name,
-        description,
-        projectUrl,
-        validatorPublicKey,
-        validatorAddress,
-        validatorStakingPoolId,
-    },
+    validatorData,
 }: {
     validatorData: ValidatorOverviewData;
 }): JSX.Element {
@@ -34,9 +29,9 @@ export function ValidatorOverview({
                     <div className="flex flex-row gap-lg">
                         <div className="flex h-[120px] w-[120px]">
                             <ImageIcon
-                                src={imageUrl}
-                                label={name}
-                                fallback={name}
+                                src={validatorData.imageUrl}
+                                label={validatorData.name}
+                                fallback={validatorData.name}
                                 size={ImageIconSize.Full}
                             />
                         </div>
@@ -45,9 +40,13 @@ export function ValidatorOverview({
                                 <Badge type={BadgeType.Neutral} label="Validator" />
                             </div>
                             <div className="flex flex-row items-center gap-x-xs text-iota-neutral-10 dark:text-iota-neutral-92">
-                                <span className="text-headline-md">{name}</span>
-                                {projectUrl && (
-                                    <a href={projectUrl} target="_blank" rel="noreferrer noopener">
+                                <span className="text-headline-md">{validatorData.name}</span>
+                                {validatorData.projectUrl && (
+                                    <a
+                                        href={validatorData.projectUrl}
+                                        target="_blank"
+                                        rel="noreferrer noopener"
+                                    >
                                         <ArrowTopRight />
                                     </a>
                                 )}
@@ -59,7 +58,7 @@ export function ValidatorOverview({
                             Description
                         </span>
                         <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                            {description ?? '--'}
+                            {validatorData.description ?? '--'}
                         </span>
                     </div>
                 </div>
@@ -69,19 +68,22 @@ export function ValidatorOverview({
                     <KeyValueInfo
                         keyText="Address"
                         value={
-                            <AddressLink address={validatorAddress} copyText={validatorAddress} />
+                            <AddressLink
+                                address={validatorData.iotaAddress}
+                                copyText={validatorData.iotaAddress}
+                            />
                         }
                     />
                     <KeyValueInfo
                         keyText="Pool ID"
-                        value={validatorStakingPoolId}
-                        copyText={validatorStakingPoolId}
+                        value={validatorData.stakingPoolId}
+                        copyText={validatorData.stakingPoolId}
                         onCopySuccess={onCopySuccess}
                     />
                     <KeyValueInfo
                         keyText="Public Key"
-                        value={validatorPublicKey}
-                        copyText={validatorPublicKey}
+                        value={validatorData.protocolPubkeyBytes}
+                        copyText={validatorData.protocolPubkeyBytes}
                         onCopySuccess={onCopySuccess}
                     />
                 </div>
@@ -93,14 +95,19 @@ export function ValidatorOverview({
 export function ValidatorMeta({
     validatorData,
     atRiskRemainingEpochs,
+    isCandidate,
+    isPending,
+    isInactive,
 }: ValidatorMetaProps): JSX.Element {
     const validatorPublicKey = validatorData.protocolPubkeyBytes;
     const validatorName = validatorData.name;
     const logo = validatorData.imageUrl;
     const description = validatorData.description;
     const projectUrl = validatorData.projectUrl;
+    const validatorAddress = validatorData.iotaAddress;
+    const stakingPoolId = validatorData.stakingPoolId;
     const { isCommitteeMember } = useIsValidatorCommitteeMember();
-    const isValidatorCommitteeMember = isCommitteeMember(validatorData.iotaAddress);
+    const isValidatorCommitteeMember = isCommitteeMember(validatorAddress);
 
     return (
         <div className="flex flex-col gap-md md:flex-row">
@@ -136,6 +143,12 @@ export function ValidatorMeta({
                                     <Badge type={BadgeType.Neutral} label="Validator" />
                                     {isValidatorCommitteeMember ? (
                                         <Badge type={BadgeType.Success} label="Committee" />
+                                    ) : isCandidate ? (
+                                        <Badge type={BadgeType.Neutral} label="Candidate" />
+                                    ) : isPending ? (
+                                        <Badge type={BadgeType.Warning} label="Pending" />
+                                    ) : isInactive ? (
+                                        <Badge type={BadgeType.Error} label="Inactive" />
                                     ) : (
                                         <Badge type={BadgeType.PrimarySoft} label="Active" />
                                     )}
@@ -165,8 +178,8 @@ export function ValidatorMeta({
                                     <span className="text-body-sm">{validatorName}</span>
                                 </div>
                                 <AddressLink
-                                    address={validatorData.iotaAddress}
-                                    copyText={validatorData.iotaAddress}
+                                    address={validatorAddress}
+                                    copyText={validatorAddress}
                                     noTruncate
                                     showAddressAlias={false}
                                 />
@@ -175,8 +188,8 @@ export function ValidatorMeta({
                     />
                     <KeyValueInfo
                         keyText="Pool ID"
-                        value={validatorData.stakingPoolId}
-                        copyText={validatorData.stakingPoolId}
+                        value={stakingPoolId}
+                        copyText={stakingPoolId}
                         onCopySuccess={onCopySuccess}
                     />
                     <KeyValueInfo

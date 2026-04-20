@@ -85,7 +85,7 @@ function ValidatorPageResult(): JSX.Element {
         isPending: true,
     });
 
-    const { data: sanitizedCandidateValidatorsData } = useGetValidatorCandidates();
+    const { data: sanitizedCandidateValidatorsData = [] } = useGetValidatorCandidates();
 
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: totalSupplyData } = useIotaClientQuery('getTotalSupply', {
@@ -172,6 +172,7 @@ function ValidatorPageResult(): JSX.Element {
                 (committeeMember) => committeeMember.iotaAddress === validator.iotaAddress,
             );
             if (validator.isPending) pending++;
+            else if (validator.isCandidate) candidate++;
             else if (isCommitteeMember) committee++;
             else active++;
             if (isValidatorAtRisk) atRisk++;
@@ -189,7 +190,7 @@ function ValidatorPageResult(): JSX.Element {
                     );
                     if (
                         currentValidatorStatus === 'Active' &&
-                        (validator.isPending || isCommitteeMember)
+                        (validator.isPending || validator.isCandidate || isCommitteeMember)
                     )
                         return false;
                     if (currentValidatorStatus === 'Pending' && !validator.isPending) return false;

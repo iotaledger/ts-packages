@@ -25,6 +25,7 @@ export function Badge({ type, label, size = BadgeSize.Medium }: BadgeProps): Rea
     const backgroundClasses = BACKGROUND_COLORS[type];
     const textClasses = TEXT_COLORS[type];
     const isSmall = size === BadgeSize.Small;
+    const isOutlined = type === ('outlined' as BadgeType);
     const labelClasses = label ? 'px-xs py-xxs' : 'h-1.5 w-1.5';
     const textSizeClass = isSmall ? 'text-label-sm' : 'text-label-md';
 
@@ -33,8 +34,9 @@ export function Badge({ type, label, size = BadgeSize.Medium }: BadgeProps): Rea
             className={cx(
                 'inline-flex items-center space-x-2 rounded-full disabled:opacity-30',
                 { border: !isSmall },
-                backgroundClasses,
                 { [BORDER_COLORS[type]]: !isSmall },
+                { 'badge-ring-outlined': isSmall && isOutlined },
+                backgroundClasses,
                 labelClasses,
             )}
         >

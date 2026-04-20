@@ -52,9 +52,11 @@ function ValidatorWithImage({
         ? [{ type: BadgeType.Warning, label: 'Pending' }]
         : validator.isCandidate
           ? [{ type: BadgeType.Neutral, label: 'Candidate' }]
-          : isValidatorCommitteeMember
-            ? [{ type: BadgeType.Success, label: 'Committee' }]
-            : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
+          : validator.isPending
+            ? [{ type: BadgeType.Warning, label: 'Pending' }]
+            : isValidatorCommitteeMember
+              ? [{ type: BadgeType.Success, label: 'Committee' }]
+              : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
 
     if (isAtRisk) {
         statusBadges.push({ type: BadgeType.Error, label: 'At Risk' });

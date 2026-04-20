@@ -43,8 +43,8 @@ export async function getValidatorsMetadata(
         description: validatorMetadata.description,
         name: validatorMetadata.name,
         projectUrl: validatorMetadata.project_url,
-        validatorAddress: validatorMetadata.iota_address,
-        validatorPublicKey: toBase64(Uint8Array.from(validatorMetadata.protocol_pubkey_bytes)),
-        validatorStakingPoolId: validator.data.fields.name,
+        iotaAddress: validatorMetadata.iota_address,
+        protocolPubkeyBytes: toBase64(Uint8Array.from(validatorMetadata.protocol_pubkey_bytes)),
+        stakingPoolId: validator.data.fields.name,
     };
 }

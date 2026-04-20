@@ -6,7 +6,7 @@ export type ValidatorOverviewData = {
     name: string;
     description: string;
     projectUrl: string;
-    validatorPublicKey: string;
-    validatorAddress: string;
-    validatorStakingPoolId: string;
+    protocolPubkeyBytes: string;
+    iotaAddress: string;
+    stakingPoolId: string;
 };

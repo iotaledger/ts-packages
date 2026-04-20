@@ -10,13 +10,7 @@ import {
     useMaxCommitteeSize,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
-import {
-    ValidatorOverview,
-    PageLayout,
-    ValidatorMeta,
-    ValidatorStats,
-    ValidatorStatusLegend,
-} from '~/components';
+import { PageLayout, ValidatorMeta, ValidatorStats, ValidatorStatusLegend } from '~/components';
 import { VALIDATOR_LOW_STAKE_GRACE_PERIOD } from '~/lib/constants';
 import { getValidatorMoveEvent } from '~/lib/utils';
 import {
@@ -104,47 +98,26 @@ function ValidatorDetails(): JSX.Element {
         return <PageLayout content={<LoadingIndicator />} />;
     }
 
-    if (inactiveValidatorData && !activeValidatorData) {
+    if (validatorCandidateData && !activeValidatorData) {
         return (
             <PageLayout
                 content={
-                    <div className="mb-10">
-                        <InfoBox
-                            title="Inactive validator"
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                        {inactiveValidatorData && (
-                            <ValidatorOverview validatorData={inactiveValidatorData} />
-                        )}
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={validatorCandidateData} isCandidate />
+                        <ValidatorStatusLegend />
                     </div>
                 }
             />
         );
     }
 
-    if (validatorCandidateData && !activeValidatorData) {
-        const candidateOverview = {
-            imageUrl: validatorCandidateData.imageUrl,
-            name: validatorCandidateData.name,
-            description: validatorCandidateData.description,
-            projectUrl: validatorCandidateData.projectUrl,
-            validatorPublicKey: validatorCandidateData.protocolPubkeyBytes,
-            validatorAddress: validatorCandidateData.iotaAddress,
-            validatorStakingPoolId: validatorCandidateData.stakingPoolId,
-        };
+    if (inactiveValidatorData && !activeValidatorData) {
         return (
             <PageLayout
                 content={
-                    <div className="mb-10">
-                        <InfoBox
-                            title="Validator candidate"
-                            icon={<Warning />}
-                            type={InfoBoxType.Default}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                        <ValidatorOverview validatorData={candidateOverview} />
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={inactiveValidatorData} isInactive />
+                        <ValidatorStatusLegend />
                     </div>
                 }
             />

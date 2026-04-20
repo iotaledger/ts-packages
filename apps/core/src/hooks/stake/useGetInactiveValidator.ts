@@ -26,7 +26,7 @@ export function useGetInactiveValidator(validatorAddress: string) {
             );
         },
         select(data) {
-            return data.find((v) => v?.validatorAddress === validatorAddress) ?? null;
+            return data.find((v) => v?.iotaAddress === validatorAddress) ?? null;
         },
         enabled: !!inactivePoolsId,
     });

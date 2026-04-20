@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { IotaObjectResponse, MoveStruct, MoveValue } from '@iota/iota-sdk/client';
+import { toBase64 } from '@iota/iota-sdk/utils';
 import type { IotaValidatorSummaryExtended } from '../types';
 
 function isMoveStructWithFields(
@@ -27,6 +28,14 @@ interface MoveStructFields {
     fields: { [key: string]: MoveValue };
 }
 
+/** Convert a MoveValue byte array to a base64 string. */
+function bytesToBase64(value: MoveValue | undefined): string {
+    if (Array.isArray(value)) {
+        return toBase64(new Uint8Array(value as number[]));
+    }
+    return typeof value === 'string' ? value : '';
+}
+
 export function sanitizeValidatorObjects(
     objects: IotaObjectResponse[] | undefined,
     flags: Pick<IotaValidatorSummaryExtended, 'isPending' | 'isCandidate'>,
@@ -47,7 +56,7 @@ export function sanitizeValidatorObjects(
 
             return {
                 ...flags,
-                authorityPubkeyBytes: '',
+                authorityPubkeyBytes: bytesToBase64(metadata.authority_pubkey_bytes),
                 commissionRate: String(value?.fields.commission_rate),
                 description: String(metadata.description),
                 exchangeRatesId: (
@@ -61,7 +70,7 @@ export function sanitizeValidatorObjects(
                 iotaAddress: String(metadata.iota_address),
                 name: String(metadata.name),
                 netAddress: String(metadata.net_address),
-                networkPubkeyBytes: '',
+                networkPubkeyBytes: bytesToBase64(metadata.network_pubkey_bytes),
                 nextEpochCommissionRate: String(value?.fields.next_epoch_commission_rate),
                 nextEpochGasPrice: String(value?.fields.next_epoch_gas_price),
                 nextEpochStake: String(value?.fields.next_epoch_stake),
@@ -73,8 +82,8 @@ export function sanitizeValidatorObjects(
                 poolTokenBalance: String(stakingPool.pool_token_balance),
                 primaryAddress: String(metadata.primary_address),
                 projectUrl: String(metadata.project_url),
-                proofOfPossessionBytes: '',
-                protocolPubkeyBytes: '',
+                proofOfPossessionBytes: bytesToBase64(metadata.proof_of_possession),
+                protocolPubkeyBytes: bytesToBase64(metadata.protocol_pubkey_bytes),
                 rewardsPool: String(stakingPool.rewards_pool),
                 stakingPoolId: (
                     stakingPool.id as {
