@@ -382,9 +382,9 @@ jobs:
 
       # ─── Names Dapp ──────────────────────────────────────────────────────────
 
-      - name: Setup E2E Network for Names Dapp
+      - name: Setup E2E Network for Names
         id: setup-names-network
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runNamesDapp == 'true' || steps.conditions.outputs.runNamesSDK == 'true')
         continue-on-error: ${{ inputs.isNightly }}
         env:
           DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
@@ -482,24 +482,7 @@ jobs:
           IS_CI_JOB: true
           NETWORK: localnet
         run: |
-          pkill -f "iota-localnet" || true
-          pkill -f "iota start" || true
-          sleep 2
-          iota-localnet start --with-faucet --faucet-amount 100000000000000 --with-indexer --with-graphql --force-regenesis --epoch-duration-ms 120000 > /dev/null 2>&1 &
-          sleep 10
-          iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000 --graphql http://127.0.0.1:9125
-          iota client switch --env localnet
-          iota client faucet
-          sleep 5
-          cd external/names/scripts
-          pnpm install
-          export NETWORK=localnet
-          pnpm ts-node init/init.ts localnet
-          pnpm ts-node tests/register-name.ts
-          sleep 5
-          cat ./package-info/localnet.json
-          cd ../../../sdk/names
-          VITE_IOTA_BIN="iota" pnpm test:e2e
+          VITE_IOTA_BIN="iota" pnpm --filter=@iota/iota-names-sdk test:e2e
 
       # ─── Nightly failure report ───────────────────────────────────────────────
 
