@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import cx from 'classnames';
-import { BadgeSize } from './badge.enums';
-import type { BadgeType } from './badge.enums';
+import { BadgeSize, BadgeType } from './badge.enums';
 import { BACKGROUND_COLORS, BORDER_COLORS, TEXT_COLORS } from './badge.classes';
 
 interface BadgeProps {
@@ -25,7 +24,7 @@ export function Badge({ type, label, size = BadgeSize.Medium }: BadgeProps): Rea
     const backgroundClasses = BACKGROUND_COLORS[type];
     const textClasses = TEXT_COLORS[type];
     const isSmall = size === BadgeSize.Small;
-    const isOutlined = type === ('outlined' as BadgeType);
+    const isOutlined = type === BadgeType.Outlined;
     const labelClasses = label ? 'px-xs py-xxs' : 'h-1.5 w-1.5';
     const textSizeClass = isSmall ? 'text-label-sm' : 'text-label-md';
 

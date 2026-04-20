@@ -152,9 +152,7 @@ function ValidatorPageResult(): JSX.Element {
             Number(data.pendingActiveValidatorsSize) > 0
                 ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
                 : (activeValidators ?? []);
-        const candidateValidators =
-            sanitizedCandidateValidatorsData.length > 0 ? sanitizedCandidateValidatorsData : [];
-        return [...pendingActiveValidators, ...candidateValidators];
+        return [...pendingActiveValidators, ...sanitizedCandidateValidatorsData];
     }, [data, activeValidators, sanitizedPendingValidatorsData, sanitizedCandidateValidatorsData]);
 
     const atRiskAddresses = useMemo(
@@ -224,9 +222,6 @@ function ValidatorPageResult(): JSX.Element {
 
         return generateValidatorsTableColumns({
             committeeMembers: data.committeeMembers.map((validator) => validator.iotaAddress),
-            candidateValidators: sanitizedCandidateValidatorsData.map(
-                (validator) => validator.iotaAddress,
-            ),
             atRiskValidators: data.atRiskValidators,
             maxCommitteeSize,
             validatorEvents,

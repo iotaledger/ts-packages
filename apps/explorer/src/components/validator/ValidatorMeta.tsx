@@ -10,87 +10,12 @@ import type { ValidatorOverviewData } from '@iota/core/src/types';
 import { onCopySuccess } from '~/lib/utils';
 
 type ValidatorMetaProps = {
-    validatorData: IotaValidatorSummary;
+    validatorData: IotaValidatorSummary | ValidatorOverviewData;
     atRiskRemainingEpochs?: number | null;
     isCandidate?: boolean;
     isPending?: boolean;
     isInactive?: boolean;
 };
-
-export function ValidatorOverview({
-    validatorData,
-}: {
-    validatorData: ValidatorOverviewData;
-}): JSX.Element {
-    return (
-        <div className="flex flex-col gap-y-md">
-            <Panel>
-                <div className="flex flex-col gap-lg p-md--rs md:flex-row">
-                    <div className="flex flex-row gap-lg">
-                        <div className="flex h-[120px] w-[120px]">
-                            <ImageIcon
-                                src={validatorData.imageUrl}
-                                label={validatorData.name}
-                                fallback={validatorData.name}
-                                size={ImageIconSize.Full}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-y-sm">
-                            <div>
-                                <Badge type={BadgeType.Neutral} label="Validator" />
-                            </div>
-                            <div className="flex flex-row items-center gap-x-xs text-iota-neutral-10 dark:text-iota-neutral-92">
-                                <span className="text-headline-md">{validatorData.name}</span>
-                                {validatorData.projectUrl && (
-                                    <a
-                                        href={validatorData.projectUrl}
-                                        target="_blank"
-                                        rel="noreferrer noopener"
-                                    >
-                                        <ArrowTopRight />
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex w-full flex-col gap-y-md md:w-1/2">
-                        <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
-                            Description
-                        </span>
-                        <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                            {validatorData.description ?? '--'}
-                        </span>
-                    </div>
-                </div>
-            </Panel>
-            <Panel>
-                <div className="flex flex-col gap-md p-md--rs">
-                    <KeyValueInfo
-                        keyText="Address"
-                        value={
-                            <AddressLink
-                                address={validatorData.iotaAddress}
-                                copyText={validatorData.iotaAddress}
-                            />
-                        }
-                    />
-                    <KeyValueInfo
-                        keyText="Pool ID"
-                        value={validatorData.stakingPoolId}
-                        copyText={validatorData.stakingPoolId}
-                        onCopySuccess={onCopySuccess}
-                    />
-                    <KeyValueInfo
-                        keyText="Public Key"
-                        value={validatorData.protocolPubkeyBytes}
-                        copyText={validatorData.protocolPubkeyBytes}
-                        onCopySuccess={onCopySuccess}
-                    />
-                </div>
-            </Panel>
-        </div>
-    );
-}
 
 export function ValidatorMeta({
     validatorData,

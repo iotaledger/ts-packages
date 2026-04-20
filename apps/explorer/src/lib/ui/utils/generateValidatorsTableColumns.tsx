@@ -20,7 +20,6 @@ import { Copy } from '@iota/apps-ui-icons';
 
 interface GenerateValidatorsTableColumnsArgs {
     committeeMembers?: string[];
-    candidateValidators?: string[];
     atRiskValidators?: [string, string][];
     maxCommitteeSize?: number;
     validatorEvents?: IotaEvent[];
@@ -52,11 +51,9 @@ function ValidatorWithImage({
         ? [{ type: BadgeType.Warning, label: 'Pending' }]
         : validator.isCandidate
           ? [{ type: BadgeType.Neutral, label: 'Candidate' }]
-          : validator.isPending
-            ? [{ type: BadgeType.Warning, label: 'Pending' }]
-            : isValidatorCommitteeMember
-              ? [{ type: BadgeType.Success, label: 'Committee' }]
-              : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
+          : isValidatorCommitteeMember
+            ? [{ type: BadgeType.Success, label: 'Committee' }]
+            : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
 
     if (isAtRisk) {
         statusBadges.push({ type: BadgeType.Error, label: 'At Risk' });
@@ -142,7 +139,6 @@ function ValidatorWithImage({
 
 export function generateValidatorsTableColumns({
     committeeMembers = [],
-    candidateValidators = [],
     atRiskValidators = [],
     validatorEvents = [],
     rollingAverageApys,
