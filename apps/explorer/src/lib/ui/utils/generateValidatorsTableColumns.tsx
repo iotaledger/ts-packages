@@ -111,12 +111,7 @@ function ValidatorWithImage({
         </div>
     );
 
-    return validator.isPending ? (
-        <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">
-            {avatarElement}
-            {validatorNameContainer}
-        </div>
-    ) : (
+    return (
         <ValidatorLink
             address={validator.iotaAddress}
             showAddressAlias={false}
