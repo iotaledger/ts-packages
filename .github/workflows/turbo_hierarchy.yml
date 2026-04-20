@@ -166,64 +166,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-  names-sdk-test:
-    name: Names SDK Tests
-    needs: [diff, build]
-    if: (!cancelled() && !failure() && (needs.diff.outputs.isNamesSDK == 'true' || needs.diff.outputs.isNamesDapp == 'true') && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgrespw
-          POSTGRES_DB: iota_indexer
-          POSTGRES_HOST_AUTH_METHOD: trust
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
-        with:
-          fetch-depth: 1
-          submodules: true
-      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - name: Install Nodejs
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "24"
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Download IOTA Binary
-        run: .github/scripts/download-iota-binary.sh
-      - name: Build SDK
-        run: pnpm names-sdk build
-      - name: Prepare local network & run SDK tests
-        env:
-          IS_CI_JOB: true
-          NETWORK: localnet
-        run: |
-          iota-localnet start --with-faucet --faucet-amount 100000000000000 --with-indexer --with-graphql --force-regenesis --epoch-duration-ms 120000 > /dev/null 2>&1 &
-          sleep 10
-          iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000 --graphql http://127.0.0.1:9125
-          iota client switch --env localnet
-          iota client faucet
-          sleep 5
-          cd external/names/scripts
-          pnpm install
-          export NETWORK=localnet
-          pnpm ts-node init/init.ts localnet
-          pnpm ts-node tests/register-name.ts
-          sleep 5
-          cat ./package-info/localnet.json
-          cd ../../../sdk/names
-          VITE_IOTA_BIN="iota" pnpm test:e2e
-
   e2e:
     if: (!cancelled() && !failure() && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
     needs: diff
@@ -242,6 +184,7 @@ jobs:
       isKiosk: ${{ needs.diff.outputs.isKiosk == 'true' }}
       isNamesDapp: ${{ needs.diff.outputs.isNamesDapp == 'true' }}
       isNamesDisplay: ${{ needs.diff.outputs.isNamesDisplay == 'true' }}
+      isNamesSDK: ${{ needs.diff.outputs.isNamesSDK == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
       EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
