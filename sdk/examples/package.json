@@ -2,7 +2,7 @@
     "name": "@iota/examples",
     "author": "IOTA Foundation <info@iota.org>",
     "description": "IOTA SDK Examples",
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "version": "0.1.0",
     "license": "Apache-2.0",
     "type": "module",
