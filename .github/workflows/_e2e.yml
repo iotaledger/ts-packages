@@ -2,6 +2,59 @@ name: TS End-to-end Tests
 
 on:
   workflow_dispatch:
+    inputs:
+      isNightly:
+        description: Nightly (runs all groups)
+        type: boolean
+        default: false
+      isRpc:
+        description: RPC
+        type: boolean
+        default: false
+      isExplorer:
+        description: Explorer
+        type: boolean
+        default: false
+      isAppsBackend:
+        description: Apps Backend
+        type: boolean
+        default: false
+      isTypescriptSDK:
+        description: TypeScript SDK
+        type: boolean
+        default: false
+      isWallet:
+        description: Wallet
+        type: boolean
+        default: false
+      isGraphQlTransport:
+        description: GraphQL Transport
+        type: boolean
+        default: false
+      isWalletDashboard:
+        description: Wallet Dashboard
+        type: boolean
+        default: false
+      isEvmBridge:
+        description: EVM Bridge
+        type: boolean
+        default: false
+      isIscSDK:
+        description: ISC SDK
+        type: boolean
+        default: false
+      isKiosk:
+        description: Kiosk
+        type: boolean
+        default: false
+      isNamesDapp:
+        description: Names Dapp
+        type: boolean
+        default: false
+      isNamesDisplay:
+        description: Names Display
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       isNightly:
