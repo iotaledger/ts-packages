@@ -29,6 +29,7 @@
         "@iota/apps-backend-client": "workspace:*",
         "@iota/apps-ui-icons": "workspace:*",
         "@iota/apps-ui-kit": "workspace:*",
+        "@iota/core": "workspace:*",
         "@iota/dapp-kit": "workspace:*",
         "@iota/graphql-transport": "workspace:*",
         "@iota/iota-names-sdk": "workspace:*",
