@@ -40,6 +40,7 @@ import {
     NFTDetailsPage,
     NftTransferPage,
     KioskDetailsPage,
+    NetworkPage,
     ReceiptPage,
     TransactionBlocksPage,
     TransferCoinPage,
@@ -169,6 +170,7 @@ export function App() {
                 <Route path="send" element={<TransferCoinPage />} />
                 <Route path="send/select" element={<CoinsSelectorPage />} />
                 <Route path="stake/*" element={<StakingPage />} />
+                <Route path="network" element={<NetworkPage />} />
                 <Route path="tokens/*" element={<TokenDetailsPage />} />
                 <Route path="transactions/:status?" element={<TransactionBlocksPage />} />
                 <Route path="*" element={<Navigate to="/tokens" replace={true} />} />
