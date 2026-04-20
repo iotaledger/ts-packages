@@ -26,12 +26,19 @@ class ApiProvider {
     public setNewJsonRpcProvider(
         network: Network = getDefaultNetwork(),
         customRPC?: string | null,
+        customExplorer?: string | null,
+        customFaucet?: string | null,
     ) {
         this.network = network;
         this._apiFullNodeProvider = getIotaClient(
             network === Network.Custom
-                ? { network, customRpcUrl: customRPC || '' }
-                : { network, customRpcUrl: null },
+                ? {
+                      network,
+                      customRpcUrl: customRPC || '',
+                      customExplorerUrl: customExplorer || null,
+                      customFaucetUrl: customFaucet || null,
+                  }
+                : { network, customRpcUrl: null, customExplorerUrl: null, customFaucetUrl: null },
         );
 
         this._signerByAddress.clear();

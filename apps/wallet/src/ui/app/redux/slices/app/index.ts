@@ -15,6 +15,8 @@ import { ExtensionViewType } from './appType';
 type AppState = {
     network: Network;
     customRpc: string | null;
+    customExplorer: string | null;
+    customFaucet: string | null;
     navVisible: boolean;
     activeOrigin: string | null;
     activeOriginFavIcon: string | null;
@@ -24,6 +26,8 @@ type AppState = {
 const initialState: AppState = {
     network: getDefaultNetwork(),
     customRpc: null,
+    customExplorer: null,
+    customFaucet: null,
     navVisible: true,
     activeOrigin: null,
     activeOriginFavIcon: null,
@@ -47,10 +51,14 @@ const slice = createSlice({
     reducers: {
         setActiveNetwork: (
             state,
-            { payload: { network, customRpcUrl } }: PayloadAction<NetworkEnvType>,
+            {
+                payload: { network, customRpcUrl, customExplorerUrl, customFaucetUrl },
+            }: PayloadAction<NetworkEnvType>,
         ) => {
             state.network = network;
             state.customRpc = customRpcUrl;
+            state.customExplorer = customExplorerUrl;
+            state.customFaucet = customFaucetUrl;
         },
         setNavVisibility: (state, { payload: isVisible }: PayloadAction<boolean>) => {
             state.navVisible = isVisible;
