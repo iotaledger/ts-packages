@@ -28,7 +28,16 @@
 		"changeset-publish": "pnpm changeset publish",
 		"changeset-version": "pnpm changeset version",
 		"prepare": "husky",
-		"codegen": "turbo run codegen"
+		"codegen": "turbo run codegen",
+		"names-dapp": "turbo --filter ./apps/names",
+		"names-sdk": "turbo --filter ./sdk/names",
+		"names-display": "turbo --filter ./apps/names-display",
+		"prettier:check": "prettier -c --ignore-unknown .",
+		"prettier:fix": "prettier -w --ignore-unknown .",
+		"eslint:check": "eslint --max-warnings=0 .",
+		"eslint:fix": "pnpm run eslint:check --fix",
+		"lint": "pnpm run eslint:check && pnpm run prettier:check",
+		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
 	},
 	"pnpm": {
 		"overrides": {
@@ -53,10 +62,18 @@
 			"minimatch@>=5.0.0": "^5.1.9",
 			"minimatch@>=9.0.0": "^9.0.9",
 			"hono@<4.12.4": ">=4.12.4",
-			"axios@<0.30.3": "^0.30.3",
+			"axios@<1.15.0": "^1.15.0",
 			"socket.io-parser@<4.2.6": "4.2.6",
 			"picomatch@<2.3.2": "^2.3.2",
-			"picomatch@>=4.0.0 <4.0.4": "^4.0.4"
+			"picomatch@>=4.0.0 <4.0.4": "^4.0.4",
+			"lodash@>=4.0.0 <4.18.0": ">=4.18.0",
+			"defu@<=6.1.4": ">=6.1.5",
+			"cross-spawn": ">=6.0.6",
+			"valibot": ">=1.2.0",
+			"swiper": ">=12.1.2",
+			"rollup": ">=4.59.0",
+			"@xmldom/xmldom": ">=0.9.9",
+			"lodash-es": ">=4.18.0"
 		}
 	},
 	"engines": {
@@ -71,14 +88,17 @@
 	},
 	"devDependencies": {
 		"@changesets/cli": "^2.27.5",
+		"@ianvs/prettier-plugin-sort-imports": "^4.4.2",
 		"@manypkg/cli": "^0.21.4",
 		"@tanstack/eslint-plugin-query": "^5.35.6",
+		"@types/node": "^24.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.21.0",
 		"@typescript-eslint/parser": "^6.21.0",
 		"concurrently": "^8.2.2",
 		"eslint": "^8.45.0",
 		"eslint-config-next": "14.2.3",
 		"eslint-config-prettier": "^9.1.0",
+		"eslint-config-react-app": "^7.0.1",
 		"eslint-import-resolver-typescript": "^3.6.1",
 		"eslint-plugin-header": "^3.1.1",
 		"eslint-plugin-import": "^2.29.1",
@@ -92,6 +112,7 @@
 		"lint-staged": "^15.2.5",
 		"prettier": "^3.3.1",
 		"prettier-plugin-tailwindcss": "^0.4.1",
+		"ts-node": "^10.9.2",
 		"tsx": "^3.12.7",
 		"turbo": "^2.8.0",
 		"typescript": "^5.5.3",
