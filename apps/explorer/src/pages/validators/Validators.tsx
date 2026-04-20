@@ -146,7 +146,7 @@ function ValidatorPageResult(): JSX.Element {
         return formatPercentageDisplay(ratio);
     })();
 
-    const activeAndPendingValidators = useMemo(() => {
+    const allValidators = useMemo(() => {
         if (!data) return [];
         const pendingActiveValidators =
             Number(data.pendingActiveValidatorsSize) > 0
@@ -164,7 +164,8 @@ function ValidatorPageResult(): JSX.Element {
         let active = 0;
         let pending = 0;
         let atRisk = 0;
-        for (const validator of activeAndPendingValidators as IotaValidatorSummaryExtended[]) {
+        let candidate = 0;
+        for (const validator of allValidators as IotaValidatorSummaryExtended[]) {
             const isValidatorAtRisk = atRiskAddresses.has(validator.iotaAddress);
             const isCommitteeMember = data?.committeeMembers.some(
                 (committeeMember) => committeeMember.iotaAddress === validator.iotaAddress,
@@ -175,12 +176,12 @@ function ValidatorPageResult(): JSX.Element {
             else active++;
             if (isValidatorAtRisk) atRisk++;
         }
-        return { all: activeAndPendingValidators.length, active, pending, atRisk, committee };
-    }, [activeAndPendingValidators, atRiskAddresses, data?.committeeMembers]);
+        return { all: allValidators.length, active, pending, atRisk, committee, candidate };
+    }, [allValidators, atRiskAddresses, data?.committeeMembers]);
 
     const filteredValidators = useMemo(
         () =>
-            activeAndPendingValidators.filter((validator: IotaValidatorSummaryExtended) => {
+            allValidators.filter((validator: IotaValidatorSummaryExtended) => {
                 if (currentValidatorStatus !== 'All') {
                     const isAtRisk = atRiskAddresses.has(validator.iotaAddress);
                     const isCommitteeMember = data?.committeeMembers.some(
@@ -194,6 +195,8 @@ function ValidatorPageResult(): JSX.Element {
                     if (currentValidatorStatus === 'Pending' && !validator.isPending) return false;
                     if (currentValidatorStatus === 'At Risk' && !isAtRisk) return false;
                     if (currentValidatorStatus === 'Committee' && !isCommitteeMember) return false;
+                    if (currentValidatorStatus === 'Candidate' && !validator.isCandidate)
+                        return false;
                 }
                 if (searchTerm) {
                     const lower = searchTerm.toLowerCase();
@@ -204,7 +207,7 @@ function ValidatorPageResult(): JSX.Element {
                 }
                 return true;
             }),
-        [activeAndPendingValidators, atRiskAddresses, currentValidatorStatus, searchTerm],
+        [allValidators, atRiskAddresses, currentValidatorStatus, searchTerm],
     );
 
     const tableColumns = useMemo(() => {
@@ -230,7 +233,7 @@ function ValidatorPageResult(): JSX.Element {
             includeColumns,
             currentEpoch: data.epoch,
         });
-    }, [data, filteredValidators, validatorEvents, validatorsApy, maxCommitteeSize]);
+    }, [data, sanitizedCandidateValidatorsData, validatorEvents, validatorsApy, maxCommitteeSize]);
 
     const activeCommitteeSize = data?.committeeMembers.length ?? null;
     const protocolVersion = data?.protocolVersion ?? null;

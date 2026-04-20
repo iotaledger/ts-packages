@@ -216,7 +216,15 @@ export function generateValidatorsTableColumns({
 
                 return apyA - apyB;
             },
-            cell({ getValue }) {
+            cell({ getValue, row }) {
+                const validator = row.original as IotaValidatorSummaryExtended;
+                if (validator.isCandidate || validator.isPending) {
+                    return (
+                        <TableCellBase>
+                            <TableCellText>--</TableCellText>
+                        </TableCellBase>
+                    );
+                }
                 const iotaAddress = getValue<string>();
                 const { apy, isApyApproxZero } = rollingAverageApys?.[iotaAddress] ?? {
                     apy: null,
@@ -256,12 +264,16 @@ export function generateValidatorsTableColumns({
             accessorKey: 'votingPower',
             enableSorting: true,
             sortingFn: sortByNumber,
-            cell({ getValue }) {
+            cell({ getValue, row }) {
+                const validator = row.original as IotaValidatorSummaryExtended;
                 const votingPower = getValue<string>();
+                const commission = Number(votingPower);
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            {votingPower ? Number(votingPower) / 100 + '%' : '--'}
+                            {validator.isCandidate || validator.isPending || isNaN(commission)
+                                ? '--'
+                                : `${commission / 100}%`}
                         </TableCellText>
                     </TableCellBase>
                 );

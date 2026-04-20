@@ -73,7 +73,7 @@ export function ValidatorMeta({
                                     ) : isPending ? (
                                         <Badge type={BadgeType.Warning} label="Pending" />
                                     ) : isInactive ? (
-                                        <Badge type={BadgeType.Error} label="Inactive" />
+                                        <Badge type={BadgeType.Outlined} label="Inactive" />
                                     ) : (
                                         <Badge type={BadgeType.PrimarySoft} label="Active" />
                                     )}
