@@ -55,6 +55,10 @@ on:
         description: Names Display
         type: boolean
         default: false
+      isNamesSDK:
+        description: Names SDK
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       isNightly:
@@ -96,6 +100,9 @@ on:
       isNamesDisplay:
         type: boolean
         required: true
+      isNamesSDK:
+        type: boolean
+        required: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
@@ -115,7 +122,7 @@ env:
 jobs:
   localnet:
     name: Localnet
-    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay
+    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay || inputs.isNamesSDK
     runs-on: self-hosted-x64
     services:
       postgres:
@@ -157,6 +164,7 @@ jobs:
           echo "runTsSdk=${{ inputs.isNightly || inputs.isTypescriptSDK || inputs.isRpc }}" >> $GITHUB_OUTPUT
           echo "runNamesDapp=${{ inputs.isNightly || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
           echo "runNamesDisplay=${{ inputs.isNightly || inputs.isNamesDisplay }}" >> $GITHUB_OUTPUT
+          echo "runNamesSDK=${{ inputs.isNightly || inputs.isNamesSDK || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
 
       - name: Download IOTA Binary
         run: |
@@ -374,9 +382,9 @@ jobs:
 
       # ─── Names Dapp ──────────────────────────────────────────────────────────
 
-      - name: Setup E2E Network for Names Dapp
+      - name: Setup E2E Network for Names
         id: setup-names-network
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runNamesDapp == 'true' || steps.conditions.outputs.runNamesSDK == 'true')
         continue-on-error: ${{ inputs.isNightly }}
         env:
           DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
@@ -458,6 +466,24 @@ jobs:
           pnpm --filter names-display run build
           pnpm --filter names-display run test
 
+      # ─── Names SDK ─────────────────────────────────────────────────────────
+
+      - name: Build Names SDK
+        id: build-names-sdk
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesSDK == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm names-sdk build
+
+      - name: Prepare local network & run Names SDK e2e tests
+        id: run-names-sdk
+        if: (!cancelled() && !failure()) && steps.build-names-sdk.outcome == 'success' && steps.conditions.outputs.runNamesSDK == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          IS_CI_JOB: true
+          NETWORK: localnet
+        run: |
+          VITE_IOTA_BIN="iota" pnpm --filter=@iota/iota-names-sdk test:e2e
+
       # ─── Nightly failure report ───────────────────────────────────────────────
 
       - name: Fail job if any nightly test group failed
@@ -474,6 +500,7 @@ jobs:
           [[ "${{ steps.run-evm-bridge.outcome }}"   == 'failure' ]] && failed+=('EVM Bridge')
           [[ "${{ steps.run-names-dapp.outcome }}"    == 'failure' ]] && failed+=('Names Dapp')
           [[ "${{ steps.run-names-display.outcome }}" == 'failure' ]] && failed+=('Names Display')
+          [[ "${{ steps.run-names-sdk.outcome }}"      == 'failure' ]] && failed+=('Names SDK')
 
           if [[ ${#failed[@]} -gt 0 ]]; then
             echo "Failed test groups: ${failed[*]}"
