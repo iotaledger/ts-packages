@@ -82,7 +82,7 @@ jobs:
           context: .
           file: ./apps/apps-backend/Dockerfile
           push: true
-          tags: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ env.VERSION }}
+          tags: ghcr.io/iotaledger/ts-packages/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ env.VERSION }}
           build-args: |
             DEPLOY_TYPE=${{ needs.resolve-deploy-type.outputs.deploy_type }}
             STAGING_APPS_BACKEND=${{ secrets.STAGING_APPS_BACKEND }}
