@@ -133,6 +133,7 @@ function RpcInputField() {
     const [field, meta] = useField('rpcInput');
     return (
         <Input
+            data-testid="custom-rpc-url-input"
             type={InputType.Text}
             placeholder="http://localhost:9000/"
             errorMessage={meta?.error}
