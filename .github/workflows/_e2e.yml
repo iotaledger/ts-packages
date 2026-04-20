@@ -55,6 +55,10 @@ on:
         description: Names Display
         type: boolean
         default: false
+      isNamesSDK:
+        description: Names SDK
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       isNightly:
