@@ -1,8 +1,8 @@
 packages:
   - "apps/**"
   - "dapps/**"
-  - "docs/site"
   - "sdk/**"
+  - "packages/*"
   - "!**/dist/**"
   - "!**/.next/**"
   - "!sdk/create-dapp/templates/*"

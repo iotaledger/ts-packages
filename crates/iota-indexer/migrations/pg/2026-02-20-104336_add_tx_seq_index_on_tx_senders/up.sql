@@ -1,1 +1,0 @@
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_tx_senders_tx_seq ON tx_senders (tx_sequence_number);

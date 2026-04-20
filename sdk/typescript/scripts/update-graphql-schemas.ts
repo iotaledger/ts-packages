@@ -35,7 +35,7 @@ const packageRoot = path.resolve(import.meta.url.slice(5), '../..');
 const workspaceRoot = path.resolve(packageRoot, '../..');
 const schemaSourceFilePath = path.resolve(
     workspaceRoot,
-    'crates/iota-graphql-rpc',
+    'external/iota/crates/iota-graphql-rpc',
     'schema.graphql',
 );
 
