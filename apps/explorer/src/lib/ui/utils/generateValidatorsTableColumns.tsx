@@ -5,13 +5,14 @@ import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota
 import type { ColumnDef, Row } from '@tanstack/react-table';
 import {
     type ApyByValidator,
+    type IotaValidatorSummaryExtended,
     formatPercentageDisplay,
     getValidatorEffectiveCommission,
     ImageIcon,
     ImageIconSize,
     useCopyToClipboard,
 } from '@iota/core';
-import { ampli, getValidatorMoveEvent, type IotaValidatorSummaryExtended } from '~/lib';
+import { ampli, getValidatorMoveEvent } from '~/lib';
 import { StakeColumn } from '~/components';
 import type { IotaEvent, IotaValidatorSummary } from '@iota/iota-sdk/client';
 import clsx from 'clsx';

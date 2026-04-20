@@ -8,6 +8,7 @@ import {
     useGetValidatorsEvents,
     useFormatCoin,
     useMaxCommitteeSize,
+    useGetCandidateValidators,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import { PageLayout, ValidatorMeta, ValidatorStats, ValidatorStatusLegend } from '~/components';
@@ -28,7 +29,6 @@ import {
 import { Info, Warning } from '@iota/apps-ui-icons';
 import type { LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { useGetValidatorCandidates } from '~/hooks';
 
 type PrevEpochEventData = {
     pool_staking_reward?: string;
@@ -58,7 +58,7 @@ function ValidatorDetails(): JSX.Element {
         useGetInactiveValidator(id || '');
 
     const { data: validatorCandidateData, isLoading: isValidatorCandidateLoading } =
-        useGetValidatorCandidates(id || '');
+        useGetCandidateValidators(id || '');
 
     const numberOfActiveValidators = systemStateData?.activeValidators.length ?? null;
     const { data: rollingAverageApys, isLoading: isValidatorsApysLoading } = useGetValidatorsApy();

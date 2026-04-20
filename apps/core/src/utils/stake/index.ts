@@ -13,4 +13,5 @@ export * from './getUnstakeDetailsFromEvents';
 export * from './getTransactionAmountForTimelocked';
 export * from './getValidatorEffectiveCommission';
 export * from './getValidatorsMetadata';
+export * from './sanitizeValidatorObjects';
 export * from './types';

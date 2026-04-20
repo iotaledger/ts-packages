@@ -3,7 +3,7 @@
 
 import type { IotaObjectResponse, MoveStruct, MoveValue } from '@iota/iota-sdk/client';
 import { toBase64 } from '@iota/iota-sdk/utils';
-import type { IotaValidatorSummaryExtended } from '../types';
+import type { IotaValidatorSummaryExtended } from '../../types';
 
 function isMoveStructWithFields(
     data: MoveStruct,

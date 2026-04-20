@@ -18,4 +18,3 @@ export * from './useNormalizedMoveModule';
 export * from './useSearch';
 export * from './useVerifiedSourceCode';
 export * from './useEndOfEpochTransactionFromCheckpoint';
-export * from './useGetValidatorCandidates';

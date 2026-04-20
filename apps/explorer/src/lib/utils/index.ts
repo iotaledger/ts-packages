@@ -14,6 +14,4 @@ export * from './sentry';
 export * from './stringUtils';
 export * from './iotaMoveTypeConverters';
 export * from './getSupplyChangeAfterEpochEnd';
-export * from './sanitizeValidatorObjects';
-export * from './getValidatorCandidateObjects';
 export * from './onCopySuccess';

@@ -12,6 +12,9 @@ import {
     useGetValidatorsEvents,
     useMultiGetObjects,
     useMaxCommitteeSize,
+    useGetCandidateValidators,
+    sanitizeValidatorObjects,
+    type IotaValidatorSummaryExtended,
 } from '@iota/core';
 import {
     DisplayStats,
@@ -28,12 +31,10 @@ import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard } from '~/compon
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useEnhancedRpcClient, useGetValidatorCandidates } from '~/hooks';
-import { sanitizeValidatorObjects } from '~/lib';
+import { useEnhancedRpcClient } from '~/hooks';
 import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorSearch, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
-import type { IotaValidatorSummaryExtended } from '~/lib/types/validator.types';
 import { useEpochProgress } from '../epochs/utils';
 
 function ValidatorPageResult(): JSX.Element {
@@ -85,7 +86,7 @@ function ValidatorPageResult(): JSX.Element {
         isPending: true,
     });
 
-    const { data: sanitizedCandidateValidatorsData = [] } = useGetValidatorCandidates();
+    const { data: sanitizedCandidateValidatorsData = [] } = useGetCandidateValidators();
 
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: totalSupplyData } = useIotaClientQuery('getTotalSupply', {
