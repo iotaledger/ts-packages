@@ -5,7 +5,8 @@
 import { useIotaClient } from '@iota/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { PageLayout, PageHeader } from '~/components';
+import { PageLayout } from '~/components/layout';
+import { PageHeader } from '~/components/ui';
 import { CheckpointTransactionBlocks } from './CheckpointTransactionBlocks';
 import {
     ButtonSegment,
