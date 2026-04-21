@@ -18,6 +18,7 @@ import {
     Logout,
     Expand,
     Discord,
+    DataStack,
     SidePanel as SidePanelIcon,
 } from '@iota/apps-ui-icons';
 import {
@@ -35,6 +36,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { useTheme, getCustomNetwork, FAQ_LINK, ToS_LINK, DISCORD_SUPPORT_LINK } from '@iota/core';
 import { useSidePanel } from '_src/ui/app/hooks/useSidePanel';
 import { useSidePanelMutation } from '_src/ui/app/hooks/useSidePanelMutation';
+import { useMetricsEnabled } from '_src/ui/app/hooks/useMetricsEnabled';
 import { SidePanel } from '_src/polyfills/sidepanel';
 import { ExtensionViewType } from '_src/ui/app/redux/slices/app/appType';
 import { openInNewTab } from '_src/shared/utils';
@@ -45,6 +47,7 @@ export function MenuList() {
     const networkUrl = useNextMenuUrl(true, '/network');
     const autoLockUrl = useNextMenuUrl(true, '/auto-lock');
     const themeUrl = useNextMenuUrl(true, '/theme');
+    const metricsUrl = useNextMenuUrl(true, '/metrics');
     const network = useAppSelector((state) => state.app.network);
     const networkConfig = network === Network.Custom ? getCustomNetwork() : getNetwork(network);
     const version = Browser.runtime.getManifest().version;
@@ -52,6 +55,7 @@ export function MenuList() {
     const sidePanel = useSidePanel();
     const sidePanelMutation = useSidePanelMutation();
     const extensionType = useAppSelector((state) => state.app.extensionViewType);
+    const [hasAcceptedMetrics] = useMetricsEnabled();
 
     // Logout
     const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
@@ -79,6 +83,11 @@ export function MenuList() {
     function onThemeClick() {
         navigate(themeUrl);
     }
+
+    function onMetricsClick() {
+        navigate(metricsUrl);
+    }
+
     async function onSidePanelClick(
         _isToggled: boolean,
         event: React.ChangeEvent<HTMLInputElement>,
@@ -120,6 +129,7 @@ export function MenuList() {
 
     const autoLockSubtitle = handleAutoLockSubtitle();
     const themeSubtitle = themePreference.charAt(0).toUpperCase() + themePreference.slice(1);
+    const metricsSubtitle = `Metrics ${hasAcceptedMetrics ? 'enabled' : 'disabled'}`;
     const MENU_ITEMS = [
         {
             title: 'Network',
@@ -138,6 +148,12 @@ export function MenuList() {
             icon: <DarkMode />,
             subtitle: themeSubtitle,
             onClick: onThemeClick,
+        },
+        {
+            title: 'Metrics',
+            icon: <DataStack />,
+            subtitle: metricsSubtitle,
+            onClick: onMetricsClick,
         },
         {
             title: 'Get Support',
