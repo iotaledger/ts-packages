@@ -3,6 +3,7 @@
 
 PACKAGE_NAME="$(pnpm pkg get name | tr -d '"')"
 
+
 echo "--- git state ---"
 echo "HEAD:    $(git rev-parse HEAD 2>&1)"
 echo "HEAD^1:  $(git rev-parse HEAD^1 2>&1)"
@@ -14,4 +15,5 @@ ls -la ../../.turbo 2>/dev/null || echo "no root .turbo"
 ls -la .turbo 2>/dev/null || echo "no local .turbo"
 echo "--- turbo query ---"
 
+echo "Running Vercel Ignored Build Step for package: $PACKAGE_NAME, full command: pnpx turbo query affected --verbosity 2 --packages \"$PACKAGE_NAME\" --base=HEAD^1 --exit-code"
 pnpx turbo query affected --verbosity 2 --packages "$PACKAGE_NAME" --base=HEAD^1 --exit-code
