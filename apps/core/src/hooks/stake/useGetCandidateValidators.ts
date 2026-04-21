@@ -39,16 +39,12 @@ export function useGetCandidateValidators(validatorAddress?: string) {
                     getValidatorsMetadata(iotaClient, entry.objectId),
                 ),
             );
-            return candidateValidators.filter(
-                (v): v is IotaValidatorSummaryExtended => v !== null,
-            );
+            return candidateValidators.filter((v): v is IotaValidatorSummaryExtended => v !== null);
         },
         enabled: !!validatorCandidatesId,
         select(candidateValidators) {
             const candidates = candidateValidators.map((v) => ({ ...v, isCandidate: true as const }));
-            return validatorAddress
-                ? (candidates.find((v) => v.iotaAddress === validatorAddress) ?? null)
-                : candidates;
+            return validatorAddress ? (candidates.find((v) => v.iotaAddress === validatorAddress) ?? null) : candidates;
         },
     });
 
