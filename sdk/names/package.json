@@ -4,7 +4,6 @@
     "description": "IOTA-Names SDK",
     "version": "0.7.0",
     "license": "Apache-2.0",
-    "private": false,
     "main": "./dist/cjs/index.js",
     "module": "./dist/esm/index.js",
     "types": "./dist/cjs/index.d.ts",
@@ -58,9 +57,9 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/iotaledger/iota-names.git"
+        "url": "git+https://github.com/iotaledger/ts-packages.git"
     },
     "bugs": {
-        "url": "https://github.com/iotaledger/iota-names/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     }
 }
