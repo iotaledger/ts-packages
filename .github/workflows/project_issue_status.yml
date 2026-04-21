@@ -1,0 +1,192 @@
+name: Automate linked issue status
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - synchronize
+      - closed
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  update-issue-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine target status
+        id: resolve
+        env:
+          EVENT:        ${{ github.event_name }}
+          ACTION:       ${{ github.event.action }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+          MERGED:       ${{ github.event.pull_request.merged }}
+          DRAFT:        ${{ github.event.pull_request.draft }}
+          GH_TOKEN:     ${{ secrets.PROJECT_TOKEN }}
+          PR_NUMBER:    ${{ github.event.pull_request.number }}
+          REPO:         ${{ github.repository }}
+        run: |
+          TARGET=""
+
+          if [[ "$EVENT" == "pull_request" ]]; then
+            case "$ACTION" in
+              opened)
+                [[ "$DRAFT" == "true" ]] && TARGET="In Progress" || TARGET="Needs Review"
+                ;;
+              ready_for_review)
+                TARGET="Needs Review"
+                ;;
+              synchronize)
+                CURRENT=$(gh api graphql -f query='
+                  query($owner:String!, $repo:String!, $pr:Int!) {
+                    repository(owner:$owner, name:$repo) {
+                      pullRequest(number:$pr) {
+                        closingIssuesReferences(first:5) {
+                          nodes {
+                            projectItems(first:5) {
+                              nodes {
+                                fieldValueByName(name:"Status") {
+                                  ... on ProjectV2ItemFieldSingleSelectValue { name }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }' \
+                  -f owner="${REPO%%/*}" \
+                  -f repo="${REPO##*/}" \
+                  -F pr="$PR_NUMBER" \
+                  --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[0].projectItems.nodes[0].fieldValueByName.name // empty')
+                echo "Current issue status: $CURRENT"
+                [[ "$CURRENT" == "Changes Requested" ]] && TARGET="Needs Review"
+                ;;
+              closed)
+                [[ "$MERGED" == "true" ]] && TARGET="Done"
+                ;;
+            esac
+          elif [[ "$EVENT" == "pull_request_review" && "$ACTION" == "submitted" ]]; then
+            case "$REVIEW_STATE" in
+              changes_requested)
+                TARGET="Changes Requested"
+                ;;
+              approved)
+                APPROVALS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" \
+                  --paginate | jq -s '[.[][]]
+                  | group_by(.user.login)
+                  | map(sort_by(.submitted_at) | last)
+                  | map(select(.state == "APPROVED"))
+                  | length')
+                echo "Approval count: $APPROVALS"
+                [[ "$APPROVALS" -ge 2 ]] && TARGET="Approved"
+                ;;
+            esac
+          fi
+
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+
+      - name: Update linked issue status in project
+        if: steps.resolve.outputs.target != ''
+        env:
+          GH_TOKEN:  ${{ secrets.PROJECT_TOKEN }}
+          TARGET:    ${{ steps.resolve.outputs.target }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO:      ${{ github.repository }}
+        run: |
+          OWNER="${REPO%%/*}"
+          REPO_NAME="${REPO##*/}"
+
+          echo "Setting linked issues to: $TARGET"
+
+          # ── Step 1: Get linked issues and their project item IDs ──────────────
+          LINKED=$(gh api graphql -f query='
+            query($owner:String!, $repo:String!, $pr:Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number:$pr) {
+                  closingIssuesReferences(first:10, userLinkedOnly:false) {
+                    nodes {
+                      id
+                      number
+                      projectItems(first:5) {
+                        nodes { id }
+                      }
+                    }
+                  }
+                }
+              }
+            }' \
+            -f owner="$OWNER" \
+            -f repo="$REPO_NAME" \
+            -F pr="$PR_NUMBER" \
+            --jq '.data.repository.pullRequest.closingIssuesReferences.nodes')
+
+          ITEM_IDS=$(echo "$LINKED" | jq -r '.[].projectItems.nodes[].id')
+
+          if [[ -z "$ITEM_IDS" ]]; then
+            echo "No linked project items found — nothing to update."
+            exit 0
+          fi
+
+          # ── Step 2: Get Status field ID + option ID from the first item ───────
+          FIRST_ITEM_ID=$(echo "$ITEM_IDS" | head -1)
+
+          FIELD_DATA=$(gh api graphql -f query='
+            query($itemId:ID!) {
+              node(id:$itemId) {
+                ... on ProjectV2Item {
+                  project {
+                    id
+                    fields(first:20) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          id
+                          name
+                          options { id name }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' \
+            -f itemId="$FIRST_ITEM_ID")
+
+          PROJECT_ID=$(echo "$FIELD_DATA" | jq -r '.data.node.project.id')
+          STATUS_FIELD_ID=$(echo "$FIELD_DATA" | \
+            jq -r '.data.node.project.fields.nodes[] | select(.name=="Status") | .id')
+          OPTION_ID=$(echo "$FIELD_DATA" | \
+            jq -r --arg target "$TARGET" \
+            '.data.node.project.fields.nodes[] | select(.name=="Status") | .options[] | select(.name==$target) | .id')
+
+          if [[ -z "$STATUS_FIELD_ID" || -z "$OPTION_ID" ]]; then
+            echo "Could not find Status field or option '$TARGET' — check project field names."
+            exit 1
+          fi
+
+          echo "Project:      $PROJECT_ID"
+          echo "Status field: $STATUS_FIELD_ID"
+          echo "Option:       $OPTION_ID ($TARGET)"
+
+          # ── Step 3: Update every linked project item ───────────────────────────
+          while IFS= read -r ITEM_ID; do
+            [[ -z "$ITEM_ID" ]] && continue
+            echo "  → Updating item $ITEM_ID"
+            gh api graphql -f query='
+              mutation($project:ID!, $item:ID!, $field:ID!, $option:String!) {
+                updateProjectV2ItemFieldValue(input:{
+                  projectId: $project
+                  itemId:    $item
+                  fieldId:   $field
+                  value: { singleSelectOptionId: $option }
+                }) { projectV2Item { id } }
+              }' \
+              -f project="$PROJECT_ID" \
+              -f item="$ITEM_ID" \
+              -f field="$STATUS_FIELD_ID" \
+              -f option="$OPTION_ID" \
+              --silent
+          done <<< "$ITEM_IDS"
+
+          echo "Done — all linked issues set to '$TARGET'."
