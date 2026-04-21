@@ -9,8 +9,8 @@ import { FaucetRateLimitError } from '@iota/iota-sdk/faucet';
 import { useFaucetMutation } from './useFaucetMutation';
 import { useFaucetRateLimiter } from './useFaucetRateLimiter';
 import { Button, ButtonType } from '@iota/apps-ui-kit';
-import { Loader2 } from '@iota/apps-ui-icons';
 import { FaucetMessageInfo } from './FaucetMessageInfo';
+import { Loader2 } from '@iota/apps-ui-icons';
 
 export function FaucetRequestButton(): JSX.Element | null {
     const network = useAppSelector(({ app }) => app.network);
@@ -26,38 +26,36 @@ export function FaucetRequestButton(): JSX.Element | null {
             }
         },
     });
-
-    if (!mutation.enabled) return null;
-
     const isLoading = mutation.isMutating;
-
-    function handleClick() {
-        toast.promise(
-            mutation.mutateAsync(),
-            {
-                loading: <FaucetMessageInfo loading />,
-                success: (totalReceived) => <FaucetMessageInfo totalReceived={totalReceived} />,
-                error: (error) => <FaucetMessageInfo error={error.message} />,
-            },
-            { duration: 5000 },
-        );
-    }
-
-    return (
+    return mutation.enabled ? (
         <div className="flex flex-col gap-xs">
             <Button
                 type={ButtonType.Secondary}
-                fullWidth
-                disabled={isRateLimited || isLoading}
-                onClick={handleClick}
+                disabled={isRateLimited}
+                onClick={() => {
+                    toast.promise(
+                        mutation.mutateAsync(),
+                        {
+                            loading: <FaucetMessageInfo loading />,
+                            success: (totalReceived) => (
+                                <FaucetMessageInfo totalReceived={totalReceived} />
+                            ),
+                            error: (error) => <FaucetMessageInfo error={error.message} />,
+                        },
+                        {
+                            duration: 5000,
+                        },
+                    );
+                }}
                 icon={isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
                 text={isLoading ? 'Requesting tokens…' : `Request ${networkConfig?.name} Tokens`}
+                testId="faucet-button"
             />
             {isRateLimited && (
-                <p className="text-center text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                    Rate limit reached — try again in a few minutes
+                <p className="dark:text-iota-neutral-60 text-center text-body-sm text-iota-neutral-40">
+                    Rate limit reached, please try again in a few minutes
                 </p>
             )}
         </div>
-    );
+    ) : null;
 }
