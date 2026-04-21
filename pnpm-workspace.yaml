@@ -1,8 +1,8 @@
 packages:
   - "apps/**"
   - "dapps/**"
-  - "docs/site"
   - "sdk/**"
+  - "packages/*"
   - "!**/dist/**"
   - "!**/.next/**"
   - "!sdk/create-dapp/templates/*"
@@ -32,4 +32,3 @@ packages:
   - "!sdk/examples/src/**/build"
 minimumReleaseAge: 2880
 blockExoticSubdeps: true
-trustPolicy: no-downgrade

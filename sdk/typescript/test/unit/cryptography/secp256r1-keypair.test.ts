@@ -74,7 +74,7 @@ describe('secp256r1-keypair', () => {
         const secretKey = fromBase64(secret_key_base64);
         expect(() => {
             Secp256r1Keypair.fromSecretKey(secretKey);
-        }).toThrow('private key must be 32 bytes, hex or bigint, not object');
+        }).toThrow('invalid private key: expected ui8a of size 32, got object');
     });
 
     it('generate keypair from random seed', () => {
