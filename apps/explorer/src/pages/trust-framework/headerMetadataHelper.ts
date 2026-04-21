@@ -4,12 +4,16 @@
 import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { parseStructTag } from '@iota/iota-sdk/utils';
 import { type OnChainNotarization } from '@iota/notarization/web';
+// TODO: use '@iota/audit-trail/web' after published
+import { type OnChainAuditTrail } from '@iota/audit-trail';
 import { type MetaItem } from '~/components/ui/PageHeaderMeta';
 
 const IDENTITY_MODULE = 'identity';
 const IDENTITY_METHOD = 'Identity';
 const NOTARIZATION_MODULE = 'notarization';
 const NOTARIZATION_METHOD = 'Notarization';
+const AUDIT_TRAIL_MODULE = 'main';
+const AUDIT_TRAIL_METHOD = 'AuditTrail';
 
 const metadata = {
     objectLegacyId: {
@@ -29,6 +33,15 @@ const metadata = {
         label: 'Type',
         visible: true,
         badge: 'IOTA Notarization',
+    },
+    auditTrailType: {
+        label: 'Type',
+        visible: true,
+        badge: 'IOTA Audit Trail',
+    },
+    auditTrailRecordsSize: {
+        label: 'Records Size',
+        visible: true,
     },
 };
 
@@ -167,5 +180,66 @@ export function getNotarizationType(
         value: notarizationObject.type,
         visible: metadata.identityType.visible,
         tooltipText,
+    } as MetaItem;
+}
+
+/**
+ * Determines the audit trail type of an Audit Trail Object based on its type.
+ *
+ * @param auditTrailObject - The IOTA object data to analyze.
+ * @param pkgId - The package ID to compare against for official audit trail package.
+ * @returns A MetaItem object containing identity type information, or null if
+ *          the objectData is null or has no type.
+ */
+export function getAuditTrailType(
+    auditTrailObject: IotaObjectData | null,
+    pkgId: string,
+): MetaItem | null {
+    if (auditTrailObject == null || auditTrailObject.type == null) {
+        return null;
+    }
+
+    const tooltipText =
+        'The method used to create and resolve this Audit Trail. "IOTA Audit Trail" is the Foundation\'s official audit trail framework, anchored onchain on IOTA L1.';
+
+    const {
+        address: _package,
+        module: _module,
+        name: _method,
+    } = parseStructTag(auditTrailObject.type);
+
+    if (_method === AUDIT_TRAIL_METHOD && _module === AUDIT_TRAIL_MODULE && _package === pkgId) {
+        // Official Audit Trail package for the current network
+        return {
+            label: metadata.auditTrailType.label,
+            value: metadata.auditTrailType.badge,
+            visible: metadata.auditTrailType.visible,
+            tooltipText,
+        } as MetaItem;
+    }
+
+    return {
+        label: metadata.auditTrailType.label,
+        value: auditTrailObject.type,
+        visible: metadata.auditTrailType.visible,
+        tooltipText,
+    } as MetaItem;
+}
+
+/**
+ * Extracts the quantity of records from an OnChainAuditTrail object.
+ *
+ * @param auditTrail - The OnChainAuditTrail object.
+ * @returns A MetaItem containing the quantity of records, or null if the object is null.
+ */
+export function getAuditTrailRecordsSize(auditTrail: OnChainAuditTrail | null): MetaItem | null {
+    if (auditTrail == null) {
+        return null;
+    }
+
+    return {
+        label: metadata.auditTrailRecordsSize.label,
+        value: auditTrail.records.size.toString(),
+        visible: metadata.auditTrailRecordsSize.visible,
     } as MetaItem;
 }

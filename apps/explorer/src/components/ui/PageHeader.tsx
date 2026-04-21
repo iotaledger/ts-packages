@@ -24,7 +24,8 @@ type PageHeaderType =
     | 'Object'
     | 'Package'
     | 'Identity'
-    | 'Notarization';
+    | 'Notarization'
+    | 'Audit Trail';
 
 export interface PageHeaderProps {
     title: string | React.JSX.Element;

@@ -18,7 +18,11 @@ import './index.css';
 import { Disclaimer, handleConsentAccepted } from '@iota/core';
 import { LEGAL_LINKS } from './lib';
 import { Link } from './components';
-import { initIdentityWasmWeb, initNotarizationWasmWeb } from './lib/utils/trust-framework/client';
+import {
+    initAuditTrailWasmWeb,
+    initIdentityWasmWeb,
+    initNotarizationWasmWeb,
+} from './lib/utils/trust-framework/client';
 
 // Load Amplitude as early as we can:
 initAmplitude();
@@ -28,6 +32,9 @@ initIdentityWasmWeb();
 
 // Load Notarization WASM module as early as we can:
 initNotarizationWasmWeb();
+
+// Load Audit Trail WASM module as early as we can:
+initAuditTrailWasmWeb();
 
 // Start loading features as early as we can:
 growthbook.refreshFeatures();

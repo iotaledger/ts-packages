@@ -17,6 +17,7 @@ import { ValidatorPageResult } from './validators/Validators';
 import { Layout } from '~/components';
 import { IdentityResult } from './trust-framework/identity-result/IdentityResult';
 import { NotarizationResult } from './trust-framework/notarization-result/NotarizationResult';
+import { AuditTrailResult } from './trust-framework/audit-trail-result/AuditTrailResult';
 
 interface RedirectWithIdProps {
     base: string;
@@ -48,6 +49,7 @@ export const router = sentryCreateBrowserRouter([
             { path: 'validator/:id', element: <ValidatorDetails /> },
             { path: 'identity/:id', element: <IdentityResult /> },
             { path: 'notarization/:id', element: <NotarizationResult /> },
+            { path: 'audit-trail/:id', element: <AuditTrailResult /> },
         ],
     },
     {
