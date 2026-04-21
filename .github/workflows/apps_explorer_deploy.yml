@@ -96,3 +96,13 @@ jobs:
               vercel alias set "$DEPLOYMENT_URL" explorer-rc-iota1.vercel.app $VERCEL_FLAGS
             fi
           fi
+
+  notify:
+    needs: [resolve-deploy-type, deploy]
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Explorer ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
+      message: "${{ needs.resolve-deploy-type.outputs.deploy_type == 'rc' && 'URL: https://explorer-rc-iota1.vercel.app' || 'Environment: production' }}"

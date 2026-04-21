@@ -72,6 +72,9 @@ jobs:
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
     permissions:
       contents: write
+    outputs:
+      artifact_name: ${{ steps.artifact.outputs.artifact_name }}
+      release_tag: ${{ steps.prev_tag.outputs.current_tag }}
     env:
       DEFAULT_NETWORK: ${{ secrets[needs.resolve-deploy-type.outputs.default_network_secret] }}
       IOTA_NETWORKS: ${{ secrets[needs.resolve-deploy-type.outputs.iota_networks_secret] }}
@@ -99,6 +102,7 @@ jobs:
         with:
           path: apps/wallet
       - name: Create artifact name
+        id: artifact
         shell: bash
         run: |
           if [ "$DEPLOY_TYPE" = "rc" ]; then
@@ -107,6 +111,7 @@ jobs:
             export artifact_name="iota-wallet-${{ steps.package-version.outputs.current-version }}"
           fi
           echo "artifact_name=${artifact_name}" >> $GITHUB_ENV
+          echo "artifact_name=${artifact_name}" >> $GITHUB_OUTPUT
       - name: Get Previous Tag
         if: env.DEPLOY_TYPE == 'production'
         id: prev_tag
@@ -121,6 +126,7 @@ jobs:
             echo "PREV_TAG=$prev_tag" >> $GITHUB_ENV
           fi
           echo "CURRENT_TAG=$current_tag" >> $GITHUB_ENV
+          echo "current_tag=$current_tag" >> $GITHUB_OUTPUT
       - name: Generate Changelog
         if: env.DEPLOY_TYPE == 'production'
         id: generate_changelog
@@ -174,3 +180,13 @@ jobs:
           draft: true
           prerelease: false
           body_path: CHANGELOG.md
+
+  notify:
+    needs: [resolve-deploy-type, wallet-build]
+    if: always() && needs.wallet-build.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.wallet-build.result == 'success' && 'success' || 'failure' }}
+      title: "Wallet ${{ needs.resolve-deploy-type.outputs.deploy_type }} build ${{ needs.wallet-build.result }}"
+      message: "Artifact: ${{ needs.wallet-build.outputs.artifact_name }}. ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && format('Release: {0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.wallet-build.outputs.release_tag) || format('Download artifacts: {0}/{1}/actions/runs/{2}#artifacts', github.server_url, github.repository, github.run_id) }}"

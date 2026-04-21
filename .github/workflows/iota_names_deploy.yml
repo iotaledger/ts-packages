@@ -135,3 +135,13 @@ jobs:
 
             vercel alias set "$URL" "${ALIAS_PREFIX}iota-names-${DEPLOY_TYPE}-iota1.vercel.app" $VERCEL_FLAGS
           fi
+
+  notify:
+    needs: [resolve-deploy-type, deploy]
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Names dApp ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
+      message: "${{ needs.resolve-deploy-type.outputs.deploy_type == 'rc' && 'Mainnet: https://iota-names-rc-iota1.vercel.app  Testnet: https://testnet-iota-names-rc-iota1.vercel.app' || 'Environment: production (mainnet + testnet)' }}"

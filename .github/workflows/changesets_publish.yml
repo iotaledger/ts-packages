@@ -120,3 +120,13 @@ jobs:
             echo "npm install @iota/dapp-kit@latest" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
+
+  notify:
+    needs: publish
+    if: always() && needs.publish.result != 'skipped' && github.event.inputs.release_type != 'experimental'
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
+      title: "NPM publish (${{ github.event.inputs.release_type }}) ${{ needs.publish.result }}"
+      message: "Packages: https://www.npmjs.com/package/@iota/iota-sdk  https://www.npmjs.com/package/@iota/dapp-kit"
