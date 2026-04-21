@@ -52,7 +52,7 @@ test('Sends funds to another account', async ({ page, extensionUrl }) => {
 
     await expect(page.getByTestId('coin-balance')).toHaveText('0');
 
-    await page.getByText(/Request localnet tokens/i).click();
+    await page.getByTestId('faucet-button').click();
 
     const balanceLocator = page.getByTestId('coin-balance');
     await expect(balanceLocator).not.toHaveText('0', { timeout: LONG_TIMEOUT });

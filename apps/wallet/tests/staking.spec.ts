@@ -105,7 +105,7 @@ test.describe('Staking functionality', () => {
             test.setTimeout(LONG_TIMEOUT);
             const { mnemonic, keypair } = await generateKeypair();
             await importWallet(page, extensionUrl, mnemonic);
-            await page.getByText(/Request localnet tokens/i).click();
+            await page.getByTestId('faucet-button').click();
             await expect(page.getByTestId('coin-balance')).not.toHaveText('0', {
                 timeout: SHORT_TIMEOUT,
             });
@@ -127,7 +127,7 @@ test.describe('Staking functionality', () => {
             test.setTimeout(LONG_TIMEOUT);
             const { mnemonic, keypair } = await generateKeypair();
             await importWallet(page, extensionUrl, mnemonic);
-            await page.getByText(/Request localnet tokens/i).click();
+            await page.getByTestId('faucet-button').click();
             await expect(page.getByTestId('coin-balance')).not.toHaveText('0', {
                 timeout: SHORT_TIMEOUT,
             });

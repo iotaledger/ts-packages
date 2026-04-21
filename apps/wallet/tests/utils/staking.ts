@@ -10,7 +10,7 @@ import { IotaClient } from '@iota/iota-sdk/client';
 
 export async function setupWalletWithFunds(page: Page, extensionUrl: string) {
     await createWallet(page, extensionUrl);
-    await page.getByText(/Request localnet tokens/i).click();
+    await page.getByTestId('faucet-button').click();
     await expect(page.getByTestId('coin-balance')).not.toHaveText('0', { timeout: SHORT_TIMEOUT });
 }
 
