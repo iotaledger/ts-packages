@@ -28,7 +28,7 @@ export function FaucetRequestButton(): JSX.Element | null {
     });
     const isLoading = mutation.isMutating;
     return mutation.enabled ? (
-        <div className="flex flex-col gap-xs">
+        <div className="flex w-full flex-col gap-xs">
             <Button
                 type={ButtonType.Secondary}
                 disabled={isRateLimited}
@@ -50,9 +50,10 @@ export function FaucetRequestButton(): JSX.Element | null {
                 icon={isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined}
                 text={isLoading ? 'Requesting tokens…' : `Request ${networkConfig?.name} Tokens`}
                 testId="faucet-button"
+                fullWidth
             />
             {isRateLimited && (
-                <p className="dark:text-iota-neutral-60 text-center text-body-sm text-iota-neutral-40">
+                <p className="text-center text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                     Rate limit reached, please try again in a few minutes
                 </p>
             )}

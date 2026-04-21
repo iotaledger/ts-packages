@@ -16,13 +16,12 @@ export function NetworkPage() {
 
     return (
         <PageTemplate title="Network">
-            <div className="flex h-full flex-col">
+            <div className="flex h-full flex-col justify-between">
                 <NetworkSelector />
                 {hasFaucet && (
                     <>
-                        <div className="flex-1" />
-                        <div className="border-t border-shader-neutral-light-8 pt-md dark:border-shader-neutral-dark-8">
-                            <p className="mb-sm text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        <div className="flex w-full flex-col items-center gap-y-sm border-t border-shader-neutral-light-8 pt-md dark:border-shader-neutral-dark-8">
+                            <p className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                                 Get free tokens for testing on this network
                             </p>
                             <FaucetRequestButton />
