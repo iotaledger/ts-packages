@@ -5,7 +5,12 @@ import { Badge, BadgeType, KeyValueInfo, Panel } from '@iota/apps-ui-kit';
 import { type IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { ArrowTopRight, IotaLogoMark } from '@iota/apps-ui-icons';
 import { AddressLink } from '~/components/ui';
-import { ImageIcon, ImageIconSize, useIsValidatorCommitteeMember, type IotaValidatorSummaryExtended } from '@iota/core';
+import {
+    ImageIcon,
+    ImageIconSize,
+    useIsValidatorCommitteeMember,
+    type IotaValidatorSummaryExtended,
+} from '@iota/core';
 import { onCopySuccess } from '~/lib/utils';
 
 type ValidatorMetaProps = {
