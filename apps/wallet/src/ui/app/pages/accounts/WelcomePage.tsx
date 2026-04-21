@@ -51,7 +51,7 @@ export function WelcomePage() {
                         />
                         <div className="flex flex-col gap-y-lg">
                             <div className="px-sm text-center text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
-                                By continuing, I agree to IOTA&apos;s{' '}
+                                By continuing, I agree to IOTA's{' '}
                                 <a
                                     href={ToS_LINK}
                                     target="_blank"
