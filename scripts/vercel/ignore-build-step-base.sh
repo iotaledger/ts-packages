@@ -14,4 +14,4 @@ ls -la ../../.turbo 2>/dev/null || echo "no root .turbo"
 ls -la .turbo 2>/dev/null || echo "no local .turbo"
 echo "--- turbo query ---"
 
-pnpx turbo query affected --packages "$PACKAGE_NAME" --base=HEAD^1 --exit-code
+pnpx turbo query affected --verbosity 2 --packages "$PACKAGE_NAME" --base=HEAD^1 --exit-code
