@@ -131,7 +131,8 @@ jobs:
 
   notify:
     needs: [resolve-deploy-type, deploy]
-    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    # TEMP: includes staging for testing Slack notifications; revert to RC/prod-only later
+    if: always() && needs.deploy.result != 'skipped'
     uses: ./.github/workflows/_slack_notify.yml
     secrets: inherit
     with:
