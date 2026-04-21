@@ -7,7 +7,7 @@ import { type SerializedUIAccount } from '_src/background/accounts/account';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { Account } from '@iota/apps-ui-kit';
 import { formatAccountName } from '../../helpers';
-import { useGetDefaultIotaName, NameAvatar } from '@iota/core';
+import { NameAvatar, NameAvatarSize, useGetDefaultIotaName } from '@iota/core';
 
 interface AccountItemApproveConnectionProps {
     account: SerializedUIAccount;
@@ -37,10 +37,12 @@ export function AccountItemApproveConnection({
                 isSelected={selected}
                 showSelected={true}
                 avatarContent={() => (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-iota-neutral-100">
+                    <div className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-iota-neutral-100">
                         <NameAvatar
                             address={account.address}
                             fallback={<AccountIcon account={account} />}
+                            size={NameAvatarSize.Xs}
+                            showFallback
                         />
                     </div>
                 )}
