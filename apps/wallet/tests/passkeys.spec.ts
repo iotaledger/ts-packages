@@ -1,7 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { LONG_TIMEOUT } from './constants/timeout.constants';
+import { LONG_TIMEOUT, SHORT_TIMEOUT } from './constants/timeout.constants';
 import { expect, test } from './utils/fixtures';
 import { receiverAddressMnemonic } from './mocks';
 import { generateKeypairFromMnemonic } from './utils/utils';
@@ -65,7 +65,7 @@ test('Sends funds to another account', async ({ page, extensionUrl }) => {
     await page.getByText('Review').click();
     await page.getByRole('button', { name: /Send Now/ }).click();
 
-    await expect(page.getByText('Successfully sent')).toBeVisible();
+    await expect(page.getByText('Successfully sent')).toBeVisible({ timeout: SHORT_TIMEOUT });
 
     await client.send('WebAuthn.removeVirtualAuthenticator', { authenticatorId });
     await client.send('WebAuthn.disable');

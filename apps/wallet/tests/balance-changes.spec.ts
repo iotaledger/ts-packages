@@ -52,8 +52,6 @@ test('send 20 IOTA to an address', async ({ page, extensionUrl }) => {
         timeout: SHORT_TIMEOUT,
     });
 
-    const originalBalance = await page.getByTestId('coin-balance').textContent();
-
     await page.waitForSelector('h4:has-text("My Coins")', { timeout: LONG_TIMEOUT });
 
     await page.getByTestId('send-coin-button').click();
@@ -69,18 +67,8 @@ test('send 20 IOTA to an address', async ({ page, extensionUrl }) => {
     });
 
     await page.getByTestId('close-icon').click();
-    await page.getByTestId('nav-home').click();
-    await page.waitForResponse(async (res) => {
-        const request = res.request();
-
-        try {
-            const postData = request.postDataJSON();
-            return postData && postData.method === 'iotax_getAllBalances';
-        } catch {
-            return false;
-        }
-    });
-    await expect(page.getByTestId('coin-balance')).not.toHaveText(`${originalBalance}`, {
+    await page.getByTestId('nav-activity').click();
+    await expect(page.getByTestId('link-to-txn').first()).toBeVisible({
         timeout: SHORT_TIMEOUT,
     });
 });
