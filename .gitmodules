@@ -1,0 +1,8 @@
+[submodule "external/names"]
+	path = external/names
+	url = https://github.com/iotaledger/iota-names
+	shallow = true
+[submodule "external/iota"]
+	path = external/iota
+	url = https://github.com/iotaledger/iota
+	shallow = true

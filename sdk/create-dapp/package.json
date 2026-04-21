@@ -3,8 +3,8 @@
     "author": "IOTA Foundation <info@iota.org>",
     "description": "A CLI for creating new IOTA dApps",
     "homepage": "https://docs.iota.org/ts-sdk/typescript/",
-    "repository": "https://github.com/iotaledger/iota",
-    "version": "0.4.4",
+    "repository": "https://github.com/iotaledger/ts-packages",
+    "version": "0.4.6",
     "license": "Apache-2.0",
     "files": [
         "CHANGELOG.md",
@@ -29,7 +29,7 @@
         "lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
     },
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues/new"
+        "url": "https://github.com/iotaledger/ts-packages/issues/new"
     },
     "devDependencies": {
         "@iota/build-scripts": "workspace:*",

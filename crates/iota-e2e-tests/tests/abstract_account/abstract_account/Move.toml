@@ -1,9 +1,0 @@
-[package]
-name = "abstract_account"
-edition = "2024"
-
-[dependencies]
-Iota = { local = "../../../../iota-framework/packages/iota-framework" }
-
-[addresses]
-abstract_account = "0x0"

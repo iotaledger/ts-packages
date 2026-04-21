@@ -1,6 +1,6 @@
 {
     "name": "@iota/graphql-transport",
-    "version": "0.14.0",
+    "version": "0.16.0",
     "description": "A GraphQL transport to allow IotaClient to work with RPC 2.0",
     "license": "Apache-2.0",
     "author": "IOTA Foundation <info@iota.org>",
@@ -33,11 +33,11 @@
         "test:e2e:prepare": "docker-compose down && docker-compose up -d && cargo build --bin iota-localnet --features indexer --profile dev && cross-env RUST_LOG=info,iota=error,anemo_tower=warn,consensus=off cargo run --features indexer --bin iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql",
         "test:e2e": "wait-on http://127.0.0.1:9123 -l --timeout 180000 && vitest"
     },
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     },
-    "homepage": "https://github.com/iotaledger/iota#readme",
+    "homepage": "https://github.com/iotaledger/ts-packages#readme",
     "devDependencies": {
         "@graphql-codegen/add": "^5.0.3",
         "@graphql-codegen/cli": "^5.0.2",

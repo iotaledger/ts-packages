@@ -1,6 +1,6 @@
 {
     "name": "@iota/signers",
-    "version": "0.3.3",
+    "version": "0.4.1",
     "description": "A collection of signers for various providers",
     "license": "Apache-2.0",
     "author": "IOTA Foundation <info@iota.org>",
@@ -36,11 +36,11 @@
         "lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix",
         "test": "echo 'No tests specified for sdk/signers package yet.'"
     },
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     },
-    "homepage": "https://github.com/iotaledger/iota#readme",
+    "homepage": "https://github.com/iotaledger/ts-packages#readme",
     "devDependencies": {
         "@iota/build-scripts": "workspace:*",
         "@types/node": "^24.0.0",
