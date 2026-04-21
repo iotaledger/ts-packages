@@ -43,8 +43,13 @@ export function useGetCandidateValidators(validatorAddress?: string) {
         },
         enabled: !!validatorCandidatesId,
         select(candidateValidators) {
-            const candidates = candidateValidators.map((v) => ({ ...v, isCandidate: true as const }));
-            return validatorAddress ? (candidates.find((v) => v.iotaAddress === validatorAddress) ?? null) : candidates;
+            const candidates = candidateValidators.map((v) => ({
+                ...v,
+                isCandidate: true as const,
+            }));
+            return validatorAddress
+                ? (candidates.find((v) => v.iotaAddress === validatorAddress) ?? null)
+                : candidates;
         },
     });
 
