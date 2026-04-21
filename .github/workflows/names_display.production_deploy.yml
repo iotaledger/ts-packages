@@ -66,4 +66,8 @@ jobs:
     with:
       status: ${{ needs.build-and-deploy.result == 'success' && 'success' || 'failure' }}
       title: "Names Display production build ${{ needs.build-and-deploy.result }}"
-      message: "Image: ghcr.io/iotaledger/iota-names/iota-names-display:${{ needs.build-and-deploy.outputs.version }}"
+      message: |
+        Environment: production
+        Image: ghcr.io/iotaledger/iota-names/iota-names-display:${{ needs.build-and-deploy.outputs.version }}
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

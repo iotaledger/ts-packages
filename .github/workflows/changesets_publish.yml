@@ -129,4 +129,9 @@ jobs:
     with:
       status: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
       title: "NPM publish (${{ github.event.inputs.release_type }}) ${{ needs.publish.result }}"
-      message: "Packages: https://www.npmjs.com/package/@iota/iota-sdk  https://www.npmjs.com/package/@iota/dapp-kit"
+      message: |
+        Release type: ${{ github.event.inputs.release_type }}
+        @iota/iota-sdk: https://www.npmjs.com/package/@iota/iota-sdk
+        @iota/dapp-kit: https://www.npmjs.com/package/@iota/dapp-kit
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

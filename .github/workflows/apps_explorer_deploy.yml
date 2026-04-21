@@ -52,6 +52,9 @@ jobs:
     permissions:
       contents: read
 
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.EXPLORER_VERCEL_PROJECT_ID }}
@@ -71,6 +74,7 @@ jobs:
       - name: Install Vercel CLI
         run: pnpm add --global vercel@canary
       - name: Pull Vercel Env variables and deploy
+        id: deploy
         run: |
           DEPLOY_TYPE="${{ needs.resolve-deploy-type.outputs.deploy_type }}"
           VERCEL_FLAGS="--token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}"
@@ -89,13 +93,18 @@ jobs:
           if [ "$DEPLOY_TYPE" = "production" ]; then
             vercel build --prod $VERCEL_FLAGS
             vercel deploy --prod --prebuilt $VERCEL_FLAGS
+            PUBLIC_URL="https://explorer.iota.org"
           else
             vercel build $VERCEL_FLAGS
-            DEPLOYMENT_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
             if [ "$DEPLOY_TYPE" = "rc" ]; then
-              vercel alias set "$DEPLOYMENT_URL" explorer-rc-iota1.vercel.app $VERCEL_FLAGS
+              vercel alias set "$(vercel deploy --prebuilt $VERCEL_FLAGS)" explorer-rc-iota1.vercel.app $VERCEL_FLAGS
+              PUBLIC_URL="https://explorer-rc-iota1.vercel.app"
+            else
+              PUBLIC_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
             fi
           fi
+
+          echo "url=$PUBLIC_URL" >> "$GITHUB_OUTPUT"
 
   notify:
     needs: [resolve-deploy-type, deploy]
@@ -106,4 +115,8 @@ jobs:
     with:
       status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
       title: "Explorer ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
-      message: "${{ needs.resolve-deploy-type.outputs.deploy_type == 'rc' && 'URL: https://explorer-rc-iota1.vercel.app' || 'Environment: production' }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        URL: ${{ needs.deploy.outputs.url }}
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

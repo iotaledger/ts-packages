@@ -111,4 +111,8 @@ jobs:
     with:
       status: ${{ needs.build-and-deploy.result == 'success' && 'success' || 'failure' }}
       title: "Apps Backend ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.build-and-deploy.result }}"
-      message: "Image: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ needs.build-and-deploy.outputs.version }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Image: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ needs.build-and-deploy.outputs.version }}
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

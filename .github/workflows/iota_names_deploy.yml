@@ -145,4 +145,9 @@ jobs:
     with:
       status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
       title: "Names dApp ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
-      message: "${{ needs.resolve-deploy-type.outputs.deploy_type == 'rc' && 'Mainnet: https://iota-names-rc-iota1.vercel.app  Testnet: https://testnet-iota-names-rc-iota1.vercel.app' || 'Environment: production (mainnet + testnet)' }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Mainnet URL: ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && 'https://iotanames.com' || format('https://iota-names-{0}-iota1.vercel.app', needs.resolve-deploy-type.outputs.deploy_type) }}
+        Testnet URL: ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && '(testnet production domain — not in repo; set in Vercel)' || format('https://testnet-iota-names-{0}-iota1.vercel.app', needs.resolve-deploy-type.outputs.deploy_type) }}
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

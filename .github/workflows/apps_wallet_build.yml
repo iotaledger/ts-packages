@@ -189,4 +189,9 @@ jobs:
     with:
       status: ${{ needs.wallet-build.result == 'success' && 'success' || 'failure' }}
       title: "Wallet ${{ needs.resolve-deploy-type.outputs.deploy_type }} build ${{ needs.wallet-build.result }}"
-      message: "Artifact: ${{ needs.wallet-build.outputs.artifact_name }}. ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && format('Release: {0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.wallet-build.outputs.release_tag) || format('Download artifacts: {0}/{1}/actions/runs/{2}#artifacts', github.server_url, github.repository, github.run_id) }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Artifact: ${{ needs.wallet-build.outputs.artifact_name }}
+        ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && format('Release: {0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.wallet-build.outputs.release_tag) || format('Artifacts: {0}/{1}/actions/runs/{2}#artifacts', github.server_url, github.repository, github.run_id) }}
+        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
