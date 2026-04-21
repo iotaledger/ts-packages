@@ -43,6 +43,7 @@ import {
     ReceiptPage,
     TransactionBlocksPage,
     TransferCoinPage,
+    JoinCoinsPage,
 } from './pages/home';
 import { TokenDetailsPage } from './pages/home/tokens/TokenDetailsPage';
 import { RestrictedPage } from './pages/restricted';
@@ -65,6 +66,7 @@ const HIDDEN_MENU_PATHS = [
     '/send',
     '/send/select',
     '/apps/disconnectapp',
+    '/join-coins',
 ];
 
 const NOTIFY_USER_ACTIVE_INTERVAL = 5 * 1000; // 5 seconds
@@ -167,6 +169,7 @@ export function App() {
                 <Route path="nfts/*" element={<AssetsPage />} />
                 <Route path="receipt" element={<ReceiptPage />} />
                 <Route path="send" element={<TransferCoinPage />} />
+                <Route path="join-coins" element={<JoinCoinsPage />} />
                 <Route path="send/select" element={<CoinsSelectorPage />} />
                 <Route path="stake/*" element={<StakingPage />} />
                 <Route path="tokens/*" element={<TokenDetailsPage />} />
