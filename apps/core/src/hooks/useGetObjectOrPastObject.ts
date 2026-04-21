@@ -19,7 +19,7 @@ interface UseGetObjectOrPastObject extends IotaObjectResponse {
     isViewingPastVersion?: boolean | IotaObjectData | null;
 }
 
-export const getObjectOrPastObjectQuery = <TSelectData>(
+export const getObjectOrPastObjectQuery = <TSelectData = UseGetObjectOrPastObject | null>(
     client: IotaClient,
     objectId?: string | null,
     select?: (data: UseGetObjectOrPastObject | null) => TSelectData,
@@ -123,9 +123,9 @@ export const getObjectOrPastObjectQuery = <TSelectData>(
     };
 };
 
-export function useGetObjectOrPastObject<TData = UseGetObjectOrPastObject | null>(
+export function useGetObjectOrPastObject(
     objectId?: string | null,
-): UseQueryResult<TData> {
+): UseQueryResult<UseGetObjectOrPastObject | null> {
     const client = useIotaClient();
     return useQuery(getObjectOrPastObjectQuery(client, objectId));
 }

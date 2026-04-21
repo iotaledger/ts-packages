@@ -70,6 +70,7 @@ export class FeaturesController {
                         dismissKey: '',
                         imageUrl: '',
                         bannerUrl: '',
+                        minVersion: '',
                     },
                 },
                 [Feature.PollingTxnTable]: {
@@ -142,6 +143,7 @@ export class FeaturesController {
                         dismissKey: '',
                         imageUrl: '',
                         bannerUrl: '',
+                        minVersion: '',
                     },
                 },
                 [Feature.PollingTxnTable]: {

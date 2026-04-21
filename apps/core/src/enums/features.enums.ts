@@ -8,7 +8,7 @@ export enum Feature {
     WalletDapps = 'wallet-dapps',
     WalletBalanceRefetchInterval = 'wallet-balance-refetch-interval',
     WalletAppsBannerConfig = 'wallet-apps-banner-config',
-    WalletInterstitialConfig = 'wallet-interstitial-config',
+    WalletInterstitialConfig = 'wallet-interstitial-configuration',
     RecognizedPackages = 'recognized-packages',
     WalletSentryTracing = 'wallet-sentry-tracing',
     PollingTxnTable = 'polling-txn-table',
