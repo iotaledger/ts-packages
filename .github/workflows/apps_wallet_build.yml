@@ -75,6 +75,7 @@ jobs:
     outputs:
       artifact_name: ${{ steps.artifact.outputs.artifact_name }}
       release_tag: ${{ steps.prev_tag.outputs.current_tag }}
+      artifact_link: ${{ steps.artifact-link.outputs.line }}
     env:
       DEFAULT_NETWORK: ${{ secrets[needs.resolve-deploy-type.outputs.default_network_secret] }}
       IOTA_NETWORKS: ${{ secrets[needs.resolve-deploy-type.outputs.iota_networks_secret] }}
@@ -181,6 +182,17 @@ jobs:
           prerelease: false
           body_path: CHANGELOG.md
 
+      - name: Compose artifact link for Slack
+        id: artifact-link
+        if: always()
+        shell: bash
+        run: |
+          if [ "$DEPLOY_TYPE" = "production" ]; then
+            echo "line=Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
+          else
+            echo "line=Artifacts: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> "$GITHUB_OUTPUT"
+          fi
+
   notify:
     needs: [resolve-deploy-type, wallet-build]
     if: always() && needs.wallet-build.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
@@ -192,6 +204,6 @@ jobs:
       message: |
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
         Artifact: ${{ needs.wallet-build.outputs.artifact_name }}
-        ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && format('Release: {0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.wallet-build.outputs.release_tag) || format('Artifacts: {0}/{1}/actions/runs/{2}#artifacts', github.server_url, github.repository, github.run_id) }}
+        ${{ needs.wallet-build.outputs.artifact_link }}
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
