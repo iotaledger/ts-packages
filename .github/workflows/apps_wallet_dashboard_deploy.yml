@@ -101,8 +101,7 @@ jobs:
 
   notify:
     needs: [resolve-deploy-type, deploy]
-    # TEMP: includes staging for testing Slack notifications; revert to RC/prod-only later
-    if: always() && needs.deploy.result != 'skipped'
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
     uses: ./.github/workflows/_slack_notify.yml
     secrets: inherit
     with:
@@ -111,5 +110,5 @@ jobs:
       message: |
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
         URL: ${{ needs.deploy.outputs.url }}
-        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 

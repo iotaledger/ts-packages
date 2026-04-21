@@ -133,5 +133,5 @@ jobs:
         Release type: ${{ github.event.inputs.release_type }}
         @iota/iota-sdk: https://www.npmjs.com/package/@iota/iota-sdk
         @iota/dapp-kit: https://www.npmjs.com/package/@iota/dapp-kit
-        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 

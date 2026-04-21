@@ -69,5 +69,5 @@ jobs:
       message: |
         Environment: production
         Image: ghcr.io/iotaledger/iota-names/iota-names-display:${{ needs.build-and-deploy.outputs.version }}
-        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 

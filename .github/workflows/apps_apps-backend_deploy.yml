@@ -104,8 +104,7 @@ jobs:
 
   notify:
     needs: [resolve-deploy-type, build-and-deploy]
-    # TEMP: includes staging for testing Slack notifications; revert to RC/prod-only later
-    if: always() && needs.build-and-deploy.result != 'skipped'
+    if: always() && needs.build-and-deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
     uses: ./.github/workflows/_slack_notify.yml
     secrets: inherit
     with:
@@ -114,5 +113,5 @@ jobs:
       message: |
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
         Image: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ needs.build-and-deploy.outputs.version }}
-        Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
