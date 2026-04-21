@@ -20,7 +20,7 @@ import type {
 const packageRoot = path.resolve(import.meta.url.slice(5), '../..');
 const openRpcSpec: OpenRpcSpec = JSON.parse(
     await fs.readFile(
-        path.resolve(packageRoot, '../../crates/iota-open-rpc/spec/openrpc.json'),
+        path.resolve(packageRoot, '../../external/iota/crates/iota-open-rpc/spec/openrpc.json'),
         'utf-8',
     ),
 );

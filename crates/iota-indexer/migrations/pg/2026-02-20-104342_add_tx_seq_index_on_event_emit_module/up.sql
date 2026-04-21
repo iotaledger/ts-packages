@@ -1,1 +1,0 @@
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_event_emit_module_tx_seq ON event_emit_module (tx_sequence_number);

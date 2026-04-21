@@ -1,1 +1,0 @@
-DROP VIEW IF EXISTS network_metrics CASCADE;

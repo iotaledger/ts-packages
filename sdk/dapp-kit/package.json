@@ -4,7 +4,7 @@
     "description": "A collection of React hooks and components for interacting with the IOTA blockchain and wallets.",
     "homepage": "https://docs.iota.org/developer/ts-sdk/dapp-kit/",
     "repository": "https://github.com/iotaledger/iota",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "license": "Apache-2.0",
     "files": [
         "CHANGELOG.md",
@@ -71,7 +71,7 @@
         "vitest": "^3.2.4"
     },
     "dependencies": {
-        "@iota/iota-names-sdk": "^0.6.1",
+        "@iota/iota-names-sdk": "workspace:^",
         "@iota/iota-sdk": "workspace:*",
         "@iota/wallet-standard": "workspace:*",
         "@radix-ui/react-dialog": "^1.1.1",
