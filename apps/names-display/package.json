@@ -22,7 +22,7 @@
         "@iota/iota-names-sdk": "workspace:^",
         "@types/text-to-svg": "^3.1.4",
         "dotenv": "^16.4.5",
-        "fastify": "^5.7.2",
+        "fastify": "^5.8.5",
         "pino-pretty": "^13.0.0",
         "text-to-svg": "^3.1.5",
         "tsx": "^4.8.1",
