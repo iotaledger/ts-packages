@@ -9,7 +9,7 @@ packages="bcs dapp-kit graphql-transport isc-sdk kiosk ledgerjs-hw-app-iota name
 for package in $packages; do
     # Generate typedoc for the package from its own directory
     cd "sdk/${package}" || exit
-    ../../node_modules/.bin/typedoc \
+    pnpm exec typedoc \
         --options typedoc.json \
         --plugin typedoc-plugin-markdown \
         --readme none \
