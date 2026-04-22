@@ -31,14 +31,26 @@ export function useGetCandidateValidators(validatorAddress?: string) {
             if (!validatorCandidatesId) {
                 throw Error('Missing validatorCandidatesId');
             }
-            const candidateEntries = await iotaClient.getDynamicFields({
-                parentId: normalizeIotaAddress(validatorCandidatesId),
-            });
-            const candidateValidators = await Promise.all(
-                candidateEntries.data.map((entry) =>
-                    getValidatorsMetadata(iotaClient, entry.objectId),
-                ),
+            const results = [];
+            let cursor = null;
+            do {
+                const page = await iotaClient.getDynamicFields({
+                    parentId: normalizeIotaAddress(validatorCandidatesId),
+                    cursor,
+                });
+                results.push(...page.data);
+                cursor = page.hasNextPage ? page.nextCursor : null;
+            } while (cursor);
+
+            const allCandidates = await Promise.allSettled(
+                results.map((entry) => getValidatorsMetadata(iotaClient, entry.objectId)),
             );
+            const candidateValidators = allCandidates
+                .filter(
+                    (r): r is PromiseFulfilledResult<IotaValidatorSummaryExtended> =>
+                        r.status === 'fulfilled' && r.value !== null,
+                )
+                .map((r) => r.value);
             return candidateValidators.filter((v): v is IotaValidatorSummaryExtended => v !== null);
         },
         enabled: !!validatorCandidatesId,

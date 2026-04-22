@@ -234,7 +234,7 @@ function ValidatorPageResult(): JSX.Element {
             includeColumns,
             currentEpoch: data.epoch,
         });
-    }, [data, sanitizedCandidateValidatorsData, validatorEvents, validatorsApy, maxCommitteeSize]);
+    }, [data, validatorEvents, validatorsApy, maxCommitteeSize]);
 
     const activeCommitteeSize = data?.committeeMembers.length ?? null;
     const protocolVersion = data?.protocolVersion ?? null;

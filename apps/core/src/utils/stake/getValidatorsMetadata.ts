@@ -1,41 +1,11 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaClient, MoveStruct, MoveValue } from '@iota/iota-sdk/client';
-import { normalizeIotaAddress, toBase64 } from '@iota/iota-sdk/utils';
+import type { IotaClient } from '@iota/iota-sdk/client';
+import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorSchema } from '../../types';
 import type { IotaValidatorSummaryExtended } from '../../types';
-
-function isMoveStructWithFields(
-    data: MoveStruct,
-): data is { fields: { [key: string]: MoveValue }; type: string } {
-    return (
-        typeof data === 'object' &&
-        data !== null &&
-        'fields' in data &&
-        typeof data.fields === 'object' &&
-        data.fields !== null
-    );
-}
-
-function getMoveFields(object: MoveStruct): { [key: string]: MoveValue } {
-    if (isMoveStructWithFields(object)) {
-        return object.fields as { [key: string]: MoveValue };
-    }
-    return {};
-}
-
-interface MoveStructFields {
-    fields: { [key: string]: MoveValue };
-}
-
-/** Convert a MoveValue byte array to a base64 string. */
-function bytesToBase64(value: MoveValue | undefined): string {
-    if (Array.isArray(value)) {
-        return toBase64(new Uint8Array(value as number[]));
-    }
-    return typeof value === 'string' ? value : '';
-}
+import { bytesToBase64, getMoveFields, MoveStructFields } from './helpers';
 
 /**
  * Fetch the full validator metadata from a validator wrapper object.
@@ -58,8 +28,7 @@ export async function getValidatorsMetadata(
     }
     const dynamicFields = await client.getDynamicFields({
         parentId: normalizeIotaAddress(validatorFieldId),
-        cursor: null,
-        limit: 10,
+        limit: 1,
     });
     const dfObjectId = dynamicFields.data?.[0]?.objectId;
     const dfObject = await client.getObject({
