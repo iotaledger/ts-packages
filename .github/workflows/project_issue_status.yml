@@ -162,7 +162,7 @@ jobs:
             jq -r '.data.node.project.fields.nodes[] | select(.name=="Status") | .id')
           OPTION_ID=$(echo "$FIELD_DATA" | \
             jq -r --arg target "$TARGET" \
-            '.data.node.project.fields.nodes[] | select(.name=="Status") | .options[] | select(.name==$target) | .id')
+            '.data.node.project.fields.nodes[] | select(.name=="Status") | .options[] | select(.name | ascii_downcase | contains($target | ascii_downcase)) | .id')
 
           if [[ -z "$STATUS_FIELD_ID" || -z "$OPTION_ID" ]]; then
             echo "Could not find Status field or option '$TARGET' — check project field names."
