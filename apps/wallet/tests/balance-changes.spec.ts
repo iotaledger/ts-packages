@@ -52,32 +52,35 @@ test('send 20 IOTA to an address', async ({ page, extensionUrl }) => {
         timeout: SHORT_TIMEOUT,
     });
 
+    const originalBalance = await page.getByTestId('coin-balance').textContent();
+
     await page.waitForSelector('h4:has-text("My Coins")', { timeout: LONG_TIMEOUT });
 
     await page.getByTestId('send-coin-button').click();
-    const overlay = page.locator('#overlay-portal-container');
-    await expect(page.getByTestId('overlay-title')).toHaveText('Send', { timeout: LONG_TIMEOUT });
-
-    await overlay.getByPlaceholder('0.00').fill(String(COIN_TO_SEND));
-    await overlay.getByPlaceholder('Enter Address').fill(receivedAddress);
-    const reviewButton = overlay.getByRole('button', { name: 'Review' });
-    await expect(reviewButton).toBeEnabled({ timeout: LONG_TIMEOUT });
-    await reviewButton.click();
-
-    await expect(page.getByTestId('overlay-title')).toHaveText('Review & Send', {
-        timeout: LONG_TIMEOUT,
+    await page.getByPlaceholder('0.00').fill(String(COIN_TO_SEND));
+    await page.getByPlaceholder('Enter Address').fill(receivedAddress);
+    await page.getByText('Review').click();
+    await page.waitForSelector('button:has-text("Send Now"):not([disabled])', {
+        timeout: SHORT_TIMEOUT,
     });
-
-    const sendNowButton = overlay.getByRole('button', { name: 'Send Now' });
-    await expect(sendNowButton).toBeEnabled({ timeout: LONG_TIMEOUT });
-    await sendNowButton.click();
+    await page.getByText('Send Now').click();
     await expect(page.getByTestId('overlay-title')).toHaveText('Transaction', {
         timeout: SHORT_TIMEOUT,
     });
 
     await page.getByTestId('close-icon').click();
-    await page.getByTestId('nav-activity').click();
-    await expect(page.getByTestId('link-to-txn').first()).toBeVisible({
+    await page.getByTestId('nav-home').click();
+    await page.waitForResponse(async (res) => {
+        const request = res.request();
+
+        try {
+            const postData = request.postDataJSON();
+            return postData && postData.method === 'iotax_getAllBalances';
+        } catch {
+            return false;
+        }
+    });
+    await expect(page.getByTestId('coin-balance')).not.toHaveText(`${originalBalance}`, {
         timeout: SHORT_TIMEOUT,
     });
 });

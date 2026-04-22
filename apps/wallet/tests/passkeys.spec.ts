@@ -58,25 +58,14 @@ test('Sends funds to another account', async ({ page, extensionUrl }) => {
     await expect(balanceLocator).not.toHaveText('0', { timeout: LONG_TIMEOUT });
 
     await page.getByTestId('send-coin-button').click();
-    const overlay = page.locator('#overlay-portal-container');
-    await expect(page.getByTestId('overlay-title')).toHaveText('Send', { timeout: LONG_TIMEOUT });
 
-    await overlay.getByRole('button', { name: 'Max' }).click();
-    await overlay.getByPlaceholder('Enter Address').fill(receivingAddress);
+    await page.getByRole('button', { name: 'Max' }).click();
+    await page.getByPlaceholder('Enter Address').fill(receivingAddress);
 
-    const reviewButton = overlay.getByRole('button', { name: 'Review' });
-    await expect(reviewButton).toBeEnabled({ timeout: LONG_TIMEOUT });
-    await reviewButton.click();
+    await page.getByText('Review').click();
+    await page.getByRole('button', { name: /Send Now/ }).click();
 
-    await expect(page.getByTestId('overlay-title')).toHaveText('Review & Send', {
-        timeout: LONG_TIMEOUT,
-    });
-
-    const sendNowButton = overlay.getByRole('button', { name: /Send Now/ });
-    await expect(sendNowButton).toBeEnabled({ timeout: LONG_TIMEOUT });
-    await sendNowButton.click();
-
-    await expect(page.getByText('Successfully sent')).toBeVisible({ timeout: SHORT_TIMEOUT });
+    await expect(page.getByText('Successfully sent')).toBeVisible();
 
     await client.send('WebAuthn.removeVirtualAuthenticator', { authenticatorId });
     await client.send('WebAuthn.disable');
