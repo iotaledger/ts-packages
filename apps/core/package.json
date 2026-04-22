@@ -6,7 +6,7 @@
     "author": "IOTA Foundation <info@iota.org>",
     "repository": {
         "type": "git",
-        "url": "github.com:iotaledger/iota.git"
+        "url": "github.com:iotaledger/ts-packages.git"
     },
     "license": "Apache-2.0",
     "scripts": {
