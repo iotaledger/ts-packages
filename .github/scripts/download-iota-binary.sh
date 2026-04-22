@@ -10,6 +10,8 @@ arch_name=$(uname -m)
 [[ "$arch_name" == "aarch64" ]] && arch_name="arm64"
 os_type="${os_name}-${arch_name}"
 
+gh --version
+
 run_id=$(gh run list --repo iotaledger/iota --workflow=release.yml \
     --status=success --limit=20 \
     --json databaseId,event \
