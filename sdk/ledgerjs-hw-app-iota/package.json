@@ -12,11 +12,11 @@
     ],
     "author": "IOTA Foundation <info@iota.org>",
     "license": "Apache-2.0",
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     },
-    "homepage": "https://github.com/iotaledger/iota/sdk/ledgerjs-hw-app-iota/#readme",
+    "homepage": "https://github.com/iotaledger/ts-packages/sdk/ledgerjs-hw-app-iota/#readme",
     "files": [
         "CHANGELOG.md",
         "dist",
