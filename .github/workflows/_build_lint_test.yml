@@ -1,6 +1,7 @@
 name: TS Lint, Build, and Test
 
 on:
+  workflow_dispatch:
   workflow_call:
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
