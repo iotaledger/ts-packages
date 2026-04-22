@@ -57,11 +57,13 @@ test('send 20 IOTA to an address', async ({ page, extensionUrl }) => {
     await page.getByTestId('send-coin-button').click();
     await page.getByPlaceholder('0.00').fill(String(COIN_TO_SEND));
     await page.getByPlaceholder('Enter Address').fill(receivedAddress);
-    await page.getByText('Review').click();
-    await page.waitForSelector('button:has-text("Send Now"):not([disabled])', {
-        timeout: SHORT_TIMEOUT,
-    });
-    await page.getByText('Send Now').click();
+    const reviewButton = page.getByRole('button', { name: 'Review' });
+    await expect(reviewButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+    await reviewButton.click();
+
+    const sendNowButton = page.getByRole('button', { name: 'Send Now' });
+    await expect(sendNowButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+    await sendNowButton.click();
     await expect(page.getByTestId('overlay-title')).toHaveText('Transaction', {
         timeout: SHORT_TIMEOUT,
     });

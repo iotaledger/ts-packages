@@ -62,8 +62,13 @@ test('Sends funds to another account', async ({ page, extensionUrl }) => {
     await page.getByRole('button', { name: 'Max' }).click();
     await page.getByPlaceholder('Enter Address').fill(receivingAddress);
 
-    await page.getByText('Review').click();
-    await page.getByRole('button', { name: /Send Now/ }).click();
+    const reviewButton = page.getByRole('button', { name: 'Review' });
+    await expect(reviewButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+    await reviewButton.click();
+
+    const sendNowButton = page.getByRole('button', { name: /Send Now/ });
+    await expect(sendNowButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+    await sendNowButton.click();
 
     await expect(page.getByText('Successfully sent')).toBeVisible({ timeout: SHORT_TIMEOUT });
 
