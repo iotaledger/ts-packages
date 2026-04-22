@@ -11,8 +11,9 @@ arch_name=$(uname -m)
 os_type="${os_name}-${arch_name}"
 
 run_id=$(gh run list --repo iotaledger/iota --workflow=release.yml \
-    --event=schedule --status=success --limit=1 \
-    --json databaseId --jq '.[0].databaseId')
+    --status=success --limit=20 \
+    --json databaseId,event \
+    --jq '[.[] | select(.event == "schedule")] | .[0].databaseId')
 
 gh run download "$run_id" --repo iotaledger/iota \
     --pattern "iota-nightly-*-${os_type}" --dir .
