@@ -90,18 +90,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   build:
-    if: (!cancelled() && !failure() && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
+    if: >-
+      !cancelled() && !failure()
+      && (
+        needs.diff.outputs.isExplorer == 'true'
+        || needs.diff.outputs.isTypescriptSDK == 'true'
+        || needs.diff.outputs.isWallet == 'true'
+        || needs.diff.outputs.isWalletDashboard == 'true'
+        || needs.diff.outputs.isEvmBridge == 'true'
+        || needs.diff.outputs.isNamesSDK == 'true'
+        || needs.diff.outputs.isNamesDapp == 'true'
+        || needs.diff.outputs.isNamesDisplay == 'true'
+      )
+      && (
+        github.ref_name == 'develop'
+        || github.event.pull_request.draft == false
+        || contains(github.event.pull_request.body, '[run-ci]')
+      )
     needs: diff
     uses: ./.github/workflows/_build_lint_test.yml
-    with:
-      isExplorer: ${{ needs.diff.outputs.isExplorer == 'true' }}
-      isTypescriptSDK: ${{ needs.diff.outputs.isTypescriptSDK == 'true' }}
-      isWallet: ${{ needs.diff.outputs.isWallet == 'true' }}
-      isWalletDashboard: ${{ needs.diff.outputs.isWalletDashboard == 'true' }}
-      isEvmBridge: ${{ needs.diff.outputs.isEvmBridge == 'true' }}
-      isNamesSDK: ${{ needs.diff.outputs.isNamesSDK == 'true' }}
-      isNamesDapp: ${{ needs.diff.outputs.isNamesDapp == 'true' }}
-      isNamesDisplay: ${{ needs.diff.outputs.isNamesDisplay == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
       EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
