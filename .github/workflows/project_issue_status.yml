@@ -39,30 +39,39 @@ jobs:
                 TARGET="Needs Review"
                 ;;
               synchronize)
-                CURRENT=$(gh api graphql -f query='
-                  query($owner:String!, $repo:String!, $pr:Int!) {
-                    repository(owner:$owner, name:$repo) {
-                      pullRequest(number:$pr) {
-                        closingIssuesReferences(first:5) {
-                          nodes {
-                            projectItems(first:5) {
-                              nodes {
-                                fieldValueByName(name:"Status") {
-                                  ... on ProjectV2ItemFieldSingleSelectValue { name }
+                # Ignore automated GitHub merge commits (e.g. "Update branch" button)
+                COMMITTER=$(gh api "repos/$REPO/pulls/$PR_NUMBER/commits" \
+                  --jq '.[-1].committer.login')
+                echo "Last committer: $COMMITTER"
+
+                if [[ "$COMMITTER" == "web-flow" ]]; then
+                  echo "Automated branch sync — skipping status change."
+                else
+                  CURRENT=$(gh api graphql -f query='
+                    query($owner:String!, $repo:String!, $pr:Int!) {
+                      repository(owner:$owner, name:$repo) {
+                        pullRequest(number:$pr) {
+                          closingIssuesReferences(first:5) {
+                            nodes {
+                              projectItems(first:5) {
+                                nodes {
+                                  fieldValueByName(name:"Status") {
+                                    ... on ProjectV2ItemFieldSingleSelectValue { name }
+                                  }
                                 }
                               }
                             }
                           }
                         }
                       }
-                    }
-                  }' \
-                  -f owner="${REPO%%/*}" \
-                  -f repo="${REPO##*/}" \
-                  -F pr="$PR_NUMBER" \
-                  --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[0].projectItems.nodes[0].fieldValueByName.name // empty')
-                echo "Current issue status: $CURRENT"
-                [[ "$CURRENT" == "Changes Requested" ]] && TARGET="Needs Review"
+                    }' \
+                    -f owner="${REPO%%/*}" \
+                    -f repo="${REPO##*/}" \
+                    -F pr="$PR_NUMBER" \
+                    --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[0].projectItems.nodes[0].fieldValueByName.name // empty')
+                  echo "Current issue status: $CURRENT"
+                  [[ "$CURRENT" == "Changes Requested" ]] && TARGET="Needs Review"
+                fi
                 ;;
               closed)
                 [[ "$MERGED" == "true" ]] && TARGET="Done"
