@@ -7,6 +7,7 @@ import { PageTemplate } from '_src/ui/app/components/PageTemplate';
 import { useAppSelector } from '_hooks';
 import { getCustomNetwork } from '@iota/core';
 import { getNetwork } from '@iota/iota-sdk/client';
+import { useNavigate } from 'react-router-dom';
 
 export function NetworkPage() {
     const network = useAppSelector(({ app }) => app.network);
@@ -14,8 +15,10 @@ export function NetworkPage() {
     const networkConfig = customRpc ? getCustomNetwork(customRpc) : getNetwork(network);
     const hasFaucet = !!networkConfig?.faucet;
 
+    const navigate = useNavigate();
+
     return (
-        <PageTemplate title="Network">
+        <PageTemplate title="Network" onClose={() => navigate(-1)}>
             <div className="flex h-full flex-col justify-between">
                 <NetworkSelector />
                 {hasFaucet && (

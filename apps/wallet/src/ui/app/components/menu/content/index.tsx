@@ -14,7 +14,6 @@ import { useCallback } from 'react';
 import type { MouseEvent } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AutoLockAccounts } from './AutoLockAccounts';
-import { NetworkSettings } from './NetworkSettings';
 import { MenuList } from './WalletSettingsMenuList';
 import { ThemeSettings } from './ThemeSettings';
 
@@ -48,7 +47,6 @@ export function MenuContent() {
                 <MainLocationContext.Provider value={mainLocation}>
                     <Routes location={menuUrl || ''}>
                         <Route path="/" element={<MenuList />} />
-                        <Route path="/network" element={<NetworkSettings />} />
                         <Route path="/auto-lock" element={<AutoLockAccounts />} />
                         <Route path="/theme" element={<ThemeSettings />} />
                         <Route path="*" element={<Navigate to={menuHomeUrl} replace={true} />} />

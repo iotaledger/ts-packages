@@ -31,7 +31,7 @@ export function FaucetRequestButton(): JSX.Element | null {
         <div className="flex w-full flex-col gap-xs">
             <Button
                 type={ButtonType.Secondary}
-                disabled={isRateLimited}
+                disabled={isRateLimited || isLoading}
                 onClick={() => {
                     toast.promise(
                         mutation.mutateAsync(),

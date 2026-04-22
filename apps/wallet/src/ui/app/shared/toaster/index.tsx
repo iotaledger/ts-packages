@@ -24,7 +24,7 @@ function getBottomSpace(pathname: string, isMenuVisible: boolean, isBottomNavSpa
 
     const overlayWithActionButton = [
         '/auto-lock',
-        '/manage/accounts-finder',
+        '/accounts/manage/accounts-finder',
         '/accounts/import-ledger-accounts',
         '/send',
         '/accounts/forgot-password/recover-many',
