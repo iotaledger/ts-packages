@@ -1,7 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { LONG_TIMEOUT, SHORT_TIMEOUT } from './constants/timeout.constants';
+import { LONG_TIMEOUT } from './constants/timeout.constants';
 import { expect, test } from './utils/fixtures';
 import { receiverAddressMnemonic } from './mocks';
 import { generateKeypairFromMnemonic } from './utils/utils';
