@@ -4,7 +4,7 @@
 
 import {
     Feature,
-    getObjectOrPastObjectQuery,
+    fetchObjectOrPastObject,
     useFeatureEnabledByNetwork,
     useIotaNamesClient,
 } from '@iota/core';
@@ -85,7 +85,7 @@ const getResultsForObject = async (client: IotaClient, query: string): Promise<R
     if (!isValidIotaObjectId(normalized)) return null;
 
     try {
-        const result = await getObjectOrPastObjectQuery(client, normalized).queryFn();
+        const result = await fetchObjectOrPastObject(client, normalized);
         if (!result?.data?.objectId) return null;
 
         return [{ id: result.data.objectId, label: result.data.objectId, type: 'object' }];
