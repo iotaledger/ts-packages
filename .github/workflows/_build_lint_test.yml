@@ -1,66 +1,7 @@
 name: TS Lint, Build, and Test
 
 on:
-  workflow_dispatch:
-    inputs:
-      isExplorer:
-        description: Explorer
-        type: boolean
-        default: false
-      isTypescriptSDK:
-        description: TypeScript SDK
-        type: boolean
-        default: false
-      isWallet:
-        description: Wallet
-        type: boolean
-        default: false
-      isWalletDashboard:
-        description: Wallet Dashboard
-        type: boolean
-        default: false
-      isEvmBridge:
-        description: EVM Bridge
-        type: boolean
-        default: false
-      isNamesSDK:
-        description: Names SDK
-        type: boolean
-        default: false
-      isNamesDapp:
-        description: Names Dapp
-        type: boolean
-        default: false
-      isNamesDisplay:
-        description: Names Display
-        type: boolean
-        default: false
   workflow_call:
-    inputs:
-      isExplorer:
-        type: boolean
-        required: true
-      isTypescriptSDK:
-        type: boolean
-        required: true
-      isWallet:
-        type: boolean
-        required: true
-      isWalletDashboard:
-        type: boolean
-        required: true
-      isEvmBridge:
-        type: boolean
-        required: true
-      isNamesSDK:
-        type: boolean
-        required: true
-      isNamesDapp:
-        type: boolean
-        required: true
-      isNamesDisplay:
-        type: boolean
-        required: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
@@ -75,7 +16,6 @@ jobs:
   build:
     name: Lint, Build, and Test
     runs-on: ubuntu-latest
-    if: inputs.isExplorer || inputs.isTypescriptSDK || inputs.isWallet || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isNamesSDK || inputs.isNamesDapp || inputs.isNamesDisplay
     env:
       VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
       VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
