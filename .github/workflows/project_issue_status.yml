@@ -7,6 +7,7 @@ on:
       - ready_for_review
       - synchronize
       - closed
+      - review_requested
   pull_request_review:
     types:
       - submitted
@@ -65,6 +66,9 @@ jobs:
                 ;;
               closed)
                 [[ "$MERGED" == "true" ]] && TARGET="Done"
+                ;;
+              review_requested)
+                TARGET="Needs Review"
                 ;;
             esac
           elif [[ "$EVENT" == "pull_request_review" && "$ACTION" == "submitted" ]]; then
