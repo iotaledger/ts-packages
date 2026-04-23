@@ -383,7 +383,7 @@ importers:
         version: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   apps/evm-bridge:
     dependencies:
@@ -688,7 +688,7 @@ importers:
         version: 4.3.0(rollup@4.59.0)(typescript@5.8.3)(vite@5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0))
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   apps/names:
     dependencies:
@@ -857,7 +857,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   apps/names-display:
     dependencies:
@@ -903,7 +903,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   apps/ui-icons:
     devDependencies:
@@ -1322,7 +1322,7 @@ importers:
         version: 4.3.2(typescript@5.8.3)(vite@5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0))
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
       web-ext:
         specifier: ^9.3.0
         version: 9.3.0(body-parser@2.2.2)(express@5.2.1)(jiti@1.21.6)
@@ -1669,7 +1669,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   sdk/build-scripts:
     dependencies:
@@ -1784,36 +1784,24 @@ importers:
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.9
-      '@vanilla-extract/esbuild-plugin':
-        specifier: ^2.3.8
-        version: 2.3.10(@types/node@24.10.12)(babel-plugin-macros@3.1.0)(esbuild@0.25.1)(sass@1.79.3)(terser@5.34.0)
       '@vanilla-extract/vite-plugin':
         specifier: ^4.0.13
-        version: 4.0.15(@types/node@24.10.12)(babel-plugin-macros@3.1.0)(sass@1.79.3)(terser@5.34.0)(vite@5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0))
+        version: 4.0.15(@types/node@24.10.12)(babel-plugin-macros@3.1.0)(sass@1.79.3)(terser@5.34.0)(vite@6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3))
       dotenv:
         specifier: ^16.4.5
         version: 16.5.0
-      jsdom:
-        specifier: ^26.1.0
-        version: 26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       react:
         specifier: ^18.3.1
         version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
       size-limit:
         specifier: ^11.1.4
         version: 11.1.5
       typescript:
         specifier: ^5.5.3
         version: 5.8.3
-      vite:
-        specifier: ^5.4.12
-        version: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   sdk/examples:
     dependencies:
@@ -1893,7 +1881,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -1939,7 +1927,7 @@ importers:
         version: 4.5.4(@types/node@24.10.12)(rollup@4.59.0)(typescript@5.8.3)(vite@5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0))
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -1970,7 +1958,7 @@ importers:
         version: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -2010,7 +1998,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   sdk/names:
     dependencies:
@@ -2044,7 +2032,7 @@ importers:
         version: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   sdk/signers:
     dependencies:
@@ -2078,7 +2066,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
   sdk/typescript:
     dependencies:
@@ -2175,7 +2163,7 @@ importers:
         version: 5.4.15(@types/node@24.10.12)(sass@1.79.3)(terser@5.34.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -26412,6 +26400,22 @@ snapshots:
       - supports-color
       - terser
 
+  '@vanilla-extract/vite-plugin@4.0.15(@types/node@24.10.12)(babel-plugin-macros@3.1.0)(sass@1.79.3)(terser@5.34.0)(vite@6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3))':
+    dependencies:
+      '@vanilla-extract/integration': 7.1.9(@types/node@24.10.12)(babel-plugin-macros@3.1.0)(sass@1.79.3)(terser@5.34.0)
+      vite: 6.4.1(@types/node@24.10.12)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   '@visx/axis@3.10.1(react@18.3.1)':
     dependencies:
       '@types/react': 18.3.9
@@ -36351,7 +36355,7 @@ snapshots:
       tsx: 3.14.0
       yaml: 2.8.3
 
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
