@@ -15,6 +15,7 @@ import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { SidePanel } from '_src/polyfills/sidepanel';
+import { resolveApplicationName } from '_src/shared/utils';
 
 export function SiteConnectPage() {
     const { requestID } = useParams();
@@ -62,8 +63,12 @@ export function SiteConnectPage() {
                         allowed,
                     }),
                 );
+                const resolvedAppName = resolveApplicationName(
+                    permissionRequest.name,
+                    permissionRequest.origin,
+                );
                 ampli.respondedToConnectionRequest({
-                    applicationName: permissionRequest.name,
+                    applicationName: resolvedAppName,
                     applicationUrl: permissionRequest.origin,
                     approvedConnection: allowed,
                 });
@@ -84,12 +89,13 @@ export function SiteConnectPage() {
     );
 
     const isSecure = parsedOrigin?.protocol === 'https:';
-    const [displayWarning, setDisplayWarning] = useState(!isSecure);
+    const [warningDismissed, setWarningDismissed] = useState(false);
+    const displayWarning = !isSecure && !warningDismissed;
 
     const handleHideWarning = useCallback(
         async (allowed: boolean) => {
             if (allowed) {
-                setDisplayWarning(false);
+                setWarningDismissed(true);
             } else {
                 await handleOnSubmit(false);
             }
@@ -98,8 +104,18 @@ export function SiteConnectPage() {
     );
 
     useEffect(() => {
-        setDisplayWarning(!isSecure);
-    }, [isSecure]);
+        if (permissionRequest) {
+            const resolvedAppName = resolveApplicationName(
+                permissionRequest.name,
+                permissionRequest.origin,
+            );
+            ampli.startedDappConnection({
+                applicationName: resolvedAppName,
+                applicationUrl: permissionRequest.origin,
+            });
+        }
+    }, [permissionRequest]);
+
     return (
         <Loading loading={loading}>
             {permissionRequest &&

@@ -6,7 +6,7 @@ import { ErrorBoundary, MenuContent, Navigation, WalletSettingsButton } from '_c
 import cn from 'clsx';
 import { createContext, type ReactNode, useState } from 'react';
 import { useAppSelector, useActiveAccount } from '_hooks';
-import { AppType } from '../../redux/slices/app/appType';
+import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { Header } from '../header/Header';
 import { Toaster } from '../toaster';
 import { IotaLogoMark, Keystone, Ledger, Passkey } from '@iota/apps-ui-icons';
@@ -34,9 +34,9 @@ export function PageMainLayout({
     bottomNavEnabled = false,
     topNavMenuEnabled = false,
 }: PageMainLayoutProps) {
-    const appType = useAppSelector((state) => state.app.appType);
+    const extensionViewType = useAppSelector((state) => state.app.extensionViewType);
     const activeAccount = useActiveAccount();
-    const isFullScreen = appType === AppType.Fullscreen;
+    const isFullScreen = extensionViewType === ExtensionViewType.FullScreen;
     const [titlePortalContainer, setTitlePortalContainer] = useState<HTMLDivElement | null>(null);
     const isHomePage = window.location.hash === '#/tokens';
 
@@ -101,7 +101,10 @@ function LeftContent({ account }: { account: SerializedUIAccount | null }) {
                 )}
             </div>
             <div className="flex flex-col items-start">
-                <span className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                <span
+                    className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92"
+                    data-amp-mask
+                >
                     {accountName}
                 </span>
             </div>

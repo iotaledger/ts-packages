@@ -2,6 +2,63 @@ name: TS End-to-end Tests
 
 on:
   workflow_dispatch:
+    inputs:
+      isNightly:
+        description: Nightly (runs all groups)
+        type: boolean
+        default: false
+      isRpc:
+        description: RPC
+        type: boolean
+        default: false
+      isExplorer:
+        description: Explorer
+        type: boolean
+        default: false
+      isAppsBackend:
+        description: Apps Backend
+        type: boolean
+        default: false
+      isTypescriptSDK:
+        description: TypeScript SDK
+        type: boolean
+        default: false
+      isWallet:
+        description: Wallet
+        type: boolean
+        default: false
+      isGraphQlTransport:
+        description: GraphQL Transport
+        type: boolean
+        default: false
+      isWalletDashboard:
+        description: Wallet Dashboard
+        type: boolean
+        default: false
+      isEvmBridge:
+        description: EVM Bridge
+        type: boolean
+        default: false
+      isIscSDK:
+        description: ISC SDK
+        type: boolean
+        default: false
+      isKiosk:
+        description: Kiosk
+        type: boolean
+        default: false
+      isNamesDapp:
+        description: Names Dapp
+        type: boolean
+        default: false
+      isNamesDisplay:
+        description: Names Display
+        type: boolean
+        default: false
+      isNamesSDK:
+        description: Names SDK
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       isNightly:
@@ -37,6 +94,15 @@ on:
       isKiosk:
         type: boolean
         required: true
+      isNamesDapp:
+        type: boolean
+        required: true
+      isNamesDisplay:
+        type: boolean
+        required: true
+      isNamesSDK:
+        type: boolean
+        required: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
@@ -49,13 +115,14 @@ concurrency:
 
 env:
   RUST_LOG: warn
+  RUST_BACKTRACE: 1
   VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
   VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
 
 jobs:
   localnet:
     name: Localnet
-    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK
+    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay || inputs.isNamesSDK
     runs-on: self-hosted-x64
     services:
       postgres:
@@ -72,10 +139,13 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+        command: postgres -c max_connections=1000
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        with:
+          submodules: true
 
-      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
 
       # ─── Foundational setup ──────────────────────────────────────────────────
       # These steps run without continue-on-error, and none of the subsequent steps have "if failure()" or "if always()"
@@ -92,9 +162,15 @@ jobs:
           echo "runAppsBackend=${{ inputs.isNightly || inputs.isAppsBackend }}" >> $GITHUB_OUTPUT
           echo "runGraphql=${{ inputs.isNightly || inputs.isGraphQlTransport || inputs.isRpc }}" >> $GITHUB_OUTPUT
           echo "runTsSdk=${{ inputs.isNightly || inputs.isTypescriptSDK || inputs.isRpc }}" >> $GITHUB_OUTPUT
+          echo "runNamesDapp=${{ inputs.isNightly || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
+          echo "runNamesDisplay=${{ inputs.isNightly || inputs.isNamesDisplay }}" >> $GITHUB_OUTPUT
+          echo "runNamesSDK=${{ inputs.isNightly || inputs.isNamesSDK || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
 
-      - name: Build Iota binary
-        run: cargo build --bin iota --features indexer --profile dev
+      - name: Download IOTA Binary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          .github/scripts/download-iota-binary.sh
 
       - name: Install Nodejs
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -108,8 +184,8 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "VITE_IOTA_BIN=$PWD/target/debug/iota" >> $GITHUB_ENV
-          echo "E2E_RUN_LOCAL_NET_CMD=(RUST_BACKTRACE=1 $(echo $PWD/target/debug/iota) start --with-faucet --force-regenesis --with-indexer --with-graphql)" >> $GITHUB_ENV
+          echo "VITE_IOTA_BIN=iota" >> $GITHUB_ENV
+          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql" >> $GITHUB_ENV
 
       # ─── Test groups ─────────────────────────────────────────────────────────
       # All steps below use: if: (!cancelled() && !failure()) && <group-condition>
@@ -131,6 +207,14 @@ jobs:
       # proxy for "foundational setup completed", skipping only if setup never
       # finished (in which case there are no reports to collect anyway).
 
+      # ─── Wallet build (shared) ───────────────────────────────────────────────
+
+      - name: Build Wallet
+        id: build-wallet
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm wallet build:rc
+
       # ─── TS SDK ──────────────────────────────────────────────────────────────
 
       - name: Run TS SDK e2e tests
@@ -138,6 +222,22 @@ jobs:
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runTsSdk == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
+
+      # ─── Playwright browsers (shared) ────────────────────────────────────────
+
+      - name: Install Playwright Browsers
+        id: install-playwright
+        if: >-
+          (!cancelled() && !failure()) && (
+            steps.conditions.outputs.runExplorer == 'true' ||
+            steps.conditions.outputs.runDashboard == 'true' ||
+            steps.conditions.outputs.runWallet == 'true' ||
+            steps.conditions.outputs.runEvmBridge == 'true' ||
+            steps.conditions.outputs.runNamesDapp == 'true'
+          )
+        continue-on-error: ${{ inputs.isNightly }}
+        # Any app works, they use the same playwright version
+        run: pnpm --filter iota-explorer playwright install --with-deps chromium
 
       # ─── RPC / GraphQL ───────────────────────────────────────────────────────
 
@@ -151,7 +251,7 @@ jobs:
 
       - name: Build apps-backend
         id: build-apps-backend
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runAppsBackend == 'true'
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runAppsBackend == 'true' || steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm turbo --filter apps-backend build
 
@@ -163,12 +263,6 @@ jobs:
 
       # ─── Explorer ────────────────────────────────────────────────────────────
 
-      - name: Install Explorer Playwright Browsers
-        id: install-playwright-explorer
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runExplorer == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter iota-explorer playwright install --with-deps chromium
-
       - name: Build explorer
         id: build-explorer
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runExplorer == 'true'
@@ -179,7 +273,7 @@ jobs:
 
       - name: Run Explorer e2e tests
         id: run-explorer
-        if: (!cancelled() && !failure()) && steps.install-playwright-explorer.outcome == 'success' && steps.build-explorer.outcome == 'success' && steps.conditions.outputs.runExplorer == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-explorer.outcome == 'success' && steps.conditions.outputs.runExplorer == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm --filter iota-explorer playwright test
 
@@ -193,14 +287,6 @@ jobs:
           retention-days: 30
 
       # ─── Dashboard ───────────────────────────────────────────────────────────
-      # Build Wallet is shared between Dashboard and Wallet groups, so it sits
-      # here with a combined condition covering both.
-
-      - name: Build Wallet
-        id: build-wallet
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true')
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm wallet build:rc
 
       - name: Build Dashboard
         id: build-dashboard
@@ -208,15 +294,9 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm turbo --filter wallet-dashboard build
 
-      - name: Install Dashboard Playwright Browsers
-        id: install-playwright-dashboard
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runDashboard == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter wallet-dashboard playwright install --with-deps  --only-shell
-
       - name: Run Dashboard e2e tests
         id: run-dashboard
-        if: (!cancelled() && !failure()) && steps.install-playwright-dashboard.outcome == 'success' && steps.build-dashboard.outcome == 'success' && steps.conditions.outputs.runDashboard == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-dashboard.outcome == 'success' && steps.conditions.outputs.runDashboard == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter wallet-dashboard playwright test
 
@@ -244,22 +324,14 @@ jobs:
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter=@iota/kiosk test:e2e'
 
       # ─── Wallet ──────────────────────────────────────────────────────────────
-      # Local net is shared setup for both Wallet and EVM Bridge. It starts a
-      # background process (&) so it always exits 0 immediately.
 
       - name: Run Local net
         if: (!cancelled() && !failure()) && (steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true')
-        run: cargo run --bin iota start --force-regenesis --with-faucet --epoch-duration-ms 10000 &
-
-      - name: Install Playwright Browsers for Wallet
-        id: install-playwright-wallet
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runWallet == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter ./apps/wallet playwright install --with-deps chromium
+        run: iota-localnet start --force-regenesis --with-faucet --epoch-duration-ms 10000 &
 
       - name: Run Wallet e2e tests
         id: run-wallet
-        if: (!cancelled() && !failure()) && steps.install-playwright-wallet.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runWallet == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runWallet == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter iota-wallet playwright test
 
@@ -280,12 +352,6 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm evm-bridge build
 
-      - name: Install Playwright Browsers for Evm-bridge
-        id: install-playwright-evm-bridge
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runEvmBridge == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter ./apps/evm-bridge playwright install --with-deps chromium
-
       - name: Prepare evm-bridge e2e tests (downloads wallet artifact dist)
         id: prepare-evm-bridge
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runEvmBridge == 'true'
@@ -295,7 +361,7 @@ jobs:
 
       - name: Run evm-bridge tests
         id: run-evm-bridge
-        if: (!cancelled() && !failure()) && steps.build-evm-bridge.outcome == 'success' && steps.install-playwright-evm-bridge.outcome == 'success' && steps.prepare-evm-bridge.outcome == 'success' && steps.conditions.outputs.runEvmBridge == 'true'
+        if: (!cancelled() && !failure()) && steps.build-evm-bridge.outcome == 'success' && steps.install-playwright.outcome == 'success' && steps.prepare-evm-bridge.outcome == 'success' && steps.conditions.outputs.runEvmBridge == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         working-directory: ./apps/evm-bridge
         run: DEBUG=pw:webserver xvfb-run --auto-servernum pnpm run test:e2e
@@ -308,13 +374,104 @@ jobs:
           path: apps/evm-bridge/playwright-report/
           retention-days: 30
 
+      # ─── Names Dapp ──────────────────────────────────────────────────────────
+
+      - name: Setup E2E Network for Names
+        id: setup-names-network
+        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runNamesDapp == 'true' || steps.conditions.outputs.runNamesSDK == 'true')
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
+          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+        run: .github/scripts/setup-names-network.sh
+
+      - name: Inject localnet config and start Names indexer
+        id: start-names-indexer
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: |
+          pnpm --filter names-dapp inject-localnet
+          INDEXER_ENV_FILE="$(mktemp)"
+          pnpm --dir external/names/scripts run envsForIndexer localnet bash "$INDEXER_ENV_FILE"
+          sed -i 's/^export //' "$INDEXER_ENV_FILE"
+          docker pull ghcr.io/iotaledger/iota-names/iota-names-indexer:latest
+          docker rm -f localnet-iota-names-indexer || true
+          docker run -d \
+            --name localnet-iota-names-indexer \
+            --env-file "$INDEXER_ENV_FILE" \
+            --add-host host.docker.internal:host-gateway \
+            -p 3030:3030 -p 9189:9189 \
+            ghcr.io/iotaledger/iota-names/iota-names-indexer:latest \
+            start \
+            --node-url=http://host.docker.internal:9000 \
+            --checkpoint-url=http://host.docker.internal:9000 \
+            --reset-metrics
+
+      - name: Run Names Dapp e2e tests
+        id: run-names-dapp
+        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
+          NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: localnet
+          NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
+            {
+              "localnet": {
+                "network": "localnet",
+                "namesDisplayUrl": "http://localhost",
+                "indexerUrl": "http://localhost:3030",
+                "baseUrl": "http://localhost:3005"
+              }
+            }
+        run: |
+          pnpm names-dapp build
+          cd apps/names
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- env ADMIN_MNEMONIC="$ADMIN_MNEMONIC" pnpm run test:e2e
+
+      - name: Upload Names Dapp Playwright report
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        if: (!cancelled()) && steps.pnpm-install.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        continue-on-error: true
+        with:
+          name: playwright-report-names-dapp
+          path: apps/names/playwright-report/
+          retention-days: 30
+
+      # ─── Names Display ────────────────────────────────────────────────────────
+
+      - name: Build Names SDK for display
+        id: build-names-sdk-display
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDisplay == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm --filter @iota/iota-names-sdk run build
+
+      - name: Build and test names-display service
+        id: run-names-display
+        if: (!cancelled() && !failure()) && steps.build-names-sdk-display.outcome == 'success' && steps.conditions.outputs.runNamesDisplay == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: |
+          pnpm --filter names-display run build
+          pnpm --filter names-display run test
+
+      # ─── Names SDK ─────────────────────────────────────────────────────────
+
+      - name: Build Names SDK
+        id: build-names-sdk
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesSDK == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm names-sdk build
+
+      - name: Prepare local network & run Names SDK e2e tests
+        id: run-names-sdk
+        if: (!cancelled() && !failure()) && steps.build-names-sdk.outcome == 'success' && steps.conditions.outputs.runNamesSDK == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        env:
+          IS_CI_JOB: true
+          NETWORK: localnet
+        run: |
+          VITE_IOTA_BIN="iota" pnpm --filter=@iota/iota-names-sdk test:e2e
+
       # ─── Nightly failure report ───────────────────────────────────────────────
-      # In nightly mode, continue-on-error: true on every group step masks
-      # individual failures from the job conclusion, so the job would show green
-      # even if every test group failed. This step re-raises any masked failures
-      # so the job is correctly marked as failed in GitHub CI.
-      # It runs with if: always() so it is never skipped, and has no
-      # continue-on-error so its exit 1 actually fails the job.
 
       - name: Fail job if any nightly test group failed
         if: always() && inputs.isNightly
@@ -328,8 +485,21 @@ jobs:
           [[ "${{ steps.run-kiosk.outcome }}"        == 'failure' ]] && failed+=('Kiosk')
           [[ "${{ steps.run-wallet.outcome }}"       == 'failure' ]] && failed+=('Wallet')
           [[ "${{ steps.run-evm-bridge.outcome }}"   == 'failure' ]] && failed+=('EVM Bridge')
+          [[ "${{ steps.run-names-dapp.outcome }}"    == 'failure' ]] && failed+=('Names Dapp')
+          [[ "${{ steps.run-names-display.outcome }}" == 'failure' ]] && failed+=('Names Display')
+          [[ "${{ steps.run-names-sdk.outcome }}"      == 'failure' ]] && failed+=('Names SDK')
 
           if [[ ${#failed[@]} -gt 0 ]]; then
             echo "Failed test groups: ${failed[*]}"
             exit 1
           fi
+
+  localnet-cancel:
+    needs: [localnet]
+    if: failure() && !inputs.isNightly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel workflow run
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}

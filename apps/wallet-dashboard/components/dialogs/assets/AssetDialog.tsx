@@ -19,7 +19,7 @@ import {
 import { DetailsView, SendView, KioskDetailsView } from './views';
 import { getNetwork, IotaObjectData, IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { AssetsDialogView } from './constants';
-import { TransactionDetailsView } from '../send-token';
+import { TransactionDetailsLayout } from '../transaction';
 import { DialogLayout } from '../layout';
 import { ampli } from '@/lib/utils/analytics';
 import { shouldResolveInputAsName } from '@iota/core/utils/validation/names';
@@ -96,7 +96,7 @@ export function AssetDialog({ onClose, asset, refetchAssets }: AssetsDialogProps
             toast.success('Transfer transaction successful');
             setView(AssetsDialogView.TransactionDetails);
             ampli.sentCollectible({
-                objectId,
+                collectibleType: objectData?.type || undefined,
             });
         } catch {
             toast.error('Transfer transaction failed');
@@ -161,7 +161,7 @@ export function AssetDialog({ onClose, asset, refetchAssets }: AssetsDialogProps
                     )}
 
                     {view === AssetsDialogView.TransactionDetails && !!digest ? (
-                        <TransactionDetailsView digest={digest} onClose={onOpenChange} />
+                        <TransactionDetailsLayout digest={digest} onClose={onOpenChange} />
                     ) : null}
                 </>
             </DialogLayout>
