@@ -81,11 +81,8 @@ const getResultsForTransaction = async (
 };
 
 const getResultsForObject = async (client: IotaClient, query: string): Promise<Results | null> => {
-    const normalized = normalizeIotaObjectId(query);
-    if (!isValidIotaObjectId(normalized)) return null;
-
     try {
-        const result = await fetchObjectOrPastObject(client, normalized);
+        const result = await fetchObjectOrPastObject(client, query);
         if (!result?.data?.objectId) return null;
 
         return [{ id: result.data.objectId, label: result.data.objectId, type: 'object' }];

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useIotaClient } from '@iota/dapp-kit';
-import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { isValidIotaObjectId, normalizeIotaObjectId } from '@iota/iota-sdk/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import {
     IotaClient,
@@ -71,13 +71,16 @@ const findPreviousObjectVersion = async (
 
 export async function fetchObjectOrPastObject(
     client: IotaClient,
-    objectId?: string | null,
+    objectId?: string,
 ): Promise<UseGetObjectOrPastObject | null> {
-    const normalizedObjId = objectId && normalizeIotaAddress(objectId);
+    if (!objectId) return null;
+
+    const normalizedObjId = normalizeIotaObjectId(objectId);
+    if (!isValidIotaObjectId(normalizedObjId)) return null;
     if (!normalizedObjId) return null;
 
     const getObjectResponse = await client.getObject({
-        id: normalizedObjId,
+        id: objectId,
         options: DEFAULT_GET_OBJECT_OPTIONS,
     });
 
@@ -113,21 +116,20 @@ export async function fetchObjectOrPastObject(
 
 export const getObjectOrPastObjectQuery = <TSelectData = UseGetObjectOrPastObject | null>(
     client: IotaClient,
-    objectId?: string | null,
+    objectId?: string,
     select?: (data: UseGetObjectOrPastObject | null) => TSelectData,
 ) => {
-    const normalizedObjId = objectId && normalizeIotaAddress(objectId);
     return {
         select,
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['object-or-past-object', normalizedObjId],
-        queryFn: () => fetchObjectOrPastObject(client, objectId),
-        enabled: !!normalizedObjId,
+        queryKey: ['object-or-past-object', objectId],
+        queryFn: () => fetchObjectOrPastObject(client, objectId || ''),
+        enabled: !!objectId,
     };
 };
 
 export function useGetObjectOrPastObject(
-    objectId?: string | null,
+    objectId?: string,
 ): UseQueryResult<UseGetObjectOrPastObject | null> {
     const client = useIotaClient();
     return useQuery(getObjectOrPastObjectQuery(client, objectId));
