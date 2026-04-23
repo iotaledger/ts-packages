@@ -23,6 +23,8 @@ pnpm install
 | [`@iota/iota-sdk`](./sdk/typescript) | Core SDK for reading state, building and signing transactions. |
 | [`@iota/dapp-kit`](./sdk/dapp-kit) | React hooks, components, and providers for dApps. |
 | [`@iota/create-dapp`](./sdk/create-dapp) | CLI scaffold for a new React + Vite dApp. |
+| [`@iota/apps-ui-kit`](./apps/ui-kit) | Shared React component library. |
+| [`@iota/apps-ui-icons`](./apps/ui-icons) | Shared icon set as React components. |
 | [`@iota/bcs`](./sdk/bcs) | Binary Canonical Serialization implementation. |
 | [`@iota/wallet-standard`](./sdk/wallet-standard) | Wallet Standard implementation for IOTA. |
 | [`@iota/signers`](./sdk/signers) | Unified signer interface (local, KMS, WebCrypto, Ledger). |
@@ -41,8 +43,6 @@ pnpm install
 | [Wallet Dashboard](./apps/wallet-dashboard) | Web dashboard for assets, staking, and governance. |
 | [EVM Bridge](./apps/evm-bridge) | UI for bridging assets between IOTA and EVM chains. |
 | [Names dApp](./apps/names) | Frontend for the IOTA Names Service. |
-| [`@iota/apps-ui-kit`](./apps/ui-kit) | Shared React component library. |
-| [`@iota/apps-ui-icons`](./apps/ui-icons) | Shared icon set as React components. |
 
 ### Common Commands
 
