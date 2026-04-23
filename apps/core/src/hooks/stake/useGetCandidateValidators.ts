@@ -47,10 +47,11 @@ export function useGetCandidateValidators(validatorAddress?: string) {
             );
             const candidateValidators = allCandidates
                 .filter(
-                    (r): r is PromiseFulfilledResult<IotaValidatorSummaryExtended> =>
-                        r.status === 'fulfilled' && r.value !== null,
+                    (r): r is PromiseFulfilledResult<IotaValidatorSummaryExtended | null> =>
+                        r.status === 'fulfilled',
                 )
-                .map((r) => r.value);
+                .map((r) => r.value)
+                .filter((v): v is IotaValidatorSummaryExtended => v !== null);
             return candidateValidators.filter((v): v is IotaValidatorSummaryExtended => v !== null);
         },
         enabled: !!validatorCandidatesId,

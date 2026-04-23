@@ -31,6 +31,9 @@ export async function getValidatorsMetadata(
         limit: 1,
     });
     const dfObjectId = dynamicFields.data?.[0]?.objectId;
+    if (!dfObjectId) {
+        return null;
+    }
     const dfObject = await client.getObject({
         id: normalizeIotaAddress(dfObjectId),
         options: {
