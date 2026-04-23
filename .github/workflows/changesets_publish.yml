@@ -131,3 +131,9 @@ jobs:
             echo "npm install @iota/dapp-kit@latest" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
+
+  upload-typedoc:
+    needs: publish
+    if: github.event.inputs.release_type == 'latest'
+    uses: ./.github/workflows/ts_sdk_typedoc_upload.yml
+    secrets: inherit
