@@ -9,6 +9,7 @@ import {
     useAppSelector,
     useExplorerLink,
     useShouldOpenInNewTab,
+    useBuilderMode,
 } from '_hooks';
 import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { useFeature, useAppsBackendClient } from '@iota/apps-backend-client';
@@ -41,7 +42,7 @@ import { Network } from '@iota/iota-sdk/client';
 import { formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { ArrowBottomLeft, Info, Migration, Send, Vesting } from '@iota/apps-ui-icons';
+import { ArrowBottomLeft, GasStation, Info, Migration, Send, Vesting } from '@iota/apps-ui-icons';
 import { Interstitial, type InterstitialConfig } from '../interstitial';
 import Browser from 'webextension-polyfill';
 import { coerce, gte } from 'semver';
@@ -70,6 +71,7 @@ export function TokenDetails() {
     const isMainnet = network === Network.Mainnet;
     const supplyIncreaseVestingEnabled = useFeature<boolean>(Feature.SupplyIncreaseVesting).value;
     const migrationEnabled = useFeature<boolean>(Feature.StardustMigration).value;
+    const [isBuilderMode] = useBuilderMode();
 
     const OBJECT_PER_REQ = 1;
 
@@ -259,6 +261,15 @@ export function TokenDetails() {
                                 size={ButtonSize.Small}
                                 testId="receive-coin-button"
                             />
+                            {isBuilderMode && accountHasIota && (
+                                <Button
+                                    onClick={() => navigate('/join-coins')}
+                                    type={ButtonType.Secondary}
+                                    icon={<GasStation />}
+                                    size={ButtonSize.Small}
+                                    testId="join-coins-button"
+                                />
+                            )}
                             <Button
                                 onClick={onSendClick}
                                 icon={<Send />}
