@@ -24,12 +24,10 @@ export function FieldItem({
     truncate = false,
     objectType,
 }: FieldItemProps): JSX.Element {
-    // for object types, use SyntaxHighlighter
-    if (typeof value === 'object') {
-        return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
-    }
-
     const { normalizedType } = getFieldTypeValue(type, objectType);
+    const isIdType =
+        typeof normalizedType === 'string' &&
+        TYPE_OBJECT_ID.some((t) => normalizedType.toLowerCase() === t.toLowerCase());
 
     if (normalizedType === TYPE_ADDRESS) {
         return (
@@ -43,16 +41,28 @@ export function FieldItem({
         );
     }
 
-    if (normalizedType === 'string' && TYPE_OBJECT_ID.includes(normalizedType)) {
-        return (
-            <div className="break-all">
-                <ObjectLink
-                    objectId={value.toString()}
-                    noTruncate={!truncate}
-                    copyText={value.toString()}
-                />
-            </div>
-        );
+    if (isIdType) {
+        const obj = value as Record<string, unknown>;
+        const objectId =
+            typeof value === 'string'
+                ? value
+                : typeof obj.id === 'string'
+                  ? obj.id
+                  : typeof obj.bytes === 'string'
+                    ? obj.bytes
+                    : null;
+        if (objectId) {
+            return (
+                <div className="break-all">
+                    <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
+                </div>
+            );
+        }
+    }
+
+    // for object types, use SyntaxHighlighter
+    if (typeof value === 'object') {
+        return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
     }
 
     if (normalizedType === TYPE_URL) {
