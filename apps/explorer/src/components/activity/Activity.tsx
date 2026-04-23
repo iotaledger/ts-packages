@@ -43,17 +43,24 @@ type ActivityProps = {
     initialTab?: string | null;
     initialLimit: number;
     disablePagination?: boolean;
+    defaultShowSystemTransactions?: boolean;
 };
 
 const AUTO_REFRESH_ID = 'auto-refresh';
 const REFETCH_INTERVAL_SECONDS = 10;
 const REFETCH_INTERVAL = REFETCH_INTERVAL_SECONDS * 1000;
 
-export function Activity({ initialLimit, disablePagination }: ActivityProps): JSX.Element {
+export function Activity({
+    initialLimit,
+    disablePagination,
+    defaultShowSystemTransactions = true,
+}: ActivityProps): JSX.Element {
     const pollingTxnTableEnabled = useFeatureIsOn(Feature.PollingTxnTable as string);
 
     const [paused, setPaused] = useState(false);
-    const [showSystemTransactions, setshowSystemTransactions] = useState(true);
+    const [showSystemTransactions, setshowSystemTransactions] = useState(
+        defaultShowSystemTransactions,
+    );
     const [selectedCategory, setSelectedCategory] = useState<ActivityCategory>(
         ActivityCategory.Transactions,
     );
