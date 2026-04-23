@@ -30,6 +30,9 @@ tooling:
           sdk/**
           apps/**
           dapps/**
+          packages/**
+          build-scripts/**
+          apps/names-display/**
           linting/**
           .husky/**
           .changeset/**
@@ -44,6 +47,14 @@ tooling:
           prettier.config.js
           turbo.json
           vercel.json
+iota-names:
+  - changed-files:
+      - any-glob-to-any-file: |
+          apps/names/**/*
+          sdk/names/**/*
+          packages/**/*
+          apps/names-display/**/*
+          build-scripts/**/*
 ci:
   - changed-files:
       - any-glob-to-any-file: .github/**/*

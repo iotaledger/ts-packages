@@ -1,6 +1,0 @@
-[package]
-name = "Dep"
-edition = "2024"
-
-[addresses]
-a = "0x41"
