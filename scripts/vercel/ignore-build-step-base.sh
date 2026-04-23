@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script is meant to be run from the "Ignored Build Step" in Vercel.
 
-PACKAGE_NAME="$(jq -r .name package.json)"
+PACKAGE_NAME="$(node -p "require('./package.json').name")"
 
 echo "Package:       $PACKAGE_NAME"
 echo "HEAD:          $(git rev-parse HEAD)"
