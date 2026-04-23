@@ -138,6 +138,7 @@ export function Navigation() {
                     )}
                     aria-label={`Network: ${networkName}`}
                     aria-current={isNetworkActive ? 'page' : undefined}
+                    data-testid="network-button"
                 >
                     <div
                         className={cx(

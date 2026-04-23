@@ -39,7 +39,7 @@ export async function importL1WalletFromMnemonic(
     }
 
     // We need to switch the network to ALPHANET (custom RPC) before requesting
-    await page.getByLabel(/Open settings menu/).click();
+    await page.getByTestId('network-button').click();
     await page.getByText(/Network/).click();
     await page.getByText(/Custom RPC/).click();
     await page.getByPlaceholder(WALLET_CUSTOMRPC_PLACEHOLDER).fill(CONFIG.L1.rpcUrl);
