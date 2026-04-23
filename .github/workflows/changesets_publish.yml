@@ -46,11 +46,13 @@ jobs:
           NODE_AUTH_TOKEN: ""
 
       - name: Install Rust toolchain
+        if: github.event.inputs.release_type == 'next'
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
+        if: github.event.inputs.release_type == 'next'
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-pack
