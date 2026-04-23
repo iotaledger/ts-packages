@@ -29,6 +29,7 @@
 		"changeset-version": "pnpm changeset version",
 		"prepare": "husky",
 		"codegen": "turbo run codegen",
+		"external:update": "git submodule update --remote --force external/iota external/names",
 		"names-dapp": "turbo --filter ./apps/names",
 		"names-sdk": "turbo --filter ./sdk/names",
 		"names-display": "turbo --filter ./apps/names-display",
