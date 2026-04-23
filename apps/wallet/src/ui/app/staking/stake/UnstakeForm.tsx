@@ -294,7 +294,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                                 />
                                 <Divider />
                                 <KeyValueInfo
-                                    keyText="Total unstaked IOTA"
+                                    keyText="Total Unstaked IOTA"
                                     value={totalUnstakeAmountFormatted}
                                     supportingLabel={GAS_SYMBOL}
                                     fullwidth

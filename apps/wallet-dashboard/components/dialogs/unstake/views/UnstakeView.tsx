@@ -18,7 +18,6 @@ import {
 import {
     ExtendedDelegatedStake,
     GAS_SYMBOL,
-    useFormatCoin,
     useGetStakingValidatorDetails,
     Validator,
     toast,
@@ -26,7 +25,7 @@ import {
     GAS_BALANCE_TOO_LOW_ID,
     useUnstakeForm,
 } from '@iota/core';
-import { CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
 import { ValidatorStakingData } from '@/components';
@@ -73,6 +72,7 @@ export function UnstakeView({
         remainingRewardsSymbol,
         remainingTotalStakedFormatted,
         unstakeAmountFormattedPlain,
+        rewardsFormattedPlain,
         activeUnstakeData,
         activeError,
         activeIsError,
@@ -116,12 +116,6 @@ export function UnstakeView({
         systemDataResult.data?.activeValidators.find(
             (v) => v.iotaAddress === extendedStake.validatorAddress,
         )?.name ?? '';
-
-    const [rewardsFormattedPlain] = useFormatCoin({
-        balance: extendedStake.estimatedReward,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
 
     async function handleUnstake(): Promise<void> {
         if (!activeUnstakeData) return;
@@ -306,7 +300,7 @@ export function UnstakeView({
                                         />
                                         <Divider />
                                         <KeyValueInfo
-                                            keyText="Total unstaked IOTA"
+                                            keyText="Total Unstaked IOTA"
                                             value={totalUnstakeAmountFormatted}
                                             supportingLabel={GAS_SYMBOL}
                                             fullwidth

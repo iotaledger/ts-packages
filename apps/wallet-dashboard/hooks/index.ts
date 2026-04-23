@@ -3,7 +3,6 @@
 
 export * from './useNewStakeTimelockedTransaction';
 export * from './useNewUnstakeTimelockedTransaction';
-export * from './useNewPartialUnstakeTimelockedTransaction';
 export * from './useGetCurrentEpochStartTimestamp';
 export * from './useTimelockedUnstakeTransaction';
 export * from './useExplorerLinkGetter';
