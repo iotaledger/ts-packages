@@ -52,7 +52,7 @@ export function useGetCandidateValidators(validatorAddress?: string) {
                 )
                 .map((r) => r.value)
                 .filter((v): v is IotaValidatorSummaryExtended => v !== null);
-            return candidateValidators.filter((v): v is IotaValidatorSummaryExtended => v !== null);
+            return candidateValidators;
         },
         enabled: !!validatorCandidatesId,
         select(candidateValidators) {
