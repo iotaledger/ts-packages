@@ -2,7 +2,7 @@
     "name": "@iota/kiosk",
     "author": "IOTA Foundation <info@iota.org>",
     "description": "IOTA Kiosk library",
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "version": "0.8.1",
     "license": "Apache-2.0",
     "type": "commonjs",
