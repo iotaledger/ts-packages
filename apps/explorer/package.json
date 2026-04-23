@@ -29,7 +29,6 @@
         "@iota/dapp-kit": "workspace:*",
         "@iota/identity-wasm": "1.7.0-beta.1",
         "@iota/iota-names-sdk": "workspace:^",
-        "@iota/notarization": "0.1.10",
         "@iota/iota-sdk": "workspace:*",
         "@iota/notarization": "0.1.10",
         "@sentry/react": "^7.120.3",
