@@ -1,0 +1,55 @@
+name: Deploy Names Display
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment:
+        type: boolean
+        description: "Deploy after build?"
+        required: false
+        default: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f211e3e9ded2d9377c8cadc4489a4e38014bc4c9 # v1
+
+      - name: Login to Private Docker Registry
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get the short commit hash
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          echo "VERSION=$COMMIT_HASH" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2
+        with:
+          context: .
+          file: apps/names-display/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/iotaledger/ts-packages/iota-names-display:${{ env.VERSION }}
+            ghcr.io/iotaledger/ts-packages/iota-names-display:latest
+          no-cache: true
+
+      - name: Add SSH key
+        if: ${{ github.event.inputs.deployment == 'true' }}
+        uses: webfactory/ssh-agent@cb8b21017acfd319f0f4eb320ae495f22c36d0a7 # v0.5.2
+        with:
+          ssh-private-key: ${{ secrets.UPDATER_SSH_PRIVATE_KEY }}
+
+      - name: Deploy to Server
+        if: ${{ github.event.inputs.deployment == 'true' }}
+        run: |
+          ssh -o StrictHostKeyChecking=no updater@${{ secrets.UPDATER_SSH_HOST }} "prod ${{ env.VERSION }}"

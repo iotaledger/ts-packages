@@ -14,12 +14,13 @@
 		"iota-explorer",
 		"wallet-dashboard",
 		"apps-backend",
-        "iota-evm-bridge",
+		"iota-evm-bridge",
 		"@iota/core",
 		"sponsored-transactions",
 		"kiosk-demo",
 		"kiosk-cli",
-		"@iota/examples"
+		"@iota/examples",
+		"names-dapp"
 	],
 	"___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
 		"onlyUpdatePeerDependentsWhenOutOfRange": true

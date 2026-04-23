@@ -1,38 +1,20 @@
 ---
-name: Report a bug in IOTA
+name: Report a bug
 about: Create a report to help us improve
 title: ""
-labels: c-bug
+labels: bug
 ---
 
 ## Bug description
 
 Briefly describe the bug.
 
-## Rust version
+## Environment
 
-Which version of Rust are you running?
+- **Browser/Runtime and version** (e.g. Chrome 124, Node 20.12, Deno 1.42):
+- **Package/App version** (version number, commit, or branch):
 
-- Rust version:
-
-## Version
-
-Which version of the library are you using?
-
-- Version number, commit, or branch:
-
-## Hardware specification
-
-What hardware are you using?
-
-- Operating system:
-- RAM:
-- Cores:
-- Device:
-
-## Steps To reproduce the bug
-
-Explain how the maintainer can reproduce the bug.
+## Steps to reproduce
 
 1.
 2.
