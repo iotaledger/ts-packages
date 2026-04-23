@@ -1,8 +1,8 @@
 {
     "name": "@iota/wallet-standard",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "A suite of standard utilities for implementing wallets based on the Wallet Standard.",
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "license": "Apache-2.0",
     "author": "IOTA Foundation <info@iota.org>",
     "type": "commonjs",

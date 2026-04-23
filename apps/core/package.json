@@ -6,7 +6,7 @@
     "author": "IOTA Foundation <info@iota.org>",
     "repository": {
         "type": "git",
-        "url": "github.com:iotaledger/iota.git"
+        "url": "github.com:iotaledger/ts-packages.git"
     },
     "license": "Apache-2.0",
     "scripts": {
@@ -30,7 +30,7 @@
         "@iota/apps-ui-kit": "workspace:*",
         "@iota/dapp-kit": "workspace:*",
         "@iota/graphql-transport": "workspace:*",
-        "@iota/iota-names-sdk": "^0.6.1",
+        "@iota/iota-names-sdk": "workspace:^",
         "@iota/iota-sdk": "workspace:*",
         "@iota/kiosk": "workspace:*",
         "@noble/hashes": "^1.4.0",
@@ -49,7 +49,7 @@
         "react-hot-toast": "^2.4.1",
         "vanilla-cookieconsent": "^2.9.1",
         "yup": "^1.1.1",
-        "zod": "^3.21.4"
+        "zod": "^3.25.76"
     },
     "devDependencies": {
         "@amplitude/analytics-types": "^2.11.0",

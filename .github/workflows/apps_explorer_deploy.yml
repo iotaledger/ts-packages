@@ -46,7 +46,7 @@ jobs:
 
   deploy:
     needs: resolve-deploy-type
-    runs-on: [self-hosted-x64]
+    runs-on: ubuntu-latest
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
 
     permissions:

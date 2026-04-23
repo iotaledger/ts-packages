@@ -1,1 +1,0 @@
-DROP INDEX CONCURRENTLY IF EXISTS idx_event_senders_tx_seq;
