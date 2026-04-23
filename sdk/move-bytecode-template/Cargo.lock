@@ -168,7 +168,6 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 [[package]]
 name = "enum-compat-util"
 version = "0.1.0"
-source = "git+https://github.com/iotaledger/iota.git?rev=96196f0da231883ec69cda04892c600ef6afa982#96196f0da231883ec69cda04892c600ef6afa982"
 dependencies = [
  "serde_yaml",
 ]
@@ -371,7 +370,6 @@ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 [[package]]
 name = "move-binary-format"
 version = "0.0.3"
-source = "git+https://github.com/iotaledger/iota.git?rev=96196f0da231883ec69cda04892c600ef6afa982#96196f0da231883ec69cda04892c600ef6afa982"
 dependencies = [
  "anyhow",
  "enum-compat-util",
@@ -400,7 +398,6 @@ dependencies = [
 [[package]]
 name = "move-core-types"
 version = "0.0.4"
-source = "git+https://github.com/iotaledger/iota.git?rev=96196f0da231883ec69cda04892c600ef6afa982#96196f0da231883ec69cda04892c600ef6afa982"
 dependencies = [
  "anyhow",
  "bcs",
@@ -424,7 +421,6 @@ dependencies = [
 [[package]]
 name = "move-proc-macros"
 version = "0.1.0"
-source = "git+https://github.com/iotaledger/iota.git?rev=96196f0da231883ec69cda04892c600ef6afa982#96196f0da231883ec69cda04892c600ef6afa982"
 dependencies = [
  "quote",
  "syn 2.0.117",
