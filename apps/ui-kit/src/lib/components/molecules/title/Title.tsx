@@ -5,6 +5,7 @@ import type { TooltipPosition } from '@/components/atoms';
 import { Tooltip } from '@/components/atoms';
 import { Info } from '@iota/apps-ui-icons';
 import { TitleSize } from './titleSize.enums';
+import { TitleVariant } from './titleVariant.enums';
 import cx from 'classnames';
 import { TITLE_PADDINGS, TITLE_SIZE } from './titleClasses.constants';
 
@@ -38,6 +39,10 @@ interface TitleProps {
      */
     size?: TitleSize;
     /**
+     * Controls padding. Default applies size-aware padding; Flush removes it for contexts where the parent owns spacing (e.g. AccordionHeader).
+     */
+    variant?: TitleVariant;
+    /**
      * The 'data-testid' attribute value (used in e2e tests)
      */
     testId?: string;
@@ -51,11 +56,15 @@ export function Title({
     supportingElement,
     tooltipPosition,
     size = TitleSize.Medium,
+    variant = TitleVariant.Default,
     testId,
 }: TitleProps) {
     return (
         <div
-            className={cx('flex flex-row items-center justify-between', TITLE_PADDINGS[size])}
+            className={cx(
+                'flex flex-row items-center justify-between',
+                TITLE_PADDINGS[variant][size],
+            )}
             data-testid={testId}
         >
             <div className="flex flex-row items-center gap-x-xxxs">

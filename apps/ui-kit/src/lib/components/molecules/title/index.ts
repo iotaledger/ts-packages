@@ -3,3 +3,4 @@
 
 export * from './Title';
 export { TitleSize } from './titleSize.enums';
+export { TitleVariant } from './titleVariant.enums';
