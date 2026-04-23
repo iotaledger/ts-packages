@@ -106,10 +106,9 @@ export class IotaClientGraphQLTransport implements IotaTransport {
 
     #getWebSocketClient(): GraphQLWebSocketClient {
         if (!this.#wsClient) {
-            const baseUrl = this.#options.wsUrl ?? this.#options.url;
             const endpoint = this.#options.wsUrl
-                ? baseUrl
-                : baseUrl.replace(/\/?$/, '/subscriptions');
+                ? this.#options.wsUrl
+                : this.#options.url.replace(/\/?$/, '/subscriptions');
             this.#wsClient = new GraphQLWebSocketClient(endpoint, {
                 ...this.#options.wsOptions,
                 ...(this.#options.WebSocketConstructor
