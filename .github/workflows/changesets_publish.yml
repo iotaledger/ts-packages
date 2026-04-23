@@ -121,6 +121,12 @@ jobs:
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
 
+  upload-typedoc:
+    needs: publish
+    if: github.event.inputs.release_type == 'latest'
+    uses: ./.github/workflows/ts_sdk_typedoc_upload.yml
+    secrets: inherit
+
   notify:
     needs: publish
     if: always() && needs.publish.result != 'skipped' && github.event.inputs.release_type != 'experimental'
@@ -134,4 +140,3 @@ jobs:
         @iota/iota-sdk: https://www.npmjs.com/package/@iota/iota-sdk
         @iota/dapp-kit: https://www.npmjs.com/package/@iota/dapp-kit
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-

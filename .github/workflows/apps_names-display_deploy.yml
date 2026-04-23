@@ -1,4 +1,4 @@
-name: Production Deploy for Names Display
+name: Deploy Names Display
 
 on:
   workflow_dispatch:
