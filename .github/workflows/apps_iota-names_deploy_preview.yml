@@ -8,7 +8,7 @@ on:
       - "pnpm-workspace.yaml"
       - "sdk/**"
       - "dapp/**"
-      - ".github/workflows/deploy_preview_iota_names.yml"
+      - ".github/workflows/apps_iota-names_deploy_preview.yml"
       - ".github/workflows/iota_names_deploy.yml"
 
 concurrency:
