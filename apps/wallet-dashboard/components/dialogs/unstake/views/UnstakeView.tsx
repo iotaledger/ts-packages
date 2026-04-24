@@ -33,7 +33,6 @@ import { DialogLayout, DialogLayoutFooter, DialogLayoutBody } from '../../layout
 
 import { IotaSignAndExecuteTransactionOutput } from '@iota/wallet-standard';
 import { ampli } from '@/lib/utils/analytics';
-import { useEffect } from 'react';
 import { Field, type FieldProps, FormikProvider } from 'formik';
 
 interface UnstakeDialogProps {
@@ -74,7 +73,6 @@ export function UnstakeView({
         unstakeAmountFormattedPlain,
         rewardsFormattedPlain,
         activeUnstakeData,
-        activeError,
         activeIsError,
         activeIsLoading: activeIsPending,
         gasFormatted,
@@ -96,12 +94,6 @@ export function UnstakeView({
         stakeId: extendedStake.stakedIotaId,
         unstake: true,
     });
-
-    useEffect(() => {
-        if (activeError) {
-            console.error('[DEBUG]: Unstake Error:', activeError);
-        }
-    }, [activeError]);
 
     const { isLoading: loadingValidators, error: errorValidators } = systemDataResult;
     const {
