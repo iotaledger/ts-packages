@@ -14,3 +14,6 @@ export const MIN_STAKING_THRESHOLD = 1_000_000_000n; // 1 IOTA in nanos
 
 export const EFFECTIVE_COMMISSION_TOOLTIP =
     'The share of rewards retained by the validator. This rate includes a protocol-enforced minimum to help maintain network decentralization.';
+
+export const MIN_PARTIAL_UNSTAKE_TEXT =
+    'Minimum 1 IOTA to unstake. Remaining stake must also be at least 1 IOTA.';

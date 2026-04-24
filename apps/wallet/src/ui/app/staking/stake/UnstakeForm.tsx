@@ -6,7 +6,6 @@ import {
     TimeUnit,
     useGetTimeBeforeEpochNumber,
     useTimeAgo,
-    GAS_SYMBOL,
     useGetDelegatedStake,
     DELEGATED_STAKES_QUERY_STALE_TIME,
     DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
@@ -17,6 +16,8 @@ import {
     GAS_BUDGET_ERROR_MESSAGES,
     GAS_BALANCE_TOO_LOW_ID,
     useUnstakeForm,
+    UnstakeBreakdown,
+    MIN_PARTIAL_UNSTAKE_TEXT,
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
@@ -223,7 +224,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                                     )}
                                 </Field>
                                 <div className="key-value-key-text-color text-body-sm">
-                                    Minimum: 1 IOTA to unstake and 1 IOTA must remain staked
+                                    {MIN_PARTIAL_UNSTAKE_TEXT}
                                 </div>
                             </>
                         )}
@@ -237,70 +238,17 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                             fullwidth
                         />
                         <Divider />
-                        {isPartialUnstake ? (
-                            <>
-                                <KeyValueInfo
-                                    keyText="Amount to Unstake"
-                                    value={unstakeAmountFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                                <KeyValueInfo
-                                    keyText="Rewards Earned"
-                                    value={rewardsFormatted}
-                                    supportingLabel={rewardSymbol}
-                                    fullwidth
-                                />
-                                <Divider />
-                                <KeyValueInfo
-                                    keyText="Remaining Stake"
-                                    value={remainingStakeFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                                <KeyValueInfo
-                                    keyText="Remaining Rewards"
-                                    value={remainingRewardsFormatted}
-                                    supportingLabel={remainingRewardsSymbol}
-                                    fullwidth
-                                />
-                                <Divider />
-                                <KeyValueInfo
-                                    keyText="Total Unstaked IOTA"
-                                    value={totalUnstakeAmountFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                                <KeyValueInfo
-                                    keyText="Remaining Total Staked IOTA"
-                                    value={remainingTotalStakedFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <KeyValueInfo
-                                    keyText="Your Stake"
-                                    value={unstakeAmountFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                                <KeyValueInfo
-                                    keyText="Rewards Earned"
-                                    value={rewardsFormatted}
-                                    supportingLabel={rewardSymbol}
-                                    fullwidth
-                                />
-                                <Divider />
-                                <KeyValueInfo
-                                    keyText="Total Unstaked IOTA"
-                                    value={totalUnstakeAmountFormatted}
-                                    supportingLabel={GAS_SYMBOL}
-                                    fullwidth
-                                />
-                            </>
-                        )}
+                        <UnstakeBreakdown
+                            isPartialUnstake={isPartialUnstake}
+                            unstakeAmountFormatted={unstakeAmountFormatted}
+                            rewardsFormatted={rewardsFormatted}
+                            rewardSymbol={rewardSymbol}
+                            totalUnstakeAmountFormatted={totalUnstakeAmountFormatted}
+                            remainingStakeFormatted={remainingStakeFormatted}
+                            remainingRewardsFormatted={remainingRewardsFormatted}
+                            remainingRewardsSymbol={remainingRewardsSymbol}
+                            remainingTotalStakedFormatted={remainingTotalStakedFormatted}
+                        />
                     </div>
                 </Panel>
                 <Panel hasBorder>
