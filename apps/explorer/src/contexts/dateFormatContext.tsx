@@ -16,11 +16,16 @@ export type DateType =
 
 export type DateFormat = 'default' | 'local' | 'utc';
 
-const LS_KEY = 'timeFormat';
+const LS_KEY = 'iota-explorer:date-format';
 const CYCLE: DateFormat[] = ['default', 'local', 'utc'];
 const DEFAULT_FORMAT: DateFormat = 'default';
 
 type DateFormatMap = Partial<Record<DateType, DateFormat>>;
+
+function isValidDateFormatMap(v: unknown): v is DateFormatMap {
+    if (typeof v !== 'object' || v === null) return false;
+    return Object.values(v).every((f) => CYCLE.includes(f as DateFormat));
+}
 
 interface DateFormatContextValue {
     formats: DateFormatMap;
@@ -30,7 +35,9 @@ interface DateFormatContextValue {
 function readFromStorage(): DateFormatMap {
     try {
         const raw = localStorage.getItem(LS_KEY);
-        return raw ? JSON.parse(raw) : {};
+        if (!raw) return {};
+        const parsed: unknown = JSON.parse(raw);
+        return isValidDateFormatMap(parsed) ? parsed : {};
     } catch {
         return {};
     }

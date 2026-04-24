@@ -11,6 +11,7 @@ import {
 } from '~/contexts/dateFormatContext';
 
 const ABSOLUTE_FORMAT: Format[] = ['day', 'month', 'year', 'hour', 'minute', 'second'];
+const TOOLTIP_DURATION_MS = 1_000;
 
 const FORMAT_LABEL: Record<DateFormat, string> = {
     default: 'Relative time',
@@ -76,7 +77,7 @@ export function DateDisplay({
 
         if (showTooltip) {
             setShowMessage(true);
-            timeoutRef.current = setTimeout(() => setShowMessage(false), 1000);
+            timeoutRef.current = setTimeout(() => setShowMessage(false), TOOLTIP_DURATION_MS);
         }
     }
 
