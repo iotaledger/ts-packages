@@ -659,10 +659,6 @@ export const RPC_METHODS: {
                     graphqlTransactionKindFilter =
                         TransactionBlockKindInput.ConsensusCommitPrologueV1;
                     break;
-                case 'AuthenticatorStateUpdateV1':
-                    graphqlTransactionKindFilter =
-                        TransactionBlockKindInput.AuthenticatorStateUpdateV1;
-                    break;
                 case 'RandomnessStateUpdate':
                     graphqlTransactionKindFilter = TransactionBlockKindInput.RandomnessStateUpdate;
                     break;
