@@ -27,7 +27,6 @@ export function Header(): React.JSX.Element {
                             className="text-label-lg h-10"
                             connectText="Connect L1 Wallet"
                             size="md"
-                            iotaNamesEnabled={true}
                         />
                         <ConnectButtonL2 />
                     </div>
@@ -52,7 +51,6 @@ export function Header(): React.JSX.Element {
                         className="text-label-lg h-10"
                         connectText="Connect L1 Wallet"
                         size="md"
-                        iotaNamesEnabled={true}
                     />
                     <Divider />
                     <ConnectButtonL2 />
