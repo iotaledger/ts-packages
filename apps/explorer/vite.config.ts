@@ -6,7 +6,6 @@
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
-import { copyFileSync } from 'fs';
 import { defineConfig, loadEnv } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import { configDefaults } from 'vitest/config';
@@ -36,20 +35,6 @@ export default defineConfig(({ mode }) => {
                     name: EXPLORER_REV,
                 },
             }),
-            {
-                name: 'copy-wasm-files',
-                buildStart() {
-                    // Copy WASM files to public directory
-                    try {
-                        copyFileSync(
-                            'node_modules/@iota/identity-wasm/web/identity_wasm_bg.wasm',
-                            'public/identity_wasm_bg.wasm',
-                        );
-                    } catch (error) {
-                        console.warn('Could not copy WASM files:', error);
-                    }
-                },
-            },
         ],
         test: {
             // Omit end-to-end tests:
