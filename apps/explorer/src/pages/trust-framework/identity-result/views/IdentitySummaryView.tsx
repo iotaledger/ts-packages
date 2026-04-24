@@ -58,7 +58,7 @@ export function IdentitySummaryView({
                         <div>
                             <DisplayStats
                                 label="Created at"
-                                value={<DateDisplay timestamp={createdAtMs} />}
+                                value={<DateDisplay timestamp={createdAtMs} type="transaction" />}
                                 tooltipPosition={TooltipPosition.Left}
                                 tooltipText="Timestamp of the transaction that first published this Identity onchain."
                             />
