@@ -251,7 +251,14 @@ jobs:
 
       - name: Build apps-backend
         id: build-apps-backend
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runAppsBackend == 'true' || steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
+        if: >-
+          (!cancelled() && !failure()) && (
+            steps.conditions.outputs.runAppsBackend == 'true' ||
+            steps.conditions.outputs.runDashboard == 'true' ||
+            steps.conditions.outputs.runWallet == 'true' ||
+            steps.conditions.outputs.runEvmBridge == 'true' ||
+            steps.conditions.outputs.runNamesDapp == 'true'
+          )
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm turbo --filter apps-backend build
 
@@ -296,7 +303,12 @@ jobs:
 
       - name: Run Dashboard e2e tests
         id: run-dashboard
-        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-dashboard.outcome == 'success' && steps.conditions.outputs.runDashboard == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.build-dashboard.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runDashboard == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter wallet-dashboard playwright test
 
@@ -331,7 +343,12 @@ jobs:
 
       - name: Run Wallet e2e tests
         id: run-wallet
-        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runWallet == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.build-wallet.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runWallet == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter iota-wallet playwright test
 
@@ -361,7 +378,13 @@ jobs:
 
       - name: Run evm-bridge tests
         id: run-evm-bridge
-        if: (!cancelled() && !failure()) && steps.build-evm-bridge.outcome == 'success' && steps.install-playwright.outcome == 'success' && steps.prepare-evm-bridge.outcome == 'success' && steps.conditions.outputs.runEvmBridge == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.build-evm-bridge.outcome == 'success' &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.prepare-evm-bridge.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runEvmBridge == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         working-directory: ./apps/evm-bridge
         run: DEBUG=pw:webserver xvfb-run --auto-servernum pnpm run test:e2e
@@ -409,7 +432,13 @@ jobs:
 
       - name: Run Names Dapp e2e tests
         id: run-names-dapp
-        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.start-names-indexer.outcome == 'success' &&
+          steps.build-wallet.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         env:
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
