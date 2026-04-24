@@ -95,7 +95,7 @@ export class IotaGraphQLClient<Queries extends Record<string, GraphQLDocument> =
             );
         }
 
-        return (await res.json()) as GraphQLQueryResult<Result>;
+        return await res.json();
     }
 
     async execute<
