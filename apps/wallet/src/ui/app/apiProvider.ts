@@ -35,10 +35,8 @@ class ApiProvider {
                 ? {
                       network,
                       customRpcUrl: customRPC || '',
-                      customExplorerUrl: customExplorer || null,
-                      customFaucetUrl: customFaucet || null,
                   }
-                : { network, customRpcUrl: null, customExplorerUrl: null, customFaucetUrl: null },
+                : { network, customRpcUrl: null },
         );
 
         this._signerByAddress.clear();
