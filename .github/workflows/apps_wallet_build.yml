@@ -75,7 +75,7 @@ jobs:
     outputs:
       artifact_name: ${{ steps.artifact.outputs.artifact_name }}
       release_tag: ${{ steps.prev_tag.outputs.current_tag }}
-      artifact_link: ${{ steps.artifact-link.outputs.line }}
+      artifact_link: ${{ steps.artifact-link.outputs.artifact_link }}
     env:
       DEFAULT_NETWORK: ${{ secrets[needs.resolve-deploy-type.outputs.default_network_secret] }}
       IOTA_NETWORKS: ${{ secrets[needs.resolve-deploy-type.outputs.iota_networks_secret] }}
@@ -188,9 +188,9 @@ jobs:
         shell: bash
         run: |
           if [ "$DEPLOY_TYPE" = "production" ]; then
-            echo "line=Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
+            echo "artifact_link=Release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${CURRENT_TAG}" >> "$GITHUB_OUTPUT"
           else
-            echo "line=Artifacts: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> "$GITHUB_OUTPUT"
+            echo "artifact_link=Artifacts: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts" >> "$GITHUB_OUTPUT"
           fi
 
   notify:
