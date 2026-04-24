@@ -1,0 +1,39 @@
+name: Slack Notify
+
+on:
+  workflow_call:
+    inputs:
+      title:
+        description: "Notification title"
+        required: true
+        type: string
+      message:
+        description: "Message body (plain text; URLs auto-link)"
+        required: true
+        type: string
+      status:
+        description: "success or failure (drives icon and color)"
+        required: false
+        default: success
+        type: string
+      footer:
+        description: "Optional footer (e.g. commit link)"
+        required: false
+        default: ""
+        type: string
+    secrets:
+      CI_SLACK_WEBHOOK:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
+        with:
+          status: ${{ inputs.status }}
+          notification_title: ${{ inputs.title }}
+          message_format: ${{ inputs.message }}
+          footer: ${{ inputs.footer }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK }}
