@@ -9,6 +9,7 @@ import {
     useFormatCoin,
     useMaxCommitteeSize,
     useGetCandidateValidators,
+    useGetPendingValidator,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import { PageLayout, ValidatorMeta, ValidatorStats, ValidatorStatusLegend } from '~/components';
@@ -60,6 +61,9 @@ function ValidatorDetails(): JSX.Element {
     const { data: validatorCandidateData, isLoading: isValidatorCandidateLoading } =
         useGetCandidateValidators(id || '');
 
+    const { data: pendingValidatorData, isLoading: isPendingValidatorLoading } =
+        useGetPendingValidator(id || '');
+
     const numberOfActiveValidators = systemStateData?.activeValidators.length ?? null;
     const { data: rollingAverageApys, isLoading: isValidatorsApysLoading } = useGetValidatorsApy();
     const { data: validatorEvents, isLoading: isValidatorsEventsLoading } = useGetValidatorsEvents({
@@ -93,7 +97,8 @@ function ValidatorDetails(): JSX.Element {
         isValidatorsEventsLoading ||
         isValidatorsApysLoading ||
         isInactiveValidatorLoading ||
-        isValidatorCandidateLoading
+        isValidatorCandidateLoading ||
+        isPendingValidatorLoading
     ) {
         return <PageLayout content={<LoadingIndicator />} />;
     }
@@ -117,6 +122,19 @@ function ValidatorDetails(): JSX.Element {
                 content={
                     <div className="flex flex-col gap-xl">
                         <ValidatorMeta validatorData={inactiveValidatorData} isInactive />
+                        <ValidatorStatusLegend />
+                    </div>
+                }
+            />
+        );
+    }
+
+    if (pendingValidatorData && !activeValidatorData) {
+        return (
+            <PageLayout
+                content={
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={pendingValidatorData} isPending />
                         <ValidatorStatusLegend />
                     </div>
                 }

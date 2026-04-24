@@ -9,4 +9,5 @@ export * from './useStakeTxnInfo';
 export * from './useNewStakeTransaction';
 export * from './useNewUnstakeTransaction';
 export * from './useGetInactiveValidator';
+export * from './useGetPendingValidator';
 export * from './useGetCandidateValidators';

@@ -7,26 +7,29 @@ import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { getValidatorsMetadata } from '../../utils';
 import type { IotaValidatorSummaryExtended } from '../../types';
 
-export function useGetInactiveValidator(validatorAddress: string) {
+export function useGetPendingValidator(validatorAddress: string) {
     const iotaClient = useIotaClient();
     const { data } = useIotaClientQuery('getLatestIotaSystemState');
-    const inactivePoolsId = data?.inactivePoolsId;
+    const pendingActiveValidatorsId = data?.pendingActiveValidatorsId;
+    const pendingActiveValidatorsSize = Number(data?.pendingActiveValidatorsSize ?? 0);
+
     return useQuery({
-        queryKey: ['inactive-validators', inactivePoolsId],
+        queryKey: ['pending-validators', pendingActiveValidatorsId],
         async queryFn() {
-            if (!inactivePoolsId) {
+
+            if (!pendingActiveValidatorsId) {
                 throw Error('Missing params');
             }
-            const inactiveValidators = await iotaClient.getDynamicFields({
-                parentId: normalizeIotaAddress(inactivePoolsId),
+            const pendingValidators = await iotaClient.getDynamicFields({
+                parentId: normalizeIotaAddress(pendingActiveValidatorsId),
             });
 
-            const allInactive = await Promise.allSettled(
-                inactiveValidators.data.map((validator) =>
+            const allPending = await Promise.allSettled(
+                pendingValidators.data.map((validator) =>
                     getValidatorsMetadata(iotaClient, validator.objectId),
                 ),
             );
-            return allInactive
+            return allPending
                 .filter(
                     (r): r is PromiseFulfilledResult<IotaValidatorSummaryExtended | null> =>
                         r.status === 'fulfilled',
@@ -37,6 +40,6 @@ export function useGetInactiveValidator(validatorAddress: string) {
         select(data) {
             return data.find((v) => v?.iotaAddress === validatorAddress) ?? null;
         },
-        enabled: !!inactivePoolsId,
+        enabled: !!pendingActiveValidatorsId && pendingActiveValidatorsSize > 0,
     });
 }

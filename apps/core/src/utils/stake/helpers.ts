@@ -16,7 +16,7 @@ export interface MoveStructFields {
     fields: { [key: string]: MoveValue };
 }
 
-export function isMoveStructWithFields(
+function isMoveStructWithFields(
     data: MoveStruct,
 ): data is { fields: { [key: string]: MoveValue }; type: string } {
     return (
