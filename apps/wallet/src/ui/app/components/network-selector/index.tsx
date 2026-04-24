@@ -43,6 +43,8 @@ export function NetworkSelector() {
                         network: {
                             network: network.id,
                             customRpcUrl: null,
+                            customExplorerUrl: null,
+                            customFaucetUrl: null,
                         },
                         store: true,
                     }),

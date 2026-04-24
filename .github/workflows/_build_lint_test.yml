@@ -2,7 +2,16 @@ name: TS Lint, Build, and Test
 
 on:
   workflow_dispatch:
+    inputs:
+      isAffected:
+        description: Whether any package covered by this workflow was changed
+        type: boolean
+        default: true
   workflow_call:
+    inputs:
+      isAffected:
+        type: boolean
+        required: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
@@ -16,6 +25,7 @@ concurrency:
 jobs:
   build:
     name: Lint, Build, and Test
+    if: inputs.isAffected
     runs-on: ubuntu-latest
     env:
       VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
