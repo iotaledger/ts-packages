@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { UserApproveContainer } from '_components';
 import { useAppDispatch, useAccountByAddress, useSigner } from '_hooks';
 import { respondToTransactionRequest } from '../../redux/slices/transaction-requests';
-import { PageMainLayoutTitle } from '../../shared/page-main-layout/PageMainLayoutTitle';
 import { Panel } from '@iota/apps-ui-kit';
 
 export interface SignMessageRequestProps {
@@ -44,8 +43,8 @@ export function SignMessageRequest({ request }: SignMessageRequestProps) {
             scrollable
             blended
             checkAccountLock
+            headerTitle="Sign Message"
         >
-            <PageMainLayoutTitle title="Sign Message" />
             <div className="py-md">
                 <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                     Message You Are Signing

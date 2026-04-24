@@ -13,7 +13,6 @@ import {
 import { type TransactionApprovalRequest } from '_src/shared/messaging/messages/payloads/transactions/approvalRequest';
 import { respondToTransactionRequest } from '_redux/slices/transaction-requests';
 import { ampli } from '_src/shared/analytics/ampli';
-import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMainLayoutTitle';
 import {
     useTransactionSummary,
     TransactionSummary,
@@ -111,8 +110,8 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                 approveDisabled={isDryRunLoading}
                 approveLoading={isDryRunLoading || isConfirmationVisible}
                 checkAccountLock
+                headerTitle="Approve Transaction"
             >
-                <PageMainLayoutTitle title="Approve Transaction" />
                 <div className="-mr-3 flex flex-col gap-md">
                     {isDryRunExecutionFailed && dryRunExecutionSupportingText && (
                         <InfoBox
