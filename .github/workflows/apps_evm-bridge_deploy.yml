@@ -59,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       APPS_BACKEND: ${{ secrets[needs.resolve-deploy-type.outputs.apps_backend_secret] }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.TOOLING_SENTRY_AUTH_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
