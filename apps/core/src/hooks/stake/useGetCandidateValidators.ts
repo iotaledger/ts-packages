@@ -24,7 +24,7 @@ export function useGetCandidateValidators(validatorAddress?: string) {
     const iotaClient = useIotaClient();
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
     const validatorCandidatesId = systemState?.validatorCandidatesId;
-
+    const candidateValidatorsSize = Number(systemState?.validatorCandidatesSize ?? 0);
     const { data, isPending, isLoading, isError } = useQuery({
         queryKey: ['candidate-validators', validatorCandidatesId],
         async queryFn() {
@@ -54,7 +54,7 @@ export function useGetCandidateValidators(validatorAddress?: string) {
                 .filter((v): v is IotaValidatorSummaryExtended => v !== null);
             return candidateValidators;
         },
-        enabled: !!validatorCandidatesId,
+        enabled: !!validatorCandidatesId && candidateValidatorsSize > 0,
         select(candidateValidators) {
             const candidates = candidateValidators.map((v) => ({
                 ...v,

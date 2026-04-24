@@ -1,4 +1,4 @@
-// Copyright (c) 2025 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQuery } from '@tanstack/react-query';
@@ -9,15 +9,15 @@ import type { IotaValidatorSummaryExtended } from '../../types';
 
 export function useGetPendingValidator(validatorAddress: string) {
     const iotaClient = useIotaClient();
-    const { data } = useIotaClientQuery('getLatestIotaSystemState');
-    const pendingActiveValidatorsId = data?.pendingActiveValidatorsId;
-    const pendingActiveValidatorsSize = Number(data?.pendingActiveValidatorsSize ?? 0);
+    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
+    const pendingActiveValidatorsId = systemState?.pendingActiveValidatorsId;
+    const pendingActiveValidatorsSize = Number(systemState?.pendingActiveValidatorsSize ?? 0);
 
     return useQuery({
         queryKey: ['pending-validators', pendingActiveValidatorsId],
         async queryFn() {
             if (!pendingActiveValidatorsId) {
-                throw Error('Missing params');
+                throw Error('Missing pendingActiveValidatorsId');
             }
             const pendingValidators = await iotaClient.getDynamicFields({
                 parentId: normalizeIotaAddress(pendingActiveValidatorsId),

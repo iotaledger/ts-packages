@@ -9,13 +9,14 @@ import type { IotaValidatorSummaryExtended } from '../../types';
 
 export function useGetInactiveValidator(validatorAddress: string) {
     const iotaClient = useIotaClient();
-    const { data } = useIotaClientQuery('getLatestIotaSystemState');
-    const inactivePoolsId = data?.inactivePoolsId;
+    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
+    const inactivePoolsId = systemState?.inactivePoolsId;
+    const inactivePoolsSize = Number(systemState?.inactivePoolsSize ?? 0);
     return useQuery({
         queryKey: ['inactive-validators', inactivePoolsId],
         async queryFn() {
             if (!inactivePoolsId) {
-                throw Error('Missing params');
+                throw Error('Missing inactivePoolsId');
             }
             const inactiveValidators = await iotaClient.getDynamicFields({
                 parentId: normalizeIotaAddress(inactivePoolsId),
@@ -37,6 +38,6 @@ export function useGetInactiveValidator(validatorAddress: string) {
         select(data) {
             return data.find((v) => v?.iotaAddress === validatorAddress) ?? null;
         },
-        enabled: !!inactivePoolsId,
+        enabled: !!inactivePoolsId && inactivePoolsSize > 0,
     });
 }
