@@ -1,4 +1,4 @@
-// Copyright (c) 2025 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { useQuery } from '@tanstack/react-query';
@@ -7,27 +7,28 @@ import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { getValidatorsMetadata } from '../../utils';
 import type { IotaValidatorSummaryExtended } from '../../types';
 
-export function useGetInactiveValidator(validatorAddress: string) {
+export function useGetPendingValidator(validatorAddress: string) {
     const iotaClient = useIotaClient();
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
-    const inactivePoolsId = systemState?.inactivePoolsId;
-    const inactivePoolsSize = Number(systemState?.inactivePoolsSize ?? 0);
+    const pendingActiveValidatorsId = systemState?.pendingActiveValidatorsId;
+    const pendingActiveValidatorsSize = Number(systemState?.pendingActiveValidatorsSize ?? 0);
+
     return useQuery({
-        queryKey: ['inactive-validators', inactivePoolsId],
+        queryKey: ['pending-validators', pendingActiveValidatorsId],
         async queryFn() {
-            if (!inactivePoolsId) {
-                throw Error('Missing inactivePoolsId');
+            if (!pendingActiveValidatorsId) {
+                throw Error('Missing pendingActiveValidatorsId');
             }
-            const inactiveValidators = await iotaClient.getDynamicFields({
-                parentId: normalizeIotaAddress(inactivePoolsId),
+            const pendingValidators = await iotaClient.getDynamicFields({
+                parentId: normalizeIotaAddress(pendingActiveValidatorsId),
             });
 
-            const allInactive = await Promise.allSettled(
-                inactiveValidators.data.map((validator) =>
+            const allPending = await Promise.allSettled(
+                pendingValidators.data.map((validator) =>
                     getValidatorsMetadata(iotaClient, validator.objectId),
                 ),
             );
-            return allInactive
+            return allPending
                 .filter(
                     (r): r is PromiseFulfilledResult<IotaValidatorSummaryExtended | null> =>
                         r.status === 'fulfilled',
@@ -38,6 +39,6 @@ export function useGetInactiveValidator(validatorAddress: string) {
         select(data) {
             return data.find((v) => v?.iotaAddress === validatorAddress) ?? null;
         },
-        enabled: !!inactivePoolsId && inactivePoolsSize > 0,
+        enabled: !!pendingActiveValidatorsId && pendingActiveValidatorsSize > 0,
     });
 }
