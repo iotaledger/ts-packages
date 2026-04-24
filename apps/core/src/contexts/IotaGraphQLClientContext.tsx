@@ -44,7 +44,7 @@ export function useIotaGraphQLClient(network?: string) {
         } else {
             return null;
         }
-    }, [graphql, network]);
+    }, [graphql]);
 
     return {
         iotaGraphQLClient,
