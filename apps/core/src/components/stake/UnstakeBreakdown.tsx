@@ -3,30 +3,30 @@
 
 import { Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import { GAS_SYMBOL } from '../../constants';
+import { useFormatCoin } from '../../hooks/useFormatCoin';
+import type { UnstakeAmounts } from '../../utils/stake/calculateUnstakeAmounts';
 
-interface UnstakeBreakdownPanelProps {
+interface UnstakeBreakdownProps {
     isPartialUnstake: boolean;
-    unstakeAmountFormatted: string;
-    rewardsFormatted: string;
-    rewardSymbol: string;
-    totalUnstakeAmountFormatted: string;
-    remainingStakeFormatted: string;
-    remainingRewardsFormatted: string;
-    remainingRewardsSymbol: string;
-    remainingTotalStakedFormatted: string;
+    unstakeAmounts: UnstakeAmounts;
 }
 
-export function UnstakeBreakdownPanel({
-    isPartialUnstake,
-    unstakeAmountFormatted,
-    rewardsFormatted,
-    rewardSymbol,
-    totalUnstakeAmountFormatted,
-    remainingStakeFormatted,
-    remainingRewardsFormatted,
-    remainingRewardsSymbol,
-    remainingTotalStakedFormatted,
-}: UnstakeBreakdownPanelProps) {
+export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBreakdownProps) {
+    const [unstakeAmountFormatted] = useFormatCoin({ balance: unstakeAmounts.unstakeAmount });
+    const [rewardsFormatted, rewardSymbol] = useFormatCoin({
+        balance: unstakeAmounts.proportionalRewards,
+    });
+    const [totalUnstakeAmountFormatted] = useFormatCoin({
+        balance: unstakeAmounts.totalUnstakeAmount,
+    });
+    const [remainingStakeFormatted] = useFormatCoin({ balance: unstakeAmounts.remainingStake });
+    const [remainingRewardsFormatted, remainingRewardsSymbol] = useFormatCoin({
+        balance: unstakeAmounts.remainingRewards,
+    });
+    const [remainingTotalStakedFormatted] = useFormatCoin({
+        balance: unstakeAmounts.remainingTotalStaked,
+    });
+
     if (isPartialUnstake) {
         return (
             <>

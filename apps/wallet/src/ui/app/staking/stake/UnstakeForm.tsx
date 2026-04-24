@@ -16,8 +16,8 @@ import {
     GAS_BUDGET_ERROR_MESSAGES,
     GAS_BALANCE_TOO_LOW_ID,
     useUnstakeForm,
-    UnstakeBreakdownPanel,
-    MIN_PARTIAL_UNSTAKE_TEXT,
+    UnstakeBreakdown,
+    MIN_PARTIAL_UNSTAKE_MESSAGE,
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
@@ -91,14 +91,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
         isPartialUnstake,
         switchToFullUnstake,
         switchToPartialUnstake,
-        unstakeAmountFormatted,
-        rewardsFormatted,
-        rewardSymbol,
-        totalUnstakeAmountFormatted,
-        remainingStakeFormatted,
-        remainingRewardsFormatted,
-        remainingRewardsSymbol,
-        remainingTotalStakedFormatted,
+        unstakeAmounts,
         unstakeAmountFormattedPlain,
         rewardsFormattedPlain,
         transaction,
@@ -224,7 +217,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                                     )}
                                 </Field>
                                 <div className="key-value-key-text-color text-body-sm">
-                                    {MIN_PARTIAL_UNSTAKE_TEXT}
+                                    {MIN_PARTIAL_UNSTAKE_MESSAGE}
                                 </div>
                             </>
                         )}
@@ -238,16 +231,9 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                             fullwidth
                         />
                         <Divider />
-                        <UnstakeBreakdownPanel
+                        <UnstakeBreakdown
                             isPartialUnstake={isPartialUnstake}
-                            unstakeAmountFormatted={unstakeAmountFormatted}
-                            rewardsFormatted={rewardsFormatted}
-                            rewardSymbol={rewardSymbol}
-                            totalUnstakeAmountFormatted={totalUnstakeAmountFormatted}
-                            remainingStakeFormatted={remainingStakeFormatted}
-                            remainingRewardsFormatted={remainingRewardsFormatted}
-                            remainingRewardsSymbol={remainingRewardsSymbol}
-                            remainingTotalStakedFormatted={remainingTotalStakedFormatted}
+                            unstakeAmounts={unstakeAmounts}
                         />
                     </div>
                 </Panel>

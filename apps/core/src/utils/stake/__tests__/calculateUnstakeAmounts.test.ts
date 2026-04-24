@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, it, expect } from 'vitest';
-import { parseUnstakeAmountNanos, calculateUnstakeBreakdown } from '../calculateUnstakeAmounts';
+import { parseUnstakeAmountNanos, calculateUnstakeAmounts } from '../calculateUnstakeAmounts';
 
 describe('parseUnstakeAmountNanos', () => {
     it('should parse valid amount strings to nanos', () => {
@@ -79,7 +79,7 @@ describe('calculateUnstakeBreakdown', () => {
     const rewardAmount = 1_000_000_000n; // 1 IOTA reward
 
     it('should return full amounts for non-partial unstake', () => {
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
             unstakeAmountNanos: 0n,
@@ -96,7 +96,7 @@ describe('calculateUnstakeBreakdown', () => {
 
     it('should calculate proportional amounts for partial unstake', () => {
         const unstakeAmountNanos = 5_000_000_000n; // 5 IOTA (half)
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
             unstakeAmountNanos,
@@ -112,7 +112,7 @@ describe('calculateUnstakeBreakdown', () => {
     });
 
     it('should use full principal when partial unstake amount is 0', () => {
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
             unstakeAmountNanos: 0n,
@@ -123,7 +123,7 @@ describe('calculateUnstakeBreakdown', () => {
     });
 
     it('should handle zero reward amount', () => {
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount: 0n,
             unstakeAmountNanos: 5_000_000_000n,
@@ -135,7 +135,7 @@ describe('calculateUnstakeBreakdown', () => {
     });
 
     it('should handle zero principal amount', () => {
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount: 0n,
             rewardAmount: 0n,
             unstakeAmountNanos: 0n,
@@ -152,7 +152,7 @@ describe('calculateUnstakeBreakdown', () => {
         const rewardAmount = 1_000_000_000n; // 1 IOTA
         const unstakeAmountNanos = 3_333_333_333n; // ~3.33 IOTA (one third)
 
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
             unstakeAmountNanos,
@@ -172,7 +172,7 @@ describe('calculateUnstakeBreakdown', () => {
         const rewardAmount = 3n;
         const unstakeAmountNanos = 1n;
 
-        const result = calculateUnstakeBreakdown({
+        const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
             unstakeAmountNanos,

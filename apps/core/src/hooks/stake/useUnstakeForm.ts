@@ -13,7 +13,7 @@ import {
 import {
     createUnstakeValidationSchema,
     parseUnstakeAmountNanos,
-    calculateUnstakeBreakdown,
+    calculateUnstakeAmounts,
 } from '../../utils';
 import { useFormatCoin } from '../useFormatCoin';
 import { useNewUnstakeTransaction } from './useNewUnstakeTransaction';
@@ -64,35 +64,14 @@ export function useUnstakeForm({
     const unstakeAmountNanos = parseUnstakeAmountNanos(values.amount);
 
     // Calculate proportional rewards and remaining balances
-    const breakdown = calculateUnstakeBreakdown({
+    const unstakeAmounts = calculateUnstakeAmounts({
         principalAmount,
         rewardAmount,
         unstakeAmountNanos,
         isPartialUnstake,
     });
 
-    const {
-        unstakeAmount,
-        proportionalRewards,
-        totalUnstakeAmount,
-        remainingStake,
-        remainingRewards,
-        remainingTotalStaked,
-    } = breakdown;
-
-    // Formatted display values
-    const [unstakeAmountFormatted] = useFormatCoin({ balance: unstakeAmount });
-    const [rewardsFormatted, rewardSymbol] = useFormatCoin({ balance: proportionalRewards });
-    const [totalUnstakeAmountFormatted] = useFormatCoin({ balance: totalUnstakeAmount });
-
-    // Calculate remaining stake after unstake
-    const [remainingStakeFormatted] = useFormatCoin({ balance: remainingStake });
-    // Calculate remaining rewards after unstake
-    const [remainingRewardsFormatted, remainingRewardsSymbol] = useFormatCoin({
-        balance: remainingRewards,
-    });
-    // Calculate remaining total staked IOTA
-    const [remainingTotalStakedFormatted] = useFormatCoin({ balance: remainingTotalStaked });
+    const { unstakeAmount, proportionalRewards } = unstakeAmounts;
 
     // Plain formatted values (for analytics)
     const [unstakeAmountFormattedPlain] = useFormatCoin({
@@ -165,18 +144,8 @@ export function useUnstakeForm({
         switchToFullUnstake,
         switchToPartialUnstake,
 
-        // Breakdown (raw)
-        ...breakdown,
-
-        // Formatted display values
-        unstakeAmountFormatted,
-        rewardsFormatted,
-        rewardSymbol,
-        totalUnstakeAmountFormatted,
-        remainingStakeFormatted,
-        remainingRewardsFormatted,
-        remainingRewardsSymbol,
-        remainingTotalStakedFormatted,
+        // Breakdown (raw amounts for UnstakeBreakdown component and consumers)
+        unstakeAmounts,
 
         // Plain formatted (for analytics)
         unstakeAmountFormattedPlain,

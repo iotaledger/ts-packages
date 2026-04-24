@@ -26,7 +26,7 @@ interface CalculateUnstakeBreakdownParams {
     isPartialUnstake: boolean;
 }
 
-export interface UnstakeBreakdown {
+export interface UnstakeAmounts {
     unstakeAmount: bigint;
     proportionalRewards: bigint;
     totalUnstakeAmount: bigint;
@@ -39,12 +39,12 @@ export interface UnstakeBreakdown {
  * Calculate the full breakdown of amounts for an unstake operation,
  * including proportional rewards and remaining balances.
  */
-export function calculateUnstakeBreakdown({
+export function calculateUnstakeAmounts({
     principalAmount,
     rewardAmount,
     unstakeAmountNanos,
     isPartialUnstake,
-}: CalculateUnstakeBreakdownParams): UnstakeBreakdown {
+}: CalculateUnstakeBreakdownParams): UnstakeAmounts {
     const unstakeAmount =
         isPartialUnstake && unstakeAmountNanos > 0n ? unstakeAmountNanos : principalAmount;
 
