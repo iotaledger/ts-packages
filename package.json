@@ -29,6 +29,7 @@
 		"changeset-version": "pnpm changeset version",
 		"prepare": "husky",
 		"codegen": "turbo run codegen",
+		"external:update": "git submodule update --remote --force external/iota external/names",
 		"names-dapp": "turbo --filter ./apps/names",
 		"names-sdk": "turbo --filter ./sdk/names",
 		"names-display": "turbo --filter ./apps/names-display",
@@ -37,7 +38,8 @@
 		"eslint:check": "eslint --max-warnings=0 .",
 		"eslint:fix": "pnpm run eslint:check --fix",
 		"lint": "pnpm run eslint:check && pnpm run prettier:check",
-		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
+		"lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix",
+		"docs:sdk": "bash scripts/generate-sdk-typedoc.sh"
 	},
 	"pnpm": {
 		"overrides": {
@@ -51,8 +53,6 @@
 			"serialize-javascript": ">=7.0.3",
 			"form-data@>=4.0.0 <4.0.4": "^4.0.4",
 			"sha.js": "^2.4.12",
-			"@mestamask/sdk@<0.33.0": "0.33.0",
-			"@mestamask/sdk-communication-layer@<0.33.0": "0.33.0",
 			"validator@<13.15.15": "13.15.15",
 			"node-forge@1.3.1": "^1.3.3",
 			"glob@>=10.2.0 <10.5.0": "10.5.0",
@@ -116,6 +116,8 @@
 		"ts-node": "^10.9.2",
 		"tsx": "^3.12.7",
 		"turbo": "^2.9.6",
+		"typedoc": "^0.28.17",
+		"typedoc-plugin-markdown": "^4.10.0",
 		"typescript": "^5.5.3",
 		"typescript-eslint": "^7.12.0"
 	},
