@@ -1,46 +1,30 @@
 #!/bin/bash
 set -euo pipefail
 
-# ============================================================================
-# Downloads IOTA binaries from GitHub releases.
-# Fetches the latest mainnet release by default, or uses IOTA_BINARY_VERSION.
-# Adds binaries to PATH (and GITHUB_PATH if running in GitHub Actions).
-# ============================================================================
-
-IOTA_BINARY_VERSION="${IOTA_BINARY_VERSION:-v1.20.1}"
-
-echo "=== Downloading IOTA binaries (version: $IOTA_BINARY_VERSION) ==="
+# Downloads the latest nightly IOTA binaries from iotaledger/iota's release.yml
+# workflow (scheduled build, cut from develop).
 
 os_name=$(uname -s | tr '[:upper:]' '[:lower:]')
 arch_name=$(uname -m)
-
 [[ "$os_name" == "darwin" ]] && os_name="macos"
 [[ "$arch_name" == "aarch64" ]] && arch_name="arm64"
+os_type="${os_name}-${arch_name}"
 
-asset_name="iota-$IOTA_BINARY_VERSION-${os_name}-${arch_name}.tgz"
-download_url="https://github.com/iotaledger/iota/releases/download/$IOTA_BINARY_VERSION/$asset_name"
+gh --version
 
-echo "Downloading from: $download_url"
-curl -sL "$download_url" -o iota.tgz
-tar -zxvf iota.tgz
+run_info=$(gh run list --repo iotaledger/iota --workflow=release.yml \
+    --event=schedule --status=success --limit=1 \
+    --json databaseId,createdAt \
+    --jq '.[0] | "\(.databaseId) \(.createdAt)"')
+run_id="${run_info% *}"
+run_created="${run_info#* }"
+echo "Using iotaledger/iota release.yml run $run_id (created $run_created)"
 
-required_binaries=(
-    "./iota"
-    "./iota-localnet"
-    "./iota-indexer"
-    "./iota-graphql-rpc"
-)
+gh run download "$run_id" --repo iotaledger/iota \
+    --pattern "iota-nightly-*-${os_type}" --dir .
 
-for binary in "${required_binaries[@]}"; do
-    if [[ ! -f "$binary" ]]; then
-        echo "ERROR: required binary not found after extraction: $binary"
-        exit 1
-    fi
-done
+tar -zxvf iota-nightly-*-"${os_type}"/*.tgz
+chmod +x ./iota ./iota-localnet ./iota-indexer ./iota-graphql-rpc
+echo "$(pwd)" >> "${GITHUB_PATH:-/dev/null}"
+echo "IOTA nightly from run $run_id installed"
 
-chmod +x "${required_binaries[@]}"
-
-export PATH="$(pwd):$PATH"
-[[ -n "${GITHUB_PATH:-}" ]] && echo "$(pwd)" >> "$GITHUB_PATH"
-
-echo "Binaries downloaded and added to PATH"

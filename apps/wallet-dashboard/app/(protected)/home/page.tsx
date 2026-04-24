@@ -29,8 +29,6 @@ function HomeDashboardPage(): JSX.Element {
     const address = account?.address || '';
     const { userType } = useGetSupplyIncreaseVestingObjects(address);
 
-    const stardustMigrationEnabled = useFeature<boolean>(Feature.StardustMigration).value;
-    const supplyIncreaseVestingEnabled = useFeature<boolean>(Feature.SupplyIncreaseVesting).value;
     const interstitialConfig = useFeature<InterstitialConfig>(
         Feature.WalletInterstitialConfig,
     ).value;
@@ -60,23 +58,21 @@ function HomeDashboardPage(): JSX.Element {
                         <div style={{ gridArea: 'staking' }} className="flex grow overflow-hidden">
                             <StakingOverview />
                         </div>
-                        {stardustMigrationEnabled && <MigrationOverview />}
+                        <MigrationOverview />
                         <div style={{ gridArea: 'coins' }} className="flex grow overflow-hidden">
                             <MyCoins />
                         </div>
-                        {supplyIncreaseVestingEnabled && (
-                            <SupplyIncreaseVestingOverview
-                                customButton={
-                                    userType === SupplyIncreaseUserType.Staker ? (
-                                        <Button
-                                            type={ButtonType.Primary}
-                                            text="Go to Vesting Page"
-                                            onClick={() => router.push('/vesting')}
-                                        />
-                                    ) : undefined
-                                }
-                            />
-                        )}
+                        <SupplyIncreaseVestingOverview
+                            customButton={
+                                userType === SupplyIncreaseUserType.Staker ? (
+                                    <Button
+                                        type={ButtonType.Primary}
+                                        text="Go to Vesting Page"
+                                        onClick={() => router.push('/vesting')}
+                                    />
+                                ) : undefined
+                            }
+                        />
                         <div style={{ gridArea: 'activity' }} className="flex grow overflow-hidden">
                             <TransactionsOverview />
                         </div>
