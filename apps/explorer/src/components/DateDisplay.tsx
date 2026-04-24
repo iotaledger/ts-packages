@@ -18,6 +18,34 @@ const FORMAT_LABEL: Record<DateFormat, string> = {
     utc: 'UTC',
 };
 
+interface FormattedDateResult {
+    displayed: string;
+    format: DateFormat;
+    cycle: () => void;
+}
+
+export function useFormattedDate(
+    type: DateType,
+    timestampMs: number | null,
+    showTimeAgo = false,
+): FormattedDateResult {
+    const { format, cycle } = useDateFormat(type);
+    const relativeText = useTimeAgo({ timeFrom: timestampMs, shortedTimeLabel: false });
+
+    let displayed: string;
+    if (!timestampMs) {
+        displayed = '--';
+    } else if (format === 'default') {
+        displayed = relativeText || '--';
+    } else {
+        const timeZone = format === 'utc' ? 'UTC' : undefined;
+        const absolute = formatDate(timestampMs, ABSOLUTE_FORMAT, timeZone);
+        displayed = showTimeAgo && relativeText ? `${absolute} (${relativeText})` : absolute;
+    }
+
+    return { displayed, format, cycle };
+}
+
 interface DateDisplayProps {
     timestamp: number | string;
     type?: DateType;
@@ -29,15 +57,14 @@ interface DateDisplayProps {
 export function DateDisplay({
     timestamp,
     type,
-    showTimeAgo,
+    showTimeAgo = false,
     showTooltip = true,
     showHoverStyle = true,
 }: DateDisplayProps): JSX.Element {
     const effectiveType = type ?? GLOBAL_DATE_TYPE;
-    const { format, cycle } = useDateFormat(effectiveType);
     const timestampMs = Number(timestamp);
+    const { displayed, format, cycle } = useFormattedDate(effectiveType, timestampMs, showTimeAgo);
 
-    const relativeText = useTimeAgo({ timeFrom: timestampMs, shortedTimeLabel: false });
     const [showMessage, setShowMessage] = useState(false);
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -53,19 +80,20 @@ export function DateDisplay({
         }
     }
 
-    let displayed: string;
-    if (format === 'default') {
-        displayed = relativeText || '--';
-    } else {
-        const timeZone = format === 'utc' ? 'UTC' : undefined;
-        const absolute = formatDate(timestampMs, ABSOLUTE_FORMAT, timeZone);
-        displayed = showTimeAgo && relativeText ? `${absolute} (${relativeText})` : absolute;
+    function handleKeyDown(e: React.KeyboardEvent) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+        }
     }
 
     const timeElement = (
         <time
             dateTime={new Date(timestampMs).toISOString()}
+            role="button"
+            tabIndex={0}
             onClick={handleClick}
+            onKeyDown={handleKeyDown}
             className={
                 showHoverStyle
                     ? 'cursor-pointer select-none text-nowrap rounded-md p-1 hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12'

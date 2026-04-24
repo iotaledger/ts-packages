@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export const GLOBAL_DATE_TYPE = 'global' as const;
 
@@ -56,11 +56,13 @@ export function DateFormatProvider({ children }: { children: ReactNode }): JSX.E
         setFormats((prev) => {
             const current = prev[type] ?? DEFAULT_FORMAT;
             const next = CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
-            const updated = { ...prev, [type]: next };
-            writeToStorage(updated);
-            return updated;
+            return { ...prev, [type]: next };
         });
     }, []);
+
+    useEffect(() => {
+        writeToStorage(formats);
+    }, [formats]);
 
     return (
         <DateFormatContext.Provider value={{ formats, cycle }}>
