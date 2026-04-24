@@ -5,9 +5,8 @@
 
 import { useIotaClientContext } from '@iota/dapp-kit';
 import { useContext, createContext, useMemo } from 'react';
-import { getNetwork, Network } from '@iota/iota-sdk/client';
+import { getNetwork } from '@iota/iota-sdk/client';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
-import { createSentryRequestInspector } from '../api/sentry';
 
 export const IotaGraphQLClientProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { network } = useIotaClientContext();
@@ -41,8 +40,6 @@ export function useIotaGraphQLClient(network?: string) {
         if (graphql) {
             return new IotaGraphQLClient({
                 url: graphql,
-                inspector:
-                    network === Network.Mainnet ? createSentryRequestInspector(graphql) : undefined,
             });
         } else {
             return null;

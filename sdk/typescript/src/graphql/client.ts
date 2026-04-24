@@ -7,8 +7,6 @@ import type { TadaDocumentNode } from 'gql.tada';
 import type { DocumentNode } from 'graphql';
 import { print } from 'graphql';
 
-import type { RequestInspector } from '../client/http-transport.js';
-
 export type GraphQLDocument<
     Result = Record<string, unknown>,
     Variables = Record<string, unknown>,
@@ -48,7 +46,6 @@ export interface IotaGraphQLClientOptions<Queries extends Record<string, GraphQL
     fetch?: typeof fetch;
     headers?: Record<string, string>;
     queries?: Queries;
-    inspector?: RequestInspector;
 }
 
 export class IotaGraphQLRequestError extends Error {}
@@ -59,61 +56,46 @@ export class IotaGraphQLClient<Queries extends Record<string, GraphQLDocument> =
     #queries: Queries;
     #headers: Record<string, string>;
     #fetch: typeof fetch;
-    #inspector?: RequestInspector;
 
     constructor({
         url,
         fetch: fetchFn = fetch,
         headers = {},
         queries = {} as Queries,
-        inspector,
     }: IotaGraphQLClientOptions<Queries>) {
         this.#url = url;
         this.#queries = queries;
         this.#headers = headers;
         this.#fetch = (...args) => fetchFn(...args);
-        this.#inspector = inspector;
     }
 
     async query<Result = Record<string, unknown>, Variables = Record<string, unknown>>(
         options: GraphQLQueryOptions<Result, Variables>,
     ): Promise<GraphQLQueryResult<Result>> {
-        const executeRequest = async () => {
-            const res = await this.#fetch(this.#url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...this.#headers,
-                },
-                body: JSON.stringify({
-                    query:
-                        typeof options.query === 'string'
-                            ? String(options.query)
-                            : print(options.query),
-                    variables: options.variables,
-                    extensions: options.extensions,
-                    operationName: options.operationName,
-                }),
-            });
+        const res = await this.#fetch(this.#url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...this.#headers,
+            },
+            body: JSON.stringify({
+                query:
+                    typeof options.query === 'string'
+                        ? String(options.query)
+                        : print(options.query),
+                variables: options.variables,
+                extensions: options.extensions,
+                operationName: options.operationName,
+            }),
+        });
 
-            if (!res.ok) {
-                throw new IotaGraphQLRequestError(
-                    `GraphQL request failed: ${res.statusText} (${res.status})`,
-                );
-            }
+        if (!res.ok) {
+            throw new IotaGraphQLRequestError(
+                `GraphQL request failed: ${res.statusText} (${res.status})`,
+            );
+        }
 
-            return (await res.json()) as GraphQLQueryResult<Result>;
-        };
-
-        return this.#inspector
-            ? this.#inspector(
-                  {
-                      method: options.operationName ?? 'graphql',
-                      params: options.variables ? [options.variables] : [],
-                  },
-                  executeRequest,
-              )
-            : executeRequest();
+        return (await res.json()) as GraphQLQueryResult<Result>;
     }
 
     async execute<
