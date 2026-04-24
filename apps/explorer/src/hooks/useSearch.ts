@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Feature, useIotaNamesClient } from '@iota/core';
+import { Feature, fetchObjectOrPastObject, useIotaNamesClient } from '@iota/core';
 import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { type IotaNamesClient, isValidIotaName } from '@iota/iota-names-sdk';
 import { type IotaClient, type LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
@@ -71,19 +71,14 @@ const getResultsForTransaction = async (
 };
 
 const getResultsForObject = async (client: IotaClient, query: string): Promise<Results | null> => {
-    const normalized = normalizeIotaObjectId(query);
-    if (!isValidIotaObjectId(normalized)) return null;
+    try {
+        const result = await fetchObjectOrPastObject(client, query);
+        if (!result?.data?.objectId) return null;
 
-    const { data, error } = await client.getObject({ id: normalized });
-    if (!data || error) return null;
-
-    return [
-        {
-            id: data.objectId,
-            label: data.objectId,
-            type: 'object',
-        },
-    ];
+        return [{ id: result.data.objectId, label: result.data.objectId, type: 'object' }];
+    } catch {
+        return null;
+    }
 };
 
 const getResultsForCheckpoint = async (
