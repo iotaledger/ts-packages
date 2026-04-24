@@ -77,10 +77,9 @@ export async function fetchObjectOrPastObject(
 
     const normalizedObjId = normalizeIotaObjectId(objectId);
     if (!isValidIotaObjectId(normalizedObjId)) return null;
-    if (!normalizedObjId) return null;
 
     const getObjectResponse = await client.getObject({
-        id: objectId,
+        id: normalizedObjId,
         options: DEFAULT_GET_OBJECT_OPTIONS,
     });
 
@@ -123,7 +122,7 @@ export const getObjectOrPastObjectQuery = <TSelectData = UseGetObjectOrPastObjec
         select,
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['object-or-past-object', objectId],
-        queryFn: () => fetchObjectOrPastObject(client, objectId || ''),
+        queryFn: () => fetchObjectOrPastObject(client, objectId),
         enabled: !!objectId,
     };
 };
