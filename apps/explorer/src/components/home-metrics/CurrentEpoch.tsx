@@ -4,7 +4,7 @@
 
 import { LabelText, LabelTextSize, Panel, Title } from '@iota/apps-ui-kit';
 import { LinkWithQuery, ProgressBar } from '~/components/ui';
-import { useFormattedDate } from '~/components/DateDisplay';
+import { useFormattedDate } from '~/hooks/useFormattedDate';
 import { useGetNetworkMetrics } from '~/hooks';
 import { ampli } from '~/lib/utils';
 import { useEpochProgress } from '~/pages/epochs/utils';

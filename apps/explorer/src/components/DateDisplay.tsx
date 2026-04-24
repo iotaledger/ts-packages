@@ -1,16 +1,10 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatDate, type Format, useTimeAgo } from '@iota/core';
 import { useEffect, useRef, useState } from 'react';
-import {
-    GLOBAL_DATE_TYPE,
-    type DateFormat,
-    type DateType,
-    useDateFormat,
-} from '~/contexts/dateFormatContext';
+import { GLOBAL_DATE_TYPE, type DateFormat, type DateType } from '~/contexts/dateFormatContext';
+import { useFormattedDate } from '~/hooks/useFormattedDate';
 
-const ABSOLUTE_FORMAT: Format[] = ['day', 'month', 'year', 'hour', 'minute', 'second'];
 const TOOLTIP_DURATION_MS = 1_000;
 
 const FORMAT_LABEL: Record<DateFormat, string> = {
@@ -18,34 +12,6 @@ const FORMAT_LABEL: Record<DateFormat, string> = {
     local: 'Local time',
     utc: 'UTC',
 };
-
-interface FormattedDateResult {
-    displayed: string;
-    format: DateFormat;
-    cycle: () => void;
-}
-
-export function useFormattedDate(
-    type: DateType,
-    timestampMs: number | null,
-    showTimeAgo = false,
-): FormattedDateResult {
-    const { format, cycle } = useDateFormat(type);
-    const relativeText = useTimeAgo({ timeFrom: timestampMs, shortedTimeLabel: false });
-
-    let displayed: string;
-    if (!timestampMs) {
-        displayed = '--';
-    } else if (format === 'default') {
-        displayed = relativeText || '--';
-    } else {
-        const timeZone = format === 'utc' ? 'UTC' : undefined;
-        const absolute = formatDate(timestampMs, ABSOLUTE_FORMAT, timeZone);
-        displayed = showTimeAgo && relativeText ? `${absolute} (${relativeText})` : absolute;
-    }
-
-    return { displayed, format, cycle };
-}
 
 interface DateDisplayProps {
     timestamp: number | string;

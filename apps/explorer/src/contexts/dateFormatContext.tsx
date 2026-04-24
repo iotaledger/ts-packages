@@ -19,15 +19,18 @@ export type DateType = (typeof DATE_TYPES)[number];
 
 export type DateFormat = 'default' | 'local' | 'utc';
 
-const LS_KEY = 'iota-explorer:date-format';
+export const LS_KEY = 'iota-explorer:date-format';
 const CYCLE: DateFormat[] = ['default', 'local', 'utc'];
 const DEFAULT_FORMAT: DateFormat = 'default';
 
 type DateFormatMap = Partial<Record<DateType, DateFormat>>;
 
 function isValidDateFormatMap(v: unknown): v is DateFormatMap {
-    if (typeof v !== 'object' || v === null) return false;
-    return Object.values(v).every((f) => CYCLE.includes(f as DateFormat));
+    if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+    return Object.entries(v).every(
+        ([k, f]) =>
+            (DATE_TYPES as readonly string[]).includes(k) && CYCLE.includes(f as DateFormat),
+    );
 }
 
 interface DateFormatContextValue {

@@ -5,9 +5,7 @@ import '@testing-library/jest-dom';
 import { act, renderHook } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { ReactNode } from 'react';
-import { DateFormatProvider, useDateFormat } from '../dateFormatContext';
-
-const LS_KEY = 'iota-explorer:date-format';
+import { DateFormatProvider, useDateFormat, LS_KEY } from '../dateFormatContext';
 
 function wrapper({ children }: { children: ReactNode }) {
     return <DateFormatProvider>{children}</DateFormatProvider>;
