@@ -60,7 +60,7 @@ jobs:
 
   notify:
     needs: build-and-deploy
-    if: always() && needs.build-and-deploy.result != 'skipped'
+    if: always() && needs.build-and-deploy.result != 'skipped' && github.event.inputs.deployment == 'true'
     uses: ./.github/workflows/_slack_notify.yml
     secrets: inherit
     with:
