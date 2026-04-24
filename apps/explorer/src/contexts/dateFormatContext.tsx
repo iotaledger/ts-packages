@@ -5,14 +5,17 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 
 export const GLOBAL_DATE_TYPE = 'global' as const;
 
-export type DateType =
-    | 'transaction'
-    | 'epoch'
-    | 'checkpoint'
-    | 'package'
-    | 'table'
-    | 'graph'
-    | typeof GLOBAL_DATE_TYPE;
+export const DATE_TYPES = [
+    'transaction',
+    'epoch',
+    'checkpoint',
+    'package',
+    'table',
+    'graph',
+    GLOBAL_DATE_TYPE,
+] as const;
+
+export type DateType = (typeof DATE_TYPES)[number];
 
 export type DateFormat = 'default' | 'local' | 'utc';
 
