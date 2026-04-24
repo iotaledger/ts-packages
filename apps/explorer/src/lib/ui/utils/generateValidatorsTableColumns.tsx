@@ -5,13 +5,14 @@ import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota
 import type { ColumnDef, Row } from '@tanstack/react-table';
 import {
     type ApyByValidator,
+    type IotaValidatorSummaryExtended,
     formatPercentageDisplay,
     getValidatorEffectiveCommission,
     ImageIcon,
     ImageIconSize,
     useCopyToClipboard,
 } from '@iota/core';
-import { ampli, getValidatorMoveEvent, type IotaValidatorSummaryExtended } from '~/lib';
+import { ampli, getValidatorMoveEvent } from '~/lib';
 import { StakeColumn } from '~/components';
 import type { IotaEvent, IotaValidatorSummary } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
@@ -19,7 +20,6 @@ import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
 
 interface GenerateValidatorsTableColumnsArgs {
-    allValidators?: IotaValidatorSummary[];
     committeeMembers?: string[];
     atRiskValidators?: [string, string][];
     maxCommitteeSize?: number;
@@ -50,9 +50,11 @@ function ValidatorWithImage({
 
     const statusBadges = validator.isPending
         ? [{ type: BadgeType.Warning, label: 'Pending' }]
-        : isValidatorCommitteeMember
-          ? [{ type: BadgeType.Success, label: 'Committee' }]
-          : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
+        : validator.isCandidate
+          ? [{ type: BadgeType.Neutral, label: 'Candidate' }]
+          : isValidatorCommitteeMember
+            ? [{ type: BadgeType.Success, label: 'Committee' }]
+            : [{ type: BadgeType.PrimarySoft, label: 'Active' }];
 
     if (isAtRisk) {
         statusBadges.push({ type: BadgeType.Error, label: 'At Risk' });
@@ -110,12 +112,7 @@ function ValidatorWithImage({
         </div>
     );
 
-    return validator.isPending ? (
-        <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">
-            {avatarElement}
-            {validatorNameContainer}
-        </div>
-    ) : (
+    return (
         <ValidatorLink
             address={validator.iotaAddress}
             showAddressAlias={false}
@@ -147,7 +144,6 @@ export function generateValidatorsTableColumns({
     currentEpoch,
 }: GenerateValidatorsTableColumnsArgs): ColumnDef<IotaValidatorSummaryExtended>[] {
     const atRiskAddressSet = new Set(atRiskValidators.map(([address]) => address));
-
     let columns: ColumnDef<IotaValidatorSummaryExtended>[] = [
         {
             header: 'Validator',
@@ -216,7 +212,15 @@ export function generateValidatorsTableColumns({
 
                 return apyA - apyB;
             },
-            cell({ getValue }) {
+            cell({ getValue, row }) {
+                const validator = row.original as IotaValidatorSummaryExtended;
+                if (validator.isCandidate || validator.isPending) {
+                    return (
+                        <TableCellBase>
+                            <TableCellText>--</TableCellText>
+                        </TableCellBase>
+                    );
+                }
                 const iotaAddress = getValue<string>();
                 const { apy, isApyApproxZero } = rollingAverageApys?.[iotaAddress] ?? {
                     apy: null,
@@ -256,12 +260,16 @@ export function generateValidatorsTableColumns({
             accessorKey: 'votingPower',
             enableSorting: true,
             sortingFn: sortByNumber,
-            cell({ getValue }) {
+            cell({ getValue, row }) {
+                const validator = row.original as IotaValidatorSummaryExtended;
                 const votingPower = getValue<string>();
+                const commission = Number(votingPower);
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            {votingPower ? Number(votingPower) / 100 + '%' : '--'}
+                            {validator.isCandidate || validator.isPending || isNaN(commission)
+                                ? '--'
+                                : `${commission / 100}%`}
                         </TableCellText>
                     </TableCellBase>
                 );

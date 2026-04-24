@@ -15,5 +15,6 @@ export * from './checkIfIsTimelockedStaking';
 export * from './getUnstakeDetailsFromEvents';
 export * from './getTransactionAmountForTimelocked';
 export * from './getValidatorEffectiveCommission';
-export * from './getInactiveValidatorsMetadata';
+export * from './getValidatorsMetadata';
+export * from './sanitizeValidatorObjects';
 export * from './types';

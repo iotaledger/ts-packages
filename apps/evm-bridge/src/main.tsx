@@ -30,13 +30,21 @@ import {
 import { EvmRpcClientProvider } from './providers/EvmRpcClientProvider.tsx';
 import { Toaster } from './components/index.ts';
 import { IotaGraphQLClientProvider, Disclaimer, handleConsentAccepted } from '@iota/core';
-import { appsBackendClient, interceptProviderAnnouncements } from './lib/utils/index.ts';
+import {
+    appsBackendClient,
+    interceptProviderAnnouncements,
+    initSentry,
+    createIotaClient,
+} from './lib/utils/index.ts';
 import { AppsBackendClientProvider } from '@iota/apps-backend-client';
 import { getNetwork } from '@iota/iota-sdk/client';
 import { metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { LEGAL_LINKS } from './lib/constants/routes.constants.ts';
 import { Link } from './components/link/Link.tsx';
 import { initAmplitude } from './shared/analytics';
+
+// Load Sentry as early as we can:
+initSentry();
 
 // We intercept EIP-6963 announcements
 // to only allow certain wallets (metamask) to be discovered
@@ -69,6 +77,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <IotaClientProvider
                             networks={networkConfig}
                             defaultNetwork={getDefaultNetwork()}
+                            createClient={createIotaClient}
                         >
                             <IotaGraphQLClientProvider>
                                 <WalletProvider

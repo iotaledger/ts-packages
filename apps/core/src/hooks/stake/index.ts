@@ -11,3 +11,5 @@ export * from './useNewUnstakeTransaction';
 export * from './useNewPartialUnstakeTransaction';
 export * from './useGetInactiveValidator';
 export * from './useUnstakeForm';
+export * from './useGetPendingValidator';
+export * from './useGetCandidateValidators';
