@@ -10,13 +10,15 @@ import {
     createValidationSchema,
     MIN_NUMBER_IOTA_TO_STAKE,
     useNewStakeTransaction,
+    useGetValidatorsApy,
 } from '@iota/core';
 import { FormikProvider, useFormik } from 'formik';
 import { useCurrentAccount, useIotaClientQuery } from '@iota/dapp-kit';
 import { IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { Dialog } from '@iota/apps-ui-kit';
 import { DetailsView } from './views';
-import { TransactionDialogView } from '../TransactionDialog';
+import { TransactionDetailsLayout } from '../transaction/TransactionDetailsLayout';
+import { DialogLayout } from '../layout';
 import { StakeDialogView } from './enums/view.enums';
 import { ampli } from '@/lib/utils/analytics';
 
@@ -93,6 +95,7 @@ export function StakeDialog({
             name: validator.name,
         };
     });
+    const { data: rollingAverageApys } = useGetValidatorsApy();
 
     function handleBack(): void {
         setView(StakeDialogView.SelectValidator);
@@ -100,9 +103,11 @@ export function StakeDialog({
 
     function handleValidatorSelect(validator: string): void {
         setSelectedValidator?.(validator);
-
-        ampli.selectValidator({
+        const validatorInfo = activeValidatorAddresses.find((v) => v.iotaAddress === validator);
+        ampli.selectedValidator({
+            validatorName: validatorInfo?.name,
             validatorAddress: validator,
+            validatorAPY: rollingAverageApys?.[validator]?.apy || 0,
         });
     }
 
@@ -175,7 +180,9 @@ export function StakeDialog({
                         />
                     )}
                     {view === StakeDialogView.TransactionDetails && (
-                        <TransactionDialogView txDigest={txDigest} onClose={handleClose} />
+                        <DialogLayout>
+                            <TransactionDetailsLayout digest={txDigest} onClose={handleClose} />
+                        </DialogLayout>
                     )}
                 </>
             </FormikProvider>

@@ -1,19 +1,47 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Feature } from '@iota/core/enums/features.enums';
 import { Network } from '@iota/iota-sdk/client';
-import {
-    NAME_ADDRESS_RESOLUTION_FEATURE,
-    KNOWN_ADDRESSES_ALIASES,
-    RECOGNIZED_PACKAGES,
-} from './features.constants';
+import { Response } from 'express';
+import { KNOWN_ADDRESSES_ALIASES, RECOGNIZED_PACKAGES } from './features.constants';
+import { LEGACY_FEATURE_FLAGS } from './legacy-features.constants';
+import { RECOGNIZED_DAPPS } from './dapps.constants';
 
 @Controller('/api/features')
 export class FeaturesController {
-    @Get('/staging')
-    getStagingFeatures() {
+    constructor(private readonly configService: ConfigService) {}
+
+    @Get('staging')
+    getStagingRedirect(@Res() res: Response) {
+        const stagingBackend = this.configService.getOrThrow<string>('STAGING_APPS_BACKEND');
+        return res.redirect(`${stagingBackend}/api/features`);
+    }
+
+    @Get('production')
+    getProductionRedirect(@Res() res: Response) {
+        const productionBackend = this.configService.getOrThrow<string>('PROD_APPS_BACKEND');
+        return res.redirect(`${productionBackend}/api/features`);
+    }
+
+    @Get()
+    getFeatures() {
+        const deployType = this.configService.get<string>('DEPLOY_TYPE');
+
+        switch (deployType) {
+            case 'production':
+                return this.getProductionFeatures();
+            case 'rc':
+                return this.getRcFeatures();
+            case 'staging':
+            default:
+                return this.getStagingFeatures();
+        }
+    }
+
+    private getStagingFeatures() {
         return {
             status: 200,
             features: {
@@ -24,20 +52,7 @@ export class FeaturesController {
                     defaultValue: 0.0025,
                 },
                 [Feature.WalletDapps]: {
-                    defaultValue: [
-                        {
-                            name: 'Wallet Dashboard',
-                            link: 'https://wallet-dashboard.iota.org/',
-                            icon: 'https://iota.org/logo.png',
-                            tags: ['Wallet', 'Dashboard'],
-                        },
-                        {
-                            name: 'EVM Bridge',
-                            link: 'https://evm-bridge.iota.org/',
-                            icon: 'https://iota.org/logo.png',
-                            tags: ['EVM', 'Bridge'],
-                        },
-                    ],
+                    defaultValue: RECOGNIZED_DAPPS,
                 },
                 [Feature.WalletBalanceRefetchInterval]: {
                     defaultValue: 1000,
@@ -55,15 +70,7 @@ export class FeaturesController {
                         dismissKey: '',
                         imageUrl: '',
                         bannerUrl: '',
-                    },
-                },
-                [Feature.WalletPasskeys]: {
-                    defaultValue: {
-                        [Network.Mainnet]: true,
-                        [Network.Devnet]: true,
-                        [Network.Testnet]: true,
-                        [Network.Localnet]: true,
-                        [Network.Custom]: true,
+                        minVersion: '',
                     },
                 },
                 [Feature.PollingTxnTable]: {
@@ -73,15 +80,6 @@ export class FeaturesController {
                     defaultValue: false,
                 },
                 [Feature.ModuleSourceVerification]: {
-                    defaultValue: true,
-                },
-                [Feature.AccountFinder]: {
-                    defaultValue: true,
-                },
-                [Feature.StardustMigration]: {
-                    defaultValue: true,
-                },
-                [Feature.SupplyIncreaseVesting]: {
                     defaultValue: true,
                 },
                 [Feature.FiatConversion]: {
@@ -102,19 +100,21 @@ export class FeaturesController {
                         '0xe1e88f4962b3ea96cfad19aee42f666b04bbce4dc4327c3cd63f1b8ff16e13b2::tool_coin::TOOL_COIN',
                     ],
                 },
-                [Feature.IotaNames]: {
-                    defaultValue: NAME_ADDRESS_RESOLUTION_FEATURE,
-                },
                 [Feature.ExplorerTFIdentity]: {
-                    defaultValue: false,
+                    defaultValue: true,
                 },
+                ...LEGACY_FEATURE_FLAGS,
             },
             dateUpdated: new Date().toISOString(),
         };
     }
 
-    @Get('/production')
-    getProductionFeatures() {
+    private getRcFeatures() {
+        // RC features are currently identical to staging
+        return this.getStagingFeatures();
+    }
+
+    private getProductionFeatures() {
         return {
             status: 200,
             features: {
@@ -124,22 +124,8 @@ export class FeaturesController {
                 [Feature.WalletSentryTracing]: {
                     defaultValue: 0.0025,
                 },
-                // Note: we'll add wallet dapps when evm will be ready
                 [Feature.WalletDapps]: {
-                    defaultValue: [
-                        {
-                            name: 'Wallet Dashboard',
-                            link: 'https://wallet-dashboard.iota.org/',
-                            icon: 'https://iota.org/logo.png',
-                            tags: ['Wallet', 'Dashboard'],
-                        },
-                        {
-                            name: 'EVM Bridge',
-                            link: 'https://evm-bridge.iota.org/',
-                            icon: 'https://iota.org/logo.png',
-                            tags: ['EVM', 'Bridge'],
-                        },
-                    ],
+                    defaultValue: RECOGNIZED_DAPPS,
                 },
                 [Feature.WalletBalanceRefetchInterval]: {
                     defaultValue: 1000,
@@ -157,15 +143,7 @@ export class FeaturesController {
                         dismissKey: '',
                         imageUrl: '',
                         bannerUrl: '',
-                    },
-                },
-                [Feature.WalletPasskeys]: {
-                    defaultValue: {
-                        [Network.Mainnet]: true,
-                        [Network.Devnet]: true,
-                        [Network.Testnet]: true,
-                        [Network.Localnet]: true,
-                        [Network.Custom]: true,
+                        minVersion: '',
                     },
                 },
                 [Feature.PollingTxnTable]: {
@@ -175,15 +153,6 @@ export class FeaturesController {
                     defaultValue: false,
                 },
                 [Feature.ModuleSourceVerification]: {
-                    defaultValue: true,
-                },
-                [Feature.AccountFinder]: {
-                    defaultValue: true,
-                },
-                [Feature.StardustMigration]: {
-                    defaultValue: true,
-                },
-                [Feature.SupplyIncreaseVesting]: {
                     defaultValue: true,
                 },
                 [Feature.FiatConversion]: {
@@ -203,22 +172,11 @@ export class FeaturesController {
                         '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
                     ],
                 },
-                [Feature.IotaNames]: {
-                    defaultValue: NAME_ADDRESS_RESOLUTION_FEATURE,
-                },
                 [Feature.ExplorerTFIdentity]: {
-                    defaultValue: false,
+                    defaultValue: true,
                 },
+                ...LEGACY_FEATURE_FLAGS,
             },
-            dateUpdated: new Date().toISOString(),
-        };
-    }
-
-    @Get('/apps')
-    getAppsFeatures() {
-        return {
-            status: 200,
-            apps: [], // Note: we'll add wallet dapps when evm will be ready
             dateUpdated: new Date().toISOString(),
         };
     }

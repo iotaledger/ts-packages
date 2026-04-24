@@ -1,6 +1,6 @@
 {
     "name": "@iota/ledgerjs-hw-app-iota",
-    "version": "0.6.0",
+    "version": "0.6.2",
     "description": "Ledger Hardware Wallet IOTA Application API",
     "keywords": [
         "Ledger",
@@ -12,11 +12,11 @@
     ],
     "author": "IOTA Foundation <info@iota.org>",
     "license": "Apache-2.0",
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     },
-    "homepage": "https://github.com/iotaledger/iota/sdk/ledgerjs-hw-app-iota/#readme",
+    "homepage": "https://github.com/iotaledger/ts-packages/sdk/ledgerjs-hw-app-iota/#readme",
     "files": [
         "CHANGELOG.md",
         "dist",
@@ -65,9 +65,9 @@
         "@ledgerhq/hw-transport-node-speculos-http": "^6.30.2",
         "@size-limit/preset-small-lib": "^11.1.4",
         "@types/node": "^24.0.0",
-        "axios": "^1.13.5",
+        "axios": "^1.15.0",
         "size-limit": "^11.1.4",
         "typescript": "^5.5.3",
-        "vitest": "^2.1.9"
+        "vitest": "^3.2.4"
     }
 }

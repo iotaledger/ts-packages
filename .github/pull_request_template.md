@@ -1,6 +1,13 @@
-Please go to the `Preview` tab and select the appropriate sub-template:
+# Description of change
 
-- [Default PR Template for External Contributors](?expand=1&template=default_external_contributors.md)
-- [Default PR Template for Internal Contributors](?expand=1&template=default_internal_contributors.md)
-- [Infrastructure Team](?expand=1&template=infra.md)
-- [Tooling Team](?expand=1&template=tooling.md)
+Please write a summary of your changes and why you made them.
+
+## Links to any relevant issues
+
+Be sure to reference any related issues by adding `fixes #(issue)`.
+
+## How the change has been tested
+
+Describe the tests that you ran to verify your changes.
+
+Make sure to provide instructions for the maintainer as well as any relevant configurations.

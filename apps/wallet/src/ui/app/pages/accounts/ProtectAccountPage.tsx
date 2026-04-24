@@ -18,12 +18,10 @@ import {
     autoLockDataToMinutes,
     useAutoLockMinutesMutation,
     useCreateAccountsMutation,
-    useBackgroundClient,
 } from '_hooks';
 import { isSeedSerializedUiAccount } from '_src/background/accounts/seedAccount';
 import { isLedgerAccountSerializedUI } from '_src/background/accounts/ledgerAccount';
-import { useFeature } from '@growthbook/growthbook-react';
-import { Feature, toast } from '@iota/core';
+import { toast } from '@iota/core';
 import { isPasskeyAccountSerializedUI } from '_src/background/accounts/passkeyAccount';
 import { trackAutoLockUpdated } from '_src/shared/analytics/helpers';
 
@@ -54,10 +52,9 @@ function isAllowedAccountType(accountType: string): accountType is AllowedAccoun
 
 export function ProtectAccountPage() {
     const [searchParams] = useSearchParams();
-    const accountsFormType = searchParams.get('accountsFormType') || '';
+    const accountsFormType = (searchParams.get('accountsFormType') as AccountsFormType) || '';
     const successRedirect = searchParams.get('successRedirect') || '/tokens';
     const navigate = useNavigate();
-    const backgroundClient = useBackgroundClient();
     const { data: accounts } = useAccounts();
     const createMutation = useCreateAccountsMutation();
     const hasPasswordAccounts = useMemo(
@@ -74,27 +71,19 @@ export function ProtectAccountPage() {
         }
     }, [hasPasswordAccounts, createMutation.isSuccess, createMutation.isPending]);
 
-    const featureAccountFinderEnabled = useFeature<boolean>(Feature.AccountFinder).value;
-
     const createAccountCallback = useCallback(
-        async (
-            password: string,
-            type: AccountsFormType,
-            autoLockToTrack?: ProtectAccountFormValues['autoLock'],
-        ) => {
+        async (password: string, autoLockToTrack?: ProtectAccountFormValues['autoLock']) => {
             try {
                 const createdAccounts = await createMutation.mutateAsync({
-                    type,
+                    type: accountsFormType,
                     password,
                 });
                 if (autoLockToTrack) {
                     trackAutoLockUpdated(autoLockToTrack);
                 }
 
-                await backgroundClient.unlockAllAccountsAndSources({ password });
-
                 if (
-                    type === AccountsFormType.NewMnemonic &&
+                    accountsFormType === AccountsFormType.NewMnemonic &&
                     isMnemonicSerializedUiAccount(createdAccounts[0])
                 ) {
                     navigate(`/accounts/backup/${createdAccounts[0].sourceID}`, {
@@ -104,8 +93,7 @@ export function ProtectAccountPage() {
                         },
                     });
                 } else if (
-                    featureAccountFinderEnabled &&
-                    REDIRECT_TO_ACCOUNTS_FINDER.includes(type) &&
+                    REDIRECT_TO_ACCOUNTS_FINDER.includes(accountsFormType) &&
                     (isMnemonicSerializedUiAccount(createdAccounts[0]) ||
                         isSeedSerializedUiAccount(createdAccounts[0]))
                 ) {
@@ -113,29 +101,26 @@ export function ProtectAccountPage() {
                     navigate(path, {
                         replace: true,
                         state: {
-                            type: type,
+                            type: accountsFormType,
                         },
                     });
-                } else if (
-                    featureAccountFinderEnabled &&
-                    isLedgerAccountSerializedUI(createdAccounts[0])
-                ) {
+                } else if (isLedgerAccountSerializedUI(createdAccounts[0])) {
                     const path = '/accounts/manage/accounts-finder/intro';
                     navigate(path, {
                         replace: true,
                         state: {
-                            type: type,
+                            type: accountsFormType,
                         },
                     });
                 } else if (
-                    type === AccountsFormType.ImportPasskey &&
+                    accountsFormType === AccountsFormType.ImportPasskey &&
                     isPasskeyAccountSerializedUI(createdAccounts[0])
                 ) {
                     const url = `/accounts/import-passkey?accountID=${createdAccounts[0].id}`;
                     navigate(url, {
                         replace: true,
                         state: {
-                            type: type,
+                            type: accountsFormType,
                         },
                     });
                 } else {
@@ -145,7 +130,7 @@ export function ProtectAccountPage() {
                 toast.error((e as Error).message ?? 'Failed to create account');
             }
         },
-        [featureAccountFinderEnabled, createMutation, navigate, successRedirect],
+        [createMutation, navigate, successRedirect],
     );
     const autoLockMutation = useAutoLockMinutesMutation();
     if (!isAllowedAccountType(accountsFormType)) {
@@ -161,11 +146,7 @@ export function ProtectAccountPage() {
                 await autoLockMutation.mutateAsync({ minutes });
             }
 
-            await createAccountCallback(
-                password.input,
-                accountsFormType as AccountsFormType,
-                hasAutoLock ? autoLock : undefined,
-            );
+            await createAccountCallback(password.input, hasAutoLock ? autoLock : undefined);
         } catch (e) {
             toast.error((e as Error)?.message || 'Something went wrong');
         }
@@ -184,14 +165,7 @@ export function ProtectAccountPage() {
                         open
                         onClose={() => navigate(-1)}
                         onVerify={async (password) => {
-                            const unlockAllPromise = backgroundClient.unlockAllAccountsAndSources({
-                                password,
-                            });
-                            await createAccountCallback(
-                                password,
-                                accountsFormType as AccountsFormType,
-                            );
-                            await unlockAllPromise;
+                            await createAccountCallback(password);
                         }}
                     />
                 ) : (
