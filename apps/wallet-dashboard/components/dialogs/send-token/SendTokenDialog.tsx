@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react';
 import { EnterValuesFormView, ReviewValuesFormView } from './views';
 import { TransactionDetailsLayout } from '../transaction';
-import { CoinBalance, getNetwork } from '@iota/iota-sdk/client';
+import { CoinBalance } from '@iota/iota-sdk/client';
 import {
     useGetAllCoins,
     useSendCoinTransaction,
@@ -13,8 +13,6 @@ import {
     createValidationSchemaSendTokenForm,
     sumCoinBalances,
     SendTokenFormValues,
-    useFeatureEnabledByNetwork,
-    Feature,
 } from '@iota/core';
 import { Dialog, DialogContent, DialogPosition } from '@iota/apps-ui-kit';
 import { INITIAL_VALUES } from './constants';
@@ -24,7 +22,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { FormikProvider, useFormik } from 'formik';
 import { shouldResolveInputAsName } from '@iota/core/utils/validation/names';
-import { useNetwork } from '@iota/core/src/hooks/useNetwork';
 
 interface SendCoinDialogProps {
     coin: CoinBalance;
@@ -62,20 +59,9 @@ function SendTokenDialogBody({
     const coinDecimals = selectedCoinMetadata.data?.decimals ?? 0;
     const coinSymbol = selectedCoinMetadata.data?.symbol ?? '';
 
-    const networkId = useNetwork();
-    const network = getNetwork(networkId).id;
-
-    const isFeatureEnabled = useFeatureEnabledByNetwork(Feature.IotaNames, network);
-
     const validationSchemaStepOne = useMemo(
-        () =>
-            createValidationSchemaSendTokenForm(
-                isFeatureEnabled,
-                coinBalance,
-                coinSymbol,
-                coinDecimals,
-            ),
-        [isFeatureEnabled, coinBalance, coinSymbol, coinDecimals],
+        () => createValidationSchemaSendTokenForm(coinBalance, coinSymbol, coinDecimals),
+        [coinBalance, coinSymbol, coinDecimals],
     );
 
     const formik = useFormik<SendTokenFormValues>({
