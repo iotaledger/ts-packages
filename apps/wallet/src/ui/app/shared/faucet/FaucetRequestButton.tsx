@@ -14,11 +14,12 @@ import { FaucetMessageInfo } from './FaucetMessageInfo';
 export function FaucetRequestButton(): JSX.Element | null {
     const network = useAppSelector(({ app }) => app.network);
     const customRpc = useAppSelector(({ app }) => app.customRpc);
+    const customFaucet = useAppSelector(({ app }) => app.customFaucet);
     const networkConfig = customRpc ? getCustomNetwork(customRpc) : getNetwork(network);
     const [isRateLimited, rateLimit] = useFaucetRateLimiter();
 
     const mutation = useFaucetMutation({
-        host: networkConfig?.faucet,
+        host: customFaucet || networkConfig?.faucet,
         onError: (error) => {
             if (error instanceof FaucetRateLimitError) {
                 rateLimit();

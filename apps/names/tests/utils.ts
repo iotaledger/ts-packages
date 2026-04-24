@@ -74,7 +74,7 @@ export async function createWallet(page: Page) {
     await page.getByText('Custom RPC').click();
     const networkId = CONFIG.network;
     const networkConfig = getNetwork(networkId);
-    await page.getByPlaceholder('http://localhost:3000/').fill(networkConfig.url);
+    await page.getByTestId('custom-rpc-url-input').fill(networkConfig.url);
     await page.getByRole('button', { name: 'Save' }).click();
 
     await page.getByTestId('close-icon').click();

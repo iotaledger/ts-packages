@@ -8,7 +8,9 @@ import { getNetwork, Network, IotaClient, IotaHTTPTransport } from '@iota/iota-s
 const iotaClientPerNetwork = new Map<string, IotaClient>();
 const SENTRY_MONITORED_ENVS = [Network.Mainnet]; // Sentry dev hint: change this to eg [Network.Localnet]
 
-export function getIotaClient({ network, customRpcUrl }: NetworkEnvType): IotaClient {
+type IotaClientConfig = Pick<NetworkEnvType, 'network' | 'customRpcUrl'>;
+
+export function getIotaClient({ network, customRpcUrl }: IotaClientConfig): IotaClient {
     const key = `${network}_${customRpcUrl}`;
     if (!iotaClientPerNetwork.has(key)) {
         const connection = getNetwork(network)?.url ?? customRpcUrl;
