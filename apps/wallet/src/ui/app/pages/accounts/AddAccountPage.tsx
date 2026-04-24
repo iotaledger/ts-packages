@@ -172,21 +172,22 @@ export function AddAccountPage() {
             onBack={() => navigate('/')}
         >
             <div className="flex h-full w-full flex-col">
-                <div className="flex w-full flex-1 flex-col pb-md--rs text-center">
+                <div className="flex w-full flex-1 flex-col justify-center text-center">
                     <img
                         src={theme === Theme.Dark ? AddProfileImageDark : AddProfileImage}
                         alt="Add Profile"
                         height={187}
-                        className="mx-auto aspect-[4/3] max-h-[187px] w-auto object-cover"
+                        className="mx-auto aspect-[4/3] max-h-[270px] w-auto object-cover"
                     />
 
-                    <div className="flex flex-1 flex-col items-center gap-xxs">
-                        <h2 className="text-headline-sm font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <div className="flex max-w-lg flex-col items-center gap-xxs self-center">
+                        <h2 className="text-headline-md font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
                             Your journey into Web3
                         </h2>
 
-                        <p className="text-body-lg font-normal text-iota-neutral-10 dark:text-iota-neutral-92">
-                            Access the fast, secure, and scalable future of Web3.
+                        <p className="text-body-lg text-iota-neutral-60 dark:text-iota-neutral-40">
+                            Create a completely new wallet or safely restore an existing profile to
+                            connect with the IOTA ecosystem.
                         </p>
                     </div>
                 </div>

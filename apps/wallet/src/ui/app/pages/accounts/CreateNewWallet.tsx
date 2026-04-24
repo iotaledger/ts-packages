@@ -92,12 +92,16 @@ export function CreateNewWallet() {
                             src={theme === Theme.Dark ? SecureYourWalletDark : SecureYourWallet}
                             alt="Secure your wallet"
                             height={178}
-                            className="mx-auto aspect-[4/3] h-[178px] w-auto object-cover"
+                            className="mx-auto aspect-[4/3] max-h-[250px] w-auto object-cover"
                         />
-                        <div className="flex flex-1 flex-col items-center gap-xxs">
+                        <div className="flex max-w-lg flex-1 flex-col items-center gap-xxs">
                             <h2 className="text-headline-sm font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
-                                Secure your wallet
+                                Create Your Secure Backup
                             </h2>
+                            <p className="text-body-lg text-iota-neutral-60 dark:text-iota-neutral-40">
+                                Choose a method to protect and secure access to your new account.
+                                Keep this information private and safe.
+                            </p>
                         </div>
                     </div>
                 </div>

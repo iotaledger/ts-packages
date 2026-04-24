@@ -113,15 +113,16 @@ export function ImportExistingWallet() {
                         alt="Import a wallet"
                         height={140}
                         width="auto"
-                        className="mx-auto mb-2 h-[140px] w-auto object-cover"
+                        className="mx-auto aspect-[4/3] max-h-[250px] w-auto object-cover"
                     />
-                    <div className="flex flex-col items-center gap-xxs">
-                        <h2 className="font-alliance-no2 text-[20px] font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
-                            Choose your access method.
+                    <div className="flex max-w-lg flex-col items-center gap-xxs self-center">
+                        <h2 className="text-headline-sm font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
+                            Choose your access method
                         </h2>
 
-                        <p className="text-body-lg font-normal text-iota-neutral-10 dark:text-iota-neutral-92">
-                            Import or restore existing wallet
+                        <p className="text-body-lg text-iota-neutral-60 dark:text-iota-neutral-40">
+                            To import or restore an existing wallet, select the method you
+                            originally used to secure it
                         </p>
                     </div>
                 </div>
@@ -146,7 +147,7 @@ export function ImportExistingWallet() {
                         </Card>
                     ))}
 
-                    <span className="pt-xxs text-label-lg capitalize leading-5 tracking-[-0.1px] text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <span className="text-center text-label-lg font-medium text-iota-neutral-60 dark:text-iota-neutral-40">
                         Legacy recovery
                     </span>
 
