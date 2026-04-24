@@ -716,5 +716,113 @@ describe('WalletProvider', () => {
                 act(() => unregister());
             });
         });
+
+        // ---------------------------------------------------------------------------
+        // Scenario: wallet connected, 2+ tabs open, different wallet connected in another tab
+        // ---------------------------------------------------------------------------
+
+        describe('wallet connected, 2+ tabs, different wallet connected in another tab', () => {
+            test('reconnects to the new wallet when another tab switches to a different wallet', async () => {
+                const account1 = createMockAccount();
+                const account2 = createMockAccount();
+                const { unregister: unregister1, mockWallet: mockWallet1 } = registerMockWallet({
+                    walletName: 'Mock Wallet 1',
+                    accounts: [account1],
+                    features: iotaFeatures,
+                });
+                const { unregister: unregister2, mockWallet: mockWallet2 } = registerMockWallet({
+                    walletName: 'Mock Wallet 2',
+                    accounts: [account2],
+                    features: iotaFeatures,
+                });
+
+                const wrapper = createWalletProviderContextWrapper({ syncTabs: true });
+                const { result } = renderHook(
+                    () => ({
+                        connectWallet: useConnectWallet(),
+                        currentWallet: useCurrentWallet(),
+                        currentAccount: useCurrentAccount(),
+                    }),
+                    { wrapper },
+                );
+
+                // Connect to wallet 1 first
+                result.current.connectWallet.mutate({
+                    wallet: mockWallet1,
+                    accountAddress: account1.address,
+                });
+                await waitFor(() => expect(result.current.connectWallet.isSuccess).toBe(true));
+                expect(result.current.currentAccount?.address).toBe(account1.address);
+
+                // Another tab connects to wallet 2
+                act(() => {
+                    dispatchStorageEvent(
+                        DEFAULT_STORAGE_KEY,
+                        serializePersistedState(
+                            getWalletUniqueIdentifier(mockWallet2) ?? null,
+                            account2.address,
+                        ),
+                    );
+                });
+
+                await waitFor(() => expect(result.current.currentWallet.isConnected).toBe(true));
+                expect(result.current.currentAccount?.address).toBe(account2.address);
+
+                act(() => {
+                    unregister1();
+                    unregister2();
+                });
+            });
+
+            test('stays on current wallet when syncTabs is false and another tab switches wallet', async () => {
+                const account1 = createMockAccount();
+                const account2 = createMockAccount();
+                const { unregister: unregister1, mockWallet: mockWallet1 } = registerMockWallet({
+                    walletName: 'Mock Wallet 1',
+                    accounts: [account1],
+                    features: iotaFeatures,
+                });
+                const { unregister: unregister2, mockWallet: mockWallet2 } = registerMockWallet({
+                    walletName: 'Mock Wallet 2',
+                    accounts: [account2],
+                    features: iotaFeatures,
+                });
+
+                const wrapper = createWalletProviderContextWrapper({ syncTabs: false });
+                const { result } = renderHook(
+                    () => ({
+                        connectWallet: useConnectWallet(),
+                        currentWallet: useCurrentWallet(),
+                        currentAccount: useCurrentAccount(),
+                    }),
+                    { wrapper },
+                );
+
+                result.current.connectWallet.mutate({
+                    wallet: mockWallet1,
+                    accountAddress: account1.address,
+                });
+                await waitFor(() => expect(result.current.connectWallet.isSuccess).toBe(true));
+                expect(result.current.currentAccount?.address).toBe(account1.address);
+
+                // Another tab connects to wallet 2 — should be ignored
+                act(() => {
+                    dispatchStorageEvent(
+                        DEFAULT_STORAGE_KEY,
+                        serializePersistedState(
+                            getWalletUniqueIdentifier(mockWallet2) ?? null,
+                            account2.address,
+                        ),
+                    );
+                });
+
+                expect(result.current.currentAccount?.address).toBe(account1.address);
+
+                act(() => {
+                    unregister1();
+                    unregister2();
+                });
+            });
+        });
     });
 });

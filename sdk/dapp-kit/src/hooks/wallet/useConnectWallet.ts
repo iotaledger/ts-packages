@@ -2,17 +2,16 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { isSupportedChain } from '@iota/wallet-standard';
 import type {
     StandardConnectInput,
     StandardConnectOutput,
-    WalletAccount,
     WalletWithRequiredFeatures,
 } from '@iota/wallet-standard';
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
 import { walletMutationKeys } from '../../constants/walletMutationKeys.js';
+import { getIotaAccounts, getSelectedAccount } from '../../utils/walletUtils.js';
 import { useWalletStore } from './useWalletStore.js';
 
 type ConnectWalletArgs = {
@@ -56,9 +55,7 @@ export function useConnectWallet({
 
                 const connectResult =
                     await wallet.features['standard:connect'].connect(connectArgs);
-                const connectedIotaAccounts = connectResult.accounts.filter((account) =>
-                    account.chains.some(isSupportedChain),
-                );
+                const connectedIotaAccounts = getIotaAccounts(connectResult.accounts);
                 const selectedAccount = getSelectedAccount(connectedIotaAccounts, accountAddress);
 
                 setWalletConnected(
@@ -78,19 +75,4 @@ export function useConnectWallet({
         },
         ...mutationOptions,
     });
-}
-
-function getSelectedAccount(connectedAccounts: readonly WalletAccount[], accountAddress?: string) {
-    if (connectedAccounts.length === 0) {
-        return null;
-    }
-
-    if (accountAddress) {
-        const selectedAccount = connectedAccounts.find(
-            (account) => account.address === accountAddress,
-        );
-        return selectedAccount ?? connectedAccounts[0];
-    }
-
-    return connectedAccounts[0];
 }

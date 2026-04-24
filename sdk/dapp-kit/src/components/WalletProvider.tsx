@@ -104,14 +104,14 @@ export function WalletProvider({
 
 type WalletConnectionManagerProps = Pick<
     WalletProviderProps,
-    'preferredWallets' | 'walletFilter' | 'enableUnsafeBurner' | 'syncTabs' | 'children'
-> & { storageKey: string };
+    'preferredWallets' | 'walletFilter' | 'enableUnsafeBurner' | 'children'
+> & { syncTabs: boolean; storageKey: string };
 
 function WalletConnectionManager({
     preferredWallets = DEFAULT_PREFERRED_WALLETS,
     walletFilter = DEFAULT_WALLET_FILTER,
     enableUnsafeBurner = false,
-    syncTabs = false,
+    syncTabs,
     storageKey,
     children,
 }: WalletConnectionManagerProps) {
