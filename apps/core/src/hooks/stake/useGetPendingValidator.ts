@@ -16,7 +16,6 @@ export function useGetPendingValidator(validatorAddress: string) {
     return useQuery({
         queryKey: ['pending-validators', pendingActiveValidatorsId],
         async queryFn() {
-
             if (!pendingActiveValidatorsId) {
                 throw Error('Missing params');
             }
