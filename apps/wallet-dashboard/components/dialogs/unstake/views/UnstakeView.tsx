@@ -226,7 +226,8 @@ export function UnstakeView({
                                             )}
                                         </Field>
                                         <div className="text-neutral-60 text-body-sm">
-                                            Minimum: 1 IOTA to unstake and 1 IOTA must remain staked
+                                            Minimum 1 IOTA to unstake. Remaining stake must also be
+                                            at least 1 IOTA.
                                         </div>
                                     </>
                                 )}
