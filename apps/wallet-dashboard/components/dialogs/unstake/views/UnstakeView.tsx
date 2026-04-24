@@ -23,7 +23,7 @@ import {
     GAS_BUDGET_ERROR_MESSAGES,
     GAS_BALANCE_TOO_LOW_ID,
     useUnstakeForm,
-    UnstakeBreakdown,
+    UnstakeBreakdownPanel,
     MIN_PARTIAL_UNSTAKE_TEXT,
 } from '@iota/core';
 import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
@@ -236,7 +236,7 @@ export function UnstakeView({
 
                         <Panel hasBorder>
                             <div className="flex flex-col gap-y-sm p-md">
-                                <UnstakeBreakdown
+                                <UnstakeBreakdownPanel
                                     isPartialUnstake={isPartialUnstake}
                                     unstakeAmountFormatted={unstakeAmountFormatted}
                                     rewardsFormatted={rewardsFormatted}

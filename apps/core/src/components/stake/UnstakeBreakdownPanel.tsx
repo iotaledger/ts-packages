@@ -4,7 +4,7 @@
 import { Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import { GAS_SYMBOL } from '../../constants';
 
-interface UnstakeBreakdownProps {
+interface UnstakeBreakdownPanelProps {
     isPartialUnstake: boolean;
     unstakeAmountFormatted: string;
     rewardsFormatted: string;
@@ -16,7 +16,7 @@ interface UnstakeBreakdownProps {
     remainingTotalStakedFormatted: string;
 }
 
-export function UnstakeBreakdown({
+export function UnstakeBreakdownPanel({
     isPartialUnstake,
     unstakeAmountFormatted,
     rewardsFormatted,
@@ -26,7 +26,7 @@ export function UnstakeBreakdown({
     remainingRewardsFormatted,
     remainingRewardsSymbol,
     remainingTotalStakedFormatted,
-}: UnstakeBreakdownProps) {
+}: UnstakeBreakdownPanelProps) {
     if (isPartialUnstake) {
         return (
             <>

@@ -2,4 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './StakedCard';
-export * from './UnstakeBreakdown';
+export * from './UnstakeBreakdownPanel';

@@ -16,7 +16,7 @@ import {
     GAS_BUDGET_ERROR_MESSAGES,
     GAS_BALANCE_TOO_LOW_ID,
     useUnstakeForm,
-    UnstakeBreakdown,
+    UnstakeBreakdownPanel,
     MIN_PARTIAL_UNSTAKE_TEXT,
 } from '@iota/core';
 import { useMemo } from 'react';
@@ -238,7 +238,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                             fullwidth
                         />
                         <Divider />
-                        <UnstakeBreakdown
+                        <UnstakeBreakdownPanel
                             isPartialUnstake={isPartialUnstake}
                             unstakeAmountFormatted={unstakeAmountFormatted}
                             rewardsFormatted={rewardsFormatted}
