@@ -39,7 +39,7 @@ function readFromStorage(): DateFormatMap {
 function writeToStorage(map: DateFormatMap): void {
     try {
         localStorage.setItem(LS_KEY, JSON.stringify(map));
-    } catch (e) {
+    } catch {
         // storage unavailable (private mode, quota exceeded)
     }
 }
