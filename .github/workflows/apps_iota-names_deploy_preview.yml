@@ -6,8 +6,8 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
-      - "sdk/**"
-      - "dapp/**"
+      - "sdk/names/**"
+      - "apps/names/**"
       - ".github/workflows/apps_iota-names_deploy_preview.yml"
       - ".github/workflows/iota_names_deploy.yml"
 
