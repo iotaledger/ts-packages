@@ -16,3 +16,5 @@ export * from './createUnlockTimelockedObjectsTransaction';
 export * from './createCollectAllTimelocksTransaction';
 export * from './isMigrationTransaction';
 export * from './isUnlockTimelockedObjectTransaction';
+export * from './narrateObjectChanges';
+export * from './buildTransactionDisplay';

@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { MIN_NUMBER_IOTA_TO_STAKE } from '../../';
+import { MIN_NUMBER_IOTA_TO_STAKE } from '../../constants/staking.constants';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import BigNumber from 'bignumber.js';
 import { mixed, object } from 'yup';

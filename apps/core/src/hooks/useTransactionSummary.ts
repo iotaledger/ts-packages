@@ -14,6 +14,7 @@ import {
     getTransactionAction,
     getObjectChangeSummary,
     getObjectDisplayLookup,
+    buildTransactionDisplay,
 } from '../utils';
 import { useMultiGetObjects } from './useMultiGetObjects';
 
@@ -63,6 +64,12 @@ export function useTransactionSummary({
                 timestamp: transaction.timestampMs,
                 upgradedSystemPackages: transaction.effects?.mutated?.filter(
                     ({ owner }) => owner === 'Immutable',
+                ),
+                display: buildTransactionDisplay(
+                    transaction,
+                    objectChangesWithDisplay,
+                    recognizedPackagesList,
+                    currentAddress,
                 ),
             };
         } else {

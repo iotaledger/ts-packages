@@ -4,8 +4,9 @@
 
 import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { TransactionAction } from '../../interfaces';
-import { checkIfIsTimelockedStaking } from '../stake';
-import { isMigrationTransaction, isUnlockTimelockedObjectTransaction } from '..';
+import { checkIfIsTimelockedStaking } from '../stake/checkIfIsTimelockedStaking';
+import { isMigrationTransaction } from './isMigrationTransaction';
+import { isUnlockTimelockedObjectTransaction } from './isUnlockTimelockedObjectTransaction';
 
 export const ACTION_LABELS: Record<TransactionAction, string> = {
     [TransactionAction.Send]: 'Sent',

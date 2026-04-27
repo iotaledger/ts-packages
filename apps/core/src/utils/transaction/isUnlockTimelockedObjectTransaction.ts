@@ -11,7 +11,7 @@ import {
     TIMELOCK_PACKAGE_ID,
     TIMELOCKED_STAKING_MODULE,
     TIMELOCKED_STAKING_PACKAGE_ID,
-} from '../..';
+} from '../../constants/timelock.constants';
 
 export function isUnlockTimelockedObjectTransaction(
     transaction: IotaTransactionBlockResponse['transaction'],
