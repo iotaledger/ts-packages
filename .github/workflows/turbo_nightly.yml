@@ -42,12 +42,12 @@ jobs:
       - name: Node Sync
         run: |
           pnpm codegen
-          if [ -z "$(git status --porcelain)" ]; then
+          if [ -z "$(git status --porcelain --ignore-submodules=all)" ]; then
             echo "No sync needed"
           else
             echo "Upstream drift detected. Bump submodules and run 'pnpm codegen' in the root."
-            git status
-            git diff
+            git status --ignore-submodules=all
+            git diff --ignore-submodules=all
             exit 1
           fi
 

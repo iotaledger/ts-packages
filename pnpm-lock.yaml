@@ -2006,6 +2006,24 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
 
+  sdk/move-bytecode-template:
+    devDependencies:
+      '@iota/bcs':
+        specifier: workspace:*
+        version: link:../bcs
+      '@iota/build-scripts':
+        specifier: workspace:*
+        version: link:../build-scripts
+      typescript:
+        specifier: ^5.5.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@3.14.0)(yaml@2.8.3)
+      wasm-pack:
+        specifier: ^0.13.0
+        version: 0.13.1
+
   sdk/names:
     dependencies:
       '@noble/hashes':
@@ -9964,6 +9982,11 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
+  binary-install@1.1.2:
+    resolution: {integrity: sha512-ZS2cqFHPZOy4wLxvzqfQvDjCOifn+7uCPqNmYRIBM/03+yllON+4fNnsD0VJdW0p97y+E+dTRNPStWNqMBq+9g==}
+    engines: {node: '>=10'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
@@ -17267,6 +17290,10 @@ packages:
 
   walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
+
+  wasm-pack@0.13.1:
+    resolution: {integrity: sha512-P9exD4YkjpDbw68xUhF3MDm/CC/3eTmmthyG5bHJ56kalxOTewOunxTke4SyF8MTXV6jUtNjXggPgrGmMtczGg==}
+    hasBin: true
 
   watchpack@2.5.1:
     resolution: {integrity: sha512-Zn5uXdcFNIA1+1Ei5McRd+iRzfhENPCe7LeABkJtNulSxjma+l7ltNx55BWZkRlwRnpOgHqxnjyaDgJnNXnqzg==}
@@ -28032,6 +28059,14 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
+  binary-install@1.1.2:
+    dependencies:
+      axios: 1.15.0(debug@4.3.7)
+      rimraf: 3.0.2
+      tar: 6.2.1
+    transitivePeerDependencies:
+      - debug
+
   bl@4.1.0:
     dependencies:
       buffer: 5.7.1
@@ -36472,6 +36507,12 @@ snapshots:
   walker@1.0.8:
     dependencies:
       makeerror: 1.0.12
+
+  wasm-pack@0.13.1:
+    dependencies:
+      binary-install: 1.1.2
+    transitivePeerDependencies:
+      - debug
 
   watchpack@2.5.1:
     dependencies:
