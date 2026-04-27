@@ -1,6 +1,6 @@
 import { BrowserContext, expect, Page } from '@playwright/test';
 import { CONFIG } from '../config/config';
-import { WALLET_CUSTOMRPC_PLACEHOLDER, WALLET_PASSWORD } from '../utils/constants';
+import { WALLET_CUSTOMRPC_INPUT_TEST_ID, WALLET_PASSWORD } from '../utils/constants';
 import { createPage } from './browser';
 
 export async function importL1WalletFromMnemonic(
@@ -42,7 +42,7 @@ export async function importL1WalletFromMnemonic(
     await page.getByLabel(/Open settings menu/).click();
     await page.getByText(/Network/).click();
     await page.getByText(/Custom RPC/).click();
-    await page.getByPlaceholder(WALLET_CUSTOMRPC_PLACEHOLDER).fill(CONFIG.L1.rpcUrl);
+    await page.getByTestId(WALLET_CUSTOMRPC_INPUT_TEST_ID).fill(CONFIG.L1.rpcUrl);
     await page.getByText(/Save/).click();
     await page.getByTestId('close-icon').click();
 }

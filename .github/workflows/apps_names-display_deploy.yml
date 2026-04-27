@@ -13,6 +13,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment: production
+    outputs:
+      version: ${{ steps.commit-hash.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -28,9 +30,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get the short commit hash
+        id: commit-hash
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
           echo "VERSION=$COMMIT_HASH" >> $GITHUB_ENV
+          echo "version=$COMMIT_HASH" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2
@@ -53,3 +57,17 @@ jobs:
         if: ${{ github.event.inputs.deployment == 'true' }}
         run: |
           ssh -o StrictHostKeyChecking=no updater@${{ secrets.UPDATER_SSH_HOST }} "prod ${{ env.VERSION }}"
+
+  notify:
+    needs: build-and-deploy
+    if: always() && needs.build-and-deploy.result != 'skipped' && github.event.inputs.deployment == 'true'
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.build-and-deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Names Display production build ${{ needs.build-and-deploy.result }}"
+      message: |
+        Environment: production
+        Image: ghcr.io/iotaledger/iota-names/iota-names-display:${{ needs.build-and-deploy.outputs.version }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
