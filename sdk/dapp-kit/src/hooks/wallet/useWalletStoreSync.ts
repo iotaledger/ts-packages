@@ -1,4 +1,4 @@
-// Copyright (c) 2025 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { useContext, useSyncExternalStore } from 'react';
@@ -23,13 +23,8 @@ const SSR_DEFAULTS: Record<ApprovedSelectorKey, unknown> = {
     connectionStatus: 'disconnected' as const,
 };
 
-// Function overloads for type safety
 export function useWalletStoreSync(selectorKey: 'lastConnectedWalletName'): string | null;
-export function useWalletStoreSync(
-    selectorKey: 'connectionStatus',
-): 'disconnected' | 'connecting' | 'connected';
 
-// Implementation
 export function useWalletStoreSync(selectorKey: ApprovedSelectorKey) {
     const store = useContext(WalletContext);
     const selector = APPROVED_SELECTORS[selectorKey];

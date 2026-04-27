@@ -5,7 +5,7 @@
 import { LoadingIndicator } from '@iota/apps-ui-kit';
 import { useAutoConnectWallet, useCurrentWallet, useWalletStoreSync } from '@iota/dapp-kit';
 import { redirect, usePathname } from 'next/navigation';
-import { PropsWithChildren, useEffect, useMemo } from 'react';
+import { PropsWithChildren, useEffect } from 'react';
 
 import { PROTECTED_ROUTES } from '@/lib/constants';
 
@@ -16,10 +16,7 @@ export function ConnectionGuard({ children }: PropsWithChildren) {
     const lastConnectedWalletName = useWalletStoreSync('lastConnectedWalletName');
     const hasPersistedWallet = Boolean(lastConnectedWalletName);
 
-    const isProtectedRoute = useMemo(
-        () => PROTECTED_ROUTES.some((route) => pathname.startsWith(route.path)),
-        [pathname],
-    );
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) => pathname.startsWith(route.path));
 
     useEffect(() => {
         if (autoConnect !== 'attempted') return;
