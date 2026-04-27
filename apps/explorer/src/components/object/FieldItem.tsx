@@ -25,6 +25,7 @@ export function FieldItem({
     objectType,
 }: FieldItemProps): JSX.Element {
     const { normalizedType } = getFieldTypeValue(type, objectType);
+
     if (normalizedType === TYPE_ADDRESS) {
         return (
             <div className="break-all">
@@ -37,7 +38,12 @@ export function FieldItem({
         );
     }
 
-    if (TYPE_OBJECT_ID.includes(normalizedType as string) && (value as Record<string, string>).id) {
+    if (
+        TYPE_OBJECT_ID.includes(normalizedType as string) &&
+        typeof value === 'object' &&
+        value !== null &&
+        (value as Record<string, string>).id
+    ) {
         const { id } = value as Record<string, string>;
         return (
             <div className="break-all">
