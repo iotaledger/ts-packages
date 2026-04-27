@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as identity from '@iota/identity-wasm/web';
+import identityWasmUrl from '@iota/identity-wasm/web/identity_wasm_bg.wasm?url';
 import * as notarization from '@iota/notarization/web';
+import notarizationWasmUrl from '@iota/notarization/web/notarization_wasm_bg.wasm?url';
 import { isValidIotaObjectId } from '@iota/iota-sdk/utils';
 import { type IotaClient, Network } from '@iota/iota-sdk/client';
 import {
     DID_PROTOCOL_SEGMENT_SYMBOL,
     DID_URL_SEGMENT_SYMBOL,
-    IDENTITY_WASM_PATH,
     IOTA_IDENTITY_PKG_ID,
     IOTA_NOTARIZATION_PKG_ID,
-    NOTARIZATION_WASM_PATH,
 } from '~/lib/constants/trustFramework.constants';
 
 const regularNetworks = new Set([Network.Mainnet, Network.Testnet, Network.Devnet]);
@@ -25,7 +25,7 @@ let initNotarizationPromise: Promise<void> | null = null;
  */
 export const initIdentityWasmWeb = async (): Promise<void> => {
     if (!initIdentityPromise) {
-        initIdentityPromise = identity.init(IDENTITY_WASM_PATH).catch((e) => {
+        initIdentityPromise = identity.init(identityWasmUrl).catch((e) => {
             console.error('failed to load identity wasm (web version)', e);
             initIdentityPromise = null; // allow retry
             throw e;
@@ -41,7 +41,7 @@ export const initIdentityWasmWeb = async (): Promise<void> => {
  */
 export const initNotarizationWasmWeb = async (): Promise<void> => {
     if (!initNotarizationPromise) {
-        initNotarizationPromise = notarization.init(NOTARIZATION_WASM_PATH).catch((e) => {
+        initNotarizationPromise = notarization.init(notarizationWasmUrl).catch((e) => {
             console.error('failed to load notarization wasm (web version)', e);
             initNotarizationPromise = null; // allow retry
             throw e;
