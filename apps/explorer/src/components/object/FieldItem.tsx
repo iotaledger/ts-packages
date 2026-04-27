@@ -39,12 +39,15 @@ export function FieldItem({
     }
 
     if (TYPE_OBJECT_ID.includes(normalizedType as string)) {
-        const objectId = typeof value === 'string' ? value : (value as Record<string, string>).id;
-        return (
-            <div className="break-all">
-                <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
-            </div>
-        );
+        const objectId =
+            typeof value === 'string' ? value : ((value as Record<string, string>).id ?? null);
+        if (objectId) {
+            return (
+                <div className="break-all">
+                    <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
+                </div>
+            );
+        }
     }
 
     // for object types, use SyntaxHighlighter
