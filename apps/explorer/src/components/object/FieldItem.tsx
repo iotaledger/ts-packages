@@ -37,26 +37,13 @@ export function FieldItem({
         );
     }
 
-    if (
-        typeof normalizedType === 'string' &&
-        TYPE_OBJECT_ID.some((t) => normalizedType.toLowerCase() === t.toLowerCase())
-    ) {
-        const obj = value as Record<string, unknown>;
-        const objectId =
-            typeof value === 'string'
-                ? value
-                : typeof obj.id === 'string'
-                  ? obj.id
-                  : typeof obj.bytes === 'string'
-                    ? obj.bytes
-                    : null;
-        if (objectId) {
-            return (
-                <div className="break-all">
-                    <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
-                </div>
-            );
-        }
+    if (TYPE_OBJECT_ID.includes(normalizedType as string) && (value as Record<string, string>).id) {
+        const { id } = value as Record<string, string>;
+        return (
+            <div className="break-all">
+                <ObjectLink objectId={id} noTruncate={!truncate} copyText={id} />
+            </div>
+        );
     }
 
     // for object types, use SyntaxHighlighter
