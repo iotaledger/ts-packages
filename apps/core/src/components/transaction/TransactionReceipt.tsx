@@ -1,9 +1,9 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
+import { useState } from 'react';
+import { Button, ButtonSize, ButtonType } from '@iota/apps-ui-kit';
 import type { useTransactionSummary } from '../../hooks';
-import { CheckmarkFilled } from '@iota/apps-ui-icons';
 import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { STAKING_REQUEST_EVENT, UNSTAKING_REQUEST_EVENT } from '../../constants';
 import { StakeTransactionDetails } from './details';
@@ -11,7 +11,8 @@ import { UnstakeTransactionInfo } from './info';
 import { TransactionSummary } from './summary';
 import { RenderExplorerLink } from '../../types';
 import { GasFees } from '../gas';
-import { formatDate } from '../../utils';
+import { TransactionOverview } from './TransactionOverview';
+import { TransactionMoreDetails } from './TransactionMoreDetails';
 
 interface TransactionReceiptProps {
     txn: IotaTransactionBlockResponse;
@@ -26,74 +27,78 @@ export function TransactionReceipt({
     summary,
     renderExplorerLink,
 }: TransactionReceiptProps) {
+    const [showDetails, setShowDetails] = useState(false);
     const { events } = txn;
-
-    const isSender = txn.transaction?.data.sender === activeAddress;
 
     const stakeTypeTransaction = events?.find(({ type }) => type === STAKING_REQUEST_EVENT);
     const unstakeTypeTransaction = events?.find(({ type }) => type === UNSTAKING_REQUEST_EVENT);
 
+    // Stake and unstake flows keep their existing dedicated layouts.
+    if (stakeTypeTransaction || unstakeTypeTransaction) {
+        return (
+            <div className="flex flex-col gap-md overflow-y-auto overflow-x-hidden">
+                {stakeTypeTransaction ? (
+                    <StakeTransactionDetails
+                        activeAddress={activeAddress}
+                        events={events ?? []}
+                        gasSummary={summary?.gas}
+                        renderExplorerLink={renderExplorerLink}
+                    />
+                ) : null}
+                {unstakeTypeTransaction ? (
+                    <UnstakeTransactionInfo
+                        activeAddress={activeAddress}
+                        events={events ?? []}
+                        gasSummary={summary?.gas}
+                        renderExplorerLink={renderExplorerLink}
+                    />
+                ) : null}
+            </div>
+        );
+    }
+
+    const { display } = summary;
+
+    // Fallback for callers that don't have display data (dry-run paths, legacy consumers).
+    if (!display) {
+        const isSender = txn.transaction?.data.sender === activeAddress;
+        return (
+            <div className="flex flex-col gap-md overflow-y-auto overflow-x-hidden">
+                <TransactionSummary summary={summary} renderExplorerLink={renderExplorerLink} />
+                {isSender && (
+                    <GasFees
+                        gasSummary={summary?.gas}
+                        renderExplorerLink={renderExplorerLink}
+                        activeAddress={activeAddress}
+                    />
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-md overflow-y-auto overflow-x-hidden">
-            <TransactionStatus
-                success={summary.status === 'success'}
-                timestamp={txn.timestampMs ?? undefined}
-                isIncoming={!isSender}
+            <TransactionOverview
+                display={display}
+                activeAddress={activeAddress}
+                renderExplorerLink={renderExplorerLink}
             />
-            {stakeTypeTransaction || unstakeTypeTransaction ? (
-                <>
-                    {stakeTypeTransaction ? (
-                        <StakeTransactionDetails
-                            activeAddress={activeAddress}
-                            events={events ?? []}
-                            gasSummary={summary?.gas}
-                            renderExplorerLink={renderExplorerLink}
-                        />
-                    ) : null}
 
-                    {unstakeTypeTransaction ? (
-                        <UnstakeTransactionInfo
-                            activeAddress={activeAddress}
-                            events={events ?? []}
-                            gasSummary={summary?.gas}
-                            renderExplorerLink={renderExplorerLink}
-                        />
-                    ) : null}
-                </>
-            ) : (
-                <>
-                    <TransactionSummary summary={summary} renderExplorerLink={renderExplorerLink} />
-                    {isSender && (
-                        <GasFees
-                            gasSummary={summary?.gas}
-                            renderExplorerLink={renderExplorerLink}
-                            activeAddress={activeAddress}
-                        />
-                    )}
-                </>
+            <Button
+                size={ButtonSize.Small}
+                type={ButtonType.Ghost}
+                text={showDetails ? 'Hide details' : 'Show details'}
+                onClick={() => setShowDetails((prev) => !prev)}
+            />
+
+            {showDetails && (
+                <TransactionMoreDetails
+                    display={display}
+                    activeAddress={activeAddress}
+                    gas={summary.gas}
+                    renderExplorerLink={renderExplorerLink}
+                />
             )}
         </div>
-    );
-}
-
-interface TransactionStatusProps {
-    success: boolean;
-    timestamp?: string;
-    isIncoming?: boolean;
-}
-
-function TransactionStatus({ success, timestamp, isIncoming }: TransactionStatusProps) {
-    const txnDate = timestamp
-        ? formatDate(Number(timestamp), ['day', 'month', 'year', 'hour', 'minute'])
-        : '';
-    const successMessage = isIncoming ? 'Successfully received' : 'Successfully sent';
-    return (
-        <InfoBox
-            type={success ? InfoBoxType.Success : InfoBoxType.Error}
-            style={InfoBoxStyle.Elevated}
-            title={success ? successMessage : 'Transaction Failed'}
-            supportingText={timestamp ? txnDate : ''}
-            icon={<CheckmarkFilled />}
-        />
     );
 }

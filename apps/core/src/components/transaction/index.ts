@@ -6,3 +6,6 @@ export * from './summary';
 
 export * from './TransactionReceipt';
 export * from './TransactionIcon';
+export * from './TransactionOverview';
+export * from './TransactionMoreDetails';
+export * from './NarratedObjectChangeGroup';

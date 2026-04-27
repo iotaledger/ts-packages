@@ -1,0 +1,146 @@
+// Copyright (c) 2024 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+import {
+    Divider,
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
+    KeyValueInfo,
+    Panel,
+} from '@iota/apps-ui-kit';
+import { CheckmarkFilled, Close } from '@iota/apps-ui-icons';
+import { CoinFormat, formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+
+import {
+    type TransactionDisplay,
+    type TransactionKind,
+} from '../../utils/transaction/buildTransactionDisplay';
+import { type RenderExplorerLink } from '../../types';
+import { CoinItem } from '../coin';
+import { useFormatCoin } from '../../hooks';
+import { formatDate } from '../../utils/formatDate';
+
+const KIND_LABEL: Record<TransactionKind, string> = {
+    send: 'Sent',
+    receive: 'Received',
+    stake: 'Staked',
+    unstake: 'Unstaked',
+    'timelocked-stake': 'Stake Vesting',
+    'timelocked-unstake': 'Unstake Vesting',
+    'timelocked-collect': 'Collect Vesting',
+    migration: 'Migration',
+    'contract-call': 'Contract Call',
+    system: 'System',
+    failed: 'Failed',
+};
+
+interface TransactionOverviewProps {
+    display: TransactionDisplay;
+    activeAddress: string | null;
+    renderExplorerLink: RenderExplorerLink;
+}
+
+export function TransactionOverview({
+    display,
+    activeAddress,
+    renderExplorerLink: _renderExplorerLink,
+}: TransactionOverviewProps) {
+    const isSuccess = display.status === 'success';
+    const isSender = !!activeAddress && display.sender === activeAddress;
+
+    const txnDate = display.timestampMs
+        ? formatDate(Number(display.timestampMs), ['day', 'month', 'year', 'hour', 'minute'])
+        : '';
+
+    const infoBoxTitle = isSuccess ? KIND_LABEL[display.kind] : 'Transaction Failed';
+
+    const fromCounterparties = display.counterparties.filter((c) => c.direction === 'from');
+    const toCounterparties = display.counterparties.filter((c) => c.direction === 'to');
+
+    const hasCounterparties = fromCounterparties.length > 0 || toCounterparties.length > 0;
+
+    // Format the net fee for the fee row (only shown for sender).
+    const [formattedFee, feeSymbol] = useFormatCoin({
+        balance: display.fee?.net,
+        coinType: IOTA_TYPE_ARG,
+        format: CoinFormat.Full,
+    });
+
+    const hasSummaryRows = hasCounterparties || isSender;
+
+    return (
+        <div className="flex flex-col gap-md">
+            <InfoBox
+                type={isSuccess ? InfoBoxType.Success : InfoBoxType.Error}
+                style={InfoBoxStyle.Elevated}
+                title={infoBoxTitle}
+                supportingText={txnDate}
+                icon={isSuccess ? <CheckmarkFilled /> : <Close />}
+            />
+
+            <Panel hasBorder>
+                <div className="flex flex-col overflow-hidden rounded-xl">
+                    {display.primary && (
+                        <CoinItem
+                            coinType={display.primary.coinType}
+                            balance={display.primary.amount}
+                            format={CoinFormat.Full}
+                        />
+                    )}
+
+                    {hasSummaryRows && (
+                        <div className="flex flex-col gap-y-sm px-md pb-md">
+                            {display.primary && <Divider />}
+
+                            {fromCounterparties.map((cp) => (
+                                <KeyValueInfo
+                                    key={cp.address}
+                                    keyText="From"
+                                    value={formatAddress(cp.address)}
+                                    isTruncated
+                                    fullwidth
+                                />
+                            ))}
+
+                            {toCounterparties.length === 1 && (
+                                <KeyValueInfo
+                                    keyText="To"
+                                    value={formatAddress(toCounterparties[0].address)}
+                                    isTruncated
+                                    fullwidth
+                                />
+                            )}
+
+                            {toCounterparties.length > 1 && (
+                                <KeyValueInfo
+                                    keyText="To"
+                                    value={`${toCounterparties.length} addresses`}
+                                    fullwidth
+                                />
+                            )}
+
+                            {isSender && display.fee && (
+                                <KeyValueInfo
+                                    keyText="Network fee"
+                                    value={formattedFee}
+                                    supportingLabel={feeSymbol}
+                                    fullwidth
+                                />
+                            )}
+                        </div>
+                    )}
+                </div>
+            </Panel>
+
+            {!isSuccess && display.failureMessage && (
+                <InfoBox
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Default}
+                    title="Error details"
+                    supportingText={display.failureMessage}
+                />
+            )}
+        </div>
+    );
+}
