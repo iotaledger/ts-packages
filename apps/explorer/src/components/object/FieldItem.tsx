@@ -38,16 +38,11 @@ export function FieldItem({
         );
     }
 
-    if (
-        TYPE_OBJECT_ID.includes(normalizedType as string) &&
-        typeof value === 'object' &&
-        value !== null &&
-        (value as Record<string, string>).id
-    ) {
-        const { id } = value as Record<string, string>;
+    if (TYPE_OBJECT_ID.includes(normalizedType as string)) {
+        const objectId = typeof value === 'string' ? value : (value as Record<string, string>).id;
         return (
             <div className="break-all">
-                <ObjectLink objectId={id} noTruncate={!truncate} copyText={id} />
+                <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
             </div>
         );
     }
