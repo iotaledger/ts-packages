@@ -12,6 +12,9 @@ import {
     useGetValidatorsEvents,
     useMultiGetObjects,
     useMaxCommitteeSize,
+    useGetCandidateValidators,
+    sanitizeValidatorObjects,
+    type IotaValidatorSummaryExtended,
 } from '@iota/core';
 import {
     DisplayStats,
@@ -29,11 +32,9 @@ import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEnhancedRpcClient } from '~/hooks';
-import { sanitizePendingValidators } from '~/lib';
 import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorSearch, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
-import type { IotaValidatorSummaryExtended } from '~/lib/types/validator.types';
 import { useEpochProgress } from '../epochs/utils';
 
 function ValidatorPageResult(): JSX.Element {
@@ -81,7 +82,11 @@ function ValidatorPageResult(): JSX.Element {
         showContent: true,
     });
 
-    const sanitizedPendingValidatorsData = sanitizePendingValidators(pendingValidatorsData);
+    const sanitizedPendingValidatorsData = sanitizeValidatorObjects(pendingValidatorsData, {
+        isPending: true,
+    });
+
+    const { data: sanitizedCandidateValidatorsData = [] } = useGetCandidateValidators();
 
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: totalSupplyData } = useIotaClientQuery('getTotalSupply', {
@@ -142,12 +147,14 @@ function ValidatorPageResult(): JSX.Element {
         return formatPercentageDisplay(ratio);
     })();
 
-    const activeAndPendingValidators = useMemo(() => {
+    const allValidators = useMemo(() => {
         if (!data) return [];
-        return Number(data.pendingActiveValidatorsSize) > 0
-            ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
-            : (activeValidators ?? []);
-    }, [data, activeValidators, sanitizedPendingValidatorsData]);
+        const pendingActiveValidators =
+            Number(data.pendingActiveValidatorsSize) > 0
+                ? (activeValidators?.concat(sanitizedPendingValidatorsData) ?? [])
+                : (activeValidators ?? []);
+        return [...pendingActiveValidators, ...sanitizedCandidateValidatorsData];
+    }, [data, activeValidators, sanitizedPendingValidatorsData, sanitizedCandidateValidatorsData]);
 
     const atRiskAddresses = useMemo(
         () => new Set(data?.atRiskValidators?.map(([address]) => address) ?? []),
@@ -158,22 +165,24 @@ function ValidatorPageResult(): JSX.Element {
         let active = 0;
         let pending = 0;
         let atRisk = 0;
-        for (const validator of activeAndPendingValidators as IotaValidatorSummaryExtended[]) {
+        let candidate = 0;
+        for (const validator of allValidators as IotaValidatorSummaryExtended[]) {
             const isValidatorAtRisk = atRiskAddresses.has(validator.iotaAddress);
             const isCommitteeMember = data?.committeeMembers.some(
                 (committeeMember) => committeeMember.iotaAddress === validator.iotaAddress,
             );
             if (validator.isPending) pending++;
+            else if (validator.isCandidate) candidate++;
             else if (isCommitteeMember) committee++;
             else active++;
             if (isValidatorAtRisk) atRisk++;
         }
-        return { all: activeAndPendingValidators.length, active, pending, atRisk, committee };
-    }, [activeAndPendingValidators, atRiskAddresses, data?.committeeMembers]);
+        return { all: allValidators.length, active, pending, atRisk, committee, candidate };
+    }, [allValidators, atRiskAddresses, data?.committeeMembers]);
 
     const filteredValidators = useMemo(
         () =>
-            activeAndPendingValidators.filter((validator: IotaValidatorSummaryExtended) => {
+            allValidators.filter((validator: IotaValidatorSummaryExtended) => {
                 if (currentValidatorStatus !== 'All') {
                     const isAtRisk = atRiskAddresses.has(validator.iotaAddress);
                     const isCommitteeMember = data?.committeeMembers.some(
@@ -181,12 +190,14 @@ function ValidatorPageResult(): JSX.Element {
                     );
                     if (
                         currentValidatorStatus === 'Active' &&
-                        (validator.isPending || isCommitteeMember)
+                        (validator.isPending || validator.isCandidate || isCommitteeMember)
                     )
                         return false;
                     if (currentValidatorStatus === 'Pending' && !validator.isPending) return false;
                     if (currentValidatorStatus === 'At Risk' && !isAtRisk) return false;
                     if (currentValidatorStatus === 'Committee' && !isCommitteeMember) return false;
+                    if (currentValidatorStatus === 'Candidate' && !validator.isCandidate)
+                        return false;
                 }
                 if (searchTerm) {
                     const lower = searchTerm.toLowerCase();
@@ -197,7 +208,7 @@ function ValidatorPageResult(): JSX.Element {
                 }
                 return true;
             }),
-        [activeAndPendingValidators, atRiskAddresses, currentValidatorStatus, searchTerm],
+        [allValidators, atRiskAddresses, currentValidatorStatus, searchTerm],
     );
 
     const tableColumns = useMemo(() => {
@@ -214,7 +225,6 @@ function ValidatorPageResult(): JSX.Element {
         ];
 
         return generateValidatorsTableColumns({
-            allValidators: filteredValidators,
             committeeMembers: data.committeeMembers.map((validator) => validator.iotaAddress),
             atRiskValidators: data.atRiskValidators,
             maxCommitteeSize,
@@ -224,7 +234,7 @@ function ValidatorPageResult(): JSX.Element {
             includeColumns,
             currentEpoch: data.epoch,
         });
-    }, [data, filteredValidators, validatorEvents, validatorsApy, maxCommitteeSize]);
+    }, [data, validatorEvents, validatorsApy, maxCommitteeSize]);
 
     const activeCommitteeSize = data?.committeeMembers.length ?? null;
     const protocolVersion = data?.protocolVersion ?? null;
