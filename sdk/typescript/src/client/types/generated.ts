@@ -91,7 +91,7 @@ export interface CommitteeInfo {
 }
 /** Uses an enum to allow for future expansion of the ConsensusDeterminedVersionAssignments. */
 export type ConsensusDeterminedVersionAssignments = {
-    CancelledTransactions: [string, [string, number][]][];
+    CancelledTransactions: [string, [string, string][]][];
 };
 export type IotaParsedData =
     | {
@@ -172,7 +172,7 @@ export type DynamicFieldInfo =
           objectId: string;
           objectType: string;
           type: DynamicFieldType;
-          version: number;
+          version: string;
           bcsEncoding: 'base64';
           bcsName: string;
       }
@@ -182,7 +182,7 @@ export type DynamicFieldInfo =
           objectId: string;
           objectType: string;
           type: DynamicFieldType;
-          version: number;
+          version: string;
           bcsEncoding: 'base58';
           bcsName: string;
       };
@@ -1249,13 +1249,13 @@ export type ObjectRead =
           status: 'ObjectDeleted';
       } /** The object exists but not found with this version */
     | {
-          details: [string, number];
+          details: [string, string];
           status: 'VersionNotFound';
       } /** The asked object version is higher than the latest */
     | {
           details: {
-              asked_version: number;
-              latest_version: number;
+              asked_version: string;
+              latest_version: string;
               object_id: string;
           };
           status: 'VersionTooHigh';
@@ -1266,7 +1266,7 @@ export interface IotaObjectRef {
     /** Hex code as string representing the object id */
     objectId: string;
     /** Object version. */
-    version: number;
+    version: string;
 }
 export type ObjectResponseError =
     | {
@@ -1283,7 +1283,7 @@ export type ObjectResponseError =
           digest: string;
           object_id: string;
           /** Object version. */
-          version: number;
+          version: string;
       }
     | {
           code: 'unknown';
@@ -1329,7 +1329,7 @@ export type ObjectOwner =
     | {
           Shared: {
               /** The version at which the object became shared */
-              initial_shared_version: number;
+              initial_shared_version: string;
           };
       }
     | 'Immutable';
@@ -1458,7 +1458,7 @@ export type RawData =
           bcsBytes: string;
           dataType: 'moveObject';
           type: string;
-          version: number;
+          version: string;
       }
     | {
           dataType: 'package';
@@ -1470,7 +1470,7 @@ export type RawData =
               [key: string]: string;
           };
           typeOriginTable: TypeOrigin[];
-          version: number;
+          version: string;
       };
 export type StakeObject =
     | {
@@ -1806,7 +1806,7 @@ export interface UpgradeInfo {
     /** `Storage ID`/`Package ID` of the referred package. */
     upgraded_id: string;
     /** The version of the package at `upgraded_id`. */
-    upgraded_version: number;
+    upgraded_version: string;
 }
 export interface ValidatorApy {
     address: string;
