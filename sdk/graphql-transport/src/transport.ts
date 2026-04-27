@@ -23,13 +23,16 @@ import type {
     SubscribeEventsSubscriptionVariables,
     SubscribeTransactionsSubscription,
     SubscribeTransactionsSubscriptionVariables,
-    SubscriptionEventFilter,
-    SubscriptionTransactionFilter,
 } from './generated/queries.js';
 import type { GraphQLWebSocketClientOptions } from './graphql-websocket-client.js';
 import { GraphQLWebSocketClient } from './graphql-websocket-client.js';
 import { RPC_METHODS, UnsupportedMethodError, UnsupportedParamError } from './methods.js';
-import { toShortTypeString } from './mappers/util.js';
+import {
+    mapRpcEventFilterToGraphQL,
+    mapRpcTransactionFilterToGraphQL,
+    mapSubscriptionEvent,
+    mapSubscriptionTransaction,
+} from './mappers/subscription.js';
 
 export interface IotaClientGraphQLTransportOptions {
     url: string;
@@ -260,24 +263,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                     return;
                 }
                 const event = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
-                const mapped = {
-                    bcs: event.bcs,
-                    id: {
-                        eventSeq: '',
-                        txDigest: '',
-                    },
-                    packageId: event.sendingModule?.package.address ?? '',
-                    parsedJson: event.json,
-                    sender: event.sender?.address,
-                    timestampMs: event.timestamp
-                        ? new Date(event.timestamp as string).getTime().toString()
-                        : undefined,
-                    transactionModule: event.sendingModule
-                        ? `${event.sendingModule.package.address}::${event.sendingModule.name}`
-                        : '',
-                    type: toShortTypeString(event.type?.repr) ?? '',
-                };
-                input.onMessage(mapped as T);
+                input.onMessage(mapSubscriptionEvent(event) as T);
             },
             onError: (errors) => {
                 console.error('GraphQL subscription error (events):', errors);
@@ -304,18 +290,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                     return;
                 }
                 const tx = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
-                const mapped = {
-                    bcs: tx.effects?.bcs,
-                    digest: tx.digest,
-                    ...(tx.effects?.timestamp
-                        ? {
-                              timestampMs: new Date(tx.effects.timestamp as string)
-                                  .getTime()
-                                  .toString(),
-                          }
-                        : {}),
-                };
-                input.onMessage(mapped as T);
+                input.onMessage(mapSubscriptionTransaction(tx) as T);
             },
             onError: (errors) => {
                 console.error('GraphQL subscription error (transactions):', errors);
@@ -352,75 +327,4 @@ class GraphQLResponseError extends Error {
         super(error.message);
         this.locations = error.locations;
     }
-}
-
-/**
- * Maps a JSON-RPC `IotaEventFilter` to the GraphQL `SubscriptionEventFilter`.
- *
- * The GraphQL subscription API only supports filtering by `emittingModule`,
- * which corresponds to the `Package` and `MoveModule` RPC filters.
- */
-function mapRpcEventFilterToGraphQL(
-    rpcFilter: Record<string, unknown>,
-): SubscriptionEventFilter | undefined {
-    if ('Package' in rpcFilter) {
-        return { emittingModule: rpcFilter.Package as string };
-    }
-
-    if ('MoveModule' in rpcFilter) {
-        const mod = rpcFilter.MoveModule as { package: string; module: string };
-        return { emittingModule: `${mod.package}::${mod.module}` };
-    }
-
-    if ('MoveEventType' in rpcFilter) {
-        const parts = (rpcFilter.MoveEventType as string).split('::');
-        if (parts.length >= 2) {
-            return { emittingModule: `${parts[0]}::${parts[1]}` };
-        }
-    }
-
-    if ('MoveEventModule' in rpcFilter) {
-        const mod = rpcFilter.MoveEventModule as { package: string; module: string };
-        return { emittingModule: `${mod.package}::${mod.module}` };
-    }
-
-    return undefined;
-}
-
-function mapRpcTransactionFilterToGraphQL(
-    rpcFilter: Record<string, unknown>,
-): SubscriptionTransactionFilter | undefined {
-    if ('TransactionKind' in rpcFilter) {
-        return {
-            kind: rpcFilter.TransactionKind as SubscriptionTransactionFilter & {
-                kind: unknown;
-            } extends { kind: infer K }
-                ? K
-                : never,
-        } as SubscriptionTransactionFilter;
-    }
-
-    if ('FromAddress' in rpcFilter) {
-        return {
-            signingAddress: rpcFilter.FromAddress as string,
-        } as SubscriptionTransactionFilter;
-    }
-
-    if ('MoveFunction' in rpcFilter) {
-        const fn = rpcFilter.MoveFunction as {
-            package: string;
-            module?: string | null;
-            function?: string | null;
-        };
-        let value = fn.package;
-        if (fn.module) {
-            value += `::${fn.module}`;
-            if (fn.function) {
-                value += `::${fn.function}`;
-            }
-        }
-        return { function: value } as SubscriptionTransactionFilter;
-    }
-
-    return undefined;
 }
