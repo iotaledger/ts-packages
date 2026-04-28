@@ -392,6 +392,7 @@ describe('buildTransactionDisplay', () => {
                     sender: SENDER,
                     parsedJson: {},
                     bcs: '',
+                    bcsEncoding: 'base58' as const,
                 },
             ],
         });

@@ -4,7 +4,7 @@
 
 import { Loading, Overlay, ReceiptCard } from '_components';
 import { useActiveAddress, useUnlockedGuard } from '_hooks';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Checkmark, Warning } from '@iota/apps-ui-icons';
 import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
@@ -36,18 +36,7 @@ export function ReceiptPage() {
         fromParam ? navigate(`/${fromParam}`) : navigate(-1);
     }, [fromParam, navigate]);
 
-    const pageTitle = useMemo(() => {
-        if (data) {
-            const executionStatus = data.effects?.status.status;
-
-            // TODO: Infer out better name:
-            const transferName = 'Transaction';
-
-            return `${executionStatus === 'success' ? transferName : 'Transaction Failed'}`;
-        }
-
-        return 'Transaction Failed';
-    }, [/*activeAddress,*/ data]);
+    const pageTitle = 'Transaction';
 
     const isGuardLoading = useUnlockedGuard();
 
