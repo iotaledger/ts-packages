@@ -74,7 +74,7 @@ export async function createWallet(page: Page) {
     await page.getByText('Custom RPC').click();
     const networkId = CONFIG.network;
     const networkConfig = getNetwork(networkId);
-    await page.getByPlaceholder('http://localhost:3000/').fill(networkConfig.url);
+    await page.getByTestId('custom-rpc-url-input').fill(networkConfig.url);
     await page.getByRole('button', { name: 'Save' }).click();
 
     await page.getByTestId('close-icon').click();
@@ -503,4 +503,64 @@ export async function checkAddressBalanceWithRetries(address: string): Promise<v
         );
         await new Promise((resolve) => setTimeout(resolve, 2000));
     }
+}
+
+export async function selectDateInDatePicker(
+    container: Page | import('@playwright/test').Locator,
+    targetDate: Date,
+): Promise<void> {
+    const trigger = container.getByRole('button', { name: 'Select a date' });
+    const isOpen = await container
+        .getByRole('dialog', { name: 'Date picker calendar' })
+        .isVisible()
+        .catch(() => false);
+    if (!isOpen) {
+        await trigger.click();
+    }
+
+    const calendar = container.getByRole('dialog', { name: 'Date picker calendar' });
+
+    // Navigate to the correct month/year
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth();
+
+    for (let i = 0; i < 120; i++) {
+        const headerButton = calendar.getByRole('button', { name: /Select year/ });
+        const headerText = await headerButton.textContent();
+        if (!headerText) break;
+
+        // Header text is "MonthName YYYY"
+        const parts = headerText.trim().split(' ');
+        const displayedYear = parseInt(parts[parts.length - 1], 10);
+        const monthNames = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+        ];
+        const displayedMonth = monthNames.indexOf(parts[0]);
+
+        if (displayedYear === targetYear && displayedMonth === targetMonth) break;
+
+        const diff = (targetYear - displayedYear) * 12 + (targetMonth - displayedMonth);
+        if (diff > 0) {
+            await calendar.getByRole('button', { name: 'Next month' }).click();
+        } else {
+            await calendar.getByRole('button', { name: 'Previous month' }).click();
+        }
+    }
+
+    // Click the target day (aria-label format: DD/MM/YYYY)
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const year = String(targetDate.getFullYear());
+    await calendar.getByRole('button', { name: `${day}/${month}/${year}` }).click();
 }

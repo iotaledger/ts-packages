@@ -9,6 +9,7 @@ export const BACKGROUND_COLORS = {
     [BadgeType.PrimarySoft]: 'badge-bg-color-primary-soft',
     [BadgeType.Success]: 'bg-success-surface',
     [BadgeType.Warning]: 'bg-warning-surface',
+    [BadgeType.Outlined]: 'bg-transparent',
     [BadgeType.Error]: 'bg-error-surface',
 };
 
@@ -18,6 +19,7 @@ export const TEXT_COLORS: Record<BadgeType, string> = {
     [BadgeType.PrimarySoft]: 'badge-text-color-primary-soft',
     [BadgeType.Success]: 'text-on-success',
     [BadgeType.Warning]: 'text-on-warning',
+    [BadgeType.Outlined]: 'badge-text-color-neutral',
     [BadgeType.Error]: 'text-on-error',
 };
 
@@ -27,5 +29,6 @@ export const BORDER_COLORS: Record<BadgeType, string> = {
     [BadgeType.PrimarySoft]: 'badge-border-color-soft',
     [BadgeType.Success]: 'border-success-surface',
     [BadgeType.Warning]: 'border-warning-surface',
+    [BadgeType.Outlined]: 'badge-border-color-outlined',
     [BadgeType.Error]: 'border-error-surface',
 };

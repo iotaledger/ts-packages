@@ -2,7 +2,13 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getTotalGasUsed } from '@iota/core';
+import {
+    getTotalGasUsed,
+    getTransactionAction,
+    TransactionIcon,
+    TransactionIconSize,
+    ACTION_LABELS,
+} from '@iota/core';
 import type { IotaTransactionBlockKind, IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
@@ -15,7 +21,7 @@ import {
     IOTA_TYPE_ARG,
     NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
-import { getElapsedTime } from '~/pages/epochs/utils';
+import { DateDisplay } from '~/components';
 
 /**
  * Generate table columns renderers for the transactions data.
@@ -25,16 +31,36 @@ export function generateTransactionsTableColumns(
 ): ColumnDef<IotaTransactionBlockResponse>[] {
     const columns: ColumnDef<IotaTransactionBlockResponse>[] = [
         {
-            header: 'Digest',
-            accessorKey: 'digest',
-            cell: ({ getValue }) => {
-                const digest = getValue<string>();
+            header: 'Type',
+            accessorKey: 'Type',
+            cell: ({ row }) => {
+                const txn = row.original;
+                const digest = txn.digest;
+                const actionAddress = address ?? txn.transaction?.data.sender;
+                const isSuccess = txn.effects?.status.status === 'success';
+                const action = getTransactionAction(txn, actionAddress);
                 return (
                     <TableCellBase>
                         <TransactionLink
                             digest={digest}
-                            label={<TableCellText>{formatDigest(digest)}</TableCellText>}
                             copyText={digest}
+                            label={
+                                <div className="flex items-center gap-xs">
+                                    <TransactionIcon
+                                        variant={action}
+                                        txnFailed={!isSuccess}
+                                        size={TransactionIconSize.Small}
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                            {isSuccess ? ACTION_LABELS[action] : 'Failed'}
+                                        </span>
+                                        <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
+                                            {formatDigest(digest)}
+                                        </span>
+                                    </div>
+                                </div>
+                            }
                         />
                     </TableCellBase>
                 );
@@ -147,12 +173,15 @@ export function generateTransactionsTableColumns(
             accessorKey: 'timestampMs',
             cell: ({ getValue }) => {
                 const timestampMs = getValue();
-                const elapsedTime = timestampMs
-                    ? getElapsedTime(Number(timestampMs), Date.now())
-                    : '--';
                 return (
                     <TableCellBase>
-                        <TableCellText>{elapsedTime}</TableCellText>
+                        <TableCellText>
+                            {timestampMs ? (
+                                <DateDisplay timestamp={Number(timestampMs)} type="table" />
+                            ) : (
+                                '--'
+                            )}
+                        </TableCellText>
                     </TableCellBase>
                 );
             },

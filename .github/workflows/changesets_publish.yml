@@ -31,6 +31,7 @@ jobs:
         uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
         with:
           fetch-depth: 0
+          submodules: recursive
 
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
       - name: Install Nodejs
@@ -43,6 +44,18 @@ jobs:
           # Clearing NODE_AUTH_TOKEN allows OIDC to authenticate instead of a static token.
           # See: https://github.com/orgs/community/discussions/176761
           NODE_AUTH_TOKEN: ""
+
+      - name: Install Rust toolchain
+        if: github.event.inputs.release_type == 'next'
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        if: github.event.inputs.release_type == 'next'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
 
       - name: Update npm
         run: npm install -g npm@latest
@@ -120,3 +133,23 @@ jobs:
             echo "npm install @iota/dapp-kit@latest" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           fi
+
+  upload-typedoc:
+    needs: publish
+    if: github.event.inputs.release_type == 'latest'
+    uses: ./.github/workflows/ts_sdk_typedoc_upload.yml
+    secrets: inherit
+
+  notify:
+    needs: publish
+    if: always() && needs.publish.result != 'skipped' && github.event.inputs.release_type != 'experimental'
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
+      title: "NPM publish (${{ github.event.inputs.release_type }}) ${{ needs.publish.result }}"
+      message: |
+        Release type: ${{ github.event.inputs.release_type }}
+        @iota/iota-sdk: https://www.npmjs.com/package/@iota/iota-sdk
+        @iota/dapp-kit: https://www.npmjs.com/package/@iota/dapp-kit
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

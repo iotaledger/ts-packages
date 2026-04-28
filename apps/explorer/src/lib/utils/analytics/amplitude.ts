@@ -14,28 +14,54 @@ const IS_ENABLED =
 
 const IS_DEV = import.meta.env.VITE_BUILD_ENV !== 'production';
 
+// Guards against duplicate listener registration on repeated initAmplitude calls.
+let humanWaitSetup = false;
+// Buffered network value set before Amplitude loads; replayed on first human interaction.
+let pendingNetwork: string | null = null;
+
 /**
- * Anti-bot configuration: Events are queued but not sent until a human interaction is detected.
- * Sessions are classified as human on the first DOM interaction (scroll, mousemove, keydown, touchstart).
+ * Anti-bot protection: defers ampli.load() until a genuine human gesture is detected.
  */
-const ANTI_BOT_CONFIG = {
-    // Regular flush interval once the session is classified as human
-    REGULAR_FLUSH_INTERVAL_MS: 1000,
-    // Initial flush settings — effectively disabled so events queue locally until bot check passes
-    INITIAL_FLUSH_INTERVAL_MS: 3600000, // 1 hour
-    INITIAL_QUEUE_SIZE: 500,
-} as const;
-
-let isBotCleared = false;
-
-export async function initAmplitude() {
+export function initAmplitude(): void {
     const consentStatus = getAmplitudeConsentStatus();
 
+    if (ampli.isLoaded || humanWaitSetup || consentStatus === 'declined') {
+        return;
+    }
+
+    if (navigator.webdriver) {
+        return;
+    }
+
+    humanWaitSetup = true;
+    waitForHumanInteraction();
+}
+
+const HUMAN_SIGNAL_EVENTS = ['pointerdown', 'wheel', 'keydown', 'touchstart', 'copy'] as const;
+
+function waitForHumanInteraction(): void {
+    const controller = new AbortController();
+    let handled = false;
+
+    function onHumanInteraction() {
+        if (handled) return;
+        handled = true;
+        controller.abort();
+        void loadAmplitude();
+    }
+
+    const options = { passive: true, signal: controller.signal } as const;
+    for (const event of HUMAN_SIGNAL_EVENTS) {
+        window.addEventListener(event, onHumanInteraction, options);
+    }
+}
+
+async function loadAmplitude(): Promise<void> {
+    const consentStatus = getAmplitudeConsentStatus();
     if (ampli.isLoaded || consentStatus === 'declined') {
         return;
     }
 
-    // Load Amplitude with anti-bot flush settings
     await ampli.load({
         environment: 'iotaexplorer',
         disabled: !IS_ENABLED,
@@ -55,8 +81,6 @@ export async function initAmplitude() {
                     pageUrlEnrichment: IS_ENABLED,
                 },
                 logLevel: LogLevel.None,
-                flushIntervalMillis: ANTI_BOT_CONFIG.INITIAL_FLUSH_INTERVAL_MS,
-                flushQueueSize: ANTI_BOT_CONFIG.INITIAL_QUEUE_SIZE,
                 identityStorage: 'localStorage',
             },
         },
@@ -64,68 +88,23 @@ export async function initAmplitude() {
 
     ampli.client.add(attachEnvironmentPlugin(IS_DEV));
 
-    setupAntiBotProtection();
-}
-
-const HUMAN_SIGNAL_EVENTS = ['scroll', 'mousemove', 'keydown', 'touchstart'] as const;
-
-/**
- * Sets up anti-bot protection:
- * 1. Queues all events locally (1-hour flush interval prevents premature sends)
- * 2. Classifies the session as human on the first DOM interaction and enables regular flushing
- * 3. On page exit, beacon-flushes only if the session was classified as human
- */
-function setupAntiBotProtection() {
-    let flushInterval: ReturnType<typeof setInterval> | null = null;
-
-    function enableFlushing() {
-        if (isBotCleared) {
-            return;
-        }
-        isBotCleared = true;
-        ampli.flush();
-        flushInterval = setInterval(() => {
-            if (ampli.isLoaded) {
-                ampli.flush();
-            }
-        }, ANTI_BOT_CONFIG.REGULAR_FLUSH_INTERVAL_MS);
+    if (pendingNetwork !== null) {
+        setAmplitudeIdentity(pendingNetwork);
     }
 
-    const humanSignalController = new AbortController();
-    const options = { passive: true, signal: humanSignalController.signal } as const;
-    const handler = () => {
-        humanSignalController.abort();
-        enableFlushing();
-    };
-    for (const event of HUMAN_SIGNAL_EVENTS) {
-        window.addEventListener(event, handler, options);
-    }
-
-    // Flush on page exit only if the session was classified as human.
     window.addEventListener(
         'pagehide',
         () => {
-            humanSignalController.abort();
-
-            if (flushInterval) {
-                clearInterval(flushInterval);
-            }
-
-            if (isBotCleared) {
-                ampli.client.setTransport('beacon');
-                ampli.flush();
-            }
+            ampli.client.setTransport('beacon');
+            ampli.flush();
         },
         { once: true },
     );
 }
 
-/**
- * Set the Amplitude user identity with the current network context.
- * Updates user property: network.
- * This allows filtering and segmenting analytics events by network dimension.
- */
 export function setAmplitudeIdentity(network: string): void {
+    pendingNetwork = network;
+
     if (!ampli.isLoaded) {
         return;
     }

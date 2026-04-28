@@ -46,19 +46,10 @@ start_initial_network() {
     pkill -f "iota start" || true
     sleep 2
 
-    # Generate network config first
-    mkdir -p "$CONFIG_DIR"
-    iota-localnet genesis \
-        --working-dir "$CONFIG_DIR" \
-        --epoch-duration-ms "$EPOCH_DURATION_MS"
-
-    # Enable gRPC API so the indexer can sync checkpoints from the node.
-    # Will be enabled by default in future: https://github.com/iotaledger/iota/issues/10777
-    sed -i 's/enable-grpc-api: false/enable-grpc-api: true/' "$CONFIG_DIR/fullnode.yaml"
-
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
+        --with-grpc \
         --faucet-amount 100000000000000 > iota-node.log 2>&1 &
     PID_IOTA=$!
 
@@ -197,6 +188,7 @@ restart_with_configs() {
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
+        --with-grpc \
         --faucet-amount 100000000000000 >> iota-node.log 2>&1 &
     PID_IOTA=$!
 
