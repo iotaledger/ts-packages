@@ -2,13 +2,14 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatDate, useGetTransaction } from '@iota/core';
+import { useGetTransaction } from '@iota/core';
 import { useState } from 'react';
 import { type Direction } from 'react-resizable-panels';
 
 import {
     AddressLink,
     CheckpointSequenceLink,
+    DateDisplay,
     EpochLink,
     ErrorBoundary,
     Link,
@@ -142,7 +143,12 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                             {txnData?.timestampMs && (
                                 <KeyValueInfo
                                     keyText="Date"
-                                    value={formatDate(Number(txnData.timestampMs))}
+                                    value={
+                                        <DateDisplay
+                                            timestamp={txnData.timestampMs}
+                                            type="package"
+                                        />
+                                    }
                                 />
                             )}
                             {upgradePolicy && (

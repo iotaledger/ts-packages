@@ -19,3 +19,4 @@ export * from './usePackageUpgradePolicy';
 export * from './useSearch';
 export * from './useVerifiedSourceCode';
 export * from './useEndOfEpochTransactionFromCheckpoint';
+export * from './useFormattedDate';
