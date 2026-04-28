@@ -28,6 +28,7 @@ jobs:
           PR_NUMBER:    ${{ github.event.pull_request.number }}
           REPO:         ${{ github.repository }}
         run: |
+          set -euo pipefail
           TARGET=""
 
           if [[ "$EVENT" == "pull_request" ]]; then
@@ -39,19 +40,18 @@ jobs:
                 TARGET="Needs Review"
                 ;;
               synchronize)
-                # Ignore automated GitHub merge commits (e.g. "Update branch" button)
                 COMMITTER=$(gh api "repos/$REPO/pulls/$PR_NUMBER/commits" \
-                  --jq '.[-1].committer.login')
-                echo "Last committer: $COMMITTER"
+                  --jq '.[-1].committer.login // empty')
+                echo "Last committer: ${COMMITTER:-unknown}"
 
                 if [[ "$COMMITTER" == "web-flow" ]]; then
                   echo "Automated branch sync — skipping status change."
                 else
-                  CURRENT=$(gh api graphql -f query='
+                  NEEDS_RESET=$(gh api graphql -f query='
                     query($owner:String!, $repo:String!, $pr:Int!) {
                       repository(owner:$owner, name:$repo) {
                         pullRequest(number:$pr) {
-                          closingIssuesReferences(first:5) {
+                          closingIssuesReferences(first:10) {
                             nodes {
                               projectItems(first:5) {
                                 nodes {
@@ -68,9 +68,11 @@ jobs:
                     -f owner="${REPO%%/*}" \
                     -f repo="${REPO##*/}" \
                     -F pr="$PR_NUMBER" \
-                    --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[0].projectItems.nodes[0].fieldValueByName.name // empty')
-                  echo "Current issue status: $CURRENT"
-                  [[ "$CURRENT" == "Changes Requested" ]] && TARGET="Needs Review"
+                    --jq '[.data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[].fieldValueByName.name]
+                          | any((. | gsub("^[^A-Za-z]+"; "")) == "Changes Requested" or
+                                (. | gsub("^[^A-Za-z]+"; "")) == "PR Approved")')
+                  echo "Needs reset: $NEEDS_RESET"
+                  [[ "$NEEDS_RESET" == "true" ]] && TARGET="Needs Review"
                 fi
                 ;;
               closed)
@@ -86,14 +88,10 @@ jobs:
                 TARGET="Changes Requested"
                 ;;
               approved)
-                APPROVALS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" \
-                  --paginate | jq -s '[.[][]]
-                  | group_by(.user.login)
-                  | map(sort_by(.submitted_at) | last)
-                  | map(select(.state == "APPROVED"))
-                  | length')
+                APPROVALS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+                  | jq -s '[.[][]] | group_by(.user.login) | map(sort_by(.submitted_at) | last) | map(select(.state == "APPROVED")) | length')
                 echo "Approval count: $APPROVALS"
-                [[ "$APPROVALS" -ge 2 ]] && TARGET="Approved"
+                [[ "$APPROVALS" -ge 2 ]] && TARGET="PR Approved"
                 ;;
             esac
           fi
@@ -108,22 +106,35 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO:      ${{ github.repository }}
         run: |
+          set -euo pipefail
           OWNER="${REPO%%/*}"
           REPO_NAME="${REPO##*/}"
 
           echo "Setting linked issues to: $TARGET"
 
-          # ── Step 1: Get linked issues and their project item IDs ──────────────
-          LINKED=$(gh api graphql -f query='
+          # Single query: linked items + project/field data in one round-trip
+          ALL_DATA=$(gh api graphql -f query='
             query($owner:String!, $repo:String!, $pr:Int!) {
               repository(owner:$owner, name:$repo) {
                 pullRequest(number:$pr) {
                   closingIssuesReferences(first:10, userLinkedOnly:false) {
                     nodes {
-                      id
-                      number
                       projectItems(first:5) {
-                        nodes { id }
+                        nodes {
+                          id
+                          project {
+                            id
+                            fields(first:20) {
+                              nodes {
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                  options { id name }
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -132,60 +143,24 @@ jobs:
             }' \
             -f owner="$OWNER" \
             -f repo="$REPO_NAME" \
-            -F pr="$PR_NUMBER" \
-            --jq '.data.repository.pullRequest.closingIssuesReferences.nodes')
+            -F pr="$PR_NUMBER")
 
-          ITEM_IDS=$(echo "$LINKED" | jq -r '.[].projectItems.nodes[].id')
+          # One TSV line per item: itemId, projectId, statusFieldId, optionId
+          # Option names are matched after stripping any leading emoji prefix
+          ITEMS=$(echo "$ALL_DATA" | jq -r --arg t "$TARGET" '
+            .data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[]
+            | . as $item
+            | (.project.fields.nodes[] | select(.name == "Status")) as $field
+            | ($field.options[] | select((.name | gsub("^[^A-Za-z]+"; "")) == $t)) as $opt
+            | [$item.id, $item.project.id, $field.id, $opt.id] | @tsv')
 
-          if [[ -z "$ITEM_IDS" ]]; then
-            echo "No linked project items found — nothing to update."
+          if [[ -z "$ITEMS" ]]; then
+            echo "No linked project items found, or Status option '$TARGET' not present — nothing to update."
             exit 0
           fi
 
-          # ── Step 2: Get Status field ID + option ID from the first item ───────
-          FIRST_ITEM_ID=$(echo "$ITEM_IDS" | head -1)
-
-          FIELD_DATA=$(gh api graphql -f query='
-            query($itemId:ID!) {
-              node(id:$itemId) {
-                ... on ProjectV2Item {
-                  project {
-                    id
-                    fields(first:20) {
-                      nodes {
-                        ... on ProjectV2SingleSelectField {
-                          id
-                          name
-                          options { id name }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }' \
-            -f itemId="$FIRST_ITEM_ID")
-
-          PROJECT_ID=$(echo "$FIELD_DATA" | jq -r '.data.node.project.id')
-          STATUS_FIELD_ID=$(echo "$FIELD_DATA" | \
-            jq -r '.data.node.project.fields.nodes[] | select(.name=="Status") | .id')
-          OPTION_ID=$(echo "$FIELD_DATA" | \
-            jq -r --arg target "$TARGET" \
-            '.data.node.project.fields.nodes[] | select(.name=="Status") | .options[] | select(.name | ascii_downcase | contains($target | ascii_downcase)) | .id')
-
-          if [[ -z "$STATUS_FIELD_ID" || -z "$OPTION_ID" ]]; then
-            echo "Could not find Status field or option '$TARGET' — check project field names."
-            exit 1
-          fi
-
-          echo "Project:      $PROJECT_ID"
-          echo "Status field: $STATUS_FIELD_ID"
-          echo "Option:       $OPTION_ID ($TARGET)"
-
-          # ── Step 3: Update every linked project item ───────────────────────────
-          while IFS= read -r ITEM_ID; do
-            [[ -z "$ITEM_ID" ]] && continue
-            echo "  → Updating item $ITEM_ID"
+          while IFS=$'\t' read -r ITEM_ID PROJECT_ID FIELD_ID OPTION_ID; do
+            echo "  → $ITEM_ID (project $PROJECT_ID)"
             gh api graphql -f query='
               mutation($project:ID!, $item:ID!, $field:ID!, $option:String!) {
                 updateProjectV2ItemFieldValue(input:{
@@ -197,9 +172,9 @@ jobs:
               }' \
               -f project="$PROJECT_ID" \
               -f item="$ITEM_ID" \
-              -f field="$STATUS_FIELD_ID" \
+              -f field="$FIELD_ID" \
               -f option="$OPTION_ID" \
               --silent
-          done <<< "$ITEM_IDS"
+          done <<< "$ITEMS"
 
           echo "Done — all linked issues set to '$TARGET'."
