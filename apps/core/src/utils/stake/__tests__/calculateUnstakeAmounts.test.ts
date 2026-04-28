@@ -111,7 +111,7 @@ describe('calculateUnstakeBreakdown', () => {
         expect(result.remainingTotalStaked).toBe(5_500_000_000n);
     });
 
-    it('should use full principal when partial unstake amount is 0', () => {
+    it('should return zero unstake amount when partial unstake amount is 0', () => {
         const result = calculateUnstakeAmounts({
             principalAmount,
             rewardAmount,
@@ -119,7 +119,12 @@ describe('calculateUnstakeBreakdown', () => {
             isPartialUnstake: true,
         });
 
-        expect(result.unstakeAmount).toBe(principalAmount);
+        expect(result.unstakeAmount).toBe(0n);
+        expect(result.proportionalRewards).toBe(0n);
+        expect(result.totalUnstakeAmount).toBe(0n);
+        expect(result.remainingStake).toBe(principalAmount);
+        expect(result.remainingRewards).toBe(rewardAmount);
+        expect(result.remainingTotalStaked).toBe(principalAmount + rewardAmount);
     });
 
     it('should handle zero reward amount', () => {
