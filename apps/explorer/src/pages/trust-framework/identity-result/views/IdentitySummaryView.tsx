@@ -69,7 +69,7 @@ export function IdentitySummaryView({
                         <div>
                             <DisplayStats
                                 label="Updated at"
-                                value={<DateDisplay timestamp={updatedAtMs} />}
+                                value={<DateDisplay timestamp={updatedAtMs} type="transaction" />}
                                 tooltipPosition={TooltipPosition.Left}
                                 tooltipText="Timestamp of the most recent transaction that modified this Identity. Any change to keys, services, or document content triggers an update."
                             />
