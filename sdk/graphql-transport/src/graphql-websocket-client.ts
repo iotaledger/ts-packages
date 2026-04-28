@@ -155,18 +155,15 @@ export class GraphQLWebSocketClient {
         await subscription.subscribe(this, id);
 
         // Handle AbortSignal
-        if (request.signal) {
-            request.signal.addEventListener('abort', () => {
-                subscription.unsubscribe(this, id);
-                this.#subscriptions.delete(id);
-            });
-        }
-
-        return async () => {
+        const cleanup = async () => {
             const result = await subscription.unsubscribe(this, id);
             this.#subscriptions.delete(id);
             return result;
         };
+
+        request.signal?.addEventListener('abort', cleanup, { once: true });
+
+        return cleanup;
     }
 
     async send(
@@ -177,6 +174,9 @@ export class GraphQLWebSocketClient {
     }
 
     close(): void {
+        for (const subscription of this.#subscriptions.values()) {
+            subscription.onComplete();
+        }
         this.#subscriptions.clear();
         this.#webSocket?.close();
         this.#webSocket = null;
