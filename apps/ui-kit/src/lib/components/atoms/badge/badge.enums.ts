@@ -7,6 +7,7 @@ export enum BadgeType {
     PrimarySoft = 'primary-soft',
     Success = 'success',
     Warning = 'warning',
+    Outlined = 'outlined',
     Error = 'error',
 }
 
