@@ -83,11 +83,6 @@ export type CheckpointCommitment = {
     ECMHLiveObjectSetDigest: ECMHLiveObjectSetDigest;
 };
 export type CheckpointId = string | string;
-/** A claim consists of value and index_mod_4. */
-export interface Claim {
-    indexMod4: number;
-    value: string;
-}
 export interface CoinStruct {
     balance: string;
     coinObjectId: string;
@@ -112,9 +107,7 @@ export type CompressedSignature =
     | {
           Secp256r1: string;
       }
-    | {
-          ZkLogin: string;
-      }
+    | 'ZkLoginDeprecated'
     | {
           Passkey: string;
       }
@@ -475,11 +468,6 @@ export type InputObjectKind =
               mutable?: boolean;
           };
       };
-export interface IotaActiveJwk {
-    epoch: string;
-    jwk: IotaJWK;
-    jwk_id: IotaJwkId;
-}
 /** An argument to a transaction in a programmable transaction block */
 export type IotaArgument =
     | 'GasCoin' /** One of the input objects or primitive values (from `ProgrammableTransactionBlock` inputs) */
@@ -495,9 +483,6 @@ export type IotaArgument =
     | {
           NestedResult: [number, number];
       };
-export interface IotaAuthenticatorStateExpire {
-    min_epoch: string;
-}
 export type IotaCallArg =
     | {
           type: 'object';
@@ -566,31 +551,17 @@ export interface CoinMetadata {
     symbol: string;
 }
 export type IotaEndOfEpochTransactionKind =
-    | 'AuthenticatorStateCreate'
     | {
           ChangeEpoch: IotaChangeEpoch;
       }
     | {
           ChangeEpochV2: IotaChangeEpochV2;
-      }
-    | {
-          AuthenticatorStateExpire: IotaAuthenticatorStateExpire;
       };
 export interface IotaExecutionResult {
     /** The value of any arguments that were mutably borrowed. Non-mut borrowed values are not included */
     mutableReferenceOutputs?: [IotaArgument, number[], string][];
     /** The return values from the transaction */
     returnValues?: [number[], string][];
-}
-export interface IotaJWK {
-    alg: string;
-    e: string;
-    kty: string;
-    n: string;
-}
-export interface IotaJwkId {
-    iss: string;
-    kid: string;
 }
 export type IotaMoveAbility = 'Copy' | 'Drop' | 'Store' | 'Key';
 export interface IotaMoveAbilitySet {
@@ -1035,7 +1006,6 @@ export type IotaTransactionKind =
     | 'ProgrammableTransaction'
     | 'Genesis'
     | 'ConsensusCommitPrologueV1'
-    | 'AuthenticatorStateUpdateV1'
     | 'RandomnessStateUpdate'
     | 'EndOfEpochTransaction'
     | 'SystemTransaction';
@@ -1581,9 +1551,7 @@ export type PublicKey =
     | {
           Secp256r1: string;
       }
-    | {
-          ZkLogin: string;
-      }
+    | 'ZkLoginDeprecated'
     | {
           Passkey: string;
       };
@@ -1777,12 +1745,6 @@ export type IotaTransactionBlockKind =
            * failure of the entire programmable transaction block.
            */
           transactions: IotaTransaction[];
-      } /** A transaction which updates global authenticator state */
-    | {
-          epoch: string;
-          kind: 'AuthenticatorStateUpdateV1';
-          new_active_jwks: IotaActiveJwk[];
-          round: string;
       } /** A transaction which updates global randomness state */
     | {
           epoch: string;
@@ -1972,23 +1934,4 @@ export interface ValidatorApy {
 export interface ValidatorsApy {
     apys: ValidatorApy[];
     epoch: string;
-}
-/** An zk login authenticator with all the necessary fields. */
-export interface ZkLoginAuthenticator {
-    inputs: ZkLoginInputs;
-    maxEpoch: string;
-    userSignature: Signature;
-}
-/** All inputs required for the zk login proof verification and other public inputs. */
-export interface ZkLoginInputs {
-    addressSeed: string;
-    headerBase64: string;
-    issBase64Details: Claim;
-    proofPoints: ZkLoginProof;
-}
-/** The struct for zk login proof. */
-export interface ZkLoginProof {
-    a: string[];
-    b: string[][];
-    c: string[];
 }

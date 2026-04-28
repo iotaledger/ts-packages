@@ -12,10 +12,12 @@ import {
     DateDisplay,
     EpochLink,
     ErrorBoundary,
+    Link,
     ObjectLink,
     PkgModulesWrapper,
     TransactionBlocksForAddress,
 } from '~/components';
+import { usePackageUpgradePolicy } from '~/hooks';
 import { getOwnerStr, trimStdLibPrefix } from '~/lib/utils';
 import { type DataType } from '../ObjectResultType';
 
@@ -29,7 +31,9 @@ import {
     SegmentedButton,
     SegmentedButtonType,
     Title,
+    TooltipPosition,
 } from '@iota/apps-ui-kit';
+import { UPGRADE_DOCS_URL } from '~/lib';
 
 const GENESIS_TX_DIGEST = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
 
@@ -48,6 +52,7 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
     );
 
     const { data: txnData, isPending } = useGetTransaction(data.data.tx_digest!);
+    const { upgradePolicy } = usePackageUpgradePolicy(data.data.tx_digest);
 
     if (isPending) {
         return <LoadingIndicator text="Loading data" />;
@@ -144,6 +149,21 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                                             type="package"
                                         />
                                     }
+                                />
+                            )}
+                            {upgradePolicy && (
+                                <KeyValueInfo
+                                    keyText="Upgrade Policy"
+                                    tooltipText={
+                                        <>
+                                            {upgradePolicy.description}{' '}
+                                            <Link href={UPGRADE_DOCS_URL} variant="mono">
+                                                Read more
+                                            </Link>
+                                        </>
+                                    }
+                                    tooltipPosition={TooltipPosition.Bottom}
+                                    value={upgradePolicy.label}
                                 />
                             )}
                         </div>
