@@ -50,7 +50,6 @@ export function FieldItem({
         }
     }
 
-    // for object types, use SyntaxHighlighter
     if (typeof value === 'object') {
         return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
     }
