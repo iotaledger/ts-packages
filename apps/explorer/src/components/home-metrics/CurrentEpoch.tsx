@@ -3,43 +3,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { LabelText, LabelTextSize, Panel, Title } from '@iota/apps-ui-kit';
-import { formatDate } from '@iota/core';
-import { format, isToday, isYesterday } from 'date-fns';
-import { useMemo } from 'react';
-
 import { LinkWithQuery, ProgressBar } from '~/components/ui';
+import { useFormattedDate } from '~/hooks/useFormattedDate';
 import { useGetNetworkMetrics } from '~/hooks';
 import { ampli } from '~/lib/utils';
 import { useEpochProgress } from '~/pages/epochs/utils';
+
+function useEpochDateSubtitle(start?: number, end?: number, progress?: number, label?: string) {
+    const timestamp = !progress && end ? end : start;
+    const prefix = !progress && end ? 'End' : 'Started';
+    const { displayed: dateText } = useFormattedDate('epoch', timestamp ?? null);
+    return !progress && label ? label : dateText !== '--' ? `${prefix} ${dateText}` : '--';
+}
 
 export function CurrentEpoch(): JSX.Element {
     const { epoch, progress, label, end, start } = useEpochProgress();
     const { data: networkData } = useGetNetworkMetrics();
 
-    const formattedDateString = useMemo(() => {
-        if (!start) {
-            return null;
-        }
-
-        let formattedDate = '';
-        const epochStartDate = new Date(start);
-        if (isToday(epochStartDate)) {
-            formattedDate = 'Today';
-        } else if (isYesterday(epochStartDate)) {
-            formattedDate = 'Yesterday';
-        } else {
-            formattedDate = format(epochStartDate, 'PPP');
-        }
-        const formattedTime = format(epochStartDate, 'p');
-        return `${formattedTime}, ${formattedDate}`;
-    }, [start]);
-
-    const epochSubtitle =
-        !progress && end
-            ? `End ${formatDate(end)}`
-            : formattedDateString
-              ? `Started ${formattedDateString}`
-              : '--';
+    const subtitle = useEpochDateSubtitle(start, end, progress, label);
 
     return (
         <LinkWithQuery
@@ -48,7 +29,7 @@ export function CurrentEpoch(): JSX.Element {
             onClick={() => ampli.clickedCurrentEpochCard({ epoch: Number(epoch) })}
         >
             <Panel>
-                <Title title={`Epoch ${epoch ?? '--'}`} subtitle={epochSubtitle} />
+                <Title title={`Epoch ${epoch ?? '--'}`} subtitle={subtitle} />
                 <div className="flex flex-col gap-md p-md--rs">
                     <div className="flex flex-row gap-md">
                         <div className="flex flex-1">

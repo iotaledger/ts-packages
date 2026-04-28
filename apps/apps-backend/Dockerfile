@@ -9,7 +9,7 @@ RUN corepack enable
 FROM base AS builder
 
 # Files needed for pnpm and workspaces
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json Cargo.toml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
 COPY apps ./apps
 COPY sdk ./sdk
