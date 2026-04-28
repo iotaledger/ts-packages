@@ -273,7 +273,12 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                     type={ButtonType.Primary}
                     fullWidth
                     onClick={handleSubmit}
-                    disabled={activeIsError || isLoading || isInvalidPartialAmount}
+                    disabled={
+                        activeIsError ||
+                        isLoading ||
+                        isInvalidPartialAmount ||
+                        Boolean(isNotEnoughGas)
+                    }
                     text="Unstake"
                     icon={
                         isLoading && !activeIsError ? (

@@ -45,6 +45,17 @@ export function calculateUnstakeAmounts({
     unstakeAmountNanos,
     isPartialUnstake,
 }: CalculateUnstakeBreakdownParams): UnstakeAmounts {
+    if (isPartialUnstake && unstakeAmountNanos === 0n) {
+        return {
+            unstakeAmount: 0n,
+            proportionalRewards: 0n,
+            totalUnstakeAmount: 0n,
+            remainingStake: principalAmount,
+            remainingRewards: rewardAmount,
+            remainingTotalStaked: principalAmount + rewardAmount,
+        };
+    }
+
     const unstakeAmount =
         isPartialUnstake && unstakeAmountNanos > 0n ? unstakeAmountNanos : principalAmount;
 
