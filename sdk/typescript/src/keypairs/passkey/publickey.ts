@@ -85,12 +85,6 @@ export class PasskeyPublicKey extends PublicKey {
         }
 
         this.data = normalizePasskeyPublicKey(bytes);
-
-        if (this.data.length !== PASSKEY_PUBLIC_KEY_SIZE) {
-            throw new Error(
-                `Invalid public key input. Expected ${PASSKEY_PUBLIC_KEY_SIZE} bytes, got ${this.data.length}`,
-            );
-        }
     }
 
     /**
@@ -178,7 +172,10 @@ export function parseDerSPKI(derBytes: Uint8Array): Uint8Array {
  * Accepts: 33-byte compressed, 65-byte uncompressed (0x04||x||y), 64-byte raw (x||y), 91-byte DER SPKI.
  */
 export function normalizePasskeyPublicKey(input: Uint8Array): Uint8Array {
-    if (input.length === PASSKEY_PUBLIC_KEY_SIZE) return input;
+    if (input.length === PASSKEY_PUBLIC_KEY_SIZE) {
+        secp256r1.ProjectivePoint.fromHex(input); // throws if not a valid curve point
+        return input;
+    }
 
     if (input.length === SECP256R1_SPKI_HEADER.length + PASSKEY_UNCOMPRESSED_PUBLIC_KEY_SIZE) {
         const uncompressed65 = parseDerSPKI(input);
