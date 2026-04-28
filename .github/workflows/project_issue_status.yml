@@ -15,6 +15,9 @@ on:
 jobs:
   update-issue-status:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
     concurrency:
       group: issue-status-${{ github.event.pull_request.number }}
       cancel-in-progress: false
@@ -71,7 +74,7 @@ jobs:
                     -f owner="${REPO%%/*}" \
                     -f repo="${REPO##*/}" \
                     -F pr="$PR_NUMBER" \
-                    --jq '[.data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[].fieldValueByName.name]
+                    --jq '[.data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[].fieldValueByName.name | strings]
                           | any((. | gsub("^[^A-Za-z]+"; "")) == "Changes Requested" or
                                 (. | gsub("^[^A-Za-z]+"; "")) == "PR Approved")')
                   echo "Needs reset: $NEEDS_RESET"
@@ -127,7 +130,7 @@ jobs:
                           id
                           project {
                             id
-                            fields(first:20) {
+                            fields(first:50) {
                               nodes {
                                 ... on ProjectV2SingleSelectField {
                                   id
@@ -147,6 +150,11 @@ jobs:
             -f owner="$OWNER" \
             -f repo="$REPO_NAME" \
             -F pr="$PR_NUMBER")
+
+          if echo "$ALL_DATA" | jq -e '.errors' > /dev/null 2>&1; then
+            echo "GraphQL error: $(echo "$ALL_DATA" | jq -r '.errors[0].message')"
+            exit 1
+          fi
 
           # One TSV line per item: itemId, projectId, statusFieldId, optionId
           # Option names are matched after stripping any leading emoji prefix
