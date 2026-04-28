@@ -41,13 +41,6 @@ export interface BalanceChange {
     /** Owner of the balance change */
     owner: ObjectOwner;
 }
-export type CallArg =
-    | {
-          Pure: number[];
-      }
-    | {
-          Object: ObjectArg;
-      };
 export interface Checkpoint {
     /** Commitments to checkpoint state */
     checkpointCommitments: CheckpointCommitment[];
@@ -96,24 +89,6 @@ export interface CommitteeInfo {
     epoch: string;
     validators: [string, string][];
 }
-/** Unlike [enum Signature], [enum CompressedSignature] does not contain public key. */
-export type CompressedSignature =
-    | {
-          Ed25519: string;
-      }
-    | {
-          Secp256k1: string;
-      }
-    | {
-          Secp256r1: string;
-      }
-    | 'ZkLoginDeprecated'
-    | {
-          Passkey: string;
-      }
-    | {
-          Move: string;
-      };
 /** Uses an enum to allow for future expansion of the ConsensusDeterminedVersionAssignments. */
 export type ConsensusDeterminedVersionAssignments = {
     CancelledTransactions: [string, [string, string][]][];
@@ -147,7 +122,7 @@ export interface DevInspectArgs {
     /** The gas budget for the transaction. */
     gasBudget?: string | null;
     /** The gas objects used to pay for the transaction. */
-    gasObjects?: [string, string, string][] | null;
+    gasObjects?: IotaObjectRef[] | null;
     /** The sponsor of the gas for the transaction, might be different from the sender. */
     gasSponsor?: string | null;
     /** Whether to return the raw transaction data and effects. */
@@ -409,13 +384,15 @@ export type ExecutionStatus = {
     error?: string;
 };
 /**
- * Summary of the charges in a transaction. Storage is charged independently of computation. There are
- * 3 parts to the storage charges: `storage_cost`: it is the charge of storage at the time the
- * transaction is executed. The cost of storage is the number of bytes of the objects being mutated
- * multiplied by a variable storage cost per byte `storage_rebate`: this is the amount a user gets back
- * when manipulating an object. The `storage_rebate` is the `storage_cost` for an object minus fees.
- * `non_refundable_storage_fee`: not all the value of the object storage cost is given back to user and
- * there is a small fraction that is kept by the system. This value tracks that charge.
+ * Summary of gas charges.
+ *
+ * Storage is charged independently of computation. There are 3 parts to the storage charges: -
+ * `storage_cost`: it is the charge of storage at the time the transaction is executed. The cost of
+ * storage is the number of bytes of the objects being mutated multiplied by a variable storage cost
+ * per byte - `storage_rebate`: this is the amount a user gets back when manipulating an object. The
+ * `storage_rebate` is the `storage_cost` for an object minus fees. - `non_refundable_storage_fee`: not
+ * all the value of the object storage cost is given back to user and there is a small fraction that is
+ * kept by the system. This value tracks that charge.
  *
  * When looking at a gas cost summary the amount charged to the user is
  * `computation_cost + storage_cost - storage_rebate` and that is the amount that is deducted from the
@@ -745,9 +722,8 @@ export type IotaSystemStateSummary =
       };
 /**
  * This is the JSON-RPC type for the
- * [`IotaSystemStateV1`](super::iota_system_state_inner_v1::IotaSystemStateV1) object. It flattens all
- * fields to make them top-level fields such that it as minimum dependencies to the internal data
- * structures of the IOTA system state type.
+ * [`IotaSystemStateSummaryV1`](iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV1)
+ * object.
  */
 export interface IotaSystemStateSummaryV1 {
     /** The list of active validators in the current epoch. */
@@ -850,9 +826,8 @@ export interface IotaSystemStateSummaryV1 {
 }
 /**
  * This is the JSON-RPC type for the
- * [`IotaSystemStateV2`](super::iota_system_state_inner_v2::IotaSystemStateV2) object. It flattens all
- * fields to make them top-level fields such that it as minimum dependencies to the internal data
- * structures of the IOTA system state type.
+ * [`IotaSystemStateSummaryV2`](iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV2)
+ * object.
  */
 export interface IotaSystemStateSummaryV2 {
     /** The list of active validators in the current epoch. */
@@ -1015,19 +990,8 @@ export type IotaTransactionKind =
  */
 export interface IotaValidatorSummary {
     authorityPubkeyBytes: string;
-    /**
-     * The fee set by the validator for providing staking services.
-     *
-     * This might be overridden by the protocol, that uses instead an effective commission rate. See more
-     * on the associated field.
-     */
     commissionRate: string;
     description: string;
-    /**
-     * The effective fee charged by the validator for staking services.
-     *
-     * This follows [IIP8](https://github.com/iotaledger/IIPs/blob/main/iips/IIP-0008/IIP-0008.md).
-     */
     effectiveCommissionRate?: string | null;
     /** ID of the exchange rate table object. */
     exchangeRatesId: string;
@@ -1074,23 +1038,6 @@ export interface IotaValidatorSummary {
     /** The total number of IOTA tokens in this pool. */
     stakingPoolIotaBalance: string;
     votingPower: string;
-}
-/**
- * MoveAuthenticator is a GenericSignature variant that enables a new method of authentication through
- * Move code. This function represents the data received by the Move authenticate function during the
- * Account Abstraction authentication flow.
- */
-export type MoveAuthenticator = {
-    V1: MoveAuthenticatorV1;
-};
-/** MoveAuthenticatorV1 is the first version of MoveAuthenticator. */
-export interface MoveAuthenticatorV1 {
-    /** Input objects or primitive values */
-    call_args: CallArg[];
-    /** The object that is authenticated. Represents the account being the sender of the transaction. */
-    object_to_authenticate: CallArg;
-    /** Type arguments for the Move authenticate function */
-    type_arguments: string[];
 }
 export interface MoveCallMetrics {
     /** The count of calls of each function in the last 30 days. */
@@ -1151,28 +1098,6 @@ export interface MoveVariant {
     type: string;
     variant: string;
 }
-/** The struct that contains signatures and public keys necessary for authenticating a MultiSig. */
-export interface MultiSig {
-    /** A bitmap that indicates the position of which public key the signature should be authenticated with. */
-    bitmap: number;
-    /**
-     * The public key encoded with each public key with its signature scheme used along with the
-     * corresponding weight.
-     */
-    multisig_pk: MultiSigPublicKey;
-    /** The plain signature encoded with signature scheme. */
-    sigs: CompressedSignature[];
-}
-/** The struct that contains the public key used for authenticating a MultiSig. */
-export interface MultiSigPublicKey {
-    /** A list of public key and its corresponding weight. */
-    pk_map: [PublicKey, number][];
-    /**
-     * If the total weight of the public keys corresponding to verified signatures is larger than
-     * threshold, the MultiSig is verified.
-     */
-    threshold: number;
-}
 export interface NetworkMetrics {
     /** Current checkpoint number */
     currentCheckpoint: string;
@@ -1189,20 +1114,6 @@ export interface NetworkMetrics {
     /** Peak TPS in the past 30 days */
     tps30Days: number;
 }
-export type ObjectArg =
-    | {
-          ImmOrOwnedObject: [string, string, string];
-      }
-    | {
-          SharedObject: {
-              id: string;
-              initial_shared_version: string;
-              mutable: boolean;
-          };
-      }
-    | {
-          Receiving: [string, string, string];
-      };
 /**
  * ObjectChange are derived from the object mutations in the TransactionEffect to provide richer object
  * information.
@@ -1392,6 +1303,18 @@ export interface OwnedObjectRef {
     owner: ObjectOwner;
     reference: IotaObjectRef;
 }
+/**
+ * Enum of different types of ownership for an object.
+ *
+ * # BCS
+ *
+ * The BCS serialized form for this type is defined by the following ABNF:
+ *
+ * ````text owner = owner-address / owner-object / owner-shared / owner-immutable
+ *
+ * owner-address   = %x00 address owner-object    = %x01 object-id owner-shared    = %x02 u64 owner-immutable = %x03 ```
+ * ````
+ */
 export type ObjectOwner =
     /** Object is exclusively owned by a single address, and is mutable. */
     | {
@@ -1495,24 +1418,6 @@ export interface ParticipationMetrics {
     /** The count of distinct addresses with delegated stake. */
     totalAddresses: string;
 }
-/**
- * An passkey authenticator with parsed fields. See field definition below. Can be initialized from
- * [struct RawPasskeyAuthenticator].
- */
-export interface PasskeyAuthenticator {
-    /**
-     * `authenticatorData` is a bytearray that encodes
-     * [Authenticator Data](https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data) structure returned
-     * by the authenticator attestation response as is.
-     */
-    authenticator_data: number[];
-    /**
-     * `clientDataJSON` contains a JSON-compatible UTF-8 encoded string of the client data which is passed
-     * to the authenticator by the client during the authentication request (see
-     * [CollectedClientData](https://www.w3.org/TR/webauthn-2/#dictdef-collectedclientdata))
-     */
-    client_data_json: string;
-}
 export interface ProtocolConfig {
     attributes: {
         [key: string]: ProtocolConfigValue | null;
@@ -1541,20 +1446,6 @@ export type ProtocolConfigValue =
           bool: string;
       };
 export type PtbInput = IotaArgument | unknown;
-export type PublicKey =
-    | {
-          Ed25519: string;
-      }
-    | {
-          Secp256k1: string;
-      }
-    | {
-          Secp256r1: string;
-      }
-    | 'ZkLoginDeprecated'
-    | {
-          Passkey: string;
-      };
 export type RPCTransactionRequestParams =
     | {
           transferObjectRequestParams: TransferObjectParams;
@@ -1580,16 +1471,6 @@ export type RawData =
           };
           typeOriginTable: TypeOrigin[];
           version: string;
-      };
-export type Signature =
-    | {
-          Ed25519IotaSignature: string;
-      }
-    | {
-          Secp256k1IotaSignature: string;
-      }
-    | {
-          Secp256r1IotaSignature: string;
       };
 export type StakeObject =
     | {
