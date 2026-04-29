@@ -16,6 +16,7 @@ const RECIPIENT = '0x22222222222222222222222222222222222222222222222222222222222
 const GAS_OBJECT_ID = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const NFT_OBJECT_ID = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const PACKAGE_ID = '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
+const FRAMEWORK_PACKAGE_ID = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
 const NFT_TYPE = '0xabc::nft::MyNft';
 const COIN_TYPE_IOTA = IOTA_TYPE_ARG;
@@ -639,6 +640,77 @@ describe('buildTransactionDisplay', () => {
             objectId: NFT_OBJECT_ID,
             name: 'MyNft',
             to: RECIPIENT,
+        });
+    });
+
+    it('promotes a standalone kiosk take object into the primary object summary', () => {
+        const kioskTakeChange: IotaObjectChangeWithDisplay = {
+            type: 'mutated',
+            sender: SENDER,
+            owner: { AddressOwner: SENDER },
+            objectType: NFT_TYPE,
+            objectId: NFT_OBJECT_ID,
+            previousVersion: '1',
+            version: '2',
+            digest: 'nft-digest',
+            display: {
+                data: {
+                    name: 'Leap Frogger',
+                    image_url: 'https://example.com/frogger.png',
+                },
+            },
+        };
+
+        const tx = makeTx({
+            balanceChanges: [],
+            transaction: {
+                data: {
+                    sender: SENDER,
+                    gasData: { budget: '1000000', owner: SENDER, payment: [], price: '1000' },
+                    transaction: {
+                        kind: 'ProgrammableTransaction',
+                        inputs: [
+                            {
+                                type: 'object',
+                                objectId: GAS_OBJECT_ID,
+                                digest: 'kiosk-digest',
+                                version: '1',
+                                objectType: 'immOrOwnedObject',
+                            },
+                            {
+                                type: 'object',
+                                objectId: PACKAGE_ID,
+                                digest: 'cap-digest',
+                                version: '1',
+                                objectType: 'immOrOwnedObject',
+                            },
+                            { type: 'pure', value: NFT_OBJECT_ID, valueType: 'id' },
+                        ],
+                        transactions: [
+                            {
+                                MoveCall: {
+                                    package: FRAMEWORK_PACKAGE_ID,
+                                    module: 'kiosk',
+                                    function: 'take',
+                                    arguments: [{ Input: 0 }, { Input: 1 }, { Input: 2 }],
+                                    type_arguments: [NFT_TYPE],
+                                },
+                            },
+                        ],
+                    },
+                    messageVersion: 'v1',
+                },
+                txSignatures: [],
+            } as IotaTransactionBlockResponse['transaction'],
+        });
+
+        const result = buildTransactionDisplay(tx, [kioskTakeChange], [], SENDER);
+
+        expect(result.primary).toBeUndefined();
+        expect(result.primaryObject).toMatchObject({
+            objectId: NFT_OBJECT_ID,
+            name: 'Leap Frogger',
+            thumbnail: 'https://example.com/frogger.png',
         });
     });
 

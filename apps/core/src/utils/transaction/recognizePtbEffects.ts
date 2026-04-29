@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type BalanceChange, type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
+import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 
 import { type IotaObjectChangeWithDisplay } from '../../types';
 import { COIN_TYPE } from '../../constants';
@@ -92,6 +93,21 @@ function getObjectThumbnail(change: IotaObjectChangeWithDisplay): string | undef
     return change.display?.data?.['image_url'] ?? undefined;
 }
 
+function objectOwnerMatchesPerspective(
+    change: IotaObjectChangeWithDisplay,
+    perspective: string,
+): boolean {
+    if ('owner' in change) {
+        return ownerToAddress(change.owner) === perspective;
+    }
+
+    if ('recipient' in change) {
+        return ownerToAddress(change.recipient) === perspective;
+    }
+
+    return false;
+}
+
 function resolveInputAddress(inputs: IotaCallArg[], arg: unknown): string | undefined {
     if (arg && typeof arg === 'object' && 'Input' in (arg as object)) {
         const idx = (arg as { Input: number }).Input;
@@ -136,11 +152,20 @@ function resolveProducedResultIndex(arg: unknown): number | undefined {
     return undefined;
 }
 
+function normalizePackageId(packageId: string): string {
+    try {
+        return normalizeIotaAddress(packageId);
+    } catch {
+        return packageId;
+    }
+}
+
 function buildStructural(
     commands: IotaTransaction[],
     objectChanges: IotaObjectChangeWithDisplay[],
     recognizedPackages: string[],
 ): StructuralSummary {
+    const normalizedRecognizedPackages = recognizedPackages.map(normalizePackageId);
     const packages = new Map<
         string,
         {
@@ -154,11 +179,11 @@ function buildStructural(
     for (const cmd of commands) {
         if ('MoveCall' in cmd) {
             callCount++;
-            const pkg = cmd.MoveCall.package;
+            const pkg = normalizePackageId(cmd.MoveCall.package);
             const key = `${cmd.MoveCall.module}::${cmd.MoveCall.function}`;
             const packageEntry = packages.get(pkg) ?? {
                 packageId: pkg,
-                isKnown: recognizedPackages.includes(pkg),
+                isKnown: normalizedRecognizedPackages.includes(pkg),
                 callCount: 0,
                 functions: new Map<string, { module: string; fn: string; count: number }>(),
             };
@@ -228,6 +253,7 @@ export function recognizePtbEffects({
     const rows: EffectRow[] = [];
     let hasUnknown = false;
     const objectRowKeys = new Set<string>();
+    const normalizedRecognizedPackages = recognizedPackages.map(normalizePackageId);
 
     // Build a quick lookup of objectId → objectChange
     const changeById = new Map<string, IotaObjectChangeWithDisplay>();
@@ -274,7 +300,7 @@ export function recognizePtbEffects({
 
         if (
             'MoveCall' in cmd &&
-            cmd.MoveCall.package === '0x2' &&
+            normalizePackageId(cmd.MoveCall.package) === normalizePackageId('0x2') &&
             cmd.MoveCall.module === 'kiosk' &&
             cmd.MoveCall.function === 'take'
         ) {
@@ -378,6 +404,39 @@ export function recognizePtbEffects({
                 `receive:${change.objectId}:${change.sender}`,
             );
         }
+    }
+
+    // --- Standalone kiosk takes that return an object directly to the signer ---
+    for (const [commandIndex, kioskTake] of kioskTakeByCommandIndex.entries()) {
+        if (absorbedCommandIndices.has(commandIndex) || !kioskTake.itemId || !perspective) continue;
+
+        const change = changeById.get(kioskTake.itemId);
+        if (!change || !('objectType' in change) || isCoin(change.objectType)) continue;
+        if (!objectOwnerMatchesPerspective(change, perspective)) continue;
+        if (
+            change.type !== 'mutated' &&
+            change.type !== 'unwrapped' &&
+            change.type !== 'transferred'
+        ) {
+            continue;
+        }
+
+        const name = getObjectDisplayName(change);
+        const thumbnail = getObjectThumbnail(change);
+
+        pushObjectRow(
+            {
+                kind: 'receive-nft',
+                name,
+                objectId: change.objectId,
+                sender: 'sender' in change ? change.sender : undefined,
+                source: 'kiosk',
+                kioskId: kioskTake.kioskId,
+                thumbnail,
+            },
+            `receive:${change.objectId}:kiosk:${commandIndex}`,
+        );
+        absorbedCommandIndices.add(commandIndex);
     }
 
     // --- Coin sends / receives from balance changes ---
@@ -504,8 +563,9 @@ export function recognizePtbEffects({
         const cmd = commands[i];
         if (!('MoveCall' in cmd)) continue;
 
-        const { package: pkg, module, function: fn } = cmd.MoveCall;
-        const isKnown = recognizedPackages.includes(pkg);
+        const { module, function: fn } = cmd.MoveCall;
+        const pkg = normalizePackageId(cmd.MoveCall.package);
+        const isKnown = normalizedRecognizedPackages.includes(pkg);
         if (isKnown) {
             rows.push({ kind: 'call', packageId: pkg, module, fn });
         } else {

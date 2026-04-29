@@ -16,6 +16,7 @@ const NFT_OBJECT_ID = '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 const PACKAGE_ID = '0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
 const KNOWN_PACKAGE_ID = '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd';
 const UNKNOWN_PACKAGE_ID = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const FRAMEWORK_PACKAGE_ID = '0x0000000000000000000000000000000000000000000000000000000000000002';
 
 const NFT_TYPE = '0xabc::nft::MyNft';
 const COIN_TYPE_IOTA = IOTA_TYPE_ARG;
@@ -384,6 +385,61 @@ describe('recognizePtbEffects', () => {
                 source: 'kiosk',
                 kioskId,
                 objectId: NFT_OBJECT_ID,
+            });
+        });
+
+        it('treats a standalone kiosk take with a mutated owned object as a receive row', () => {
+            const kioskId = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            const result = recognizePtbEffects(
+                makeArgs({
+                    commands: [
+                        {
+                            MoveCall: {
+                                package: FRAMEWORK_PACKAGE_ID,
+                                module: 'kiosk',
+                                function: 'take',
+                                arguments: [{ Input: 0 }, { Input: 1 }, { Input: 2 }],
+                                type_arguments: [NFT_TYPE],
+                            },
+                        } as unknown as IotaTransaction,
+                    ],
+                    inputs: [
+                        makeObjectInput(kioskId),
+                        makeObjectInput(
+                            '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                        ),
+                        { type: 'pure', value: NFT_OBJECT_ID, valueType: 'id' } as IotaCallArg,
+                    ],
+                    objectChanges: [
+                        {
+                            type: 'mutated',
+                            sender: SENDER,
+                            owner: { AddressOwner: SENDER },
+                            objectType: NFT_TYPE,
+                            objectId: NFT_OBJECT_ID,
+                            previousVersion: '1',
+                            version: '2',
+                            digest: 'nft-digest',
+                            display: {
+                                data: {
+                                    name: 'Leap Frogger',
+                                    image_url: 'https://example.com/frogger.png',
+                                },
+                            },
+                        } as IotaObjectChangeWithDisplay,
+                    ],
+                    recognizedPackages: [FRAMEWORK_PACKAGE_ID],
+                }),
+            );
+
+            expect(result.recognized).toBe(true);
+            expect(result.rows.find((r) => r.kind === 'receive-nft')).toMatchObject({
+                kind: 'receive-nft',
+                source: 'kiosk',
+                kioskId,
+                objectId: NFT_OBJECT_ID,
+                name: 'Leap Frogger',
+                thumbnail: 'https://example.com/frogger.png',
             });
         });
     });
