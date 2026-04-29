@@ -2,6 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { useGetObject } from '@iota/core';
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
 import { SyntaxHighlighter } from '~/components';
 import { AddressLink, Link, ObjectLink } from '~/components/ui';
@@ -11,19 +12,25 @@ interface FieldItemProps {
     value: string | number | object | boolean;
     type: IotaMoveNormalizedType | '';
     objectType: string;
+    name?: string;
     truncate?: boolean;
 }
 
 const TYPE_ADDRESS = 'Address';
 const TYPE_URL = '0x2::url::Url';
-const TYPE_OBJECT_ID = ['0x2::object::UID', '0x2::object::ID'];
 
 export function FieldItem({
     value,
     type,
+    name,
     truncate = false,
     objectType,
 }: FieldItemProps): JSX.Element {
+    // for object types, use SyntaxHighlighter
+    if (typeof value === 'object') {
+        return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
+    }
+
     const { normalizedType } = getFieldTypeValue(type, objectType);
 
     if (normalizedType === TYPE_ADDRESS) {
@@ -38,20 +45,21 @@ export function FieldItem({
         );
     }
 
-    if (TYPE_OBJECT_ID.includes(normalizedType as string)) {
-        const objectId =
-            typeof value === 'string' ? value : ((value as Record<string, string>).id ?? null);
-        if (objectId) {
-            return (
-                <div className="break-all">
-                    <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
-                </div>
-            );
-        }
-    }
+    const isNameId = name
+        ?.toLowerCase()
+        .split(/[_\s-]/)
+        .some((part) => part === 'id' || part === 'uid');
 
-    if (typeof value === 'object') {
-        return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
+    const objectId = isNameId && typeof value === 'string' ? value : null;
+
+    const { data: objectData } = useGetObject(objectId);
+
+    if (objectId && objectData?.data) {
+        return (
+            <div className="break-all">
+                <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
+            </div>
+        );
     }
 
     if (normalizedType === TYPE_URL) {
