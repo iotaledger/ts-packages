@@ -23,7 +23,7 @@ import { ExplorerLinkType } from '../../enums';
 import { formatPureInputValue, getPureValueTypeLabel } from '../../utils/transaction/pureValueType';
 
 // ---------------------------------------------------------------------------
-// Command renderer
+// Argument serialisation helpers
 // ---------------------------------------------------------------------------
 
 function convertArgToString(arg: unknown): string | null {
@@ -40,8 +40,9 @@ function convertArgToString(arg: unknown): string | null {
             return String(some);
         }
         if (Array.isArray(arg)) {
-            return `[${arg.map(convertArgToString).join(', ')}]`;
+            return `[${arg.map(convertArgToString).filter(Boolean).join(', ')}]`;
         }
+        // SDK $kind format
         if ('$kind' in (arg as object)) {
             const k = (arg as { $kind: string }).$kind;
             switch (k) {
@@ -57,7 +58,7 @@ function convertArgToString(arg: unknown): string | null {
                 }
             }
         }
-        // RPC format: GasCoin is a string, Input/Result/NestedResult are plain objects
+        // RPC format
         if ('GasCoin' in (arg as object)) return 'GasCoin';
         if ('Input' in (arg as object)) return `Input(${(arg as { Input: number }).Input})`;
         if ('Result' in (arg as object)) return `Result(${(arg as { Result: number }).Result})`;
@@ -69,15 +70,23 @@ function convertArgToString(arg: unknown): string | null {
     return null;
 }
 
-function renderArgList(args: unknown): string {
-    if (!Array.isArray(args)) return convertArgToString(args) ?? '';
-    return args.map(convertArgToString).filter(Boolean).join(', ');
+// ---------------------------------------------------------------------------
+// Command renderer
+// ---------------------------------------------------------------------------
+
+function MonoValue({ children }: { children: React.ReactNode }) {
+    return (
+        <span className="break-all font-mono text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+            {children}
+        </span>
+    );
 }
 
-function CommandRow({ cmd }: { cmd: IotaTransaction }) {
+function CommandRow({ cmd, index }: { cmd: IotaTransaction; index: number }) {
     const [type, data] = Object.entries(cmd)[0] as [string, unknown];
 
-    let detail: string;
+    let content: React.ReactNode = null;
+
     if (type === 'MoveCall' && data && typeof data === 'object') {
         const mc = data as {
             package: string;
@@ -86,27 +95,58 @@ function CommandRow({ cmd }: { cmd: IotaTransaction }) {
             arguments?: unknown[];
             type_arguments?: string[];
         };
-        const parts = [
-            `pkg: ${formatAddress(normalizeIotaAddress(mc.package))}`,
-            `mod: ${mc.module}`,
-            `fn: ${mc.function}`,
-        ];
-        if (mc.arguments?.length) parts.push(`args: ${renderArgList(mc.arguments)}`);
-        if (mc.type_arguments?.length) parts.push(`types: [${mc.type_arguments.join(', ')}]`);
-        detail = parts.join(', ');
-    } else {
-        detail = renderArgList(data);
+        content = (
+            <div className="flex flex-col gap-y-xxs">
+                <KeyValueInfo
+                    keyText="pkg"
+                    value={<MonoValue>{formatAddress(normalizeIotaAddress(mc.package))}</MonoValue>}
+                    fullwidth
+                />
+                <KeyValueInfo keyText="mod" value={<MonoValue>{mc.module}</MonoValue>} fullwidth />
+                <KeyValueInfo keyText="fn" value={<MonoValue>{mc.function}</MonoValue>} fullwidth />
+                {!!mc.arguments?.length && (
+                    <KeyValueInfo
+                        keyText="args"
+                        value={
+                            <MonoValue>
+                                {mc.arguments.map(convertArgToString).filter(Boolean).join(', ')}
+                            </MonoValue>
+                        }
+                        fullwidth
+                    />
+                )}
+                {!!mc.type_arguments?.length && (
+                    <KeyValueInfo
+                        keyText="types"
+                        value={<MonoValue>{mc.type_arguments.join(', ')}</MonoValue>}
+                        fullwidth
+                    />
+                )}
+            </div>
+        );
+    } else if (Array.isArray(data) && data.length > 0) {
+        // Render each top-level argument on its own line.
+        content = (
+            <div className="flex flex-col gap-y-xxs">
+                {data.map((arg, i) => (
+                    <MonoValue key={i}>{convertArgToString(arg) ?? JSON.stringify(arg)}</MonoValue>
+                ))}
+            </div>
+        );
+    } else if (data !== null && data !== undefined && !Array.isArray(data)) {
+        const s = convertArgToString(data);
+        if (s) content = <MonoValue>{s}</MonoValue>;
     }
 
     return (
-        <div className="flex flex-col gap-y-xs px-md py-xs">
-            <span className="text-label-md text-neutral-40 dark:text-neutral-60">{type}</span>
-            <span
-                className="break-all text-body-sm text-neutral-60 dark:text-neutral-40"
-                data-amp-mask
-            >
-                {detail}
-            </span>
+        <div className="flex gap-x-sm px-md py-sm">
+            <span className="text-label-sm w-5 shrink-0 text-iota-neutral-50">{index}</span>
+            <div className="flex min-w-0 flex-col gap-y-xs">
+                <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    {type}
+                </span>
+                {content}
+            </div>
         </div>
     );
 }
@@ -114,6 +154,28 @@ function CommandRow({ cmd }: { cmd: IotaTransaction }) {
 // ---------------------------------------------------------------------------
 // Input renderer
 // ---------------------------------------------------------------------------
+
+function formatInputValue(value: unknown, valueType: string | null | undefined): string {
+    // Try normal formatting first (handles utf-8 decode for string types).
+    const formatted = formatPureInputValue(value, valueType);
+
+    // If the result still looks like a raw number array (fallback from failed UTF-8 decode),
+    // show a compact byte-count label instead.
+    if (Array.isArray(value) && formatted.startsWith('[') && formatted.includes(',')) {
+        const byteCount = (value as unknown[]).length;
+        try {
+            // One more attempt: render as base64 if it's a small byte array.
+            if (byteCount <= 64) {
+                return toBase64(new Uint8Array(value as number[]));
+            }
+        } catch {
+            // ignore
+        }
+        return `[${byteCount} bytes]`;
+    }
+
+    return formatted;
+}
 
 function InputRow({
     input,
@@ -126,52 +188,42 @@ function InputRow({
 }) {
     if (input.type === 'pure') {
         const keyText = getPureValueTypeLabel(input.valueType) || 'Pure';
+
         if (input.valueType === 'address') {
             const addr = String(input.value);
             return (
-                <div className="px-md py-xs">
-                    <KeyValueInfo
-                        keyText={keyText}
-                        value={renderExplorerLink({
-                            type: ExplorerLinkType.Address,
-                            address: addr,
-                            children: <span data-amp-mask>{formatAddress(addr)}</span>,
-                        })}
-                        fullwidth
-                    />
-                </div>
+                <KeyValueInfo
+                    keyText={keyText}
+                    value={renderExplorerLink({
+                        type: ExplorerLinkType.Address,
+                        address: addr,
+                        children: <span data-amp-mask>{formatAddress(addr)}</span>,
+                    })}
+                    fullwidth
+                />
             );
         }
-        const displayVal = formatPureInputValue(input.value, input.valueType);
-        return (
-            <div className="px-md py-xs">
-                <KeyValueInfo keyText={keyText} value={displayVal} fullwidth />
-            </div>
-        );
+
+        const displayVal = formatInputValue(input.value, input.valueType);
+        return <KeyValueInfo keyText={keyText} value={displayVal} fullwidth />;
     }
 
     if (input.type === 'object') {
         const { objectId } = input;
         return (
-            <div className="px-md py-xs">
-                <KeyValueInfo
-                    keyText="Object"
-                    value={renderExplorerLink({
-                        type: ExplorerLinkType.Object,
-                        objectID: objectId,
-                        children: <span data-amp-mask>{formatAddress(objectId)}</span>,
-                    })}
-                    fullwidth
-                />
-            </div>
+            <KeyValueInfo
+                keyText="Object"
+                value={renderExplorerLink({
+                    type: ExplorerLinkType.Object,
+                    objectID: objectId,
+                    children: <span data-amp-mask>{formatAddress(objectId)}</span>,
+                })}
+                fullwidth
+            />
         );
     }
 
-    return (
-        <div className="px-md py-xs">
-            <KeyValueInfo keyText={`Input ${index}`} value={toBase64(new Uint8Array())} fullwidth />
-        </div>
-    );
+    return <KeyValueInfo keyText={`Input ${index}`} value={toBase64(new Uint8Array())} fullwidth />;
 }
 
 // ---------------------------------------------------------------------------
@@ -225,7 +277,10 @@ export function PtbRawCommands({ commands, inputs, renderExplorerLink }: PtbRawC
                 >
                     <div className="flex flex-col">
                         <div className="px-md pb-xs">
-                            <SegmentedButton type={SegmentedButtonType.Transparent}>
+                            <SegmentedButton
+                                type={SegmentedButtonType.Transparent}
+                                shape={ButtonSegmentType.Underlined}
+                            >
                                 {hasCommands && (
                                     <ButtonSegment
                                         type={ButtonSegmentType.Underlined}
@@ -245,17 +300,27 @@ export function PtbRawCommands({ commands, inputs, renderExplorerLink }: PtbRawC
                             </SegmentedButton>
                         </div>
 
-                        {tab === Tab.Commands &&
-                            commands.map((cmd, i) => <CommandRow key={i} cmd={cmd} />)}
-                        {tab === Tab.Inputs &&
-                            inputs.map((inp, i) => (
-                                <InputRow
-                                    key={i}
-                                    input={inp}
-                                    index={i}
-                                    renderExplorerLink={renderExplorerLink}
-                                />
-                            ))}
+                        {tab === Tab.Commands && (
+                            <div className="divide-y divide-iota-neutral-90 dark:divide-iota-neutral-20">
+                                {commands.map((cmd, i) => (
+                                    <CommandRow key={i} cmd={cmd} index={i} />
+                                ))}
+                            </div>
+                        )}
+
+                        {tab === Tab.Inputs && (
+                            <div className="flex flex-col divide-y divide-iota-neutral-90 dark:divide-iota-neutral-20">
+                                {inputs.map((inp, i) => (
+                                    <div key={i} className="px-md py-sm" data-amp-mask>
+                                        <InputRow
+                                            input={inp}
+                                            index={i}
+                                            renderExplorerLink={renderExplorerLink}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </Collapsible>
             </div>
