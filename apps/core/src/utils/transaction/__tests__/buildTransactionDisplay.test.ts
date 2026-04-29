@@ -204,7 +204,7 @@ describe('narrateObjectChanges', () => {
         expect(result.published).toHaveLength(1);
     });
 
-    it('classifies mutated, deleted, and wrapped changes as internal', () => {
+    it('classifies mutated coin, deleted, and wrapped changes as internal', () => {
         const mutated: IotaObjectChangeWithDisplay = {
             type: 'mutated',
             sender: SENDER,
@@ -239,6 +239,70 @@ describe('narrateObjectChanges', () => {
         expect(result.sent).toHaveLength(0);
         expect(result.minted).toHaveLength(0);
         expect(result.published).toHaveLength(0);
+        expect(result.kept).toHaveLength(0);
+    });
+
+    it('classifies a mutated non-coin object owned by the perspective address as kept', () => {
+        const mutatedNft: IotaObjectChangeWithDisplay = {
+            type: 'mutated',
+            sender: SENDER,
+            owner: { AddressOwner: SENDER },
+            objectType: NFT_TYPE,
+            objectId: NFT_OBJECT_ID,
+            previousVersion: '4',
+            version: '5',
+            digest: 'nft-digest',
+            display: { data: { name: 'Evolved Wizard' } },
+        };
+
+        const result = narrateObjectChanges([mutatedNft], {
+            currentAddress: SENDER,
+            gasObjectId: GAS_OBJECT_ID,
+        });
+
+        expect(result.kept).toHaveLength(1);
+        expect(result.kept[0].name).toBe('Evolved Wizard');
+        expect(result.internal).toHaveLength(0);
+    });
+
+    it('puts the gas coin in internal even if it is the kept-bucket objectType', () => {
+        // Gas coin is mutated non-coin in theory impossible (it IS a coin) but guard is gasObjectId
+        const gasNft: IotaObjectChangeWithDisplay = {
+            type: 'mutated',
+            sender: SENDER,
+            owner: { AddressOwner: SENDER },
+            objectType: NFT_TYPE,
+            objectId: GAS_OBJECT_ID, // same as gasObjectId
+            previousVersion: '4',
+            version: '5',
+            digest: 'gas-digest',
+        };
+
+        const result = narrateObjectChanges([gasNft], {
+            currentAddress: SENDER,
+            gasObjectId: GAS_OBJECT_ID,
+        });
+
+        expect(result.kept).toHaveLength(0);
+        expect(result.internal).toHaveLength(1);
+    });
+
+    it('puts a mutated non-coin owned by a different address in internal', () => {
+        const mutated: IotaObjectChangeWithDisplay = {
+            type: 'mutated',
+            sender: SENDER,
+            owner: { AddressOwner: RECIPIENT },
+            objectType: NFT_TYPE,
+            objectId: NFT_OBJECT_ID,
+            previousVersion: '1',
+            version: '2',
+            digest: 'nft-digest',
+        };
+
+        const result = narrateObjectChanges([mutated], { currentAddress: SENDER });
+
+        expect(result.kept).toHaveLength(0);
+        expect(result.internal).toHaveLength(1);
     });
 
     it('extracts display name when present', () => {
@@ -531,5 +595,79 @@ describe('buildTransactionDisplay', () => {
 
         expect(result.counterparties).toHaveLength(0);
         expect(result.primary).toBeUndefined();
+    });
+
+    it('populates ptbRecognition for a ProgrammableTransaction', () => {
+        const tx = makeTx(); // default makeTx uses ProgrammableTransaction
+        const result = buildTransactionDisplay(tx, [], [], SENDER);
+
+        expect(result.ptbRecognition).toBeDefined();
+    });
+
+    it('omits ptbRecognition for a system transaction', () => {
+        const tx = makeTx({
+            transaction: {
+                data: {
+                    sender: SENDER,
+                    gasData: { budget: '1000000', owner: SENDER, payment: [], price: '1000' },
+                    transaction: { kind: 'ConsensusCommitPrologueV1' } as unknown,
+                    messageVersion: 'v1',
+                },
+                txSignatures: [],
+            },
+        } as unknown as Partial<IotaTransactionBlockResponse>);
+
+        const result = buildTransactionDisplay(tx, [], [], SENDER);
+
+        expect(result.ptbRecognition).toBeUndefined();
+    });
+
+    it('ptbRecognition includes coin-send rows from balance changes', () => {
+        const tx = makeTx({
+            balanceChanges: [
+                { owner: { AddressOwner: SENDER }, coinType: COIN_TYPE_IOTA, amount: '-11000000' },
+                {
+                    owner: { AddressOwner: RECIPIENT },
+                    coinType: COIN_TYPE_IOTA,
+                    amount: '10000000',
+                },
+            ],
+        });
+
+        const result = buildTransactionDisplay(tx, [], [], SENDER);
+
+        expect(result.ptbRecognition?.recognized).toBe(true);
+        const sendRow = result.ptbRecognition?.rows.find((r) => r.kind === 'coin-send');
+        expect(sendRow).toBeDefined();
+    });
+
+    it('ptbRecognition is recognized=false when an unknown package MoveCall is present', () => {
+        const tx = makeTx({
+            transaction: {
+                data: {
+                    sender: SENDER,
+                    gasData: { budget: '1000000', owner: SENDER, payment: [], price: '1000' },
+                    transaction: makeProgrammableTx([
+                        {
+                            MoveCall: {
+                                package: PACKAGE_ID,
+                                module: 'swap',
+                                function: 'execute',
+                                arguments: [],
+                                typeArguments: [],
+                            },
+                        },
+                    ]),
+                    messageVersion: 'v1',
+                },
+                txSignatures: [],
+            },
+            balanceChanges: [],
+        } as unknown as Partial<IotaTransactionBlockResponse>);
+
+        // PACKAGE_ID is not in the recognized packages list (empty)
+        const result = buildTransactionDisplay(tx, [], [], SENDER);
+
+        expect(result.ptbRecognition?.recognized).toBe(false);
     });
 });

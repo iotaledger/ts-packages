@@ -78,6 +78,12 @@ export function useTransactionSummary({
                 gas,
                 objectSummary,
                 balanceChanges: balanceChangeSummary,
+                display: buildTransactionDisplay(
+                    transaction,
+                    objectChangesWithDisplay,
+                    recognizedPackagesList,
+                    currentAddress,
+                ),
             };
         }
     }, [transaction, objectChangesWithDisplay, recognizedPackagesList, currentAddress]);

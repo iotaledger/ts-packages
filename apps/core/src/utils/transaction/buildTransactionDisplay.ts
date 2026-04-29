@@ -1,7 +1,10 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
+import {
+    type DryRunTransactionBlockResponse,
+    type IotaTransactionBlockResponse,
+} from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 import { TransactionAction } from '../../interfaces';
@@ -58,6 +61,12 @@ const ACTION_TO_KIND: Partial<Record<TransactionAction, TransactionKind>> = {
     [TransactionAction.TimelockedUnstaked]: 'timelocked-unstake',
     [TransactionAction.Migration]: 'migration',
 };
+
+function isDryRun(
+    tx: IotaTransactionBlockResponse | DryRunTransactionBlockResponse,
+): tx is DryRunTransactionBlockResponse {
+    return !('digest' in tx);
+}
 
 function deriveKind(
     action: TransactionAction,
@@ -120,29 +129,48 @@ function deriveCounterparties(
 }
 
 /**
- * Pure function that maps a raw `IotaTransactionBlockResponse` to a structured view-model
- * used by all transaction detail UIs (wallet, dashboard, explorer).
+ * Pure function that maps a raw `IotaTransactionBlockResponse` (or a `DryRunTransactionBlockResponse`)
+ * to a structured view-model used by all transaction detail UIs (wallet, dashboard, explorer).
  *
- * @param transaction         - The raw RPC response (must include effects, balanceChanges).
+ * @param transaction         - The raw RPC response or dry-run response.
  * @param objectChangesWithDisplay - Object changes already enriched with on-chain Display data.
  * @param recognizedPackagesList   - Package IDs treated as "recognised tokens" (affects badge).
  * @param currentAddress           - The logged-in address; when absent, uses the tx sender.
  */
 export function buildTransactionDisplay(
-    transaction: IotaTransactionBlockResponse,
+    transaction: IotaTransactionBlockResponse | DryRunTransactionBlockResponse,
     objectChangesWithDisplay: IotaObjectChangeWithDisplay[],
     recognizedPackagesList: string[],
     currentAddress?: string,
 ): TransactionDisplay {
     const effects = transaction.effects;
     const status = (effects?.status.status ?? 'failure') as 'success' | 'failure';
-    const sender = transaction.transaction?.data.sender;
+
+    // Normalize the fields that differ between confirmed and dry-run responses.
+    const sender = isDryRun(transaction)
+        ? transaction.input.sender
+        : transaction.transaction?.data.sender;
+    const txData = isDryRun(transaction)
+        ? transaction.input.transaction
+        : transaction.transaction?.data.transaction;
 
     // Use currentAddress when present; fall back to tx sender for a neutral (explorer) view.
     const perspective = currentAddress ?? sender;
 
-    const action = getTransactionAction(transaction, currentAddress);
-    const kind = deriveKind(action, transaction, status);
+    let kind: TransactionKind;
+    if (isDryRun(transaction)) {
+        // Dry-run: we don't have the full effects to classify action — infer from shape.
+        if (status === 'failure') {
+            kind = 'failed';
+        } else if (txData?.kind === 'ProgrammableTransaction') {
+            kind = 'contract-call';
+        } else {
+            kind = 'system';
+        }
+    } else {
+        const action = getTransactionAction(transaction, currentAddress);
+        kind = deriveKind(action, transaction, status);
+    }
 
     const balanceChangesByOwner = getBalanceChangeSummary(transaction, recognizedPackagesList);
     const primary = derivePrimary(balanceChangesByOwner, perspective);
@@ -168,7 +196,6 @@ export function buildTransactionDisplay(
         gasObjectId: effects?.gasObject?.reference.objectId,
     });
 
-    const txData = transaction.transaction?.data.transaction;
     const ptbRecognition =
         txData?.kind === 'ProgrammableTransaction'
             ? recognizePtbEffects({
@@ -185,8 +212,8 @@ export function buildTransactionDisplay(
         kind,
         status,
         failureMessage: status === 'failure' ? (effects?.status.error ?? undefined) : undefined,
-        timestampMs: transaction.timestampMs ?? undefined,
-        digest: transaction.digest,
+        timestampMs: !isDryRun(transaction) ? (transaction.timestampMs ?? undefined) : undefined,
+        digest: !isDryRun(transaction) ? transaction.digest : undefined,
         sender,
         counterparties,
         primary,
