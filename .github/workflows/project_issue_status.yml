@@ -8,6 +8,7 @@ on:
       - synchronize
       - closed
       - review_requested
+      - converted_to_draft
   pull_request_review:
     types:
       - submitted
@@ -87,6 +88,9 @@ jobs:
               review_requested)
                 TARGET="Needs Review"
                 ;;
+              converted_to_draft)
+                TARGET="In Progress"
+                ;;
             esac
           elif [[ "$EVENT" == "pull_request_review" && "$ACTION" == "submitted" ]]; then
             case "$REVIEW_STATE" in
@@ -94,10 +98,12 @@ jobs:
                 TARGET="Changes Requested"
                 ;;
               approved)
-                APPROVALS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
-                  | jq -s '[.[][]] | group_by(.user.login) | map(sort_by(.submitted_at) | last) | map(select(.state == "APPROVED")) | length')
-                echo "Approval count: $APPROVALS"
-                [[ "$APPROVALS" -ge 2 ]] && TARGET="PR Approved"
+                REVIEWS_DATA=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+                  | jq -s '[.[][]] | group_by(.user.login) | map(sort_by(.submitted_at) | last)')
+                APPROVALS=$(echo "$REVIEWS_DATA" | jq '[.[] | select(.state == "APPROVED")] | length')
+                CHANGES_REQUESTED=$(echo "$REVIEWS_DATA" | jq '[.[] | select(.state == "CHANGES_REQUESTED")] | length')
+                echo "Approval count: $APPROVALS, Changes requested: $CHANGES_REQUESTED"
+                [[ "$APPROVALS" -ge 2 && "$CHANGES_REQUESTED" -eq 0 ]] && TARGET="PR Approved"
                 ;;
             esac
           fi
