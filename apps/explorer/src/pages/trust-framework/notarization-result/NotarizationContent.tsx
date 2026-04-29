@@ -6,7 +6,6 @@ import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iot
 import { PageHeader, PageLayout } from '~/components';
 import { onCopySuccess } from '~/lib';
 import { useNotarizationPkgId } from '~/contexts';
-import { useMemo } from 'react';
 import { Warning } from '@iota/apps-ui-icons';
 import {
     getNotarizationMethod,
@@ -34,10 +33,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaNotarizationPackage = useNotarizationPkgId();
 
-    const isPending = useMemo(
-        () => isNotarizationPending || isObjectPending,
-        [isNotarizationPending, isObjectPending],
-    );
+    const isPending = isNotarizationPending || isObjectPending;
     if (isPending) {
         return (
             <PageLayout

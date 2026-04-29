@@ -20,8 +20,8 @@ export function NotarizastionSummaryView({
     notarizationDocument,
     objectData,
 }: NotarizationSummaryViewProps): JSX.Element {
-    const objectId = objectData?.objectId;
-    const storageRebate = objectData?.storageRebate;
+    const objectId = objectData.objectId;
+    const storageRebate = objectData.storageRebate;
     const versionCount = `v${notarizationDocument.stateVersionCount}`;
 
     const dateFormat = (timestamp: bigint): string =>
@@ -29,7 +29,7 @@ export function NotarizastionSummaryView({
         formatDate(new Date(Number(timestamp)), ['year', 'month', 'day', 'hour', 'minute']);
     const createdAt = dateFormat(notarizationDocument.immutableMetadata.createdAt);
     const updatedAt = dateFormat(notarizationDocument.lastStateChangeAt);
-    const lastTransactionBlockDigest = objectData?.previousTransaction;
+    const lastTransactionBlockDigest = objectData.previousTransaction;
 
     return (
         <ErrorBoundary>
