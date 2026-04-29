@@ -17,17 +17,25 @@ import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMai
 import {
     useTransactionSummary,
     TransactionSummary,
-    GasFees,
+    TransactionOverview,
+    TransactionMoreDetails,
     useRecognizedPackages,
     DRY_RUN_UI_ERROR_TITLE,
     getUserFriendlyDryRunExecutionError,
 } from '@iota/core';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { useMemo, useState } from 'react';
+import {
+    Button,
+    ButtonSize,
+    ButtonType,
+    InfoBox,
+    InfoBoxType,
+    InfoBoxStyle,
+} from '@iota/apps-ui-kit';
 import { ConfirmationModal } from '../../../shared/ConfirmationModal';
 import { TransactionDetails } from './transaction-details';
 import { Warning } from '@iota/apps-ui-icons';
-import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { LedgerSigner } from '../../../ledgerSigner';
 
 export interface TransactionRequestProps {
@@ -55,6 +63,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
         return tx;
     }, [txRequest.tx.data, addressForTransaction]);
     const [isConfirmationVisible, setConfirmationVisible] = useState(false);
+    const [showDetails, setShowDetails] = useState(false);
 
     const {
         data,
@@ -135,33 +144,60 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                                 style={InfoBoxStyle.Elevated}
                             />
                         )}
-                    <div data-amp-mask>
-                        <TransactionSummary
-                            isDryRun
-                            isLoading={isDryRunLoading}
-                            isError={isDryRunError}
-                            summary={summary}
-                            chain={chain}
-                            renderExplorerLink={ExplorerLinkHelper}
-                            transaction={signer instanceof LedgerSigner ? transaction : undefined}
-                        />
-                    </div>
-                    <div data-amp-mask>
-                        <GasFees
-                            sender={addressForTransaction}
-                            gasSummary={summary?.gas}
-                            isEstimate
-                            isError={isDryRunError}
-                            isPending={isDryRunLoading}
-                            activeAddress={activeAddress}
-                            renderExplorerLink={ExplorerLinkHelper}
-                        />
-                    </div>
-                    <TransactionDetails
-                        sender={addressForTransaction}
-                        transaction={transaction}
-                        chain={chain}
-                    />
+                    {summary?.display ? (
+                        <div data-amp-mask className="flex flex-col gap-md">
+                            <TransactionOverview
+                                display={summary.display}
+                                activeAddress={activeAddress}
+                                renderExplorerLink={ExplorerLinkHelper}
+                            />
+                            <Button
+                                size={ButtonSize.Small}
+                                type={ButtonType.Ghost}
+                                text={showDetails ? 'Hide details' : 'Show details'}
+                                onClick={() => setShowDetails((p) => !p)}
+                            />
+                            {showDetails && (
+                                <TransactionMoreDetails
+                                    display={summary.display}
+                                    activeAddress={activeAddress}
+                                    gas={summary.gas}
+                                    renderExplorerLink={ExplorerLinkHelper}
+                                    ptbCommands={
+                                        data?.input.transaction.kind === 'ProgrammableTransaction'
+                                            ? data.input.transaction.transactions
+                                            : undefined
+                                    }
+                                    ptbInputs={
+                                        data?.input.transaction.kind === 'ProgrammableTransaction'
+                                            ? data.input.transaction.inputs
+                                            : undefined
+                                    }
+                                />
+                            )}
+                        </div>
+                    ) : (
+                        <>
+                            <div data-amp-mask>
+                                <TransactionSummary
+                                    isDryRun
+                                    isLoading={isDryRunLoading}
+                                    isError={isDryRunError}
+                                    summary={summary}
+                                    chain={chain}
+                                    renderExplorerLink={ExplorerLinkHelper}
+                                    transaction={
+                                        signer instanceof LedgerSigner ? transaction : undefined
+                                    }
+                                />
+                            </div>
+                            <TransactionDetails
+                                sender={addressForTransaction}
+                                transaction={transaction}
+                                chain={chain}
+                            />
+                        </>
+                    )}
                 </div>
             </UserApproveContainer>
             <ConfirmationModal

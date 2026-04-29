@@ -10,6 +10,7 @@ import { getBalanceChangeSummary } from './getBalanceChangeSummary';
 import { getGasSummary } from './getGasSummary';
 import { getTransactionAction } from './getTransactionAction';
 import { narrateObjectChanges, type NarratedObjectChanges } from './narrateObjectChanges';
+import { recognizePtbEffects, type PtbRecognitionResult } from './recognizePtbEffects';
 
 export type TransactionKind =
     | 'send'
@@ -43,6 +44,8 @@ export type TransactionDisplay = {
     fee?: { computation: bigint; storage: bigint; rebate: bigint; net: bigint };
     balanceChangesByOwner: BalanceChangeSummary;
     narratedObjectChanges: NarratedObjectChanges;
+    /** PTB pattern recognition — present only when the tx is a ProgrammableTransaction. */
+    ptbRecognition?: PtbRecognitionResult;
 };
 
 const ACTION_TO_KIND: Partial<Record<TransactionAction, TransactionKind>> = {
@@ -165,6 +168,19 @@ export function buildTransactionDisplay(
         gasObjectId: effects?.gasObject?.reference.objectId,
     });
 
+    const txData = transaction.transaction?.data.transaction;
+    const ptbRecognition =
+        txData?.kind === 'ProgrammableTransaction'
+            ? recognizePtbEffects({
+                  commands: txData.transactions,
+                  inputs: txData.inputs,
+                  objectChangesWithDisplay,
+                  balanceChanges: transaction.balanceChanges ?? [],
+                  perspective: perspective ?? '',
+                  recognizedPackages: recognizedPackagesList,
+              })
+            : undefined;
+
     return {
         kind,
         status,
@@ -177,5 +193,6 @@ export function buildTransactionDisplay(
         fee,
         balanceChangesByOwner,
         narratedObjectChanges,
+        ptbRecognition,
     };
 }

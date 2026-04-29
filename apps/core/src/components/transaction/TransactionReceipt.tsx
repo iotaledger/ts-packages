@@ -76,6 +76,9 @@ export function TransactionReceipt({
         );
     }
 
+    const txData = txn.transaction?.data.transaction;
+    const ptbData = txData?.kind === 'ProgrammableTransaction' ? txData : undefined;
+
     return (
         <div className="flex flex-col gap-md overflow-y-auto overflow-x-hidden">
             <TransactionOverview
@@ -97,6 +100,8 @@ export function TransactionReceipt({
                     activeAddress={activeAddress}
                     gas={summary.gas}
                     renderExplorerLink={renderExplorerLink}
+                    ptbCommands={ptbData?.transactions}
+                    ptbInputs={ptbData?.inputs}
                 />
             )}
         </div>

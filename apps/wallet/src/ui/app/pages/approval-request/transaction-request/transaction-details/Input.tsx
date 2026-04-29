@@ -8,7 +8,7 @@ import { type TransactionInput } from '@iota/iota-sdk/transactions';
 import { formatAddress, toBase64 } from '@iota/iota-sdk/utils';
 import { KeyValueInfo } from '@iota/apps-ui-kit';
 import type { ReactNode } from 'react';
-import { formatPureInputValue, getPureValueTypeLabel } from './pureValueType';
+import { formatPureInputValue, getPureValueTypeLabel } from '@iota/core';
 
 interface PureInputProps {
     input: TransactionInput;

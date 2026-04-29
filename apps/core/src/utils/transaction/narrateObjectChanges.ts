@@ -24,6 +24,8 @@ export type NarratedObjectChanges = {
     minted: NarratedObjectChange[];
     /** Packages published or upgraded in this transaction. */
     published: NarratedObjectChange[];
+    /** Non-coin objects mutated and still owned by the perspective address. */
+    kept: NarratedObjectChange[];
     /** Everything else: gas coin mutations, change coins, wrapped/deleted objects, etc. */
     internal: NarratedObjectChange[];
 };
@@ -69,6 +71,7 @@ export function narrateObjectChanges(
         sent: [],
         minted: [],
         published: [],
+        kept: [],
         internal: [],
     };
 
@@ -112,8 +115,19 @@ export function narrateObjectChanges(
                 break;
             }
 
+            case 'mutated': {
+                const ownerAddr = ownerToAddress(change.owner);
+                const isGasCoin = change.objectId === ctx.gasObjectId;
+                if (!isGasCoin && !isCoin(change.objectType) && ownerAddr === perspective) {
+                    result.kept.push(toNarrated(change));
+                } else {
+                    result.internal.push(toNarrated(change));
+                }
+                break;
+            }
+
             default:
-                // mutated, deleted, wrapped → always internal (includes gas coin)
+                // deleted, wrapped → always internal
                 result.internal.push(toNarrated(change));
         }
     }
