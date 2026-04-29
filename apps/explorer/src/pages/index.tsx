@@ -20,13 +20,12 @@ import { IdentityResult } from './trust-framework/identity-result/IdentityResult
 
 interface RedirectWithIdProps {
     base: string;
-    suffix?: string;
 }
 
-function RedirectWithId({ base, suffix = '' }: RedirectWithIdProps): JSX.Element {
+function RedirectWithId({ base }: RedirectWithIdProps): JSX.Element {
     const params = useParams();
     const { search } = useLocation();
-    return <Navigate to={`/${base}/${params.id}${suffix}${search}`} replace />;
+    return <Navigate to={`/${base}/${params.id}${search}`} replace />;
 }
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createBrowserRouter);
@@ -71,10 +70,6 @@ export const router = sentryCreateBrowserRouter([
     {
         path: '/addresses/:id',
         element: <RedirectWithId base="address" />,
-    },
-    {
-        path: '/accounts/:id',
-        element: <RedirectWithId base="account" />,
     },
     // 404 route:
     { path: '*', element: <Navigate to="/" replace /> },
