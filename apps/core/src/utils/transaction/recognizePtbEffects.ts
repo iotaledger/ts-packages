@@ -16,6 +16,8 @@ export type EffectRow =
           name: string;
           objectId: string;
           recipient: string;
+          source?: 'kiosk';
+          kioskId?: string;
           thumbnail?: string;
       }
     | {
@@ -23,6 +25,8 @@ export type EffectRow =
           name: string;
           objectId: string;
           sender?: string;
+          source?: 'kiosk';
+          kioskId?: string;
           thumbnail?: string;
       }
     | { kind: 'coin-send'; coinType: string; amount: bigint; recipient: string }
@@ -39,6 +43,21 @@ export type StructuralSummary = {
     uniquePackages: string[];
     newObjects: number;
     transferredObjects: number;
+    packages: {
+        packageId: string;
+        isKnown: boolean;
+        callCount: number;
+        functions: { module: string; fn: string; count: number }[];
+    }[];
+    objectChanges: {
+        created: number;
+        transferred: number;
+        mutated: number;
+        deleted: number;
+        wrapped: number;
+        unwrapped: number;
+        published: number;
+    };
 };
 
 export type PtbRecognitionResult =
@@ -51,6 +70,26 @@ export type PtbRecognitionResult =
 
 function isCoin(objectType: string): boolean {
     return objectType.startsWith(COIN_TYPE);
+}
+
+function ownerToAddress(owner: unknown): string {
+    if (!owner || typeof owner !== 'object') return '';
+    if ('AddressOwner' in owner) return String((owner as { AddressOwner: string }).AddressOwner);
+    if ('ObjectOwner' in owner) return String((owner as { ObjectOwner: string }).ObjectOwner);
+    if ('Shared' in owner) return 'Shared';
+    return '';
+}
+
+function getObjectDisplayName(change: IotaObjectChangeWithDisplay): string {
+    return (
+        change.display?.data?.['name'] ??
+        ('objectType' in change ? change.objectType.split('::').pop()?.split('<')[0] : undefined) ??
+        'Object'
+    );
+}
+
+function getObjectThumbnail(change: IotaObjectChangeWithDisplay): string | undefined {
+    return change.display?.data?.['image_url'] ?? undefined;
 }
 
 function resolveInputAddress(inputs: IotaCallArg[], arg: unknown): string | undefined {
@@ -75,25 +114,95 @@ function resolveInputObjectId(inputs: IotaCallArg[], arg: unknown): string | und
     return undefined;
 }
 
+function resolveInputValue(inputs: IotaCallArg[], arg: unknown): string | undefined {
+    if (arg && typeof arg === 'object' && 'Input' in (arg as object)) {
+        const idx = (arg as { Input: number }).Input;
+        const inp = inputs[idx];
+        if (inp?.type === 'pure') {
+            return String(inp.value);
+        }
+    }
+    return undefined;
+}
+
+function resolveProducedResultIndex(arg: unknown): number | undefined {
+    if (!arg || typeof arg !== 'object') return undefined;
+    if ('Result' in (arg as object)) {
+        return (arg as { Result: number }).Result;
+    }
+    if ('NestedResult' in (arg as object)) {
+        return (arg as { NestedResult: [number, number] }).NestedResult[0];
+    }
+    return undefined;
+}
+
 function buildStructural(
     commands: IotaTransaction[],
     objectChanges: IotaObjectChangeWithDisplay[],
+    recognizedPackages: string[],
 ): StructuralSummary {
-    const packages = new Set<string>();
+    const packages = new Map<
+        string,
+        {
+            packageId: string;
+            isKnown: boolean;
+            callCount: number;
+            functions: Map<string, { module: string; fn: string; count: number }>;
+        }
+    >();
     let callCount = 0;
     for (const cmd of commands) {
         if ('MoveCall' in cmd) {
             callCount++;
-            packages.add(cmd.MoveCall.package);
+            const pkg = cmd.MoveCall.package;
+            const key = `${cmd.MoveCall.module}::${cmd.MoveCall.function}`;
+            const packageEntry = packages.get(pkg) ?? {
+                packageId: pkg,
+                isKnown: recognizedPackages.includes(pkg),
+                callCount: 0,
+                functions: new Map<string, { module: string; fn: string; count: number }>(),
+            };
+
+            packageEntry.callCount += 1;
+            const functionEntry = packageEntry.functions.get(key) ?? {
+                module: cmd.MoveCall.module,
+                fn: cmd.MoveCall.function,
+                count: 0,
+            };
+            functionEntry.count += 1;
+            packageEntry.functions.set(key, functionEntry);
+            packages.set(pkg, packageEntry);
         }
     }
     const newObjects = objectChanges.filter((c) => c.type === 'created').length;
     const transferredObjects = objectChanges.filter((c) => c.type === 'transferred').length;
+
+    const objectCounts = {
+        created: objectChanges.filter((c) => c.type === 'created').length,
+        transferred: objectChanges.filter((c) => c.type === 'transferred').length,
+        mutated: objectChanges.filter((c) => c.type === 'mutated').length,
+        deleted: objectChanges.filter((c) => c.type === 'deleted').length,
+        wrapped: objectChanges.filter((c) => c.type === 'wrapped').length,
+        unwrapped: objectChanges.filter((c) => c.type === 'unwrapped').length,
+        published: objectChanges.filter((c) => c.type === 'published').length,
+    };
+
     return {
         callCount,
-        uniquePackages: [...packages],
+        uniquePackages: [...packages.keys()],
         newObjects,
         transferredObjects,
+        packages: [...packages.values()]
+            .map((entry) => ({
+                packageId: entry.packageId,
+                isKnown: entry.isKnown,
+                callCount: entry.callCount,
+                functions: [...entry.functions.values()].sort(
+                    (left, right) => right.count - left.count,
+                ),
+            }))
+            .sort((left, right) => right.callCount - left.callCount),
+        objectChanges: objectCounts,
     };
 }
 
@@ -118,6 +227,7 @@ export function recognizePtbEffects({
 }): PtbRecognitionResult {
     const rows: EffectRow[] = [];
     let hasUnknown = false;
+    const objectRowKeys = new Set<string>();
 
     // Build a quick lookup of objectId → objectChange
     const changeById = new Map<string, IotaObjectChangeWithDisplay>();
@@ -127,6 +237,148 @@ export function recognizePtbEffects({
 
     // Track which commands were absorbed by higher-level matchers
     const absorbedCommandIndices = new Set<number>();
+
+    const resultTransferInfos: Array<{
+        producerIndex: number;
+        transferCommandIndex: number;
+        recipient?: string;
+    }> = [];
+    const directObjectTransferCommandIndices = new Map<string, number[]>();
+    const kioskTakeByCommandIndex = new Map<number, { kioskId?: string; itemId?: string }>();
+
+    for (let i = 0; i < commands.length; i++) {
+        const cmd = commands[i];
+        if ('TransferObjects' in cmd) {
+            const [objects, recipientArg] = cmd.TransferObjects;
+            const recipient = resolveInputAddress(inputs, recipientArg);
+
+            for (const objArg of objects) {
+                const directObjectId = resolveInputObjectId(inputs, objArg);
+                if (directObjectId) {
+                    const existing = directObjectTransferCommandIndices.get(directObjectId) ?? [];
+                    existing.push(i);
+                    directObjectTransferCommandIndices.set(directObjectId, existing);
+                    continue;
+                }
+
+                const producerIndex = resolveProducedResultIndex(objArg);
+                if (producerIndex !== undefined) {
+                    resultTransferInfos.push({
+                        producerIndex,
+                        transferCommandIndex: i,
+                        recipient,
+                    });
+                }
+            }
+        }
+
+        if (
+            'MoveCall' in cmd &&
+            cmd.MoveCall.package === '0x2' &&
+            cmd.MoveCall.module === 'kiosk' &&
+            cmd.MoveCall.function === 'take'
+        ) {
+            const args = cmd.MoveCall.arguments ?? [];
+            const [kioskArg, , itemIdArg] = args;
+            kioskTakeByCommandIndex.set(i, {
+                kioskId: resolveInputObjectId(inputs, kioskArg),
+                itemId: resolveInputValue(inputs, itemIdArg),
+            });
+        }
+    }
+
+    const consumedResultTransferInfos = new Set<number>();
+
+    const pushObjectRow = (row: EffectRow, key: string) => {
+        if (objectRowKeys.has(key)) return;
+        objectRowKeys.add(key);
+        rows.push(row);
+    };
+
+    // --- Non-coin object transfers from effects ---
+    for (const change of objectChangesWithDisplay) {
+        if (change.type !== 'transferred' || isCoin(change.objectType)) continue;
+
+        const recipient = ownerToAddress(change.recipient);
+        const transferCommandIndices =
+            directObjectTransferCommandIndices.get(change.objectId) ?? [];
+        for (const commandIndex of transferCommandIndices) {
+            absorbedCommandIndices.add(commandIndex);
+        }
+
+        let source: 'kiosk' | undefined;
+        let kioskId: string | undefined;
+
+        const exactResultInfoIndex = resultTransferInfos.findIndex((info, index) => {
+            if (consumedResultTransferInfos.has(index)) return false;
+            const kioskTake = kioskTakeByCommandIndex.get(info.producerIndex);
+            return kioskTake?.itemId === change.objectId;
+        });
+
+        const fallbackResultInfoIndex =
+            exactResultInfoIndex !== -1
+                ? exactResultInfoIndex
+                : resultTransferInfos.findIndex((info, index) => {
+                      if (consumedResultTransferInfos.has(index)) return false;
+                      if (info.recipient && info.recipient !== recipient) return false;
+                      return true;
+                  });
+
+        const matchedResultInfoIndex =
+            exactResultInfoIndex !== -1 ? exactResultInfoIndex : fallbackResultInfoIndex;
+
+        if (matchedResultInfoIndex !== -1) {
+            consumedResultTransferInfos.add(matchedResultInfoIndex);
+            const matchedResultInfo = resultTransferInfos[matchedResultInfoIndex];
+            absorbedCommandIndices.add(matchedResultInfo.transferCommandIndex);
+            absorbedCommandIndices.add(matchedResultInfo.producerIndex);
+
+            const kioskTake = kioskTakeByCommandIndex.get(matchedResultInfo.producerIndex);
+            if (kioskTake?.itemId === change.objectId) {
+                source = 'kiosk';
+                kioskId = kioskTake.kioskId;
+            }
+        }
+
+        const isOutgoing =
+            !!perspective && change.sender === perspective && recipient !== perspective;
+        const isIncoming =
+            !!perspective && recipient === perspective && change.sender !== perspective;
+        const isKioskSelfMove = !!perspective && recipient === perspective && source === 'kiosk';
+
+        if (!isOutgoing && !isIncoming && !isKioskSelfMove) continue;
+
+        const name = getObjectDisplayName(change);
+        const thumbnail = getObjectThumbnail(change);
+
+        if (isOutgoing) {
+            pushObjectRow(
+                {
+                    kind: 'transfer-nft',
+                    name,
+                    objectId: change.objectId,
+                    recipient,
+                    source,
+                    kioskId,
+                    thumbnail,
+                },
+                `transfer:${change.objectId}:${recipient}`,
+            );
+        } else if (isIncoming || isKioskSelfMove) {
+            pushObjectRow(
+                {
+                    kind: 'receive-nft',
+                    name,
+                    objectId: change.objectId,
+                    sender: change.sender,
+                    source,
+                    kioskId,
+                    thumbnail,
+                },
+                `receive:${change.objectId}:${change.sender}`,
+            );
+        }
+    }
 
     // --- Coin sends / receives from balance changes ---
     // Emit one row per (direction, coinType, counterparty) triple — deduplicate on that key.
@@ -185,6 +437,7 @@ export function recognizePtbEffects({
 
     // --- Walk PTB commands ---
     for (let i = 0; i < commands.length; i++) {
+        if (absorbedCommandIndices.has(i)) continue;
         const cmd = commands[i];
 
         if ('TransferObjects' in cmd) {
@@ -199,17 +452,26 @@ export function recognizePtbEffects({
                 if (!change || !('objectType' in change)) continue;
                 if (isCoin(change.objectType)) continue; // handled by balance changes
 
-                const name =
-                    change.display?.data?.['name'] ??
-                    change.objectType.split('::').pop()?.split('<')[0] ??
-                    'Object';
-                const thumbnail = change.display?.data?.['image_url'] ?? undefined;
+                const name = getObjectDisplayName(change);
+                const thumbnail = getObjectThumbnail(change);
 
                 if (recipient && recipient !== perspective) {
-                    rows.push({ kind: 'transfer-nft', name, objectId, recipient, thumbnail });
+                    pushObjectRow(
+                        { kind: 'transfer-nft', name, objectId, recipient, thumbnail },
+                        `transfer:${objectId}:${recipient}`,
+                    );
                     absorbedCommandIndices.add(i);
                 } else if (recipient === perspective) {
-                    rows.push({ kind: 'receive-nft', name, objectId, thumbnail });
+                    pushObjectRow(
+                        {
+                            kind: 'receive-nft',
+                            name,
+                            objectId,
+                            sender: 'sender' in change ? change.sender : undefined,
+                            thumbnail,
+                        },
+                        `receive:${objectId}:${'sender' in change ? change.sender : ''}`,
+                    );
                     absorbedCommandIndices.add(i);
                 }
             }
@@ -256,7 +518,7 @@ export function recognizePtbEffects({
         return {
             recognized: false,
             rows,
-            structural: buildStructural(commands, objectChangesWithDisplay),
+            structural: buildStructural(commands, objectChangesWithDisplay, recognizedPackages),
         };
     }
 

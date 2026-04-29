@@ -78,6 +78,15 @@ function makeMoveCallCmd(packageId: string, module = 'counter', fn = 'increment'
     } as unknown as IotaTransaction;
 }
 
+function makeResultTransferObjectsCmd(
+    resultIndex: number,
+    recipientInputIndex: number,
+): IotaTransaction {
+    return {
+        TransferObjects: [[{ Result: resultIndex }], { Input: recipientInputIndex }],
+    } as unknown as IotaTransaction;
+}
+
 function makeObjectInput(objectId: string): IotaCallArg {
     return {
         type: 'object',
@@ -252,6 +261,24 @@ describe('recognizePtbEffects', () => {
             expect((nftRow as { name: string }).name).toBe('MyNft');
         });
 
+        it('produces a transfer row when the object is transferred via a PTB result', () => {
+            const nftChange = makeNftChange();
+            const result = recognizePtbEffects(
+                makeArgs({
+                    commands: [
+                        makeMoveCallCmd(KNOWN_PACKAGE_ID, 'nft', 'load'),
+                        makeResultTransferObjectsCmd(0, 0),
+                    ],
+                    inputs: [makeAddressInput(RECIPIENT)],
+                    objectChanges: [nftChange],
+                    recognizedPackages: [KNOWN_PACKAGE_ID],
+                }),
+            );
+
+            expect(result.rows.filter((r) => r.kind === 'transfer-nft')).toHaveLength(1);
+            expect(result.rows.some((r) => r.kind === 'call')).toBe(false);
+        });
+
         it('skips coin objects in TransferObjects (captured by balance change rows)', () => {
             const coinChange: IotaObjectChangeWithDisplay = {
                 type: 'transferred',
@@ -284,6 +311,80 @@ describe('recognizePtbEffects', () => {
 
             expect(result.rows.some((r) => r.kind === 'transfer-nft')).toBe(false);
             expect(result.rows.some((r) => r.kind === 'coin-send')).toBe(true);
+        });
+
+        it('produces a single send row for the canonical kiosk take and transfer flow', () => {
+            const kioskTakePackage = '0x2';
+            const kioskId = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            const result = recognizePtbEffects(
+                makeArgs({
+                    commands: [
+                        {
+                            MoveCall: {
+                                package: kioskTakePackage,
+                                module: 'kiosk',
+                                function: 'take',
+                                arguments: [{ Input: 0 }, { Input: 1 }, { Input: 2 }],
+                                type_arguments: [NFT_TYPE],
+                            },
+                        } as unknown as IotaTransaction,
+                        makeResultTransferObjectsCmd(0, 3),
+                    ],
+                    inputs: [
+                        makeObjectInput(kioskId),
+                        makeObjectInput(
+                            '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                        ),
+                        { type: 'pure', value: NFT_OBJECT_ID, valueType: 'id' } as IotaCallArg,
+                        makeAddressInput(RECIPIENT),
+                    ],
+                    objectChanges: [makeNftChange()],
+                    recognizedPackages: [kioskTakePackage],
+                }),
+            );
+
+            const nftRows = result.rows.filter((r) => r.kind === 'transfer-nft');
+            expect(nftRows).toHaveLength(1);
+            expect(nftRows[0]).toMatchObject({ source: 'kiosk', kioskId });
+            expect(result.rows.some((r) => r.kind === 'call')).toBe(false);
+            expect(result.rows.some((r) => r.kind === 'unknown-call')).toBe(false);
+        });
+
+        it('treats a kiosk take transferred back to the same wallet as a receive row', () => {
+            const kioskId = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+            const result = recognizePtbEffects(
+                makeArgs({
+                    commands: [
+                        {
+                            MoveCall: {
+                                package: '0x2',
+                                module: 'kiosk',
+                                function: 'take',
+                                arguments: [{ Input: 0 }, { Input: 1 }, { Input: 2 }],
+                                type_arguments: [NFT_TYPE],
+                            },
+                        } as unknown as IotaTransaction,
+                        makeResultTransferObjectsCmd(0, 3),
+                    ],
+                    inputs: [
+                        makeObjectInput(kioskId),
+                        makeObjectInput(
+                            '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+                        ),
+                        { type: 'pure', value: NFT_OBJECT_ID, valueType: 'id' } as IotaCallArg,
+                        makeAddressInput(SENDER),
+                    ],
+                    objectChanges: [makeNftChange({ recipient: { AddressOwner: SENDER } })],
+                    recognizedPackages: ['0x2'],
+                }),
+            );
+
+            expect(result.rows.find((r) => r.kind === 'receive-nft')).toMatchObject({
+                kind: 'receive-nft',
+                source: 'kiosk',
+                kioskId,
+                objectId: NFT_OBJECT_ID,
+            });
         });
     });
 
@@ -398,6 +499,7 @@ describe('recognizePtbEffects', () => {
                 makeArgs({
                     commands: [
                         makeMoveCallCmd(UNKNOWN_PACKAGE_ID, 'mod', 'fn1'),
+                        makeMoveCallCmd(UNKNOWN_PACKAGE_ID, 'mod', 'fn1'),
                         makeMoveCallCmd(UNKNOWN_PACKAGE_ID, 'mod', 'fn2'),
                     ],
                     objectChanges: [publishedChange, createdChange],
@@ -406,9 +508,24 @@ describe('recognizePtbEffects', () => {
 
             expect(result.recognized).toBe(false);
             if (!result.recognized) {
-                expect(result.structural.callCount).toBe(2);
+                expect(result.structural.callCount).toBe(3);
                 expect(result.structural.uniquePackages).toEqual([UNKNOWN_PACKAGE_ID]);
                 expect(result.structural.newObjects).toBe(1);
+                expect(result.structural.packages).toEqual([
+                    {
+                        packageId: UNKNOWN_PACKAGE_ID,
+                        isKnown: false,
+                        callCount: 3,
+                        functions: [
+                            { module: 'mod', fn: 'fn1', count: 2 },
+                            { module: 'mod', fn: 'fn2', count: 1 },
+                        ],
+                    },
+                ]);
+                expect(result.structural.objectChanges).toMatchObject({
+                    created: 1,
+                    published: 1,
+                });
             }
         });
     });

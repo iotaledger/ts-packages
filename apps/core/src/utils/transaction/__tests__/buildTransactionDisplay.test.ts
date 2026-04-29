@@ -587,6 +587,59 @@ describe('buildTransactionDisplay', () => {
         expect(result.narratedObjectChanges.sent).toHaveLength(1);
         expect(result.narratedObjectChanges.sent[0].name).toBe('My NFT');
         expect(result.narratedObjectChanges.sent[0].recipient).toBe(RECIPIENT);
+        expect(result.primaryObject).toMatchObject({
+            objectId: NFT_OBJECT_ID,
+            name: 'My NFT',
+            to: RECIPIENT,
+            typeLabel: 'MyNft',
+        });
+    });
+
+    it('keeps coin primary undefined when there are no balance changes but still features an NFT transfer', () => {
+        const nftChange: IotaObjectChangeWithDisplay = {
+            type: 'transferred',
+            sender: SENDER,
+            recipient: { AddressOwner: RECIPIENT },
+            objectType: NFT_TYPE,
+            objectId: NFT_OBJECT_ID,
+            version: '1',
+            digest: 'nft-digest',
+            display: { data: { name: 'Leap Frogger', image_url: 'https://example.com/nft.png' } },
+        };
+
+        const tx = makeTx({ balanceChanges: [] });
+        const result = buildTransactionDisplay(tx, [nftChange], [], SENDER);
+
+        expect(result.primary).toBeUndefined();
+        expect(result.primaryObject).toMatchObject({
+            name: 'Leap Frogger',
+            objectId: NFT_OBJECT_ID,
+            thumbnail: 'https://example.com/nft.png',
+            to: RECIPIENT,
+        });
+    });
+
+    it('prefers the PTB-recognized NFT row for the primary object summary', () => {
+        const nftChange: IotaObjectChangeWithDisplay = {
+            type: 'transferred',
+            sender: SENDER,
+            recipient: { AddressOwner: RECIPIENT },
+            objectType: NFT_TYPE,
+            objectId: NFT_OBJECT_ID,
+            version: '1',
+            digest: 'nft-digest',
+            display: undefined,
+        };
+
+        const tx = makeTx({ balanceChanges: [] });
+        const result = buildTransactionDisplay(tx, [nftChange], [PACKAGE_ID], SENDER);
+
+        expect(result.primary).toBeUndefined();
+        expect(result.primaryObject).toMatchObject({
+            objectId: NFT_OBJECT_ID,
+            name: 'MyNft',
+            to: RECIPIENT,
+        });
     });
 
     it('returns empty counterparties and no primary when there are no balance changes', () => {

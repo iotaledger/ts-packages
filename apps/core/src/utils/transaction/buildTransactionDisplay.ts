@@ -43,6 +43,15 @@ export type TransactionDisplay = {
     }[];
     /** Most significant balance change for the perspective address (signed). */
     primary?: { coinType: string; amount: bigint };
+    /** Primary non-coin asset to feature in the overview when present. */
+    primaryObject?: {
+        objectId?: string;
+        name: string;
+        typeLabel?: string;
+        thumbnail?: string;
+        to?: string;
+        from?: string;
+    };
     /** Gas cost breakdown — always computed; UI decides whether to show based on sender check. */
     fee?: { computation: bigint; storage: bigint; rebate: bigint; net: bigint };
     balanceChangesByOwner: BalanceChangeSummary;
@@ -107,6 +116,74 @@ function derivePrimary(
         }
         return best;
     }, undefined);
+}
+
+function derivePrimaryObject(
+    narratedObjectChanges: NarratedObjectChanges,
+    ptbRecognition?: PtbRecognitionResult,
+): TransactionDisplay['primaryObject'] | undefined {
+    const narratedSent = narratedObjectChanges.sent[0];
+    const narratedReceived = narratedObjectChanges.received[0] ?? narratedObjectChanges.minted[0];
+
+    const recognizedObjectRow = ptbRecognition?.rows.find(
+        (row) => row.kind === 'transfer-nft' || row.kind === 'receive-nft',
+    );
+
+    if (recognizedObjectRow?.kind === 'transfer-nft') {
+        return {
+            objectId: recognizedObjectRow.objectId,
+            name: recognizedObjectRow.name,
+            typeLabel:
+                narratedSent && 'objectType' in narratedSent.change
+                    ? narratedSent.change.objectType.split('::').pop()?.split('<')[0]
+                    : undefined,
+            thumbnail: recognizedObjectRow.thumbnail,
+            to: recognizedObjectRow.recipient,
+        };
+    }
+
+    if (recognizedObjectRow?.kind === 'receive-nft') {
+        return {
+            objectId: recognizedObjectRow.objectId,
+            name: recognizedObjectRow.name,
+            typeLabel:
+                narratedReceived && 'objectType' in narratedReceived.change
+                    ? narratedReceived.change.objectType.split('::').pop()?.split('<')[0]
+                    : undefined,
+            thumbnail: recognizedObjectRow.thumbnail,
+            from: recognizedObjectRow.sender,
+        };
+    }
+
+    const sent = narratedSent;
+    if (sent) {
+        return {
+            objectId: 'objectId' in sent.change ? sent.change.objectId : undefined,
+            name: sent.name ?? 'Object',
+            typeLabel:
+                'objectType' in sent.change
+                    ? sent.change.objectType.split('::').pop()?.split('<')[0]
+                    : undefined,
+            thumbnail: sent.change.display?.data?.['image_url'] ?? undefined,
+            to: sent.recipient,
+        };
+    }
+
+    const received = narratedReceived;
+    if (received) {
+        return {
+            objectId: 'objectId' in received.change ? received.change.objectId : undefined,
+            name: received.name ?? 'Object',
+            typeLabel:
+                'objectType' in received.change
+                    ? received.change.objectType.split('::').pop()?.split('<')[0]
+                    : undefined,
+            thumbnail: received.change.display?.data?.['image_url'] ?? undefined,
+            from: 'sender' in received.change ? received.change.sender : undefined,
+        };
+    }
+
+    return undefined;
 }
 
 function deriveCounterparties(
@@ -207,6 +284,7 @@ export function buildTransactionDisplay(
                   recognizedPackages: recognizedPackagesList,
               })
             : undefined;
+    const primaryObject = derivePrimaryObject(narratedObjectChanges, ptbRecognition);
 
     return {
         kind,
@@ -217,6 +295,7 @@ export function buildTransactionDisplay(
         sender,
         counterparties,
         primary,
+        primaryObject,
         fee,
         balanceChangesByOwner,
         narratedObjectChanges,

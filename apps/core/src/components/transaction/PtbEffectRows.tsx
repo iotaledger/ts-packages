@@ -22,6 +22,40 @@ import {
 import { Collapsible } from '../collapsible';
 import { useFormatCoin } from '../../hooks';
 
+function formatFunctionSummary(
+    functions: { module: string; fn: string; count: number }[],
+): string | undefined {
+    if (!functions.length) return undefined;
+
+    const summary = functions
+        .slice(0, 3)
+        .map(({ module, fn, count }) => `${module}::${fn}${count > 1 ? ` x${count}` : ''}`)
+        .join(' · ');
+
+    return functions.length > 3 ? `${summary} · +${functions.length - 3} more` : summary;
+}
+
+function formatObjectActivity(
+    recognition: Extract<PtbRecognitionResult, { recognized: false }>,
+): string {
+    const { objectChanges } = recognition.structural;
+    const parts = [
+        objectChanges.created > 0 ? `${objectChanges.created} created` : null,
+        objectChanges.transferred > 0 ? `${objectChanges.transferred} transferred` : null,
+        objectChanges.mutated > 0 ? `${objectChanges.mutated} mutated` : null,
+        objectChanges.unwrapped > 0 ? `${objectChanges.unwrapped} unwrapped` : null,
+        objectChanges.published > 0 ? `${objectChanges.published} published` : null,
+    ].filter(Boolean);
+
+    return parts.join(' · ');
+}
+
+function getDisplayedRows(recognition: PtbRecognitionResult): EffectRow[] {
+    if (recognition.recognized) return recognition.rows;
+
+    return recognition.rows.filter((row) => row.kind !== 'call' && row.kind !== 'unknown-call');
+}
+
 // ---------------------------------------------------------------------------
 // Single row renderers
 // ---------------------------------------------------------------------------
@@ -62,6 +96,19 @@ function NftEffectRow({
     row: Extract<EffectRow, { kind: 'transfer-nft' | 'receive-nft' }>;
 }) {
     const isSend = row.kind === 'transfer-nft';
+    const kioskLabel = row.kioskId ? `from kiosk ${formatAddress(row.kioskId)}` : 'from kiosk';
+    const supportingLabel = isSend
+        ? row.source === 'kiosk'
+            ? `${kioskLabel} to ${formatAddress(row.recipient)}`
+            : `to ${formatAddress(row.recipient)}`
+        : row.source === 'kiosk'
+          ? row.sender
+              ? `${kioskLabel} · sender ${formatAddress(row.sender)}`
+              : kioskLabel
+          : row.sender
+            ? `from ${formatAddress(row.sender)}`
+            : undefined;
+
     return (
         <div className="flex items-center gap-x-sm px-md py-xs">
             {row.thumbnail && (
@@ -78,13 +125,7 @@ function NftEffectRow({
                 <KeyValueInfo
                     keyText={isSend ? 'Sent' : 'Received'}
                     value={row.name}
-                    supportingLabel={
-                        isSend
-                            ? `to ${formatAddress(row.recipient)}`
-                            : row.sender
-                              ? `from ${formatAddress(row.sender)}`
-                              : undefined
-                    }
+                    supportingLabel={supportingLabel}
                     fullwidth
                 />
             </div>
@@ -143,10 +184,16 @@ interface PtbEffectRowsProps {
 }
 
 export function PtbEffectRows({ recognition }: PtbEffectRowsProps) {
-    const { rows } = recognition;
-    if (!rows.length && recognition.recognized) return null;
+    const displayedRows = getDisplayedRows(recognition);
+    if (!displayedRows.length && recognition.recognized) return null;
 
     const title = recognition.recognized ? 'What happened' : 'What we can tell';
+    const trailingCount = recognition.recognized
+        ? displayedRows.length
+        : displayedRows.length + recognition.structural.packages.length;
+    const objectActivity = !recognition.recognized ? formatObjectActivity(recognition) : undefined;
+    const hasUnknownPackages =
+        !recognition.recognized && recognition.structural.packages.some((pkg) => !pkg.isKnown);
 
     return (
         <Panel hasBorder>
@@ -159,11 +206,11 @@ export function PtbEffectRows({ recognition }: PtbEffectRowsProps) {
                             size={TitleSize.Small}
                             title={title}
                             trailingElement={
-                                rows.length > 0 ? (
+                                trailingCount > 0 ? (
                                     <div className="ml-1 flex">
                                         <Badge
                                             type={BadgeType.PrimarySoft}
-                                            label={String(rows.length)}
+                                            label={String(trailingCount)}
                                         />
                                     </div>
                                 ) : undefined
@@ -172,40 +219,64 @@ export function PtbEffectRows({ recognition }: PtbEffectRowsProps) {
                     )}
                 >
                     <div className="flex flex-col">
-                        {rows.map((row, i) => (
+                        {displayedRows.map((row, i) => (
                             <EffectRowItem key={i} row={row} />
                         ))}
 
                         {!recognition.recognized && (
-                            <div className="px-md pb-md pt-xs">
-                                <InfoBox
-                                    type={InfoBoxType.Default}
-                                    style={InfoBoxStyle.Default}
-                                    title="Unverified app"
-                                    supportingText="This app isn't recognized. Review the changes below carefully before approving."
-                                    icon={<Warning />}
-                                />
-                            </div>
-                        )}
-
-                        {!recognition.recognized &&
-                            recognition.structural.callCount > 0 &&
-                            rows.length === 0 && (
-                                <div className="px-md pb-xs">
-                                    <KeyValueInfo
-                                        keyText="Calls"
-                                        value={`${recognition.structural.callCount} function${recognition.structural.callCount !== 1 ? 's' : ''} on ${recognition.structural.uniquePackages.length} package${recognition.structural.uniquePackages.length !== 1 ? 's' : ''}`}
-                                        fullwidth
-                                    />
-                                    {recognition.structural.newObjects > 0 && (
+                            <>
+                                {recognition.structural.callCount > 0 && (
+                                    <div className="px-md py-xs">
                                         <KeyValueInfo
-                                            keyText="Creates"
-                                            value={`${recognition.structural.newObjects} new object${recognition.structural.newObjects !== 1 ? 's' : ''}`}
+                                            keyText="Contract activity"
+                                            value={`${recognition.structural.callCount} function${recognition.structural.callCount !== 1 ? 's' : ''} on ${recognition.structural.packages.length} package${recognition.structural.packages.length !== 1 ? 's' : ''}`}
                                             fullwidth
                                         />
-                                    )}
+                                    </div>
+                                )}
+
+                                {recognition.structural.packages.map((pkg) => (
+                                    <div key={pkg.packageId} className="px-md py-xs">
+                                        <KeyValueInfo
+                                            keyText={pkg.isKnown ? 'Package' : 'Unverified package'}
+                                            value={formatAddress(pkg.packageId)}
+                                            supportingLabel={`${pkg.callCount} call${pkg.callCount !== 1 ? 's' : ''}${formatFunctionSummary(pkg.functions) ? ` · ${formatFunctionSummary(pkg.functions)}` : ''}`}
+                                            fullwidth
+                                        />
+                                    </div>
+                                ))}
+
+                                {objectActivity && (
+                                    <div className="px-md py-xs">
+                                        <KeyValueInfo
+                                            keyText="Object changes"
+                                            value={objectActivity}
+                                            fullwidth
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="px-md pb-md pt-xs">
+                                    <InfoBox
+                                        type={
+                                            hasUnknownPackages
+                                                ? InfoBoxType.Warning
+                                                : InfoBoxType.Default
+                                        }
+                                        style={InfoBoxStyle.Default}
+                                        title={
+                                            hasUnknownPackages ? 'Unverified app' : 'Review details'
+                                        }
+                                        supportingText={
+                                            hasUnknownPackages
+                                                ? "This app isn't recognized. Review the changes below carefully before approving."
+                                                : 'Some steps could not be simplified. Review the wallet effects and raw commands if needed.'
+                                        }
+                                        icon={<Warning />}
+                                    />
                                 </div>
-                            )}
+                            </>
+                        )}
                     </div>
                 </Collapsible>
             </div>
