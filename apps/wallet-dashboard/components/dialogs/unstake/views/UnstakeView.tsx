@@ -11,28 +11,30 @@ import {
     InfoBoxType,
     InfoBoxStyle,
     InfoBox,
+    Input,
+    InputType,
 } from '@iota/apps-ui-kit';
 import {
     ExtendedDelegatedStake,
     GAS_SYMBOL,
-    useFormatCoin,
     useGetStakingValidatorDetails,
-    useNewUnstakeTransaction,
     Validator,
     toast,
-    NOT_ENOUGH_BALANCE_ID,
     GAS_BUDGET_ERROR_MESSAGES,
     GAS_BALANCE_TOO_LOW_ID,
+    useUnstakeForm,
+    UnstakeBreakdown,
+    MIN_PARTIAL_UNSTAKE_MESSAGE,
 } from '@iota/core';
-import { CoinFormat } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
-import { StakeRewardsPanel, ValidatorStakingData } from '@/components';
+import { ValidatorStakingData } from '@/components';
 import { DialogLayout, DialogLayoutFooter, DialogLayoutBody } from '../../layout';
 
 import { IotaSignAndExecuteTransactionOutput } from '@iota/wallet-standard';
 import { ampli } from '@/lib/utils/analytics';
-import { useEffect } from 'react';
+import { Field, type FieldProps, FormikProvider } from 'formik';
 
 interface UnstakeDialogProps {
     extendedStake: ExtendedDelegatedStake;
@@ -50,33 +52,42 @@ export function UnstakeView({
     showActiveStatus,
 }: UnstakeDialogProps): JSX.Element {
     const activeAddress = useCurrentAccount()?.address ?? '';
+
+    // Calculate the amount to unstake and proportional rewards
+    const principalAmount = BigInt(extendedStake.principal);
+    const rewardAmount = BigInt(extendedStake.estimatedReward || 0);
+
     const {
-        data: unstakeData,
-        isPending: isUnstakeTxPending,
-        error,
-        isError: isUnstakeError,
-    } = useNewUnstakeTransaction(activeAddress, extendedStake.stakedIotaId);
-    const [gasFormatted] = useFormatCoin({
-        balance: unstakeData?.gasSummary?.totalGas,
-        format: CoinFormat.Full,
+        formik,
+        values,
+        isPartialUnstake,
+        switchToFullUnstake,
+        switchToPartialUnstake,
+        unstakeAmounts,
+        unstakeAmountFormattedPlain,
+        rewardsFormattedPlain,
+        activeUnstakeData,
+        activeIsError,
+        activeIsLoading: activeIsPending,
+        gasFormatted,
+        isInvalidPartialAmount,
+        isNotEnoughGas,
+    } = useUnstakeForm({
+        activeAddress,
+        stakedIotaId: extendedStake.stakedIotaId,
+        principalAmount,
+        rewardAmount,
     });
 
     const { mutateAsync: signAndExecuteTransaction, isPending: isTransactionPending } =
         useSignAndExecuteTransaction();
 
-    const { totalStakeOriginal, systemDataResult, delegatedStakeDataResult } =
-        useGetStakingValidatorDetails({
-            accountAddress: activeAddress,
-            validatorAddress: extendedStake.validatorAddress,
-            stakeId: extendedStake.stakedIotaId,
-            unstake: true,
-        });
-
-    useEffect(() => {
-        if (isUnstakeError && error) {
-            console.error('[DEBUG]: Unstake Error:', error);
-        }
-    }, [isUnstakeError, error]);
+    const { systemDataResult, delegatedStakeDataResult } = useGetStakingValidatorDetails({
+        accountAddress: activeAddress,
+        validatorAddress: extendedStake.validatorAddress,
+        stakeId: extendedStake.stakedIotaId,
+        unstake: true,
+    });
 
     const { isLoading: loadingValidators, error: errorValidators } = systemDataResult;
     const {
@@ -86,34 +97,18 @@ export function UnstakeView({
     } = delegatedStakeDataResult;
 
     const delegationId = extendedStake?.stakedIotaId;
-    const isNotEnoughGas =
-        error &&
-        (error.message.includes(NOT_ENOUGH_BALANCE_ID) ||
-            error.message.includes(GAS_BALANCE_TOO_LOW_ID));
 
     const validatorName =
         systemDataResult.data?.activeValidators.find(
             (v) => v.iotaAddress === extendedStake.validatorAddress,
         )?.name ?? '';
 
-    const [stakedFormattedPlain] = useFormatCoin({
-        balance: totalStakeOriginal,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
-
-    const [rewardsFormattedPlain] = useFormatCoin({
-        balance: extendedStake.estimatedReward,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
-
     async function handleUnstake(): Promise<void> {
-        if (!unstakeData) return;
+        if (!activeUnstakeData) return;
 
         await signAndExecuteTransaction(
             {
-                transaction: unstakeData.transaction,
+                transaction: activeUnstakeData.transaction,
             },
             {
                 onSuccess: (tx) => {
@@ -121,7 +116,7 @@ export function UnstakeView({
                     onSuccess(tx);
 
                     ampli.unstakedIota({
-                        stakedAmount: Number(stakedFormattedPlain),
+                        stakedAmount: Number(unstakeAmountFormattedPlain),
                         validatorAddress: extendedStake.validatorAddress,
                         rewards: Number(rewardsFormattedPlain),
                         validatorName,
@@ -157,71 +152,137 @@ export function UnstakeView({
     }
 
     return (
-        <DialogLayout>
-            <Header title="Unstake" onClose={handleClose} onBack={onBack} titleCentered />
-            <DialogLayoutBody>
-                <div className="flex flex-col gap-y-md">
-                    <Validator
-                        address={extendedStake.validatorAddress}
-                        isSelected
-                        showActiveStatus={showActiveStatus}
-                    />
+        <FormikProvider value={formik}>
+            <DialogLayout>
+                <Header title="Unstake" onClose={handleClose} onBack={onBack} titleCentered />
+                <DialogLayoutBody>
+                    <div className="flex flex-col gap-y-md">
+                        <Validator
+                            address={extendedStake.validatorAddress}
+                            isSelected
+                            showActiveStatus={showActiveStatus}
+                        />
 
-                    <ValidatorStakingData
-                        validatorAddress={extendedStake.validatorAddress}
-                        stakeId={extendedStake.stakedIotaId}
-                        isUnstake
-                    />
+                        <ValidatorStakingData
+                            validatorAddress={extendedStake.validatorAddress}
+                            stakeId={extendedStake.stakedIotaId}
+                            isUnstake
+                        />
 
-                    <StakeRewardsPanel
-                        stakingRewards={extendedStake.estimatedReward}
-                        totalStaked={totalStakeOriginal}
-                    />
+                        <Panel hasBorder>
+                            <div className="flex flex-col gap-y-sm p-md">
+                                <div className="flex gap-2">
+                                    <Button
+                                        type={
+                                            isPartialUnstake
+                                                ? ButtonType.Outlined
+                                                : ButtonType.Secondary
+                                        }
+                                        text="Unstake All"
+                                        onClick={switchToFullUnstake}
+                                    />
+                                    <Button
+                                        type={
+                                            isPartialUnstake
+                                                ? ButtonType.Secondary
+                                                : ButtonType.Outlined
+                                        }
+                                        text="Partial Unstake"
+                                        onClick={switchToPartialUnstake}
+                                    />
+                                </div>
+                                {isPartialUnstake && (
+                                    <>
+                                        <Field name="amount">
+                                            {({
+                                                field: { onChange, ...field },
+                                                meta,
+                                            }: FieldProps) => (
+                                                <Input
+                                                    {...field}
+                                                    type={InputType.NumericFormat}
+                                                    decimalScale={IOTA_DECIMALS}
+                                                    onValueChange={(vals) =>
+                                                        formik.setFieldValue(
+                                                            'amount',
+                                                            vals.value,
+                                                            true,
+                                                        )
+                                                    }
+                                                    placeholder="Enter amount to unstake"
+                                                    suffix=" IOTA"
+                                                    errorMessage={
+                                                        values.amount && meta.error
+                                                            ? meta.error
+                                                            : undefined
+                                                    }
+                                                />
+                                            )}
+                                        </Field>
+                                        <div className="text-neutral-60 text-body-sm">
+                                            {MIN_PARTIAL_UNSTAKE_MESSAGE}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </Panel>
 
-                    <Panel hasBorder>
-                        <div className="flex flex-col gap-y-sm p-md">
-                            <KeyValueInfo
-                                keyText="Gas Fees"
-                                value={gasFormatted || '-'}
-                                supportingLabel={GAS_SYMBOL}
-                                fullwidth
+                        <Panel hasBorder>
+                            <div className="flex flex-col gap-y-sm p-md">
+                                <UnstakeBreakdown
+                                    isPartialUnstake={isPartialUnstake}
+                                    unstakeAmounts={unstakeAmounts}
+                                />
+                            </div>
+                        </Panel>
+
+                        <Panel hasBorder>
+                            <div className="flex flex-col gap-y-sm p-md">
+                                <KeyValueInfo
+                                    keyText="Gas Fees"
+                                    value={gasFormatted || '-'}
+                                    supportingLabel={GAS_SYMBOL}
+                                    fullwidth
+                                />
+                            </div>
+                        </Panel>
+                    </div>
+                </DialogLayoutBody>
+
+                <DialogLayoutFooter>
+                    {isNotEnoughGas && (
+                        <div className="pt-sm">
+                            <InfoBox
+                                supportingText={GAS_BUDGET_ERROR_MESSAGES[GAS_BALANCE_TOO_LOW_ID]}
+                                icon={<Info />}
+                                type={InfoBoxType.Error}
+                                style={InfoBoxStyle.Elevated}
                             />
                         </div>
-                    </Panel>
-                </div>
-            </DialogLayoutBody>
-
-            <DialogLayoutFooter>
-                {isNotEnoughGas && (
-                    <div className="pt-sm">
-                        <InfoBox
-                            supportingText={GAS_BUDGET_ERROR_MESSAGES[GAS_BALANCE_TOO_LOW_ID]}
-                            icon={<Info />}
-                            type={InfoBoxType.Error}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    </div>
-                )}
-                <Button
-                    type={ButtonType.Secondary}
-                    fullWidth
-                    onClick={handleUnstake}
-                    disabled={
-                        !unstakeData ||
-                        isUnstakeTxPending ||
-                        isTransactionPending ||
-                        isNotEnoughGas ||
-                        !delegationId
-                    }
-                    text="Unstake"
-                    icon={
-                        isUnstakeTxPending || isTransactionPending ? (
-                            <LoadingIndicator data-testid="loading-indicator" />
-                        ) : null
-                    }
-                    iconAfterText
-                />
-            </DialogLayoutFooter>
-        </DialogLayout>
+                    )}
+                    <Button
+                        type={ButtonType.Secondary}
+                        fullWidth
+                        onClick={handleUnstake}
+                        disabled={
+                            !activeUnstakeData ||
+                            activeIsPending ||
+                            isTransactionPending ||
+                            isNotEnoughGas ||
+                            activeIsError ||
+                            isInvalidPartialAmount ||
+                            !delegationId
+                        }
+                        text="Unstake"
+                        icon={
+                            activeIsPending || isTransactionPending ? (
+                                <LoadingIndicator data-testid="loading-indicator" />
+                            ) : null
+                        }
+                        iconAfterText
+                    />
+                </DialogLayoutFooter>
+            </DialogLayout>
+        </FormikProvider>
     );
 }
