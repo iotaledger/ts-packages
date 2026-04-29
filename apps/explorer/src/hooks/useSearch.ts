@@ -6,6 +6,7 @@ import { Feature, fetchObjectOrPastObject, useIotaNamesClient } from '@iota/core
 import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { type IotaNamesClient, isValidIotaName } from '@iota/iota-names-sdk';
 import { type IotaClient, type LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
+import { isAuthenticatorFunctionRefV1Key } from './abstractAccount.utils';
 import {
     isValidTransactionDigest,
     isValidIotaAddress,
@@ -136,13 +137,16 @@ const getResultsForAddress = async (
 
         if (!nameRecord || !nameRecord.targetAddress) return null;
 
-        const addrHasActivity = await addressHasActivity(client, nameRecord.targetAddress);
+        const [addrHasActivity, abstractAccountCheck] = await Promise.all([
+            addressHasActivity(client, nameRecord.targetAddress),
+            isAbstractAccount(client, nameRecord.targetAddress),
+        ]);
 
         return [
             {
                 id: nameRecord.targetAddress,
                 label: nameRecord.targetAddress,
-                type: addrHasActivity ? 'address' : 'object',
+                type: abstractAccountCheck ? 'account' : addrHasActivity ? 'address' : 'object',
             },
         ];
     }
@@ -150,29 +154,42 @@ const getResultsForAddress = async (
     const normalized = normalizeIotaObjectId(query);
     if (!isValidIotaAddress(normalized) || isGenesisLibAddress(normalized)) return null;
 
-    const fromOrTo = await client.queryTransactionBlocks({
-        filter: { FromOrToAddress: { addr: normalized } },
-        limit: 1,
-    });
+    const [fromOrTo, abstractAccountCheck] = await Promise.all([
+        client.queryTransactionBlocks({
+            filter: { FromOrToAddress: { addr: normalized } },
+            limit: 1,
+        }),
+        isAbstractAccount(client, normalized),
+    ]);
 
     // Note: we need to query owned objects separately
     // because genesis addresses might not be involved in any transaction yet.
+    // AA accounts are shared objects so they won't appear in getOwnedObjects.
     let ownedObjects = [];
-    if (!fromOrTo.data?.length) {
+    if (!fromOrTo.data?.length && !abstractAccountCheck) {
         const response = await client.getOwnedObjects({ owner: normalized, limit: 1 });
         ownedObjects = response.data;
     }
 
-    if (!fromOrTo.data?.length && !ownedObjects?.length) return null;
+    if (!fromOrTo.data?.length && !ownedObjects?.length && !abstractAccountCheck) return null;
 
     return [
         {
             id: normalized,
             label: normalized,
-            type: 'address',
+            type: abstractAccountCheck ? 'account' : 'address',
         },
     ];
 };
+
+async function isAbstractAccount(client: IotaClient, address: string): Promise<boolean> {
+    try {
+        const { data } = await client.getDynamicFields({ parentId: address });
+        return data.some((field) => isAuthenticatorFunctionRefV1Key(field.name.type));
+    } catch {
+        return false;
+    }
+}
 
 async function addressHasActivity(client: IotaClient, address: string): Promise<boolean> {
     const normalized = normalizeIotaObjectId(address);

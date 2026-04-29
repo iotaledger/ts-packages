@@ -5,6 +5,7 @@
 import { wrapCreateBrowserRouter } from '@sentry/react';
 import { createBrowserRouter, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AddressResultPage } from './address-result/AddressResult';
+import { AbstractAccountResultPage } from './abstract-account-result/AbstractAccountResult';
 import { CheckpointDetail } from './checkpoints/CheckpointDetail';
 import { CookiePolicyPage } from './cookie-policy/CookiePolicyPage';
 import { EpochDetail } from './epochs/EpochDetail';
@@ -19,12 +20,13 @@ import { IdentityResult } from './trust-framework/identity-result/IdentityResult
 
 interface RedirectWithIdProps {
     base: string;
+    suffix?: string;
 }
 
-function RedirectWithId({ base }: RedirectWithIdProps): JSX.Element {
+function RedirectWithId({ base, suffix = '' }: RedirectWithIdProps): JSX.Element {
     const params = useParams();
     const { search } = useLocation();
-    return <Navigate to={`/${base}/${params.id}${search}`} replace />;
+    return <Navigate to={`/${base}/${params.id}${suffix}${search}`} replace />;
 }
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouter(createBrowserRouter);
@@ -43,6 +45,7 @@ export const router = sentryCreateBrowserRouter([
             { path: 'txblock/:id', element: <TransactionResult /> },
             { path: 'epoch/:id', element: <EpochDetail /> },
             { path: 'address/:id', element: <AddressResultPage /> },
+            { path: 'account/:id', element: <AbstractAccountResultPage /> },
             { path: 'validators', element: <ValidatorPageResult /> },
             { path: 'validator/:id', element: <ValidatorDetails /> },
             { path: 'identity/:id', element: <IdentityResult /> },
@@ -68,6 +71,10 @@ export const router = sentryCreateBrowserRouter([
     {
         path: '/addresses/:id',
         element: <RedirectWithId base="address" />,
+    },
+    {
+        path: '/accounts/:id',
+        element: <RedirectWithId base="account" />,
     },
     // 404 route:
     { path: '*', element: <Navigate to="/" replace /> },
