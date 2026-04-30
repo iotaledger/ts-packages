@@ -126,6 +126,11 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         return this.#wsClient;
     }
 
+    close() {
+        this.#wsClient?.close();
+        this.#wsClient = null;
+    }
+
     async graphqlQuery<
         Result = Record<string, unknown>,
         Variables = Record<string, unknown>,

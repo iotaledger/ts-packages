@@ -8,12 +8,7 @@ import { GraphQLWebSocketClient } from '../src/graphql-websocket-client';
 
 const network = getDefaultNetwork();
 const graphqlUrl = getNetwork(network).graphql;
-if (!graphqlUrl) {
-    throw new Error(
-        `Missing GraphQL URL for ${network}. Ensure IOTA_NETWORKS env var is configured.`,
-    );
-}
-const subscriptionUrl = graphqlUrl.replace(/\/?$/, '/subscriptions');
+const subscriptionUrl = graphqlUrl?.replace(/\/?$/, '/subscriptions');
 
 const SUBSCRIPTION_TIMEOUT = 15_000;
 
@@ -28,7 +23,7 @@ describe(`GraphQLWebSocketClient E2E (${network})`, () => {
     test(
         'connects to network and completes handshake',
         async () => {
-            client = new GraphQLWebSocketClient(subscriptionUrl);
+            client = new GraphQLWebSocketClient(subscriptionUrl!);
 
             const unsub = await client.subscribe({
                 query: `subscription { events { ... on Event { json } ... on Lagged { count } } }`,
@@ -46,7 +41,7 @@ describe(`GraphQLWebSocketClient E2E (${network})`, () => {
     test(
         'receives events from network (or unsubscribes cleanly)',
         async () => {
-            client = new GraphQLWebSocketClient(subscriptionUrl);
+            client = new GraphQLWebSocketClient(subscriptionUrl!);
 
             const messages: unknown[] = [];
             const errors: unknown[] = [];
@@ -80,7 +75,7 @@ describe(`GraphQLWebSocketClient E2E (${network})`, () => {
     test(
         'subscribes to transactions on network',
         async () => {
-            client = new GraphQLWebSocketClient(subscriptionUrl);
+            client = new GraphQLWebSocketClient(subscriptionUrl!);
 
             const unsub = await client.subscribe({
                 query: `subscription { transactions { ... on TransactionBlock { digest } ... on Lagged { count } } }`,

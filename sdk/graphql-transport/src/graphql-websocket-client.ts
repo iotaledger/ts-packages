@@ -152,7 +152,12 @@ export class GraphQLWebSocketClient {
         const id = this.#nextId();
         this.#subscriptions.set(id, subscription);
 
-        await subscription.subscribe(this, id);
+        try {
+            await subscription.subscribe(this, id);
+        } catch (e) {
+            this.#subscriptions.delete(id);
+            throw e;
+        }
 
         // Handle AbortSignal
         const cleanup = async () => {
@@ -260,19 +265,24 @@ export class GraphQLWebSocketClient {
             });
 
             ws.addEventListener('close', () => {
+                this.#connectionPromise = null;
                 if (!acknowledged) {
                     clearTimeout(ackTimeout);
                     reject(new Error('WebSocket closed before connection was acknowledged'));
                     return;
                 }
 
-                this.#connectionPromise = null;
                 this.#disconnects++;
 
                 if (this.#disconnects <= this.#options.maxReconnects) {
                     setTimeout(() => {
                         this.#reconnect();
                     }, this.#options.reconnectTimeout);
+                } else {
+                    for (const subscription of this.#subscriptions.values()) {
+                        subscription.onError([{ message: 'WebSocket connection lost' }]);
+                    }
+                    this.#subscriptions.clear();
                 }
             });
 

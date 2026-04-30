@@ -8,18 +8,13 @@ import { IotaClientGraphQLTransport } from '../src/transport';
 
 const network = getDefaultNetwork();
 const graphqlUrl = getNetwork(network).graphql;
-if (!graphqlUrl) {
-    throw new Error(
-        `Missing GraphQL URL for ${network}. Ensure IOTA_NETWORKS env var is configured.`,
-    );
-}
-
 const SUBSCRIPTION_TIMEOUT = 15_000;
 
 describe(`IotaClientGraphQLTransport Subscriptions E2E (${network})`, () => {
     let transport: IotaClientGraphQLTransport | null = null;
 
     afterEach(() => {
+        transport?.close();
         transport = null;
     });
 
@@ -27,7 +22,7 @@ describe(`IotaClientGraphQLTransport Subscriptions E2E (${network})`, () => {
         'subscribes to events via GraphQL WS',
         async () => {
             transport = new IotaClientGraphQLTransport({
-                url: graphqlUrl,
+                url: graphqlUrl!,
             });
 
             const messages: unknown[] = [];
@@ -59,7 +54,7 @@ describe(`IotaClientGraphQLTransport Subscriptions E2E (${network})`, () => {
         'subscribes to events with MoveModule filter',
         async () => {
             transport = new IotaClientGraphQLTransport({
-                url: graphqlUrl,
+                url: graphqlUrl!,
             });
 
             const messages: unknown[] = [];
@@ -85,7 +80,7 @@ describe(`IotaClientGraphQLTransport Subscriptions E2E (${network})`, () => {
         'subscribes to transactions via GraphQL WS',
         async () => {
             transport = new IotaClientGraphQLTransport({
-                url: graphqlUrl,
+                url: graphqlUrl!,
             });
 
             const messages: unknown[] = [];
@@ -116,7 +111,7 @@ describe(`IotaClientGraphQLTransport Subscriptions E2E (${network})`, () => {
         'supports AbortSignal for subscriptions',
         async () => {
             transport = new IotaClientGraphQLTransport({
-                url: graphqlUrl,
+                url: graphqlUrl!,
             });
 
             const controller = new AbortController();
