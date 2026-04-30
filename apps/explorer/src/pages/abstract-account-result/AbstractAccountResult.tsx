@@ -7,6 +7,7 @@ import {
     InfoBoxStyle,
     InfoBoxType,
     KeyValueInfo,
+    LoadingIndicator,
     Panel,
     Title,
 } from '@iota/apps-ui-kit';
@@ -76,14 +77,8 @@ export function AbstractAccountResultPage(): JSX.Element {
         );
     } else if (isObjectPending || isAbstractAccountDataPending) {
         detailsContent = (
-            <div className="flex flex-col gap-sm">
-                {[...Array(3)].map((_, i) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <div
-                        key={i}
-                        className="dark:bg-iota-neutral-10 h-16 animate-pulse rounded-xl bg-iota-neutral-96"
-                    />
-                ))}
+            <div className="mt-3 flex w-full justify-center pt-3">
+                <LoadingIndicator text="Loading data" />
             </div>
         );
     } else if (!isObjectPending && !isAbstractAccountDataPending) {

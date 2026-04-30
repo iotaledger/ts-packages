@@ -11,7 +11,7 @@ export function TransactionBlocksPanel({ address }: { address: string }) {
             <Title title="Transaction Blocks" />
             <div className="flex flex-col gap-2xl p-md--rs">
                 <ErrorBoundary>
-                    <div data-testid="tx" className="min-h-14 relative mt-4 h-full overflow-auto">
+                    <div data-testid="tx" className="relative mt-4 h-full min-h-14 overflow-auto">
                         <TransactionsForAddress address={address} />
                     </div>
                 </ErrorBoundary>

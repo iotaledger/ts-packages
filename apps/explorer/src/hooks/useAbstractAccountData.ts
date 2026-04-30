@@ -1,8 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetDynamicFields, useGetObject } from '@iota/core';
+import { useIotaClient } from '@iota/dapp-kit';
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
     type AuthenticatorReference,
     extractAuthenticatorRef,
@@ -21,40 +22,63 @@ type UseAbstractAccountDataResult = {
     isError: boolean;
 };
 
+const MAX_DYNAMIC_FIELDS_PAGE_SIZE = 10;
+
+const objectOptions = {
+    showType: true,
+    showContent: true,
+    showOwner: true,
+    showPreviousTransaction: true,
+    showStorageRebate: true,
+    showDisplay: true,
+};
+
 export function useAbstractAccountData(accountId?: string | null): UseAbstractAccountDataResult {
+    const client = useIotaClient();
     const parentObjectId = useMemo(() => normalizeAccountId(accountId), [accountId]);
 
-    const {
-        data: dynamicFieldsData,
-        isPending: isDynamicFieldsPending,
-        isError: isDynamicFieldsError,
-    } = useGetDynamicFields(parentObjectId ?? '');
+    const { data, isPending, isError } = useQuery({
+        queryKey: ['abstract-account-data', parentObjectId],
+        queryFn: async (): Promise<
+            Pick<UseAbstractAccountDataResult, 'isAbstractAccount' | 'authenticator'>
+        > => {
+            const dynamicFieldsData = await client.getDynamicFields({
+                parentId: parentObjectId!,
+                cursor: null,
+                limit: MAX_DYNAMIC_FIELDS_PAGE_SIZE,
+            });
 
-    // Only the first loaded page is searched; accounts with many dynamic fields may need pagination.
-    const dynamicFields = dynamicFieldsData?.pages.flatMap((p) => p.data) ?? [];
+            // Only the first loaded page is searched; accounts with many dynamic fields may need pagination.
+            const authenticatorField =
+                dynamicFieldsData.data.find((field) =>
+                    isAuthenticatorFunctionRefV1Key(field.name.type),
+                ) ?? null;
 
-    const authenticatorField = useMemo(
-        () =>
-            dynamicFields.find((field) => isAuthenticatorFunctionRefV1Key(field.name.type)) ?? null,
-        [dynamicFields],
-    );
+            if (!authenticatorField) {
+                return {
+                    isAbstractAccount: false,
+                    authenticator: null,
+                };
+            }
 
-    const {
-        data: authenticatorFieldData,
-        isPending: isAuthenticatorPending,
-        isError: isAuthenticatorError,
-    } = useGetObject(authenticatorField?.objectId);
+            const authenticatorFieldData = await client.getObject({
+                id: authenticatorField.objectId,
+                options: objectOptions,
+            });
 
-    const authenticator = useMemo(() => {
-        const reference = extractAuthenticatorRef(authenticatorFieldData);
-        if (!reference) return null;
-        return { ...reference, label: reference.target };
-    }, [authenticatorFieldData]);
+            const reference = extractAuthenticatorRef(authenticatorFieldData);
+            return {
+                isAbstractAccount: true,
+                authenticator: reference ? { ...reference, label: reference.target } : null,
+            };
+        },
+        enabled: !!parentObjectId,
+    });
 
     return {
-        isAbstractAccount: !!authenticatorField,
-        authenticator,
-        isPending: isDynamicFieldsPending || (!!authenticatorField && isAuthenticatorPending),
-        isError: isDynamicFieldsError || isAuthenticatorError,
+        isAbstractAccount: data?.isAbstractAccount ?? false,
+        authenticator: data?.authenticator ?? null,
+        isPending,
+        isError,
     };
 }
