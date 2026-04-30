@@ -47,6 +47,8 @@ jobs:
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
     permissions:
       contents: read
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.WALLET_DASHBOARD_VERCEL_PROJECT_ID }}
@@ -65,6 +67,7 @@ jobs:
       - name: Install Vercel CLI
         run: pnpm add --global vercel@canary
       - name: Pull Vercel Environment and Deploy
+        id: deploy
         run: |
           DEPLOY_TYPE="${{ needs.resolve-deploy-type.outputs.deploy_type }}"
           VERCEL_FLAGS="--token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_SCOPE }}"
@@ -83,11 +86,29 @@ jobs:
           if [ "$DEPLOY_TYPE" = "production" ]; then
             vercel build --prod $VERCEL_FLAGS
             vercel deploy --prod --prebuilt $VERCEL_FLAGS
+            PUBLIC_URL="https://wallet-dashboard.iota.org"
           else
             vercel build $VERCEL_FLAGS
-            DEPLOY_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
-
             if [ "$DEPLOY_TYPE" = "rc" ]; then
-              vercel alias "$DEPLOY_URL" wallet-dashboard-rc-iota1.vercel.app $VERCEL_FLAGS
+              vercel alias "$(vercel deploy --prebuilt $VERCEL_FLAGS)" wallet-dashboard-rc-iota1.vercel.app $VERCEL_FLAGS
+              PUBLIC_URL="https://wallet-dashboard-rc-iota1.vercel.app"
+            else
+              PUBLIC_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
             fi
           fi
+
+          echo "url=$PUBLIC_URL" >> "$GITHUB_OUTPUT"
+
+  notify:
+    needs: [resolve-deploy-type, deploy]
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Wallet Dashboard ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        URL: ${{ needs.deploy.outputs.url }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

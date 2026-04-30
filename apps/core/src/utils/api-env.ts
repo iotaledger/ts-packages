@@ -9,9 +9,21 @@ import {
     type NetworkConfiguration,
 } from '@iota/iota-sdk/client';
 
+type KnownNetworkValues = {
+    customRpcUrl: null;
+    customExplorerUrl: null;
+    customFaucetUrl: null;
+};
+
+type CustomNetworkValues = {
+    customRpcUrl: string;
+    customExplorerUrl: string | null;
+    customFaucetUrl: string | null;
+};
+
 export type NetworkEnvType =
-    | { network: Exclude<Network, Network.Custom>; customRpcUrl: null }
-    | { network: Network.Custom; customRpcUrl: string };
+    | ({ network: Exclude<Network, Network.Custom> } & KnownNetworkValues)
+    | ({ network: Network.Custom } & CustomNetworkValues);
 
 export function getCustomNetwork(rpc: string = ''): NetworkConfiguration {
     return {

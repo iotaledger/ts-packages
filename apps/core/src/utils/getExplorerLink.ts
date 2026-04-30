@@ -52,6 +52,8 @@ export function getExplorerLink(
     linkConfig: ExplorerLinkConfig,
     activeAddress: string | null,
     network: NetworkId,
+    customExplorerUrl?: string | null,
+    customRpcUrl?: string | null,
 ) {
     const { type } = linkConfig;
     const address = getAddress(linkConfig, activeAddress);
@@ -62,17 +64,25 @@ export function getExplorerLink(
 
     // fallback to localhost if customRPC is not set
     const customExplorer =
-        network === Network.Custom ? getCustomNetwork().explorer : getNetwork(network).explorer;
+        network === Network.Custom
+            ? customExplorerUrl || getCustomNetwork().explorer
+            : getNetwork(network).explorer;
 
     if (!address) return null;
     switch (type) {
         case ExplorerLinkType.Address:
-            return address && getAddressUrl(address, network, customExplorer);
+            return address && getAddressUrl(address, network, customExplorer, customRpcUrl);
         case ExplorerLinkType.Object:
-            return objectID && getObjectUrl(objectID, network, customExplorer, moduleName);
+            return (
+                objectID &&
+                getObjectUrl(objectID, network, customExplorer, moduleName, customRpcUrl)
+            );
         case ExplorerLinkType.Transaction:
-            return transactionID && getTransactionUrl(transactionID, network, customExplorer);
+            return (
+                transactionID &&
+                getTransactionUrl(transactionID, network, customExplorer, customRpcUrl)
+            );
         case ExplorerLinkType.Validator:
-            return validator && getValidatorUrl(validator, network, customExplorer);
+            return validator && getValidatorUrl(validator, network, customExplorer, customRpcUrl);
     }
 }

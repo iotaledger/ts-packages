@@ -1,37 +1,16 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaObjectResponse, MoveStruct, MoveValue } from '@iota/iota-sdk/client';
-import type { IotaValidatorSummaryExtended } from '../types';
+import type { IotaObjectResponse } from '@iota/iota-sdk/client';
+import type { IotaValidatorSummaryExtended } from '../../types';
+import { bytesToBase64, getMoveFields, MoveStructFields } from './helpers';
 
-function isMoveStructWithFields(
-    data: MoveStruct,
-): data is { fields: { [key: string]: MoveValue }; type: string } {
-    return (
-        typeof data === 'object' &&
-        data !== null &&
-        'fields' in data &&
-        typeof data.fields === 'object' &&
-        data.fields !== null
-    );
-}
-
-function getMoveFields(object: MoveStruct): { [key: string]: MoveValue } {
-    if (isMoveStructWithFields(object)) {
-        return object.fields as { [key: string]: MoveValue };
-    }
-    return {};
-}
-
-interface MoveStructFields {
-    fields: { [key: string]: MoveValue };
-}
-
-export function sanitizePendingValidators(
-    allPendings: IotaObjectResponse[] | undefined,
+export function sanitizeValidatorObjects(
+    objects: IotaObjectResponse[] | undefined,
+    flags: Pick<IotaValidatorSummaryExtended, 'isPending' | 'isCandidate'>,
 ): IotaValidatorSummaryExtended[] {
     return (
-        allPendings?.map(({ data }) => {
+        objects?.map(({ data }) => {
             const fields =
                 (data &&
                     data.content &&
@@ -45,8 +24,8 @@ export function sanitizePendingValidators(
             const exchangeRates = (stakingPool.exchange_rates as MoveStructFields)?.fields || {};
 
             return {
-                isPending: true,
-                authorityPubkeyBytes: '',
+                ...flags,
+                authorityPubkeyBytes: bytesToBase64(metadata.authority_pubkey_bytes),
                 commissionRate: String(value?.fields.commission_rate),
                 description: String(metadata.description),
                 exchangeRatesId: (
@@ -60,7 +39,7 @@ export function sanitizePendingValidators(
                 iotaAddress: String(metadata.iota_address),
                 name: String(metadata.name),
                 netAddress: String(metadata.net_address),
-                networkPubkeyBytes: '',
+                networkPubkeyBytes: bytesToBase64(metadata.network_pubkey_bytes),
                 nextEpochCommissionRate: String(value?.fields.next_epoch_commission_rate),
                 nextEpochGasPrice: String(value?.fields.next_epoch_gas_price),
                 nextEpochStake: String(value?.fields.next_epoch_stake),
@@ -72,8 +51,8 @@ export function sanitizePendingValidators(
                 poolTokenBalance: String(stakingPool.pool_token_balance),
                 primaryAddress: String(metadata.primary_address),
                 projectUrl: String(metadata.project_url),
-                proofOfPossessionBytes: '',
-                protocolPubkeyBytes: '',
+                proofOfPossessionBytes: bytesToBase64(metadata.proof_of_possession),
+                protocolPubkeyBytes: bytesToBase64(metadata.protocol_pubkey_bytes),
                 rewardsPool: String(stakingPool.rewards_pool),
                 stakingPoolId: (
                     stakingPool.id as {
