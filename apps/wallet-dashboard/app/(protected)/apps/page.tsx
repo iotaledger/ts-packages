@@ -37,6 +37,7 @@ export default function AppsDashboardPage(): React.JSX.Element {
                                             icon={app.icon}
                                             description={app.description}
                                             tags={app.tags}
+                                            link={app.link}
                                         />
                                     </div>
                                 </a>

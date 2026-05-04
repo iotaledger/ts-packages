@@ -7,7 +7,15 @@ import { ExternalLink } from '_components';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getDAppUrl } from '_src/shared/utils';
 import { useState } from 'react';
-import { Card, CardImage, CardBody, ImageShape, CardType } from '@iota/apps-ui-kit';
+import {
+    Card,
+    CardImage,
+    CardBody,
+    ImageShape,
+    CardType,
+    CardAction,
+    CardActionType,
+} from '@iota/apps-ui-kit';
 import { DisconnectApp } from './DisconnectApp';
 
 export type { DAppEntry };
@@ -34,6 +42,7 @@ function CardView({ name, link, icon }: CardViewProps) {
                 />
             </CardImage>
             <CardBody isTextTruncated title={name} subtitle={originLabel} />
+            <CardAction type={CardActionType.Link}/>
         </Card>
     );
 }
@@ -76,7 +85,13 @@ export function IotaApp({
 
     const AppDetails =
         displayType === 'full' ? (
-            <DAppListItem name={name} description={description} icon={icon} tags={tags} />
+            <DAppListItem
+                name={name}
+                description={description}
+                icon={icon}
+                tags={tags}
+                link={link}
+            />
         ) : (
             <CardView name={name} link={link} icon={icon} />
         );

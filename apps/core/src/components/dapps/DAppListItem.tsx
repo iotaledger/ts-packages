@@ -16,10 +16,11 @@ interface DAppListItemProps {
     name: string;
     icon?: string;
     description: string;
+    link: string;
     tags?: string[];
 }
 
-export function DAppListItem({ name, icon, description, tags }: DAppListItemProps) {
+export function DAppListItem({ name, icon, description, link, tags }: DAppListItemProps) {
     return (
         <Panel hasBorder>
             <div className="dark:hover:bg-shader-primary-dark-8 flex h-full flex-col rounded-xl hover:bg-shader-primary-light-8">
@@ -30,9 +31,12 @@ export function DAppListItem({ name, icon, description, tags }: DAppListItemProp
                         fallback={name}
                         size={ImageIconSize.Medium}
                     />
-                    <div className="flex flex-col justify-center gap-sm">
+                    <div className="flex flex-col justify-center gap-xxs">
                         <span className="dark:text-iota-neutral-92 text-label-md text-iota-neutral-10">
                             {name}
+                        </span>
+                        <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
+                            {link}
                         </span>
                     </div>
                 </div>
