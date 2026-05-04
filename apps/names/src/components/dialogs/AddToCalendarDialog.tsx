@@ -90,13 +90,11 @@ export function AddToCalendarDialog({ name, expirationDate, setOpen }: AddToCale
     function handleGoogleCalendar() {
         const event = buildEvent(name, expirationDate);
         window.open(google(event), '_blank', 'noopener noreferrer');
-        handleClose();
     }
 
     function handleDownloadIcs() {
         const event = buildEvent(name, expirationDate);
         downloadIcsFile(name, ics(event));
-        handleClose();
     }
 
     return (
@@ -106,25 +104,25 @@ export function AddToCalendarDialog({ name, expirationDate, setOpen }: AddToCale
                 <DialogBody>
                     <div className="flex flex-col gap-md">
                         <p className="text-body-md text-names-neutral-60">
-                            Set a reminder for{' '}
+                            Add the expiry date of{' '}
                             <span className="text-names-neutral-92">{normalizeIotaName(name)}</span>{' '}
-                            expiring on{' '}
+                            (
                             <span className="text-names-neutral-92">
                                 {formatDate(expirationDate)}
                             </span>
-                            .
+                            ) to a calendar app.
                         </p>
                         <div className="flex flex-col gap-xs">
                             <CalendarOption
                                 icon={<Globe />}
                                 title="Google Calendar"
-                                description="Opens Google Calendar to create an event. Add reminders manually after the event is created."
+                                description="Opens Google Calendar to create an event. We recommend adding reminders for 1 month and 1 day before the expiry date."
                                 onClick={handleGoogleCalendar}
                             />
                             <CalendarOption
                                 icon={<Export />}
                                 title="Download .ics"
-                                description="Downloads a calendar file compatible with any app. Includes reminders at 09:00 on the day, 1 day before, and 1 month before."
+                                description="Downloads a calendar file compatible with any app. Includes reminders at 09:00 on the expiry day, 1 day before, and 1 month before."
                                 onClick={handleDownloadIcs}
                             />
                         </div>
