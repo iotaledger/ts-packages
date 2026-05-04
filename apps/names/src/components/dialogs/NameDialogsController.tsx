@@ -7,6 +7,7 @@ import { Fragment } from 'react';
 import { RegistrationNft } from '@/lib/interfaces';
 
 import { DeleteNameDialog } from '.';
+import { AddToCalendarDialog } from './AddToCalendarDialog';
 import { ConnectToAddressDialog } from './ConnectToAddressDialog';
 import { CreateSubnameDialog } from './CreateSubnameDialog';
 import { EditMetadataDialog } from './EditMetadata';
@@ -61,6 +62,14 @@ export function NameDialogsController({ nft, openDialogId, onClose }: NameDialog
 
             {openDialogId === NameDialogId.EditMetadata ? (
                 <EditMetadataDialog name={nft.name} setOpen={onClose} />
+            ) : null}
+
+            {openDialogId === NameDialogId.AddToCalendar ? (
+                <AddToCalendarDialog
+                    name={nft.name}
+                    expirationDate={nft.expirationDate}
+                    setOpen={onClose}
+                />
             ) : null}
         </Fragment>
     );
