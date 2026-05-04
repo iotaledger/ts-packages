@@ -32,7 +32,7 @@ export function DAppListItem({ name, icon, description, link, tags }: DAppListIt
                         size={ImageIconSize.Medium}
                     />
                     <div className="flex flex-col justify-center gap-xxs">
-                        <span className="dark:text-iota-neutral-92 text-label-md text-iota-neutral-10">
+                        <span className="text-label-lg dark:text-iota-neutral-92 text-iota-neutral-10">
                             {name}
                         </span>
                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
