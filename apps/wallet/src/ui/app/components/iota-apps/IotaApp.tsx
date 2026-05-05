@@ -42,7 +42,7 @@ function CardView({ name, link, icon }: CardViewProps) {
                 />
             </CardImage>
             <CardBody isTextTruncated title={name} subtitle={originLabel} />
-            <CardAction type={CardActionType.Link}/>
+            <CardAction type={CardActionType.Link} />
         </Card>
     );
 }
