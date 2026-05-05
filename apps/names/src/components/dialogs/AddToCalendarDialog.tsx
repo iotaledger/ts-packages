@@ -8,42 +8,12 @@ import { Dialog, DialogBody, DialogContent, DialogPosition, Header } from '@iota
 import { normalizeIotaName } from '@iota/iota-names-sdk';
 
 import { formatDate } from '@/lib/utils/format/formatDate';
-import { type CalendarEvent, google, ics } from '@/lib/utils/calendar';
+import { buildEvent, google, ics } from '@/lib/utils/calendar';
 
 interface AddToCalendarDialogProps {
     name: string;
     expirationDate: Date;
     setOpen: (bool: boolean) => void;
-}
-
-function at9am(date: Date): Date {
-    const d = new Date(date);
-    d.setHours(9, 0, 0, 0);
-    return d;
-}
-
-function buildEvent(name: string, expirationDate: Date): CalendarEvent {
-    const displayName = normalizeIotaName(name);
-
-    const oneMonthBefore = new Date(expirationDate);
-    oneMonthBefore.setMonth(oneMonthBefore.getMonth() - 1);
-
-    const oneDayBefore = new Date(expirationDate);
-    oneDayBefore.setDate(oneDayBefore.getDate() - 1);
-
-    return {
-        title: `${displayName} – Renewal Reminder`,
-        description: `Your IOTA name ${displayName} expires on ${formatDate(expirationDate)}. Remember to renew it at iotanames.com.`,
-        date: expirationDate,
-        alerts: [
-            {
-                triggerAt: at9am(oneMonthBefore),
-                description: `1 month until ${displayName} expires`,
-            },
-            { triggerAt: at9am(oneDayBefore), description: `1 day until ${displayName} expires` },
-            { triggerAt: at9am(expirationDate), description: `${displayName} expires today` },
-        ],
-    };
 }
 
 function downloadIcsFile(name: string, content: string): void {
@@ -116,13 +86,13 @@ export function AddToCalendarDialog({ name, expirationDate, setOpen }: AddToCale
                             <CalendarOption
                                 icon={<Globe />}
                                 title="Google Calendar"
-                                description="Opens Google Calendar to create an event. We recommend adding reminders for 1 month and 1 day before the expiry date."
+                                description="Opens Google Calendar to create an event. Note: automatic reminders are not supported, you will need to add them manually."
                                 onClick={handleGoogleCalendar}
                             />
                             <CalendarOption
                                 icon={<Export />}
                                 title="Download .ics"
-                                description="Downloads a calendar file compatible with any app. Includes reminders at 09:00 on the expiry day, 1 day before, and 1 month before."
+                                description="Downloads a calendar file compatible with any app. Includes reminders at 09:00 on the expiry day, 1 day before, 1 week before, and 1 month before."
                                 onClick={handleDownloadIcs}
                             />
                         </div>

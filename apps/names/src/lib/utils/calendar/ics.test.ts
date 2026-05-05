@@ -73,6 +73,10 @@ describe('ics', () => {
         it('includes DESCRIPTION', () => {
             expect(ics(BASE_EVENT)).toContain('DESCRIPTION:Be there!');
         });
+
+        it('includes a DTSTAMP in UTC datetime format', () => {
+            expect(ics(BASE_EVENT)).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+        });
     });
 
     describe('date boundaries', () => {
@@ -173,6 +177,14 @@ describe('ics', () => {
             expect(ics({ ...BASE_EVENT, description: 'line1\nline2' })).toContain(
                 'DESCRIPTION:line1\\nline2',
             );
+        });
+
+        it('escapes bare carriage returns to prevent ICS line-break injection', () => {
+            expect(ics({ ...BASE_EVENT, description: 'a\rb' })).toContain('DESCRIPTION:a\\nb');
+        });
+
+        it('escapes CRLF sequences to prevent ICS line-break injection', () => {
+            expect(ics({ ...BASE_EVENT, description: 'a\r\nb' })).toContain('DESCRIPTION:a\\nb');
         });
 
         it('escapes special characters in alert descriptions', () => {

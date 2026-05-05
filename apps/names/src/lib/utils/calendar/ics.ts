@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { MS_PER_DAY } from './constants';
 import type { CalendarAlert, CalendarEvent } from './types';
 
 function escapeText(text: string): string {
@@ -8,6 +9,8 @@ function escapeText(text: string): string {
         .replace(/\\/g, '\\\\')
         .replace(/;/g, '\\;')
         .replace(/,/g, '\\,')
+        .replace(/\r\n/g, '\\n')
+        .replace(/\r/g, '\\n')
         .replace(/\n/g, '\\n');
 }
 
@@ -39,7 +42,6 @@ function buildValarm(alert: CalendarAlert): string[] {
  * Based on https://icalendar.org/
  */
 export function ics(event: CalendarEvent): string {
-    const MS_PER_DAY = 24 * 60 * 60 * 1000;
     const start = toAllDayDate(event.date);
     const end = toAllDayDate(new Date(event.date.getTime() + MS_PER_DAY));
     const uid = `${event.title.replace(/\s+/g, '-').toLowerCase()}-${start}@iota-names`;
@@ -52,6 +54,7 @@ export function ics(event: CalendarEvent): string {
         'METHOD:PUBLISH',
         'BEGIN:VEVENT',
         `UID:${uid}`,
+        `DTSTAMP:${toUtcDateTime(new Date())}`,
         `DTSTART;VALUE=DATE:${start}`,
         `DTEND;VALUE=DATE:${end}`,
         `SUMMARY:${escapeText(event.title)}`,

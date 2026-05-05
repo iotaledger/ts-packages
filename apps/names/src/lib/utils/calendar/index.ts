@@ -4,3 +4,5 @@
 export * from './types';
 export { google } from './google';
 export { ics } from './ics';
+export { subtractMonths, subtractWeeks } from './dateUtils';
+export { at9am, buildEvent } from './buildEvent';
