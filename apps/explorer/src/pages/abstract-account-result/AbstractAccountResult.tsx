@@ -109,7 +109,6 @@ export function AbstractAccountResultPage(): JSX.Element {
                                     authenticator?.label || 'Unknown'
                                 )
                             }
-                            copyText={authenticator?.label || undefined}
                             isTruncated
                             fullwidth
                         />
