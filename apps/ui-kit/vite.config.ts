@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import react from '@vitejs/plugin-react-swc';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 
 const isPackageProduction = process.env.BUILD_ENV === 'package';
@@ -27,24 +26,14 @@ const packageConfig = {
 };
 
 const plugins = isPackageProduction
-    ? [
-          tsconfigPaths({
-              root: __dirname,
-          }),
-          react(),
-          dts({ rollupTypes: true }),
-      ]
-    : [
-          tsconfigPaths({
-              root: __dirname,
-          }),
-          react(),
-      ];
+    ? [react(), dts({ rollupTypes: true })]
+    : [react()];
 
 const buildPackageConfig = {
     build: isPackageProduction ? packageConfig : {},
     plugins,
     resolve: {
+        tsconfigPaths: true,
         alias: [
             {
                 find: 'fs',
