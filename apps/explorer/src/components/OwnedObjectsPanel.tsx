@@ -54,15 +54,3 @@ export function OwnedObjectsPanel({ address }: { address: string }): JSX.Element
         </Panel>
     );
 }
-
-export function OwnedObjectsSection({ address }: { address: string }): JSX.Element {
-    return (
-        <Panel>
-            <Title title="Owned Objects" />
-            <Divider />
-            <div className="flex flex-col gap-2xl">
-                <OwnedObjectsPanel address={address} />
-            </div>
-        </Panel>
-    );
-}

@@ -16,13 +16,13 @@ import {
     useCopyToClipboard,
     useGetDefaultIotaName,
     useGetObjectOrPastObject,
+    isOfficialAuthenticator,
 } from '@iota/core';
 import { formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useParams } from 'react-router-dom';
 import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
-import { isOfficialAuthenticator } from '@iota/core';
 import { Warning } from '@iota/apps-ui-icons';
 import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
 
@@ -81,7 +81,7 @@ export function AbstractAccountResultPage(): JSX.Element {
                 <LoadingIndicator text="Loading data" />
             </div>
         );
-    } else if (!isObjectPending && !isAbstractAccountDataPending) {
+    } else {
         detailsContent = !isAbstractAccount ? (
             <InfoBox
                 title="Not an Abstract Account"
@@ -124,10 +124,10 @@ export function AbstractAccountResultPage(): JSX.Element {
                     </div>
                 </Panel>
 
-                <AddressBalanceBreakdown address={accountId} />
+                <AddressBalanceBreakdown address={validAccountId ?? accountId} />
 
-                <OwnedObjectsPanel address={accountId} />
-                <TransactionBlocksPanel address={accountId} />
+                <OwnedObjectsPanel address={validAccountId ?? accountId} />
+                <TransactionBlocksPanel address={validAccountId ?? accountId} />
             </>
         );
     }
@@ -141,8 +141,8 @@ export function AbstractAccountResultPage(): JSX.Element {
                         title={
                             <div className="flex flex-col gap-xs">
                                 <AddressAlias
-                                    address={accountId}
-                                    onCopy={() => copyToClipboard(accountId)}
+                                    address={validAccountId ?? accountId}
+                                    onCopy={() => copyToClipboard(validAccountId ?? accountId)}
                                 />
                             </div>
                         }
