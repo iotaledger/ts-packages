@@ -98,7 +98,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                 <span
                     onClick={() => inputRef.current?.click()}
                     className={cx(
-                        'checkbox-base checkbox-state checkbox-icon checkbox-icon-hidden',
+                        'checkbox-base checkbox-state checkbox-icon checkbox-icon-hidden shrink-0',
                         'checkbox-border-default',
                         'peer-[&:is(:checked,:indeterminate)]:checkbox-border-checked',
                         'peer-[&:is(:checked,:indeterminate)]:checkbox-bg-checked',
@@ -119,7 +119,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
 function LabelText({ label, name }: Pick<CheckboxProps, 'label' | 'name'>) {
     return (
-        <label htmlFor={name} className="checkbox-label checkbox-label-disabled">
+        <label htmlFor={name} className="checkbox-label checkbox-label-disabled flex-1">
             {label}
         </label>
     );

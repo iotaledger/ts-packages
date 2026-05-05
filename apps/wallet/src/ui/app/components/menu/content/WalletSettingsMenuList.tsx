@@ -14,6 +14,7 @@ import {
     DarkMode,
     Globe,
     Info,
+    Key,
     LockLocked,
     Logout,
     Expand,
@@ -45,6 +46,7 @@ export function MenuList() {
     const networkUrl = useNextMenuUrl(true, '/network');
     const autoLockUrl = useNextMenuUrl(true, '/auto-lock');
     const themeUrl = useNextMenuUrl(true, '/theme');
+    const changePasswordUrl = useNextMenuUrl(true, '/change-password');
     const network = useAppSelector((state) => state.app.network);
     const networkConfig = network === Network.Custom ? getCustomNetwork() : getNetwork(network);
     const version = Browser.runtime.getManifest().version;
@@ -78,6 +80,10 @@ export function MenuList() {
 
     function onThemeClick() {
         navigate(themeUrl);
+    }
+
+    function onChangePasswordClick() {
+        navigate(changePasswordUrl);
     }
     async function onSidePanelClick(
         _isToggled: boolean,
@@ -132,6 +138,11 @@ export function MenuList() {
             subtitle: autoLockSubtitle,
             icon: <LockLocked />,
             onClick: onAutoLockClick,
+        },
+        {
+            title: 'Change Password',
+            icon: <Key />,
+            onClick: onChangePasswordClick,
         },
         {
             title: 'Themes',

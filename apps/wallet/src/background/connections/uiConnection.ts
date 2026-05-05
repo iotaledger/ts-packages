@@ -47,6 +47,7 @@ import {
 import { accountsEvents } from '../accounts/events';
 import { getAutoLockMinutes, notifyUserActive, setAutoLockMinutes } from '../autoLockAccounts';
 import { backupDB, getDB, SETTINGS_KEYS } from '../db';
+import { decrypt, encrypt } from '_src/shared/cryptography/keystore';
 import { clearStatus, doMigration, getStatus } from '../storageMigration';
 import NetworkEnv from '../networkEnv';
 import { Connection } from './connection';
@@ -276,6 +277,59 @@ export class UiConnection extends Connection {
                 this.send(createMessage({ type: 'done' }, msg.id));
                 accountSourcesEvents.emit('accountSourcesChanged');
                 accountsEvents.emit('accountsChanged');
+            } else if (isMethodPayload(payload, 'changePassword')) {
+                const { currentPassword, newPassword } = payload.args;
+                const db = await getDB();
+                const allSources = await db.accountSources.toArray();
+                const allAccounts = await db.accounts.toArray();
+
+                let verified = false;
+                for (const source of allSources) {
+                    try {
+                        await decrypt(currentPassword, (source as unknown as { encryptedData: string }).encryptedData);
+                        verified = true;
+                        break;
+                    } catch {
+                        // continue to next
+                    }
+                }
+                if (!verified) {
+                    for (const account of allAccounts) {
+                        const acc = account as unknown as { encrypted?: string };
+                        if (acc.encrypted) {
+                            try {
+                                await decrypt(currentPassword, acc.encrypted);
+                                verified = true;
+                                break;
+                            } catch {
+                                // continue to next
+                            }
+                        }
+                    }
+                }
+                if (!verified) {
+                    throw new Error('Current password is incorrect');
+                }
+
+                await db.transaction('rw', db.accountSources, db.accounts, async () => {
+                    for (const source of allSources) {
+                        const src = source as unknown as { id: string; encryptedData: string };
+                        const decrypted = await Dexie.waitFor(decrypt(currentPassword, src.encryptedData));
+                        const newEncryptedData = await Dexie.waitFor(encrypt(newPassword, decrypted));
+                        await db.accountSources.update(src.id, { encryptedData: newEncryptedData });
+                    }
+                    for (const account of allAccounts) {
+                        const acc = account as { id: string; encrypted?: string };
+                        if (acc.encrypted) {
+                            const decrypted = await Dexie.waitFor(decrypt(currentPassword, acc.encrypted));
+                            const newEncrypted = await Dexie.waitFor(encrypt(newPassword, decrypted));
+                            await db.accounts.update(acc.id, { encrypted: newEncrypted });
+                        }
+                    }
+                });
+
+                await backupDB();
+                this.send(createMessage({ type: 'done' }, msg.id));
             } else if (isDeriveBipPathAccountsFinder(payload)) {
                 const accountSource = await getAccountSourceByID(payload.sourceID);
 
