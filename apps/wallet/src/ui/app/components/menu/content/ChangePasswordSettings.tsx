@@ -89,8 +89,8 @@ export function ChangePasswordSettings() {
                 <Input
                     type={InputType.Password}
                     isVisibilityToggleEnabled
-                    label="Current Password"
-                    placeholder="Enter current password"
+                    label="Current password"
+                    placeholder="********"
                     errorMessage={errors.currentPassword?.message}
                     {...register('currentPassword')}
                     data-amp-mask
@@ -98,8 +98,8 @@ export function ChangePasswordSettings() {
                 <Input
                     type={InputType.Password}
                     isVisibilityToggleEnabled
-                    label="New Password"
-                    placeholder="Enter new password"
+                    label="New password"
+                    placeholder="********"
                     errorMessage={errors.newPassword?.message}
                     {...register('newPassword')}
                     data-amp-mask
@@ -107,8 +107,8 @@ export function ChangePasswordSettings() {
                 <Input
                     type={InputType.Password}
                     isVisibilityToggleEnabled
-                    label="Confirm New Password"
-                    placeholder="Confirm new password"
+                    label="Confirm new password"
+                    placeholder="********"
                     errorMessage={errors.confirmPassword?.message}
                     {...register('confirmPassword')}
                     data-amp-mask
