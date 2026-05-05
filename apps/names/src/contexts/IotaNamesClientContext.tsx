@@ -19,7 +19,7 @@ export const IotaNamesClientProvider: React.FC<React.PropsWithChildren> = ({ chi
             graphQlClient: new IotaGraphQLClient({
                 url: network.graphql!,
                 inspector:
-                    network.id === Network.Mainnet
+                    network && ctx.network === Network.Mainnet // Sentry dev hint: change this to eg Network.Localnet
                         ? createSentryRequestInspector(network.graphql!)
                         : undefined,
             }),

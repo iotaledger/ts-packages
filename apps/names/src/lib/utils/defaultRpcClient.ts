@@ -30,7 +30,7 @@ export const createIotaClient = (network: NetworkId): IotaClient => {
             url: networkGraphqlUrl,
             fallbackTransportUrl: networkJsonRpcUrl,
             inspector:
-                supportedNetwork && network === Network.Mainnet
+                supportedNetwork && network === Network.Mainnet // Sentry dev hint: change this to eg Network.Localnet
                     ? createSentryRequestInspector(networkGraphqlUrl)
                     : undefined,
             unsupportedMethods: [
