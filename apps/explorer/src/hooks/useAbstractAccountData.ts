@@ -22,8 +22,6 @@ type UseAbstractAccountDataResult = {
     isError: boolean;
 };
 
-const MAX_DYNAMIC_FIELDS_PAGE_SIZE = 10;
-
 const objectOptions = {
     showType: true,
     showContent: true,
@@ -42,17 +40,22 @@ export function useAbstractAccountData(accountId?: string | null): UseAbstractAc
         queryFn: async (): Promise<
             Pick<UseAbstractAccountDataResult, 'isAbstractAccount' | 'authenticator'>
         > => {
-            const dynamicFieldsData = await client.getDynamicFields({
-                parentId: parentObjectId!,
-                cursor: null,
-                limit: MAX_DYNAMIC_FIELDS_PAGE_SIZE,
-            });
+            let cursor: string | null | undefined = null;
+            let authenticatorField = null;
 
-            // Only the first loaded page is searched; accounts with many dynamic fields may need pagination.
-            const authenticatorField =
-                dynamicFieldsData.data.find((field) =>
-                    isAuthenticatorFunctionRefV1Key(field.name.type),
-                ) ?? null;
+            do {
+                const dynamicFieldsData = await client.getDynamicFields({
+                    parentId: parentObjectId!,
+                    cursor,
+                });
+
+                authenticatorField =
+                    dynamicFieldsData.data.find((field) =>
+                        isAuthenticatorFunctionRefV1Key(field.name.type),
+                    ) ?? null;
+
+                cursor = dynamicFieldsData.hasNextPage ? dynamicFieldsData.nextCursor : null;
+            } while (!authenticatorField && cursor);
 
             if (!authenticatorField) {
                 return {
