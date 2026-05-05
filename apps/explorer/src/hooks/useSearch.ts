@@ -2,11 +2,15 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Feature, fetchObjectOrPastObject, useIotaNamesClient } from '@iota/core';
+import {
+    Feature,
+    fetchObjectOrPastObject,
+    useIotaNamesClient,
+    isAuthenticatorFunctionRefV1Key,
+} from '@iota/core';
 import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { type IotaNamesClient, isValidIotaName } from '@iota/iota-names-sdk';
 import { type IotaClient, type LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
-import { isAuthenticatorFunctionRefV1Key } from '@iota/core';
 import {
     isValidTransactionDigest,
     isValidIotaAddress,
