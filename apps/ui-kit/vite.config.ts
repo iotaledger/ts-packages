@@ -25,9 +25,7 @@ const packageConfig = {
     emptyOutDir: true,
 };
 
-const plugins = isPackageProduction
-    ? [react(), dts({ rollupTypes: true })]
-    : [react()];
+const plugins = isPackageProduction ? [react(), dts({ rollupTypes: true })] : [react()];
 
 const buildPackageConfig = {
     build: isPackageProduction ? packageConfig : {},
