@@ -22,7 +22,7 @@ import { useParams } from 'react-router-dom';
 import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
-import { isOfficialAuthenticator } from '~/hooks/abstractAccount.utils';
+import { isOfficialAuthenticator } from '@iota/core';
 import { Warning } from '@iota/apps-ui-icons';
 import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
 

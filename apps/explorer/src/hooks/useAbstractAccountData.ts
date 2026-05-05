@@ -9,7 +9,7 @@ import {
     extractAuthenticatorRef,
     isAuthenticatorFunctionRefV1Key,
     normalizeAccountId,
-} from './abstractAccount.utils';
+} from '@iota/core';
 
 type AbstractAccountAuthenticator = AuthenticatorReference & {
     label: string | null;
