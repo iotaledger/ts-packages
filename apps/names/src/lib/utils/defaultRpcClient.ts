@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IotaClientGraphQLTransport } from '@iota/graphql-transport';
-import { getAllNetworks, getNetwork, IotaClient, type NetworkId } from '@iota/iota-sdk/client';
+import { createSentryRequestInspector } from '@iota/core';
+import {
+    getAllNetworks,
+    getNetwork,
+    IotaClient,
+    Network,
+    type NetworkId,
+} from '@iota/iota-sdk/client';
 
 export const SupportedNetworks = getAllNetworks();
 
@@ -22,6 +29,10 @@ export const createIotaClient = (network: NetworkId): IotaClient => {
         transport: new IotaClientGraphQLTransport({
             url: networkGraphqlUrl,
             fallbackTransportUrl: networkJsonRpcUrl,
+            inspector:
+                supportedNetwork && network === Network.Mainnet
+                    ? createSentryRequestInspector(networkGraphqlUrl)
+                    : undefined,
             unsupportedMethods: [
                 'multiGetObjects',
                 'getReferenceGasPrice',
