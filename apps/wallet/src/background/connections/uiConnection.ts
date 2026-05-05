@@ -286,7 +286,10 @@ export class UiConnection extends Connection {
                 let verified = false;
                 for (const source of allSources) {
                     try {
-                        await decrypt(currentPassword, (source as unknown as { encryptedData: string }).encryptedData);
+                        await decrypt(
+                            currentPassword,
+                            (source as unknown as { encryptedData: string }).encryptedData,
+                        );
                         verified = true;
                         break;
                     } catch {
@@ -314,15 +317,23 @@ export class UiConnection extends Connection {
                 await db.transaction('rw', db.accountSources, db.accounts, async () => {
                     for (const source of allSources) {
                         const src = source as unknown as { id: string; encryptedData: string };
-                        const decrypted = await Dexie.waitFor(decrypt(currentPassword, src.encryptedData));
-                        const newEncryptedData = await Dexie.waitFor(encrypt(newPassword, decrypted));
+                        const decrypted = await Dexie.waitFor(
+                            decrypt(currentPassword, src.encryptedData),
+                        );
+                        const newEncryptedData = await Dexie.waitFor(
+                            encrypt(newPassword, decrypted),
+                        );
                         await db.accountSources.update(src.id, { encryptedData: newEncryptedData });
                     }
                     for (const account of allAccounts) {
                         const acc = account as { id: string; encrypted?: string };
                         if (acc.encrypted) {
-                            const decrypted = await Dexie.waitFor(decrypt(currentPassword, acc.encrypted));
-                            const newEncrypted = await Dexie.waitFor(encrypt(newPassword, decrypted));
+                            const decrypted = await Dexie.waitFor(
+                                decrypt(currentPassword, acc.encrypted),
+                            );
+                            const newEncrypted = await Dexie.waitFor(
+                                encrypt(newPassword, decrypted),
+                            );
                             await db.accounts.update(acc.id, { encrypted: newEncrypted });
                         }
                     }
