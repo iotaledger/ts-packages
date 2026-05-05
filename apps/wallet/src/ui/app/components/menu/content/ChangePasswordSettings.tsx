@@ -9,11 +9,26 @@ import { Overlay } from '_components';
 import { Form } from '_src/ui/app/shared/forms/Form';
 import { CheckboxField } from '_src/ui/app/shared/forms/CheckboxField';
 import { useBackgroundClient } from '_src/ui/app/hooks/useBackgroundClient';
+import zxcvbn from 'zxcvbn';
 
 const formSchema = z
     .object({
         currentPassword: z.string().nonempty('Required'),
-        newPassword: z.string().nonempty('Required'),
+        newPassword: z
+            .string()
+            .nonempty('Required')
+            .superRefine((val, ctx) => {
+                const {
+                    score,
+                    feedback: { warning, suggestions },
+                } = zxcvbn(val);
+                if (score <= 2) {
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: `${warning ? `${warning}.` : 'Password is not strong enough.'}${suggestions?.length ? ` ${suggestions.join(' ')}` : ''}`,
+                    });
+                }
+            }),
         confirmPassword: z.string().nonempty('Required'),
         confirmed: z.literal<boolean>(true, {
             errorMap: () => ({ message: 'You must confirm you understand this change' }),
@@ -22,6 +37,10 @@ const formSchema = z
     .refine((data) => data.newPassword === data.confirmPassword, {
         path: ['confirmPassword'],
         message: "Passwords don't match",
+    })
+    .refine((data) => data.newPassword !== data.currentPassword, {
+        path: ['newPassword'],
+        message: 'New password must be different from current password',
     });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -49,8 +68,8 @@ export function ChangePasswordSettings() {
     async function handleSubmit(values: FormValues) {
         try {
             await backgroundClient.changePassword({
-                currentPassword: values.currentPassword,
-                newPassword: values.newPassword,
+                currentPassword: values.currentPassword.trim(),
+                newPassword: values.newPassword.trim(),
             });
             toast.success('Password updated successfully');
             navigate(-1);
