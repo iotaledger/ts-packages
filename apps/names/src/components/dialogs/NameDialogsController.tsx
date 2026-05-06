@@ -1,10 +1,11 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { isSubname } from '@iota/iota-names-sdk';
+import { GRACE_PERIOD_MS, isSubname } from '@iota/iota-names-sdk';
 import { Fragment } from 'react';
 
 import { RegistrationNft } from '@/lib/interfaces';
+import { isNameRecordExpired } from '@/lib/utils/names';
 
 import { DeleteNameDialog } from '.';
 import { AddToCalendarDialog } from './AddToCalendarDialog';
@@ -67,7 +68,11 @@ export function NameDialogsController({ nft, openDialogId, onClose }: NameDialog
             {openDialogId === NameDialogId.AddToCalendar ? (
                 <AddToCalendarDialog
                     name={nft.name}
-                    expirationDate={nft.expirationDate}
+                    expirationDate={
+                        isNameRecordExpired(nft)
+                            ? new Date(nft.expirationDate.getTime() + GRACE_PERIOD_MS)
+                            : nft.expirationDate
+                    }
                     setOpen={onClose}
                 />
             ) : null}
