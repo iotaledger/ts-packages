@@ -5,14 +5,15 @@
 
 import { Export, Globe } from '@iota/apps-ui-icons';
 import { Dialog, DialogBody, DialogContent, DialogPosition, Header } from '@iota/apps-ui-kit';
-import { normalizeIotaName } from '@iota/iota-names-sdk';
+import { GRACE_PERIOD_MS, normalizeIotaName } from '@iota/iota-names-sdk';
 
+import { RegistrationNft } from '@/lib/interfaces';
+import { isNameRecordExpired } from '@/lib/utils/names';
 import { formatDate } from '@/lib/utils/format/formatDate';
 import { buildEvent, google, ics } from '@/lib/utils/calendar';
 
 interface AddToCalendarDialogProps {
-    name: string;
-    expirationDate: Date;
+    nft: Pick<RegistrationNft, 'name' | 'expirationDate'>;
     setOpen: (bool: boolean) => void;
 }
 
@@ -52,19 +53,25 @@ function CalendarOption({ icon, title, description, onClick }: CalendarOptionPro
     );
 }
 
-export function AddToCalendarDialog({ name, expirationDate, setOpen }: AddToCalendarDialogProps) {
+export function AddToCalendarDialog({ nft, setOpen }: AddToCalendarDialogProps) {
+    const isExpired = isNameRecordExpired(nft);
+    const calendarDate = isExpired
+        ? new Date(nft.expirationDate.getTime() + GRACE_PERIOD_MS)
+        : nft.expirationDate;
+    const displayName = normalizeIotaName(nft.name);
+
     function handleClose() {
         setOpen(false);
     }
 
     function handleGoogleCalendar() {
-        const event = buildEvent(name, expirationDate);
+        const event = buildEvent(nft.name, calendarDate);
         window.open(google(event), '_blank', 'noopener noreferrer');
     }
 
     function handleDownloadIcs() {
-        const event = buildEvent(name, expirationDate);
-        downloadIcsFile(name, ics(event));
+        const event = buildEvent(nft.name, calendarDate);
+        downloadIcsFile(nft.name, ics(event));
     }
 
     return (
@@ -73,15 +80,25 @@ export function AddToCalendarDialog({ name, expirationDate, setOpen }: AddToCale
                 <Header title="Add to Calendar" onClose={handleClose} />
                 <DialogBody>
                     <div className="flex flex-col gap-md">
-                        <p className="text-body-md text-names-neutral-60">
-                            Add the expiry date of{' '}
-                            <span className="text-names-neutral-92">{normalizeIotaName(name)}</span>{' '}
-                            (
-                            <span className="text-names-neutral-92">
-                                {formatDate(expirationDate)}
-                            </span>
-                            ) to a calendar app.
-                        </p>
+                        {isExpired ? (
+                            <p className="text-body-md text-names-neutral-60">
+                                <span className="text-names-neutral-92">{displayName}</span> has
+                                already expired. Add the grace period deadline (
+                                <span className="text-names-neutral-92">
+                                    {formatDate(calendarDate)}
+                                </span>
+                                ) to your calendar — this is your last chance to renew.
+                            </p>
+                        ) : (
+                            <p className="text-body-md text-names-neutral-60">
+                                Add the expiry date of{' '}
+                                <span className="text-names-neutral-92">{displayName}</span> (
+                                <span className="text-names-neutral-92">
+                                    {formatDate(calendarDate)}
+                                </span>
+                                ) to a calendar app.
+                            </p>
+                        )}
                         <div className="flex flex-col gap-xs">
                             <CalendarOption
                                 icon={<Globe />}
