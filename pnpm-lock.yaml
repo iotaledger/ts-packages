@@ -25,7 +25,7 @@ overrides:
   minimatch@>=5.0.0: ^5.1.9
   minimatch@>=9.0.0: ^9.0.9
   hono@<4.12.4: '>=4.12.4'
-  axios@<1.15.0: ^1.15.0
+  axios@<1.15.2: ^1.15.2
   socket.io-parser@<4.2.6: 4.2.6
   picomatch@<2.3.2: ^2.3.2
   picomatch@>=4.0.0 <4.0.4: ^4.0.4
@@ -383,7 +383,7 @@ importers:
         version: 8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/evm-bridge:
     dependencies:
@@ -694,7 +694,7 @@ importers:
         version: 4.5.0(rollup@4.59.0)(typescript@5.8.3)(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/names:
     dependencies:
@@ -863,7 +863,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/names-display:
     dependencies:
@@ -909,7 +909,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/ui-icons:
     devDependencies:
@@ -1134,8 +1134,8 @@ importers:
         specifier: ^5.40.1
         version: 5.56.2(@tanstack/react-query@5.56.2(react@18.3.1))(react@18.3.1)
       axios:
-        specifier: ^1.15.0
-        version: 1.15.0(debug@4.3.7)
+        specifier: ^1.15.2
+        version: 1.16.0(debug@4.3.7)
       bignumber.js:
         specifier: ^9.1.1
         version: 9.3.1
@@ -1328,7 +1328,7 @@ importers:
         version: 6.1.1(typescript@5.8.3)(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       web-ext:
         specifier: ^9.3.0
         version: 9.3.0(body-parser@2.2.2)(express@5.2.1)(jiti@1.21.6)
@@ -1675,7 +1675,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   sdk/build-scripts:
     dependencies:
@@ -1807,7 +1807,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   sdk/examples:
     dependencies:
@@ -1887,7 +1887,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -1927,7 +1927,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -1955,7 +1955,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -1985,8 +1985,8 @@ importers:
         specifier: ^24.0.0
         version: 24.10.12
       axios:
-        specifier: ^1.15.0
-        version: 1.15.0(debug@4.3.7)
+        specifier: ^1.15.2
+        version: 1.16.0(debug@4.3.7)
       size-limit:
         specifier: ^11.1.4
         version: 11.1.5
@@ -1995,7 +1995,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   sdk/move-bytecode-template:
     devDependencies:
@@ -2010,7 +2010,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       wasm-pack:
         specifier: ^0.13.0
         version: 0.13.1
@@ -2047,7 +2047,7 @@ importers:
         version: 8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   sdk/signers:
     dependencies:
@@ -2081,7 +2081,7 @@ importers:
         version: 5.8.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
 
   sdk/typescript:
     dependencies:
@@ -2178,7 +2178,7 @@ importers:
         version: 8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
         specifier: ^4.1.0
-        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)
+        version: 4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
       wait-on:
         specifier: ^8.0.1
         version: 8.0.1(debug@4.3.7)
@@ -10163,10 +10163,10 @@ packages:
   axios-retry@4.5.0:
     resolution: {integrity: sha512-aR99oXhpEDGo0UuAlYcn2iGRds30k366Zfa05XWScR9QaQD4JYiP3/1Qt1u7YlefUOK+cn0CcwoL1oefavQUlQ==}
     peerDependencies:
-      axios: ^1.15.0
+      axios: ^1.15.2
 
-  axios@1.15.0:
-    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+  axios@1.16.0:
+    resolution: {integrity: sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -12233,6 +12233,15 @@ packages:
 
   follow-redirects@1.15.11:
     resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+
+  follow-redirects@1.16.0:
+    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -17631,6 +17640,7 @@ packages:
       '@vitest/ui': 4.1.4
       happy-dom: '*'
       jsdom: '*'
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -19620,8 +19630,8 @@ snapshots:
       '@solana/kit': 5.4.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@solana/web3.js': 1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       abitype: 1.0.6(typescript@5.8.3)(zod@3.25.76)
-      axios: 1.15.0(debug@4.3.7)
-      axios-retry: 4.5.0(axios@1.15.0)
+      axios: 1.16.0(debug@4.3.7)
+      axios-retry: 4.5.0(axios@1.16.0)
       jose: 6.1.3
       md5: 2.3.0
       uncrypto: 0.1.3
@@ -21833,7 +21843,7 @@ snapshots:
       '@ledgerhq/errors': 6.26.0
       '@ledgerhq/hw-transport': 6.31.12
       '@ledgerhq/logs': 6.13.0
-      axios: 1.15.0(debug@4.3.7)
+      axios: 1.16.0(debug@4.3.7)
       rxjs: 7.8.1
     transitivePeerDependencies:
       - debug
@@ -28521,14 +28531,14 @@ snapshots:
 
   axe-core@4.10.0: {}
 
-  axios-retry@4.5.0(axios@1.15.0):
+  axios-retry@4.5.0(axios@1.16.0):
     dependencies:
-      axios: 1.15.0(debug@4.3.7)
+      axios: 1.16.0(debug@4.3.7)
       is-retry-allowed: 2.2.0
 
-  axios@1.15.0(debug@4.3.7):
+  axios@1.16.0(debug@4.3.7):
     dependencies:
-      follow-redirects: 1.15.11(debug@4.3.7)
+      follow-redirects: 1.16.0(debug@4.3.7)
       form-data: 4.0.5
       proxy-from-env: 2.1.0
     transitivePeerDependencies:
@@ -28722,7 +28732,7 @@ snapshots:
 
   binary-install@1.1.2:
     dependencies:
-      axios: 1.15.0(debug@4.3.7)
+      axios: 1.16.0(debug@4.3.7)
       rimraf: 3.0.2
       tar: 6.2.1
     transitivePeerDependencies:
@@ -31223,7 +31233,9 @@ snapshots:
 
   flow-parser@0.247.0: {}
 
-  follow-redirects@1.15.11(debug@4.3.7):
+  follow-redirects@1.15.11: {}
+
+  follow-redirects@1.16.0(debug@4.3.7):
     optionalDependencies:
       debug: 4.3.7
 
@@ -31861,7 +31873,7 @@ snapshots:
   http-proxy@1.18.1:
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.15.11(debug@4.3.7)
+      follow-redirects: 1.15.11
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -37160,7 +37172,7 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.3
 
-  vitest@4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(esbuild@0.27.7)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jiti@1.21.6)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3):
+  vitest@4.1.4(@opentelemetry/api@1.9.0)(@types/node@24.10.12)(happy-dom@20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.4
       '@vitest/mocker': 4.1.4(msw@2.4.9(typescript@5.8.3))(vite@8.0.8(@types/node@24.10.12)(esbuild@0.27.7)(jiti@1.21.6)(sass@1.79.3)(terser@5.34.0)(tsx@4.21.0)(yaml@2.8.3))
@@ -37188,18 +37200,7 @@ snapshots:
       happy-dom: 20.3.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       jsdom: 26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
-      - '@vitejs/devtools'
-      - esbuild
-      - jiti
-      - less
       - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
 
   vscode-uri@3.0.8: {}
 
@@ -37257,7 +37258,7 @@ snapshots:
 
   wait-on@8.0.1(debug@4.3.7):
     dependencies:
-      axios: 1.15.0(debug@4.3.7)
+      axios: 1.16.0(debug@4.3.7)
       joi: 17.13.3
       lodash: 4.18.1
       minimist: 1.2.8
