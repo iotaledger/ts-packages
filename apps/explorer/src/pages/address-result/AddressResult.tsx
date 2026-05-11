@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
@@ -48,11 +48,12 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
 
 export function AddressResultPage(): JSX.Element {
     const { id } = useParams();
+    const { search } = useLocation();
     const isAddressInput = isValidIotaAddress(id || '');
     const { isAbstractAccount, isPending } = useAbstractAccountData(isAddressInput ? id : null);
 
     if (isAddressInput && !isPending && isAbstractAccount) {
-        return <Navigate to={`/account/${id}`} replace />;
+        return <Navigate to={`/account/${id}${search}`} replace />;
     }
 
     return (
