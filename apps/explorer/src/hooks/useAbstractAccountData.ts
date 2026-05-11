@@ -23,12 +23,7 @@ type UseAbstractAccountDataResult = {
 };
 
 const objectOptions = {
-    showType: true,
     showContent: true,
-    showOwner: true,
-    showPreviousTransaction: true,
-    showStorageRebate: true,
-    showDisplay: true,
 };
 
 export function useAbstractAccountData(accountId?: string | null): UseAbstractAccountDataResult {
