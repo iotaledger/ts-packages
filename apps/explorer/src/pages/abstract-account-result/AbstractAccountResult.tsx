@@ -51,7 +51,10 @@ export function AbstractAccountResultPage(): JSX.Element {
     const isOfficialIotaAuthenticator = isOfficialAuthenticator(authenticator?.packageId ?? null);
 
     const isNotFound =
-        isObjectError || accountObjectData?.error || (isObjectFetched && !accountObjectData?.data);
+        !validAccountId ||
+        isObjectError ||
+        accountObjectData?.error ||
+        (isObjectFetched && !accountObjectData?.data);
 
     let detailsContent: JSX.Element | null = null;
 
