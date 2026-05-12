@@ -163,9 +163,9 @@ export function getNotarizationType(
     }
 
     return {
-        label: metadata.identityType.label,
+        label: metadata.notarizationType.label,
         value: notarizationObject.type,
-        visible: metadata.identityType.visible,
+        visible: metadata.notarizationType.visible,
         tooltipText,
     } as MetaItem;
 }
