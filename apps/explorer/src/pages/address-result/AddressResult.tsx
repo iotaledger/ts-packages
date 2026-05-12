@@ -2,23 +2,14 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useParams } from 'react-router-dom';
-import {
-    ErrorBoundary,
-    OwnedCoins,
-    OwnedObjects,
-    PageLayout,
-    TransactionsForAddress,
-} from '~/components';
-import { PageHeader, SplitPanes } from '~/components/ui';
-import { useBreakpoint } from '~/hooks/useBreakpoint';
-import { LocalStorageSplitPaneKey } from '~/lib/enums';
-import { Panel, Title, Divider } from '@iota/apps-ui-kit';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
+import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
 import { AddressBalanceBreakdown } from './AddressBalanceBreakdown';
 import { isValidIotaName } from '@iota/iota-names-sdk';
-
-const LEFT_RIGHT_PANEL_MIN_SIZE = 30;
+import { isValidIotaAddress } from '@iota/iota-sdk/utils';
+import { useAbstractAccountData } from '~/hooks';
 
 interface AddressResultPageHeaderProps {
     address: string;
@@ -49,26 +40,21 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
 
     return (
         <>
-            <Panel>
-                <Title title="Owned Objects" />
-                <Divider />
-                <div className="flex flex-col gap-2xl">
-                    <OwnedObjectsPanel address={data ?? addressOrName} />
-                </div>
-            </Panel>
-
-            <Panel>
-                <Title title="Transaction Blocks" />
-                <div className="flex flex-col gap-2xl p-md--rs">
-                    <TransactionBlocksPanel address={data ?? addressOrName} />
-                </div>
-            </Panel>
+            <OwnedObjectsPanel address={data ?? addressOrName} />
+            <TransactionBlocksPanel address={data ?? addressOrName} />
         </>
     );
 }
 
 export function AddressResultPage(): JSX.Element {
     const { id } = useParams();
+    const { search } = useLocation();
+    const isAddressInput = isValidIotaAddress(id || '');
+    const { isAbstractAccount, isPending } = useAbstractAccountData(isAddressInput ? id : null);
+
+    if (isAddressInput && !isPending && isAbstractAccount) {
+        return <Navigate to={`/account/${id}${search}`} replace />;
+    }
 
     return (
         <PageLayout
@@ -80,52 +66,5 @@ export function AddressResultPage(): JSX.Element {
                 </div>
             }
         />
-    );
-}
-
-function OwnedObjectsPanel({ address }: { address: string }) {
-    const isMediumOrAbove = useBreakpoint('md');
-    const leftPane = {
-        panel: <OwnedCoins id={address} />,
-        minSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-        defaultSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-    };
-
-    const rightPane = {
-        panel: <OwnedObjects id={address} />,
-        minSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-    };
-
-    return (
-        <div className="flex flex-col justify-between">
-            <ErrorBoundary>
-                {isMediumOrAbove ? (
-                    <SplitPanes
-                        autoSaveId={LocalStorageSplitPaneKey.AddressViewHorizontal}
-                        dividerSize="none"
-                        splitPanels={[leftPane, rightPane]}
-                        direction="horizontal"
-                    />
-                ) : (
-                    <>
-                        {leftPane.panel}
-                        <div className="my-8">
-                            <Divider />
-                        </div>
-                        {rightPane.panel}
-                    </>
-                )}
-            </ErrorBoundary>
-        </div>
-    );
-}
-
-function TransactionBlocksPanel({ address }: { address: string }) {
-    return (
-        <ErrorBoundary>
-            <div data-testid="tx" className="relative mt-4 h-full min-h-14 overflow-auto">
-                <TransactionsForAddress address={address} />
-            </div>
-        </ErrorBoundary>
     );
 }
