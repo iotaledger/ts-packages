@@ -16,7 +16,7 @@ interface NotarizationSummaryViewProps {
     objectData: IotaObjectData;
 }
 
-export function NotarizastionSummaryView({
+export function NotarizationSummaryView({
     notarizationDocument,
     objectData,
 }: NotarizationSummaryViewProps): JSX.Element {

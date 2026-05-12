@@ -13,7 +13,7 @@ import {
     MetadataBuilder,
 } from '../headerMetadataHelper';
 import { useResolveNotarization } from '~/hooks/useResolveNotarization';
-import { NotarizastionSummaryView } from './views/NotarizationSummaryView';
+import { NotarizationSummaryView } from './views/NotarizationSummaryView';
 // import { LockLifecycleView } from './views/LockLifecycleView';
 // import { OwnersView } from './views/OwnersView';
 // import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
@@ -116,7 +116,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                             .addItem(getNotarizationMethod(notarizationDocument))
                             .build()}
                     />
-                    <NotarizastionSummaryView
+                    <NotarizationSummaryView
                         objectData={objectResult.data!}
                         notarizationDocument={notarizationDocument}
                     />
