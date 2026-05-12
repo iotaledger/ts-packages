@@ -44,7 +44,7 @@ export function useNotarizationState(notarization: OnChainNotarization) {
             return {
                 content,
                 lang,
-                metadata: state?.metadata,
+                metadata: state.metadata,
             };
         },
     });
