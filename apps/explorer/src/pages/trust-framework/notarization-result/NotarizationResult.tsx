@@ -15,8 +15,8 @@ export function NotarizationResult() {
             <PageLayout
                 content={
                     <InfoBox
-                        title="Notarization not implemented yet!"
-                        supportingText="Wait for the notarization implementation."
+                        title="Missing Notarization ID"
+                        supportingText="The path is missing a Notarization ID to parse."
                         icon={<Warning />}
                         type={InfoBoxType.Error}
                         style={InfoBoxStyle.Elevated}
