@@ -140,7 +140,7 @@ function extractOwnerFromTx(
     const ownerType = getOwnerType(owner);
     const ownerAddress = getOwnerAddress(owner);
 
-    // skip tx with not suppported owner and with the same previous address
+    // skip tx with not supported owner and with the same previous address
     if (!ownerAddress || !ownerType || ownerAddress === lastOwnerAddress) return null;
 
     return {
