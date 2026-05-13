@@ -27,7 +27,10 @@ import {
     ObjectLink,
     TransactionLink,
 } from '~/components';
-import { useGetOwnerHistory, type OwnerEntry } from '../hooks/useGetOwnerHistory';
+import {
+    useGetNotarizationOwnerHistory,
+    type OwnerEntry,
+} from '../hooks/useGetNotarizationOwnerHistory';
 
 enum OwnerLabel {
     Current = 'Current',
@@ -40,7 +43,7 @@ interface OwnersViewProps {
 
 export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
     const { owners, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
-        useGetOwnerHistory(objectId);
+        useGetNotarizationOwnerHistory(objectId);
 
     return (
         <ErrorBoundary>

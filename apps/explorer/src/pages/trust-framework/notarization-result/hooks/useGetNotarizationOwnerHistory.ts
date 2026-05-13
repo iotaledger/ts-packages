@@ -40,7 +40,7 @@ export interface OwnerEntry {
  * @param objectId The object ID to get the owner history for.
  * @returns An object containing the processed list of owners and the state of the infinite query.
  */
-export function useGetOwnerHistory(objectId: string) {
+export function useGetNotarizationOwnerHistory(objectId: string) {
     const client = useIotaClient();
 
     const query = useInfiniteQuery<PaginatedTransactionResponse, Error>({
