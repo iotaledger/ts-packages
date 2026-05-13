@@ -1,5 +1,25 @@
 # @iota/create-dapp
 
+## 0.5.0
+
+### Minor Changes
+
+-   355d021: Overhaul of create-dapp. Switches eslint and prettier to oxlint and oxfmt. Removes
+    radix and adds tailwind, removes unnecessary config files, simplifies code and has less deps.
+
+### Patch Changes
+
+-   7eba749: Format templates.
+-   Updated dependencies [76ab06f]
+-   Updated dependencies [3b04d23]
+-   Updated dependencies [3b178c6]
+-   Updated dependencies [6ba7cf0]
+-   Updated dependencies [2223521]
+-   Updated dependencies [8043617]
+-   Updated dependencies [c4e159b]
+    -   @iota/iota-sdk@1.14.0
+    -   @iota/dapp-kit@0.10.2
+
 ## 0.4.6
 
 ### Patch Changes

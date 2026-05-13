@@ -1832,8 +1832,6 @@ importers:
         specifier: ^5.5.3
         version: 5.8.3
 
-  sdk/examples/src/move-authenticator/build/account/debug_info/dependencies/Iota: {}
-
   sdk/graphql-transport:
     dependencies:
       '@graphql-typed-document-node/core':
