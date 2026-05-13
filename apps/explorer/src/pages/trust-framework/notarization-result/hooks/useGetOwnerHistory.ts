@@ -74,7 +74,8 @@ export function useGetOwnerHistory(objectId: string) {
                 }
 
                 if (!tx.confirmedLocalExecution) {
-                    // NOTE: How to assert finality of a tx?
+                    // NOTE: For now we are only interested to let a technical user knows why
+                    // the transaction was not considered, because it is not yet confirmed.
                     console.warn(`Transaction ${tx.digest} is not yet locally confirmed.`);
                 }
 
@@ -85,7 +86,10 @@ export function useGetOwnerHistory(objectId: string) {
                         (c.type === 'mutated' ||
                             c.type === 'created' ||
                             c.type === 'transferred') &&
-                        // NOTE: Should I consider the package ID match here?
+                        // NOTE: Because notarization package do not tends to change
+                        // I will not consider it in the match.
+                        // Event in the case a notarization packcage change, the network client
+                        // will provide the correct one
                         c.objectType.includes('::notarization::'),
                 );
 
@@ -114,7 +118,7 @@ export function useGetOwnerHistory(objectId: string) {
         }
 
         return entries;
-    }, [query.data, objectId]);
+    }, [objectId, query.data]);
 
     return {
         owners,
