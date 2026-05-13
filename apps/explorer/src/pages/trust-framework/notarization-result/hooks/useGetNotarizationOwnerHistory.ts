@@ -120,9 +120,11 @@ function extractOwnerFromTx(
 
     const change = tx.objectChanges?.find(
         (c) =>
+            // filter change types that don't have owner or recipient property
             c.type !== 'published' &&
+            c.type !== 'deleted' &&
+            c.type !== 'wrapped' &&
             c.objectId === normalizedId &&
-            (c.type === 'mutated' || c.type === 'created' || c.type === 'transferred') &&
             c.objectType.includes(NOTARIZATION_MODULE_FRAGMENT),
     );
 
@@ -130,8 +132,8 @@ function extractOwnerFromTx(
 
     const owner: ObjectOwner | undefined =
         change.type === 'transferred'
-            ? change.recipient
-            : change.type === 'mutated' || change.type === 'created'
+            ? change.recipient // new owner
+            : change.type === 'mutated' || change.type === 'created' || change.type === 'unwrapped' // current owner
               ? change.owner
               : undefined;
 
