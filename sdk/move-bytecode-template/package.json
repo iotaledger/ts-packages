@@ -2,6 +2,7 @@
     "name": "@iota/move-bytecode-template",
     "version": "0.1.1",
     "description": "Move Binary Format implementation in WASM",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "type": "module",
     "scripts": {
         "build": "wasm-pack build --target nodejs --scope iota",
