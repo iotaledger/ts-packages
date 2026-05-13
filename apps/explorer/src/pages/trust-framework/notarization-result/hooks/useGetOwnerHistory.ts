@@ -9,6 +9,9 @@ import { getOwnerAddress, getOwnerType } from '../../objectOwnerHelper';
 import { normalizeIotaObjectId } from '@iota/iota-sdk/utils';
 
 const OWNER_HISTORY_LIMIT = 5;
+// Assuming the package is correct, because it is served by the client,
+// I'will not including the package in the type to check.
+const NOTARIZATION_MODULE_FRAGMENT = '::notarization::';
 
 export interface OwnerEntry {
     ownerAddress: string;
@@ -60,65 +63,26 @@ export function useGetOwnerHistory(objectId: string) {
         enabled: !!objectId,
     });
 
+    const normalizedId = useMemo(() => normalizeIotaObjectId(objectId), [objectId]);
+
     const owners = useMemo(() => {
         if (!query.data) return [];
 
         const entries: OwnerEntry[] = [];
-        let currentOwnerAddress = null;
+        let lastOwnerAddress: string | null = null;
 
         for (const page of query.data.pages) {
             for (const tx of page.data) {
-                if (tx.errors && tx.errors.length > 0) {
-                    // Skip failed tx
-                    continue;
+                const entry = extractOwnerFromTx(tx, normalizedId, lastOwnerAddress);
+                if (entry) {
+                    entries.push(entry);
+                    lastOwnerAddress = entry.ownerAddress;
                 }
-
-                if (!tx.confirmedLocalExecution) {
-                    // NOTE: For now we are only interested to let a technical user knows why
-                    // the transaction was not considered, because it is not yet confirmed.
-                    console.warn(`Transaction ${tx.digest} is not yet locally confirmed.`);
-                }
-
-                const change = tx.objectChanges?.find(
-                    (c) =>
-                        c.type !== 'published' &&
-                        c.objectId === normalizeIotaObjectId(objectId) &&
-                        (c.type === 'mutated' ||
-                            c.type === 'created' ||
-                            c.type === 'transferred') &&
-                        // NOTE: Because notarization package do not tends to change
-                        // I will not consider it in the match.
-                        // Event in the case a notarization packcage change, the network client
-                        // will provide the correct one
-                        c.objectType.includes('::notarization::'),
-                );
-
-                if (!change) continue;
-
-                const owner: ObjectOwner | undefined =
-                    change.type === 'transferred'
-                        ? change.recipient
-                        : change.type === 'mutated' || change.type === 'created'
-                          ? change.owner
-                          : undefined;
-
-                const ownerType = getOwnerType(owner);
-                const ownerAddress = getOwnerAddress(owner, objectId);
-
-                if (!ownerAddress || currentOwnerAddress === ownerAddress) continue;
-                currentOwnerAddress = ownerAddress;
-
-                entries.push({
-                    ownerAddress,
-                    ownerType,
-                    transactionDigest: tx.digest,
-                    timestampMs: tx.timestampMs ?? null,
-                });
             }
         }
 
         return entries;
-    }, [objectId, query.data]);
+    }, [normalizedId, query.data]);
 
     return {
         owners,
@@ -127,5 +91,60 @@ export function useGetOwnerHistory(objectId: string) {
         hasNextPage: query.hasNextPage,
         isFetchingNextPage: query.isFetchingNextPage,
         fetchNextPage: query.fetchNextPage,
+    };
+}
+
+/**
+ * Extracts ownership information from a transaction block response.
+ * Filters for transactions that successfully mutated, created, or transferred the targeted object,
+ * specifically looking for notarization package changes.
+ *
+ * @param tx - The transaction block response from the paginated network query.
+ * @param normalizedId - The normalized object ID to check against changes in the transaction.
+ * @param lastOwnerAddress - The address of the previously processed owner to prevent duplicate consecutive entries.
+ * @returns A `OwnerEntry` (if valid and not a consecutive duplicate).
+ */
+function extractOwnerFromTx(
+    tx: PaginatedTransactionResponse['data'][number],
+    normalizedId: string,
+    lastOwnerAddress: string | null,
+): OwnerEntry | null {
+    if (tx.errors && tx.errors.length > 0) {
+        // Skip failed tx
+        return null;
+    }
+
+    if (!tx.confirmedLocalExecution) {
+        // Do nothing, but transaction is not yet confirmed.
+    }
+
+    const change = tx.objectChanges?.find(
+        (c) =>
+            c.type !== 'published' &&
+            c.objectId === normalizedId &&
+            (c.type === 'mutated' || c.type === 'created' || c.type === 'transferred') &&
+            c.objectType.includes(NOTARIZATION_MODULE_FRAGMENT),
+    );
+
+    if (!change) return null;
+
+    const owner: ObjectOwner | undefined =
+        change.type === 'transferred'
+            ? change.recipient
+            : change.type === 'mutated' || change.type === 'created'
+              ? change.owner
+              : undefined;
+
+    const ownerType = getOwnerType(owner);
+    const ownerAddress = getOwnerAddress(owner);
+
+    // skip tx with not suppported owner and with the same previous address
+    if (!ownerAddress || !ownerType || ownerAddress === lastOwnerAddress) return null;
+
+    return {
+        ownerAddress,
+        ownerType: ownerType as string,
+        transactionDigest: tx.digest,
+        timestampMs: tx.timestampMs ?? null,
     };
 }
