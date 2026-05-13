@@ -3,7 +3,7 @@
 
 import { encodeB64 } from '@iota/identity-wasm/web';
 import type { OnChainNotarization } from '@iota/notarization/web';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { replaceJsonKeyValue } from '~/lib';
 
 interface NotarizationState {
@@ -12,40 +12,39 @@ interface NotarizationState {
     metadata?: string;
 }
 
-export function useNotarizationState(notarization: OnChainNotarization) {
-    return useQuery<NotarizationState | null>({
-        queryKey: ['notarizationState', notarization.id, notarization.state],
-        queryFn: async () => {
-            const state = notarization.state;
-            let content: string;
-            let lang = 'text';
+export function useNotarizationState(notarization: OnChainNotarization): NotarizationState | null {
+    const state = notarization.state;
+    if (!state) {
+        return null;
+    }
 
-            if (!state) {
-                return null;
+    const [content, lang] = useMemo((): [string, string] => {
+        let stateContent: string;
+        let contentLang = 'text';
+
+        const dataValue = state.data.value;
+        if (typeof dataValue !== 'string') {
+            // If dataValue is not a string then it is certainly a byte state
+            stateContent = encodeB64(state.data.toBytes());
+            contentLang = 'text';
+        } else {
+            // Try to parse the string state as JSON first, otherwise show the string
+            try {
+                const json = JSON.parse(dataValue);
+                stateContent = JSON.stringify(json, replaceJsonKeyValue, 2);
+                contentLang = 'json';
+            } catch (e) {
+                stateContent = dataValue;
+                contentLang = 'text';
             }
+        }
 
-            const dataValue = state.data.value;
-            if (typeof dataValue !== 'string') {
-                // If dataValue is not a string then it is certainly a byte state
-                content = encodeB64(state.data.toBytes());
-                lang = 'text';
-            } else {
-                // Try to parse the string state as JSON first, otherwise show the string
-                try {
-                    const json = JSON.parse(dataValue);
-                    content = JSON.stringify(json, replaceJsonKeyValue, 2);
-                    lang = 'json';
-                } catch (e) {
-                    content = dataValue;
-                    lang = 'text';
-                }
-            }
+        return [stateContent, contentLang];
+    }, [state]);
 
-            return {
-                content,
-                lang,
-                metadata: state.metadata,
-            };
-        },
-    });
+    return {
+        content,
+        lang,
+        metadata: state.metadata,
+    };
 }
