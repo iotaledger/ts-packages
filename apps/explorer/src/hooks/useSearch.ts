@@ -21,12 +21,7 @@ import { useNetwork } from './useNetwork';
 import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { useFeatureIsOn } from '@iota/apps-backend-client';
 import { type NotarizationClientReadOnly } from '@iota/notarization/web';
-import {
-    tryGenerateDidFromObjectId,
-    tryDIDParse,
-    tryEncodeDidToUrl,
-} from '~/lib/utils/trust-framework/client';
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
+import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
 import { useIdentityClient, useNotarizationClient } from '~/contexts';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
