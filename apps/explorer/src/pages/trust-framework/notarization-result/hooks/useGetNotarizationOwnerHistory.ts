@@ -44,7 +44,7 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
     const client = useIotaClient();
     const normalizedId = useMemo(() => normalizeIotaObjectId(objectId), [objectId]);
 
-    const query = useInfiniteQuery<PaginatedTransactionResponse, Error, OwnerEntry[]>({
+    return useInfiniteQuery<PaginatedTransactionResponse, Error, OwnerEntry[]>({
         queryKey: ['get-owner-history', objectId],
         queryFn: async ({ pageParam }) =>
             await client.queryTransactionBlocks({
@@ -79,15 +79,6 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
             return entries;
         },
     });
-
-    return {
-        owners: query.data ?? [],
-        isPending: query.isPending,
-        isError: query.isError,
-        hasNextPage: query.hasNextPage,
-        isFetchingNextPage: query.isFetchingNextPage,
-        fetchNextPage: query.fetchNextPage,
-    };
 }
 
 /**
