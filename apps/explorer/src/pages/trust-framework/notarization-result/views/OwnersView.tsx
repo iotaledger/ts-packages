@@ -42,8 +42,14 @@ interface OwnersViewProps {
 }
 
 export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
-    const { owners, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
-        useGetNotarizationOwnerHistory(objectId);
+    const {
+        data: owners,
+        isPending,
+        isError,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
+    } = useGetNotarizationOwnerHistory(objectId);
 
     return (
         <ErrorBoundary>
@@ -68,7 +74,7 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                             style={InfoBoxStyle.Elevated}
                         />
                     )}
-                    {owners.map((owner, index) => (
+                    {owners?.map((owner, index) => (
                         <OwnerCard
                             key={owner.transactionDigest}
                             owner={owner}
