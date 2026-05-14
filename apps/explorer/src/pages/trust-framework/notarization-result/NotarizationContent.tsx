@@ -14,6 +14,9 @@ import {
 } from '../headerMetadataHelper';
 import { useResolveNotarization } from '~/hooks/useResolveNotarization';
 import { NotarizationSummaryView } from './views/NotarizationSummaryView';
+import { LockLifecycleView } from './views/LockLifecycleView';
+import { OwnersView } from './views/OwnersView';
+import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 import { TransactionsView } from '../common/TransactionsView';
 import { StateView } from './views/StateView';
 import { NotarizationJsonView } from './views/NotarizationJsonView';
@@ -116,6 +119,14 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                     <NotarizationSummaryView
                         objectData={objectResult.data!}
                         notarizationDocument={notarizationDocument}
+                    />
+                    <SideBySidePanels
+                        firstPanel={
+                            <LockLifecycleView
+                                locking={notarizationDocument.immutableMetadata.locking}
+                            />
+                        }
+                        secondPanel={<OwnersView objectId={objectId} />}
                     />
                     <StateView notarization={notarizationDocument} />
                     <NotarizationJsonView notarization={notarizationDocument} />
