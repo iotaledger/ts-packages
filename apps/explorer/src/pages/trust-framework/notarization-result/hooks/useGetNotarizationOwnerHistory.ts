@@ -42,8 +42,9 @@ export interface OwnerEntry {
  */
 export function useGetNotarizationOwnerHistory(objectId: string) {
     const client = useIotaClient();
+    const normalizedId = useMemo(() => normalizeIotaObjectId(objectId), [objectId]);
 
-    const query = useInfiniteQuery<PaginatedTransactionResponse, Error>({
+    const query = useInfiniteQuery<PaginatedTransactionResponse, Error, OwnerEntry[]>({
         queryKey: ['get-owner-history', objectId],
         queryFn: async ({ pageParam }) =>
             await client.queryTransactionBlocks({
@@ -61,31 +62,26 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
         staleTime: 10 * 1000,
         retry: false,
         enabled: !!objectId,
-    });
+        select: (data) => {
+            const entries: OwnerEntry[] = [];
+            let lastOwnerAddress: string | null = null;
 
-    const normalizedId = useMemo(() => normalizeIotaObjectId(objectId), [objectId]);
-
-    const owners = useMemo(() => {
-        if (!query.data) return [];
-
-        const entries: OwnerEntry[] = [];
-        let lastOwnerAddress: string | null = null;
-
-        for (const page of query.data.pages) {
-            for (const tx of page.data) {
-                const entry = extractOwnerFromTx(tx, normalizedId, lastOwnerAddress);
-                if (entry) {
-                    entries.push(entry);
-                    lastOwnerAddress = entry.ownerAddress;
+            for (const page of data.pages) {
+                for (const tx of page.data) {
+                    const entry = extractOwnerFromTx(tx, normalizedId, lastOwnerAddress);
+                    if (entry) {
+                        entries.push(entry);
+                        lastOwnerAddress = entry.ownerAddress;
+                    }
                 }
             }
-        }
 
-        return entries;
-    }, [normalizedId, query.data]);
+            return entries;
+        },
+    });
 
     return {
-        owners,
+        owners: query.data ?? [],
         isPending: query.isPending,
         isError: query.isError,
         hasNextPage: query.hasNextPage,
