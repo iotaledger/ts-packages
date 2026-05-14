@@ -180,7 +180,7 @@ export class FeaturesController {
                     defaultValue: true,
                 },
                 [Feature.ExplorerTFNotarization]: {
-                    defaultValue: false,
+                    defaultValue: true,
                 },
                 ...LEGACY_FEATURE_FLAGS,
             },
