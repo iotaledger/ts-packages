@@ -224,7 +224,7 @@ export class FeaturesController {
                     defaultValue: true,
                 },
                 [Feature.ExplorerTFNotarization]: {
-                    defaultValue: false,
+                    defaultValue: true,
                 },
             },
             dateUpdated: new Date().toISOString(),
