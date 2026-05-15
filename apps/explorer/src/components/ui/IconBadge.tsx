@@ -11,7 +11,7 @@ interface IconBadgeProps {
     icon: ReactNode;
 }
 
-const BACKGROUND_COLORS: Record<BadgeType, string> = {
+const BACKGROUND_COLORS: Record<string, string> = {
     [BadgeType.PrimarySolid]: 'badge-bg-color-primary',
     [BadgeType.Neutral]: 'badge-bg-color-neutral',
     [BadgeType.PrimarySoft]: 'badge-bg-color-primary-soft',
@@ -20,7 +20,7 @@ const BACKGROUND_COLORS: Record<BadgeType, string> = {
     [BadgeType.Error]: 'bg-error-surface',
 };
 
-const TEXT_COLORS: Record<BadgeType, string> = {
+const TEXT_COLORS: Record<string, string> = {
     [BadgeType.PrimarySolid]: 'badge-text-color-primary',
     [BadgeType.Neutral]: 'badge-text-color-neutral',
     [BadgeType.PrimarySoft]: 'badge-text-color-primary-soft',
@@ -29,7 +29,7 @@ const TEXT_COLORS: Record<BadgeType, string> = {
     [BadgeType.Error]: 'text-on-error',
 };
 
-const BORDER_COLORS: Record<BadgeType, string> = {
+const BORDER_COLORS: Record<string, string> = {
     [BadgeType.PrimarySolid]: 'badge-border-color-primary',
     [BadgeType.Neutral]: 'badge-border-color-neutral',
     [BadgeType.PrimarySoft]: 'badge-border-color-soft',
