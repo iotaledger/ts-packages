@@ -21,6 +21,7 @@ import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
 import { LockLifecycleView } from './views/lock-lifecycle/LockLifecycleView';
+import { RolesView } from './views/roles/RolesView';
 import { TagsView } from './views/TagsView';
 import { RecordsView } from './views/RecordsView';
 import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
@@ -127,7 +128,7 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                     <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
                     <SideBySidePanels
                         ratio="66-34"
-                        firstPanel={<p>Replace by RolesView</p>}
+                        firstPanel={<RolesView roles={auditTrailObject.roles.roles} />}
                         secondPanel={<TagsView tags={auditTrailObject.tags} />}
                     />
                     <TransactionsView objectId={objectId} />
