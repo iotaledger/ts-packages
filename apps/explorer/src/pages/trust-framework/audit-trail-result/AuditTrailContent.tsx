@@ -21,6 +21,7 @@ import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
 import { LockLifecycleView } from './views/lock-lifecycle/LockLifecycleView';
+import { CapabilitiesView } from './views/CapabilitiesView';
 import { RolesView } from './views/roles/RolesView';
 import { TagsView } from './views/TagsView';
 import { RecordsView } from './views/RecordsView';
@@ -126,6 +127,7 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                         secondPanel={<MetadataView auditTrail={auditTrailObject} />}
                     />
                     <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
+                    <CapabilitiesView objectId={objectId} />
                     <SideBySidePanels
                         ratio="66-34"
                         firstPanel={<RolesView roles={auditTrailObject.roles.roles} />}
