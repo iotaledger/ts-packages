@@ -524,6 +524,9 @@ importers:
       '@iota/apps-ui-kit':
         specifier: workspace:*
         version: link:../ui-kit
+      '@iota/audit-trail':
+        specifier: file:/Users/alexruzenhack/repos/iota/simple-audit-trail-project-example-ts/audit_trail/web
+        version: file:../simple-audit-trail-project-example-ts/audit_trail/web
       '@iota/core':
         specifier: workspace:*
         version: link:../core
@@ -5061,6 +5064,9 @@ packages:
   '@inquirer/type@2.0.0':
     resolution: {integrity: sha512-XvJRx+2KR3YXyYtPUUy+qd9i7p+GO9Ko6VIIpWlBrpWwXDv8WLFeHTxz35CfQFUiBMLXlGHhGzys7lqit9gWag==}
     engines: {node: '>=18'}
+
+  '@iota/audit-trail@file:../simple-audit-trail-project-example-ts/audit_trail/web':
+    resolution: {directory: ../simple-audit-trail-project-example-ts/audit_trail/web, type: directory}
 
   '@iota/identity-wasm@1.7.0-beta.1':
     resolution: {integrity: sha512-wB+VyLR7tqwwXdKNN6HThBu8T5OGMFYNITg3aPP9opL8TvnHQJS4HPvrSH+5zMkTXLxV8XNP24xXZbugkyIV2Q==}
@@ -21300,6 +21306,8 @@ snapshots:
   '@inquirer/type@2.0.0':
     dependencies:
       mute-stream: 1.0.0
+
+  '@iota/audit-trail@file:../simple-audit-trail-project-example-ts/audit_trail/web': {}
 
   '@iota/identity-wasm@1.7.0-beta.1(@iota/iota-sdk@sdk+typescript)':
     dependencies:
