@@ -9,7 +9,7 @@ interface TagsCardProps {
     onFieldsNameClick?: (tag: string) => void;
 }
 
-export function TagsCard({ tags, onFieldsNameClick }: TagsCardProps) {
+export function TagsView({ tags, onFieldsNameClick }: TagsCardProps) {
     return (
         <Panel>
             <div className="flex flex-col gap-md p-xs">

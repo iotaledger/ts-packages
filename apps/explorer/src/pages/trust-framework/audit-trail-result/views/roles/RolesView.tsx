@@ -2,16 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type ColumnDef } from '@tanstack/react-table';
-import { TableCard } from '../../../../components/ui/TableCard';
-import { getPermissionName } from '../permissions';
+import { TableCard } from '../../../../../components/ui/TableCard';
+import { getPermissionName } from './helper';
 import { type RolePermissionsEntry, type RoleTags } from '@iota/audit-trail';
-import { TableCellBase, TableCellText, Title, Panel } from '@iota/apps-ui-kit';
+import {
+    TableCellBase,
+    TableCellText,
+    Title,
+    Panel,
+    InfoBox,
+    InfoBoxType,
+    InfoBoxStyle,
+} from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
 
 interface RolesCardProps {
     roles: RolePermissionsEntry[];
 }
 
-export function RolesCard({ roles }: RolesCardProps) {
+export function RolesView({ roles }: RolesCardProps) {
     return (
         <Panel>
             <div data-testid="tx">
@@ -19,11 +28,21 @@ export function RolesCard({ roles }: RolesCardProps) {
                     <Title title="Roles" />
                 </div>
                 <div className="flex flex-col gap-sm p-md--rs">
-                    <TableCard
-                        data={roles}
-                        columns={generateRolesColumns()}
-                        defaultSorting={[{ id: 'role', desc: false }]}
-                    />
+                    {roles.length === 0 ? (
+                        <InfoBox
+                            title="No roles found"
+                            supportingText="This audit trail has no roles configured."
+                            type={InfoBoxType.Default}
+                            style={InfoBoxStyle.Elevated}
+                            icon={<Info />}
+                        />
+                    ) : (
+                        <TableCard
+                            data={roles}
+                            columns={generateRolesColumns()}
+                            defaultSorting={[{ id: 'role', desc: false }]}
+                        />
+                    )}
                 </div>
             </div>
         </Panel>

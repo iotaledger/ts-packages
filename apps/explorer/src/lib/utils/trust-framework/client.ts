@@ -121,9 +121,13 @@ export const createAuditTrailClientReadOnly = async (
     iotaClient: IotaClient,
     network: string,
 ): Promise<auditTrail.AuditTrailClientReadOnly> => {
+    // TODO: remove
+    console.log('creating audit-trail client readonly...');
     // If IOTA_AUDIT_TRAIL_PKG_ID is declared it has precedence
     await initAuditTrailWasmWeb();
     if (IOTA_AUDIT_TRAIL_PKG_ID != null && IOTA_TF_COMPONENTS_PKG_ID) {
+        // TODO: remove
+        console.log('raising audit-trail client instance with package overrides');
         return await auditTrail.AuditTrailClientReadOnly.createWithPackageOverrides(
             iotaClient,
             new auditTrail.PackageOverrides(IOTA_AUDIT_TRAIL_PKG_ID, IOTA_TF_COMPONENTS_PKG_ID),
@@ -132,6 +136,8 @@ export const createAuditTrailClientReadOnly = async (
 
     // Well-known networks have well-known notarization package id
     if (regularNetworks.has(network as Network)) {
+        // TODO: remove
+        console.log('raising audit-trail client instance derived from iota client');
         return await auditTrail.AuditTrailClientReadOnly.create(iotaClient);
     }
 
