@@ -13,7 +13,7 @@ import {
     getAuditTrailType,
     MetadataBuilder,
 } from '../headerMetadataHelper';
-import { useResolveAuditTrail } from '~/hooks/useResolveAuditTrail';
+import { useResolveOnChainAuditTrail } from '~/hooks/useResolveAuditTrail';
 import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
@@ -26,7 +26,7 @@ interface AuditTrailContentProps {
 export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
     const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
     const { data: auditTrailObject, isPending: isAuditTrailObjectPending } =
-        useResolveAuditTrail(objectId);
+        useResolveOnChainAuditTrail(objectId);
 
     console.log('audit trail object: ', objectResult?.data);
     console.log('audit trail on chain: ', auditTrailObject);

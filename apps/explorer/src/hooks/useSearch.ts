@@ -22,11 +22,32 @@ import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { type NotarizationClientReadOnly } from '@iota/notarization/web';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
-import { useIdentityClient, useNotarizationClient } from '~/contexts';
+import { useAuditTrailClient, useIdentityClient, useNotarizationClient } from '~/contexts';
+import { type AuditTrailClientReadOnly } from '@iota/audit-trail';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
 
 type Results = { id: string; label: string; type: string }[];
+
+const getResultsForAuditTrail = async (
+    auditTrailClient: AuditTrailClientReadOnly | null,
+    isAuditTrailEnabled: boolean,
+    query: string,
+): Promise<Results | null> => {
+    if (auditTrailClient == null) return null; // client not available
+    if (!isAuditTrailEnabled) return null; // feature flag disabled
+
+    const auditTrailChain = await auditTrailClient.trail(query).get();
+    if (!auditTrailChain) return null;
+
+    return [
+        {
+            id: `${auditTrailChain.id}-audittrail`,
+            label: auditTrailChain.id,
+            type: 'audit trail',
+        },
+    ];
+};
 
 const getResultsForNotarization = async (
     notarizationClient: NotarizationClientReadOnly | null,
@@ -41,7 +62,7 @@ const getResultsForNotarization = async (
 
     return [
         {
-            id: notarizationChain.id,
+            id: `${notarizationChain.id}-notarization`,
             label: notarizationChain.id,
             type: 'notarization',
         },
@@ -268,6 +289,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
     const identityClient = useIdentityClient();
     const notarizationClient = useNotarizationClient();
+    const auditTrailClient = useAuditTrailClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
     const [networkId] = useNetwork();
     const network = getNetwork(networkId).id;
@@ -275,6 +297,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
     const isNamesEnabled = useFeatureEnabledByNetwork(Feature.IotaNames, network);
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);
     const isTFNotarizationEnabled = useFeatureIsOn(Feature.ExplorerTFNotarization as string);
+    const isTFAuditTrailEnabled = useFeatureIsOn(Feature.ExplorerTFAuditTrail as string);
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
@@ -289,6 +312,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
                     getResultsForAddress(client, query, isNamesEnabled, iotaNamesClient),
                     getResultsForDid(identityClient, isTFIdentityEnabled, query),
                     getResultsForNotarization(notarizationClient, isTFNotarizationEnabled, query),
+                    getResultsForAuditTrail(auditTrailClient, isTFAuditTrailEnabled, query),
                     getResultsForObject(client, query),
                     getResultsForValidatorByPoolIdOrIotaAddress(systemStateSummary || null, query),
                 ])

@@ -10,6 +10,14 @@ import { useDebouncedValue } from '~/hooks/useDebouncedValue';
 import { useSearch } from '~/hooks/useSearch';
 import { ampli } from '~/lib/utils';
 
+/**
+ * Extract an ID without a dash, if it is present as a suffix.
+ */
+function extractOnlyTheId(possibleDashedId: string): string {
+    const dashAt = possibleDashedId.indexOf('-') || -1;
+    return dashAt > -1 ? possibleDashedId.slice(0, dashAt) : possibleDashedId;
+}
+
 export function Search(): JSX.Element {
     const [query, setQuery] = useState('');
     const debouncedQuery = useDebouncedValue(query);
@@ -22,7 +30,7 @@ export function Search(): JSX.Element {
                     searchQuery: result.id,
                     searchCategory: result.type,
                 });
-                navigate(`/${result?.type}/${encodeURIComponent(result?.id)}`, {});
+                navigate(`/${result.type}/${encodeURIComponent(extractOnlyTheId(result.id))}`, {});
                 setQuery('');
             }
         },
