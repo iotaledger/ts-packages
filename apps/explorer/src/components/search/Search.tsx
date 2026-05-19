@@ -10,6 +10,28 @@ import { useDebouncedValue } from '~/hooks/useDebouncedValue';
 import { useSearch } from '~/hooks/useSearch';
 import { ampli } from '~/lib/utils';
 
+/**
+ * Extract an ID without a dash, if it is present as a suffix.
+ *
+ * CONTEXT: Search result `id` is used as React element key and must be unique,
+ * because of this, search result now comes with a suffix like `-notarization` or
+ * `-identity`, which must be ripped off as this is invalid network ID.
+ *
+ * @example
+ *    extractOnlyTheId('0x123-audit-trail')
+ *    // output: '0x123'
+ * @example
+ *    extractOnlyTheId('0x123-identity')
+ *    // output: '0x123'
+ * @example
+ *    extractOnlyTheId('0x123')
+ *    // output: '0x123'
+ */
+function extractOnlyTheId(possibleDashedId: string): string {
+    const dashAt = possibleDashedId.indexOf('-') || -1;
+    return dashAt > -1 ? possibleDashedId.slice(0, dashAt) : possibleDashedId;
+}
+
 export function Search(): JSX.Element {
     const [query, setQuery] = useState('');
     const debouncedQuery = useDebouncedValue(query);
@@ -22,7 +44,7 @@ export function Search(): JSX.Element {
                     searchQuery: result.id,
                     searchCategory: result.type,
                 });
-                navigate(`/${result?.type}/${encodeURIComponent(result?.id)}`, {});
+                navigate(`/${result.type}/${encodeURIComponent(extractOnlyTheId(result.id))}`, {});
                 setQuery('');
             }
         },
