@@ -25,6 +25,7 @@ type PageHeaderType =
     | 'Package'
     | 'Identity'
     | 'Notarization'
+    | 'Audit Trail'
     | 'Abstract Account';
 
 export interface PageHeaderProps {
@@ -87,7 +88,7 @@ export function PageHeader({
                             <>
                                 {type && (
                                     <div className="flex flex-row items-center gap-xxs">
-                                        <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                        <span className="dark:text-iota-neutral-92 text-headline-sm text-iota-neutral-10">
                                             {type}
                                         </span>
                                         {status && (
@@ -103,7 +104,7 @@ export function PageHeader({
                                     </div>
                                 )}
                                 {title && (
-                                    <div className="flex items-center gap-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    <div className="dark:text-iota-neutral-60 flex items-center gap-xxs text-iota-neutral-40">
                                         <span
                                             className="break-all text-body-ds-lg"
                                             data-testid="heading-object-id"
@@ -124,7 +125,7 @@ export function PageHeader({
                                 {isLoadingSubtitle ? (
                                     <Placeholder width="w-48" />
                                 ) : subtitle ? (
-                                    <span className="truncate text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    <span className="dark:text-iota-neutral-60 truncate text-body-md text-iota-neutral-40">
                                         {subtitle}
                                     </span>
                                 ) : null}
