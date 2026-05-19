@@ -13,11 +13,19 @@ import {
     getAuditTrailType,
     MetadataBuilder,
 } from '../headerMetadataHelper';
-import { useResolveOnChainAuditTrail } from '~/hooks/useResolveAuditTrail';
+import {
+    useResolveAuditTrailHandle,
+    useResolveOnChainAuditTrail,
+} from '~/hooks/useResolveAuditTrail';
 import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
 import { LockLifecycleView } from './views/LockLifecycleView';
+import { CapabilitiesView } from './views/CapabilitiesView';
+import { RolesCard } from './views/RolesCard';
+import { TagsCard } from './views/TagsCard';
+import { RecordsView } from './views/RecordsView';
+import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 
 interface AuditTrailContentProps {
     objectId: string;
@@ -27,22 +35,21 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
     const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
     const { data: auditTrailObject, isPending: isAuditTrailObjectPending } =
         useResolveOnChainAuditTrail(objectId);
-
-    console.log('audit trail object: ', objectResult?.data);
-    console.log('audit trail on chain: ', auditTrailObject);
+    const { data: auditTrailHandle, isPending: isAuditTrailHandlePending } =
+        useResolveAuditTrailHandle(objectId);
 
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaAuditTrailPackage = useAuditTrailPkgId();
 
     const isPending = useMemo(
-        () => isAuditTrailObjectPending || isObjectPending,
-        [isAuditTrailObjectPending, isObjectPending],
+        () => isAuditTrailObjectPending || isObjectPending || isAuditTrailHandlePending,
+        [isAuditTrailObjectPending, isObjectPending, isAuditTrailHandlePending],
     );
     if (isPending) {
         return <PageLayout loading loadingText="Loading Audit Trail Object..." content={[]} />;
     }
 
-    if (auditTrailObject == null) {
+    if (auditTrailObject == null || auditTrailHandle == null) {
         return (
             <PageLayout
                 content={
@@ -109,12 +116,22 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                             .addItem(getAuditTrailRecordsSize(auditTrailObject))
                             .build()}
                     />
-                    <LockLifecycleView lockingConfig={auditTrailObject.lockingConfig} />
                     <AuditTrailSummaryView
                         auditTrailObject={auditTrailObject}
                         objectData={objectResult.data!}
                     />
-                    <MetadataView auditTrail={auditTrailObject} />
+                    <SideBySidePanels
+                        firstPanel={
+                            <LockLifecycleView lockingConfig={auditTrailObject.lockingConfig} />
+                        }
+                        secondPanel={<MetadataView auditTrail={auditTrailObject} />}
+                    />
+                    <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
+                    <CapabilitiesView objectId={objectId} />
+                    {auditTrailObject.roles.roles.length > 0 && (
+                        <RolesCard roles={auditTrailObject.roles.roles} />
+                    )}
+                    {auditTrailObject.tags.length > 0 && <TagsCard tags={auditTrailObject.tags} />}
                     <TransactionsView objectId={objectId} />
                 </div>
             }

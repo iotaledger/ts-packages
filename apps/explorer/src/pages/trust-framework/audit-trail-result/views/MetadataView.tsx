@@ -32,7 +32,7 @@ export function MetadataView({ auditTrail }: MetadataViewProps) {
 
     return (
         <ErrorBoundary>
-            <div className="panel-bg flex w-full flex-col gap-sm--rs rounded-xl border border-transparent p-md--rs">
+            <div className="panel-bg flex w-full flex-col gap-sm--rs rounded-xl border border-transparent">
                 <PanelGroup direction="horizontal">
                     <UpdatableMetadataPanel metadata={updatableMetadata} />
                 </PanelGroup>
