@@ -5,17 +5,23 @@ import * as identity from '@iota/identity-wasm/web';
 import identityWasmUrl from '@iota/identity-wasm/web/identity_wasm_bg.wasm?url';
 import * as notarization from '@iota/notarization/web';
 import notarizationWasmUrl from '@iota/notarization/web/notarization_wasm_bg.wasm?url';
+// TODO: update module to `@iota/audit-trail/web when it is published
+import * as auditTrail from '@iota/audit-trail';
+import auditTrailWasmUrl from '@iota/audit-trail/audit_trail_wasm_bg.wasm?url';
 import { type IotaClient, Network } from '@iota/iota-sdk/client';
 import {
     DID_PROTOCOL_SEGMENT_SYMBOL,
     DID_URL_SEGMENT_SYMBOL,
     IOTA_IDENTITY_PKG_ID,
     IOTA_NOTARIZATION_PKG_ID,
+    IOTA_AUDIT_TRAIL_PKG_ID,
+    IOTA_TF_COMPONENTS_PKG_ID,
 } from '~/lib/constants/trustFramework.constants';
 
 const regularNetworks = new Set([Network.Mainnet, Network.Testnet, Network.Devnet]);
 let initIdentityPromise: Promise<void> | null = null;
 let initNotarizationPromise: Promise<void> | null = null;
+let initAuditTrailPromise: Promise<void> | null = null;
 
 /**
  * Idempotent initialization of WASM module of Identity.
@@ -47,6 +53,22 @@ export const initNotarizationWasmWeb = async (): Promise<void> => {
         });
     }
     return initNotarizationPromise;
+};
+
+/**
+ * Idempotent initialization of WASM module of Audit Trail.
+ *
+ * Use it everytime you need to call any audit trail API.
+ */
+export const initAuditTrailWasmWeb = async (): Promise<void> => {
+    if (!initAuditTrailPromise) {
+        initAuditTrailPromise = auditTrail.init(auditTrailWasmUrl).catch((e) => {
+            console.error('failed to load audit trail wasm (web version)', e);
+            initAuditTrailPromise = null; // allow retry
+            throw e;
+        });
+    }
+    return initAuditTrailPromise;
 };
 
 export const createIdentityClientReadOnly = async (
@@ -92,6 +114,29 @@ export const createNotarizationClientReadOnly = async (
 
     throw new Error(
         'Failed to create a NotarizationClientReadOnly; declare IOTA_NOTARIZATION_PKG_ID environment if running on a custom network.',
+    );
+};
+
+export const createAuditTrailClientReadOnly = async (
+    iotaClient: IotaClient,
+    network: string,
+): Promise<auditTrail.AuditTrailClientReadOnly> => {
+    // If IOTA_AUDIT_TRAIL_PKG_ID is declared it has precedence
+    await initAuditTrailWasmWeb();
+    if (IOTA_AUDIT_TRAIL_PKG_ID != null && IOTA_TF_COMPONENTS_PKG_ID) {
+        return await auditTrail.AuditTrailClientReadOnly.createWithPackageOverrides(
+            iotaClient,
+            new auditTrail.PackageOverrides(IOTA_AUDIT_TRAIL_PKG_ID, IOTA_TF_COMPONENTS_PKG_ID),
+        );
+    }
+
+    // Well-known networks have well-known notarization package id
+    if (regularNetworks.has(network as Network)) {
+        return await auditTrail.AuditTrailClientReadOnly.create(iotaClient);
+    }
+
+    throw new Error(
+        'Failed to create a AuditTrailClientReadOnly; declare IOTA_AUDIT_TRAIL_PKG_ID  and IOTA_TF_COMPONENTS_PKG_ID environment if running on a custom network.',
     );
 };
 
