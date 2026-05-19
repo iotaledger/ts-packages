@@ -25,7 +25,8 @@ type PageHeaderType =
     | 'Package'
     | 'Identity'
     | 'Notarization'
-    | 'Abstract Account';
+    | 'Abstract Account'
+    | 'Audit Trail';
 
 export interface PageHeaderProps {
     title: string | React.JSX.Element;
