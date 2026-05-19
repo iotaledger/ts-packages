@@ -6,9 +6,12 @@
 import { useIotaClient, useIotaClientContext } from '@iota/dapp-kit';
 import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { type NotarizationClientReadOnly } from '@iota/notarization/web';
+// TODO: use '@iota/audit-trail/web' after publish
+import { type AuditTrailClientReadOnly } from '@iota/audit-trail';
 import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { TrustFrameworkContext, type TrustFrameworkProviderContext } from '~/contexts';
 import {
+    createAuditTrailClientReadOnly,
     createIdentityClientReadOnly,
     createNotarizationClientReadOnly,
 } from '~/lib/utils/trust-framework/client';
@@ -20,6 +23,7 @@ export function TrustFrameworkProvider({ children }: PropsWithChildren) {
     const [notarizationClient, setNotarizationClient] = useState<NotarizationClientReadOnly | null>(
         null,
     );
+    const [auditTrailClient, setAuditTrailClient] = useState<AuditTrailClientReadOnly | null>(null);
 
     useEffect(() => {
         if (!iotaClient) return;
@@ -35,14 +39,21 @@ export function TrustFrameworkProvider({ children }: PropsWithChildren) {
             setNotarizationClient(_notarizationClient);
         };
         instantiateNotarizationClient();
+
+        const instantiateAuditTrailClient = async () => {
+            const _auditTrailClient = await createAuditTrailClientReadOnly(iotaClient, network);
+            setAuditTrailClient(_auditTrailClient);
+        };
+        instantiateAuditTrailClient();
     }, [iotaClient, network]);
 
     const ctx = useMemo(
         (): TrustFrameworkProviderContext => ({
             identityClient,
             notarizationClient,
+            auditTrailClient,
         }),
-        [identityClient, notarizationClient],
+        [identityClient, notarizationClient, auditTrailClient],
     );
 
     return <TrustFrameworkContext.Provider value={ctx}>{children}</TrustFrameworkContext.Provider>;
