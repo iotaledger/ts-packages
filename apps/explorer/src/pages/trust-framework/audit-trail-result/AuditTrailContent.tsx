@@ -20,7 +20,7 @@ import {
 import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
-import { LockLifecycleView } from './views/LockLifecycleView';
+import { LockLifecycleView } from './views/lock-lifecycle/LockLifecycleView';
 import { CapabilitiesView } from './views/CapabilitiesView';
 import { RolesView } from './views/roles/RolesView';
 import { TagsView } from './views/TagsView';
@@ -30,10 +30,6 @@ import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 interface AuditTrailContentProps {
     objectId: string;
 }
-
-// TODO: Generalize the event type to get package from client or from another env variable.
-export const CAPABILITY_ISSUED_EVENTS_QUERY =
-    '0x098767e6cd008f341847ad68089300375a274899b1c718e8cf8f5d57f96e8607::role_map::CapabilityIssued';
 
 export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
     const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
