@@ -5,16 +5,20 @@
 
 import type { IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import type { NotarizationClientReadOnly } from '@iota/notarization/web';
+// TODO: use '@iota/audit-trail/web' after publish
+import type { AuditTrailClientReadOnly } from '@iota/audit-trail';
 import { createContext, useContext } from 'react';
 
 export interface TrustFrameworkProviderContext {
     identityClient: IdentityClientReadOnly | null;
     notarizationClient: NotarizationClientReadOnly | null;
+    auditTrailClient: AuditTrailClientReadOnly | null;
 }
 
 export const TrustFrameworkContext = createContext<TrustFrameworkProviderContext>({
     identityClient: null,
     notarizationClient: null,
+    auditTrailClient: null,
 });
 
 export function useTrustFramework(): TrustFrameworkProviderContext {
@@ -35,10 +39,18 @@ export function useNotarizationClient(): NotarizationClientReadOnly | null {
     return useTrustFramework().notarizationClient;
 }
 
+export function useAuditTrailClient(): AuditTrailClientReadOnly | null {
+    return useTrustFramework().auditTrailClient;
+}
+
 export function useIdentityPkgId(): string | null {
     return useIdentityClient()?.packageId() || null;
 }
 
 export function useNotarizationPkgId(): string | null {
     return useNotarizationClient()?.packageId() || null;
+}
+
+export function useAuditTrailPkgId(): string | null {
+    return useAuditTrailClient()?.packageId() || null;
 }
