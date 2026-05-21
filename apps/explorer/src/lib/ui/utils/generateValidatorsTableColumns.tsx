@@ -206,9 +206,9 @@ export function generateValidatorsTableColumns({
                 const apyA = rollingAverageApys?.[rowA.getValue<string>(columnId)]?.apy ?? null;
                 const apyB = rollingAverageApys?.[rowB.getValue<string>(columnId)]?.apy ?? null;
 
-                // Handle null values: move nulls to the bottom
-                if (apyA === null) return 1;
-                if (apyB === null) return -1;
+                if (apyA === null && apyB === null) return 0;
+                if (apyA === null) return -1;
+                if (apyB === null) return 1;
 
                 return apyA - apyB;
             },
@@ -236,10 +236,16 @@ export function generateValidatorsTableColumns({
         },
         {
             header: 'Effective Commission',
-            accessorKey: 'effectiveCommissionRate',
             id: 'effectiveCommissionRate',
+            accessorFn: (validator) => {
+                if (validator.isCandidate || validator.isPending) return -1;
+                const rate = validator.effectiveCommissionRate;
+                if (rate == null) return -1;
+                const n = Number(rate);
+                return isNaN(n) ? -1 : n;
+            },
             enableSorting: true,
-            sortingFn: sortByNumber,
+            sortDescFirst: false,
             cell({ row }) {
                 return (
                     <TableCellBase>
@@ -259,7 +265,14 @@ export function generateValidatorsTableColumns({
             },
             accessorKey: 'votingPower',
             enableSorting: true,
-            sortingFn: sortByNumber,
+            sortingFn: (rowA, rowB, columnId) => {
+                const isRowAMin = rowA.original.isCandidate || rowA.original.isPending;
+                const isRowBMin = rowB.original.isCandidate || rowB.original.isPending;
+                if (isRowAMin && isRowBMin) return 0;
+                if (isRowAMin) return -1;
+                if (isRowBMin) return 1;
+                return sortByNumber(rowA, rowB, columnId);
+            },
             cell({ getValue, row }) {
                 const validator = row.original as IotaValidatorSummaryExtended;
                 const votingPower = getValue<string>();
@@ -285,14 +298,20 @@ export function generateValidatorsTableColumns({
             id: 'lastReward',
             enableSorting: true,
             sortingFn: (rowA, rowB) => {
+                const isRowAMin = rowA.original.isCandidate || rowA.original.isPending;
+                const isRowBMin = rowB.original.isCandidate || rowB.original.isPending;
+                if (isRowAMin && isRowBMin) return 0;
+                if (isRowAMin) return -1;
+                if (isRowBMin) return 1;
+
                 const lastRewardA = getLastReward(validatorEvents, rowA, currentEpoch);
                 const lastRewardB = getLastReward(validatorEvents, rowB, currentEpoch);
 
                 if (lastRewardA === null && lastRewardB === null) return 0;
-                if (lastRewardA === null) return 1;
-                if (lastRewardB === null) return -1;
+                if (lastRewardA === null) return -1;
+                if (lastRewardB === null) return 1;
 
-                return lastRewardA > lastRewardB ? -1 : 1;
+                return lastRewardA > lastRewardB ? 1 : -1;
             },
             cell({ row }) {
                 const lastReward = getLastReward(validatorEvents, row, currentEpoch);
