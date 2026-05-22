@@ -14,7 +14,7 @@ import {
 } from '@iota/core';
 import { ampli, getValidatorMoveEvent } from '~/lib';
 import { StakeColumn } from '~/components';
-import type { IotaEvent, IotaValidatorSummary } from '@iota/iota-sdk/client';
+import type { IotaEvent } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
@@ -203,9 +203,11 @@ export function generateValidatorsTableColumns({
             accessorKey: 'iotaAddress',
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
-                if (isCandidateOrPending(rowA)) return -1;
-                if (isCandidateOrPending(rowB)) return 1;
+                const isACandidateOrPending = isCandidateOrPending(rowA);
+                const isBCandidateOrPending = isCandidateOrPending(rowB);
+                if (isACandidateOrPending && isBCandidateOrPending) return 0;
+                if (isACandidateOrPending) return -1;
+                if (isBCandidateOrPending) return 1;
 
                 const apyA = rollingAverageApys?.[rowA.getValue<string>(columnId)]?.apy ?? null;
                 const apyB = rollingAverageApys?.[rowB.getValue<string>(columnId)]?.apy ?? null;
@@ -242,18 +244,25 @@ export function generateValidatorsTableColumns({
             header: 'Effective Commission',
             id: 'effectiveCommissionRate',
             accessorFn: (validator) => {
-                if (validator.isCandidate || validator.isPending) return -1;
+                if (validator.isCandidate || validator.isPending) return null;
                 const rate = validator.effectiveCommissionRate;
-                if (rate == null) return -1;
+                if (rate == null) return null;
                 const n = Number(rate);
-                return isNaN(n) ? -1 : n;
+                return isNaN(n) ? null : n;
             },
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
-                if (isCandidateOrPending(rowA)) return -1;
-                if (isCandidateOrPending(rowB)) return 1;
-                return sortByNumber(rowA, rowB, columnId);
+                const isACandidateOrPending = isCandidateOrPending(rowA);
+                const isBCandidateOrPending = isCandidateOrPending(rowB);
+                if (isACandidateOrPending && isBCandidateOrPending) return 0;
+                if (isACandidateOrPending) return -1;
+                if (isBCandidateOrPending) return 1;
+                const rateA = rowA.getValue<number | null>(columnId);
+                const rateB = rowB.getValue<number | null>(columnId);
+                if (rateA === null && rateB === null) return 0;
+                if (rateA === null) return -1;
+                if (rateB === null) return 1;
+                return rateA - rateB;
             },
             cell({ row }) {
                 return (
@@ -275,9 +284,11 @@ export function generateValidatorsTableColumns({
             accessorKey: 'votingPower',
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
-                if (isCandidateOrPending(rowA)) return -1;
-                if (isCandidateOrPending(rowB)) return 1;
+                const isACandidateOrPending = isCandidateOrPending(rowA);
+                const isBCandidateOrPending = isCandidateOrPending(rowB);
+                if (isACandidateOrPending && isBCandidateOrPending) return 0;
+                if (isACandidateOrPending) return -1;
+                if (isBCandidateOrPending) return 1;
                 return sortByNumber(rowA, rowB, columnId);
             },
             cell({ getValue, row }) {
@@ -305,9 +316,11 @@ export function generateValidatorsTableColumns({
             id: 'lastReward',
             enableSorting: true,
             sortingFn: (rowA, rowB) => {
-                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
-                if (isCandidateOrPending(rowA)) return -1;
-                if (isCandidateOrPending(rowB)) return 1;
+                const isACandidateOrPending = isCandidateOrPending(rowA);
+                const isBCandidateOrPending = isCandidateOrPending(rowB);
+                if (isACandidateOrPending && isBCandidateOrPending) return 0;
+                if (isACandidateOrPending) return -1;
+                if (isBCandidateOrPending) return 1;
 
                 const lastRewardA = getLastReward(validatorEvents, rowA, currentEpoch);
                 const lastRewardB = getLastReward(validatorEvents, rowB, currentEpoch);
@@ -316,7 +329,7 @@ export function generateValidatorsTableColumns({
                 if (lastRewardA === null) return -1;
                 if (lastRewardB === null) return 1;
 
-                return lastRewardA > lastRewardB ? 1 : -1;
+                return lastRewardA > lastRewardB ? 1 : lastRewardA < lastRewardB ? -1 : 0;
             },
             cell({ row }) {
                 const lastReward = getLastReward(validatorEvents, row, currentEpoch);
@@ -340,7 +353,7 @@ export function generateValidatorsTableColumns({
     return columns;
 }
 function isCandidateOrPending(row: Row<IotaValidatorSummaryExtended>): boolean {
-    return row.original.isCandidate || row.original.isPending;
+    return !!(row.original.isCandidate || row.original.isPending);
 }
 
 function sortByString(value1: string, value2: string) {
@@ -348,11 +361,12 @@ function sortByString(value1: string, value2: string) {
 }
 
 function sortByNumber(
-    rowA: Row<IotaValidatorSummary>,
-    rowB: Row<IotaValidatorSummary>,
+    rowA: Row<IotaValidatorSummaryExtended>,
+    rowB: Row<IotaValidatorSummaryExtended>,
     columnId: string,
 ) {
-    return Number(rowA.getValue(columnId)) - Number(rowB.getValue(columnId)) > 0 ? 1 : -1;
+    const diff = Number(rowA.getValue(columnId)) - Number(rowB.getValue(columnId));
+    return diff > 0 ? 1 : diff < 0 ? -1 : 0;
 }
 function getLastReward(
     validatorEvents: IotaEvent[],
