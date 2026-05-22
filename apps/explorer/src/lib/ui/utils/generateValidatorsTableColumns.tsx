@@ -203,12 +203,6 @@ export function generateValidatorsTableColumns({
             accessorKey: 'iotaAddress',
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                const isACandidateOrPending = isCandidateOrPending(rowA);
-                const isBCandidateOrPending = isCandidateOrPending(rowB);
-                if (isACandidateOrPending && isBCandidateOrPending) return 0;
-                if (isACandidateOrPending) return -1;
-                if (isBCandidateOrPending) return 1;
-
                 const apyA = rollingAverageApys?.[rowA.getValue<string>(columnId)]?.apy ?? null;
                 const apyB = rollingAverageApys?.[rowB.getValue<string>(columnId)]?.apy ?? null;
 
@@ -252,11 +246,6 @@ export function generateValidatorsTableColumns({
             },
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                const isACandidateOrPending = isCandidateOrPending(rowA);
-                const isBCandidateOrPending = isCandidateOrPending(rowB);
-                if (isACandidateOrPending && isBCandidateOrPending) return 0;
-                if (isACandidateOrPending) return -1;
-                if (isBCandidateOrPending) return 1;
                 const rateA = rowA.getValue<number | null>(columnId);
                 const rateB = rowB.getValue<number | null>(columnId);
                 if (rateA === null && rateB === null) return 0;
