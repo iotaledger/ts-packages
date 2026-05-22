@@ -354,8 +354,7 @@ function sortByNumber(
     rowB: Row<IotaValidatorSummaryExtended>,
     columnId: string,
 ) {
-    const diff = Number(rowA.getValue(columnId)) - Number(rowB.getValue(columnId));
-    return diff > 0 ? 1 : diff < 0 ? -1 : 0;
+    return Number(rowA.getValue(columnId)) - Number(rowB.getValue(columnId)) > 0 ? 1 : -1;
 }
 function getLastReward(
     validatorEvents: IotaEvent[],
