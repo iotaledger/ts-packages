@@ -203,6 +203,10 @@ export function generateValidatorsTableColumns({
             accessorKey: 'iotaAddress',
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
+                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
+                if (isCandidateOrPending(rowA)) return -1;
+                if (isCandidateOrPending(rowB)) return 1;
+
                 const apyA = rollingAverageApys?.[rowA.getValue<string>(columnId)]?.apy ?? null;
                 const apyB = rollingAverageApys?.[rowB.getValue<string>(columnId)]?.apy ?? null;
 
@@ -245,7 +249,12 @@ export function generateValidatorsTableColumns({
                 return isNaN(n) ? -1 : n;
             },
             enableSorting: true,
-            sortDescFirst: false,
+            sortingFn: (rowA, rowB, columnId) => {
+                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
+                if (isCandidateOrPending(rowA)) return -1;
+                if (isCandidateOrPending(rowB)) return 1;
+                return sortByNumber(rowA, rowB, columnId);
+            },
             cell({ row }) {
                 return (
                     <TableCellBase>
@@ -266,11 +275,9 @@ export function generateValidatorsTableColumns({
             accessorKey: 'votingPower',
             enableSorting: true,
             sortingFn: (rowA, rowB, columnId) => {
-                const isRowAMin = rowA.original.isCandidate || rowA.original.isPending;
-                const isRowBMin = rowB.original.isCandidate || rowB.original.isPending;
-                if (isRowAMin && isRowBMin) return 0;
-                if (isRowAMin) return -1;
-                if (isRowBMin) return 1;
+                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
+                if (isCandidateOrPending(rowA)) return -1;
+                if (isCandidateOrPending(rowB)) return 1;
                 return sortByNumber(rowA, rowB, columnId);
             },
             cell({ getValue, row }) {
@@ -298,11 +305,9 @@ export function generateValidatorsTableColumns({
             id: 'lastReward',
             enableSorting: true,
             sortingFn: (rowA, rowB) => {
-                const isRowAMin = rowA.original.isCandidate || rowA.original.isPending;
-                const isRowBMin = rowB.original.isCandidate || rowB.original.isPending;
-                if (isRowAMin && isRowBMin) return 0;
-                if (isRowAMin) return -1;
-                if (isRowBMin) return 1;
+                if (isCandidateOrPending(rowA) && isCandidateOrPending(rowB)) return 0;
+                if (isCandidateOrPending(rowA)) return -1;
+                if (isCandidateOrPending(rowB)) return 1;
 
                 const lastRewardA = getLastReward(validatorEvents, rowA, currentEpoch);
                 const lastRewardB = getLastReward(validatorEvents, rowB, currentEpoch);
@@ -334,6 +339,10 @@ export function generateValidatorsTableColumns({
 
     return columns;
 }
+function isCandidateOrPending(row: Row<IotaValidatorSummaryExtended>): boolean {
+    return row.original.isCandidate || row.original.isPending;
+}
+
 function sortByString(value1: string, value2: string) {
     return value1.localeCompare(value2, undefined, { sensitivity: 'base' });
 }
