@@ -201,10 +201,8 @@ export function generateValidatorsTableColumns({
         {
             header: 'APY',
             id: 'apy',
-            accessorFn: (validator) => {
-                const apy = rollingAverageApys?.[validator.iotaAddress]?.apy;
-                return apy == null || apy === 0 ? undefined : apy;
-            },
+            accessorFn: (validator) =>
+                rollingAverageApys?.[validator.iotaAddress]?.apy || undefined,
             enableSorting: true,
             sortUndefined: 'last',
             cell({ row }) {
@@ -226,8 +224,7 @@ export function generateValidatorsTableColumns({
             id: 'effectiveCommissionRate',
             accessorFn: (validator) => {
                 const rate = validator.effectiveCommissionRate;
-                const commission = rate != null ? Number(rate) / 100 : 0;
-                return commission === 0 ? undefined : commission;
+                return rate != null ? Number(rate) / 100 : undefined;
             },
             enableSorting: true,
             sortUndefined: 'last',
