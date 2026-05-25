@@ -14,6 +14,7 @@ import { CoinIcon, ImageIconSize } from '../';
 import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { type ReactNode } from 'react';
 import { useFormatCoin } from '../../hooks';
+import { BALANCE_MASK, useBalanceVisible } from '../../contexts/BalanceVisibilityContext';
 
 interface CoinItemProps {
     coinType: string;
@@ -35,6 +36,7 @@ export function CoinItem({
     format,
 }: CoinItemProps): React.JSX.Element {
     const [formatted, symbol, { data: coinMeta }] = useFormatCoin({ balance, coinType, format });
+    const isBalanceVisible = useBalanceVisible();
     const isIota = coinType === IOTA_TYPE_ARG;
 
     return (
@@ -52,8 +54,8 @@ export function CoinItem({
             />
             <CardAction
                 type={CardActionType.SupportingText}
-                title={`${formatted} ${symbol}`}
-                subtitle={usd?.toLocaleString('en-US')}
+                title={isBalanceVisible ? `${formatted} ${symbol}` : BALANCE_MASK}
+                subtitle={isBalanceVisible ? usd?.toLocaleString('en-US') : undefined}
             />
         </Card>
     );
