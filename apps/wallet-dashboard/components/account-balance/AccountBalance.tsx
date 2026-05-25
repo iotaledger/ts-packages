@@ -9,12 +9,15 @@ import {
     useGetAllBalances,
     NamedAddress,
     toast,
+    BALANCE_MASK,
 } from '@iota/core';
 import { Button, ButtonSize, ButtonType, LoadingIndicator, Panel } from '@iota/apps-ui-kit';
 import { getNetwork } from '@iota/iota-sdk/client';
 import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
+import { useBalanceVisibility } from '@/store/balanceVisibility';
+import { VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
@@ -28,6 +31,7 @@ export function AccountBalance() {
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
     const explorerLink = `${explorer}/address/${address}`;
     const { data: coinBalances } = useGetAllBalances(account?.address);
+    const { isBalanceVisible, toggleBalanceVisible } = useBalanceVisibility();
 
     function openSendTokenDialog(): void {
         setIsSendTokenDialogOpen(true);
@@ -67,16 +71,48 @@ export function AccountBalance() {
                                     />
                                 </div>
                             )}
-                            <span
-                                data-testid="balance-amount"
-                                className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
-                            >
-                                {formatted} {symbol}
-                            </span>
+                            <div className="flex items-baseline gap-xs">
+                                <div className="relative">
+                                    <span
+                                        data-testid="balance-amount"
+                                        className={`text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92 ${!isBalanceVisible ? 'invisible' : ''}`}
+                                    >
+                                        {formatted}
+                                    </span>
+                                    {!isBalanceVisible && (
+                                        <span className="absolute inset-0 flex w-full items-baseline justify-end text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                                            {BALANCE_MASK}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    <span>{symbol}</span>
+                                    <button
+                                        onClick={toggleBalanceVisible}
+                                        className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
+                                        aria-label={
+                                            isBalanceVisible ? 'Hide balances' : 'Show balances'
+                                        }
+                                    >
+                                        {isBalanceVisible ? (
+                                            <VisibilityOn className="h-4 w-4" />
+                                        ) : (
+                                            <VisibilityOff className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
                             {fiatBalance && (
-                                <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    {fiatBalance}
-                                </span>
+                                <div className="relative text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                                    <span className={!isBalanceVisible ? 'invisible' : ''}>
+                                        {fiatBalance}
+                                    </span>
+                                    {!isBalanceVisible && (
+                                        <span className="absolute inset-0 flex items-center">
+                                            {BALANCE_MASK}
+                                        </span>
+                                    )}
+                                </div>
                             )}
                         </div>
                         <div className="flex w-full max-w-56 gap-xs">

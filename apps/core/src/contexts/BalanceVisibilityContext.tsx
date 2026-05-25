@@ -3,7 +3,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 
-export const BALANCE_MASK = '••••••';
+export const BALANCE_MASK = '•••••••';
 
 const BalanceVisibilityContext = createContext<boolean>(true);
 
