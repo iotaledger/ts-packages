@@ -87,19 +87,22 @@ export function AccountBalance() {
                                 </div>
                                 <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                     <span>{symbol}</span>
-                                    <button
+                                    <Button
+                                        type={ButtonType.Ghost}
+                                        size={ButtonSize.Small}
                                         onClick={toggleBalanceVisible}
                                         className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
                                         aria-label={
                                             isBalanceVisible ? 'Hide balances' : 'Show balances'
                                         }
-                                    >
-                                        {isBalanceVisible ? (
-                                            <VisibilityOn className="h-4 w-4" />
-                                        ) : (
-                                            <VisibilityOff className="h-4 w-4" />
-                                        )}
-                                    </button>
+                                        icon={
+                                            isBalanceVisible ? (
+                                                <VisibilityOn className="h-4 w-4" />
+                                            ) : (
+                                                <VisibilityOff className="h-4 w-4" />
+                                            )
+                                        }
+                                    />
                                 </div>
                             </div>
                             {fiatBalance && (
