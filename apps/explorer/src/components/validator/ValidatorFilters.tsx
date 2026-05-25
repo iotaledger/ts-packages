@@ -30,7 +30,7 @@ export function ValidatorFilters({
         { status: 'Pending', count: validatorCounts.pending },
         { status: 'Candidate', count: validatorCounts.candidate },
         { status: 'At Risk', count: validatorCounts.atRisk },
-    ];
+    ].filter(({ status, count }) => status === 'All' || count > 0);
 
     return (
         <SegmentedButton>
