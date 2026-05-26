@@ -5,6 +5,7 @@
 import { wrapCreateBrowserRouter } from '@sentry/react';
 import { createBrowserRouter, Navigate, useLocation, useParams } from 'react-router-dom';
 import { AddressResultPage } from './address-result/AddressResult';
+import { AbstractAccountResultPage } from './abstract-account-result/AbstractAccountResult';
 import { CheckpointDetail } from './checkpoints/CheckpointDetail';
 import { CookiePolicyPage } from './cookie-policy/CookiePolicyPage';
 import { EpochDetail } from './epochs/EpochDetail';
@@ -43,6 +44,7 @@ export const router = sentryCreateBrowserRouter([
             { path: 'txblock/:id', element: <TransactionResult /> },
             { path: 'epoch/:id', element: <EpochDetail /> },
             { path: 'address/:id', element: <AddressResultPage /> },
+            { path: 'account/:id', element: <AbstractAccountResultPage /> },
             { path: 'validators', element: <ValidatorPageResult /> },
             { path: 'validator/:id', element: <ValidatorDetails /> },
             { path: 'identity/:id', element: <IdentityResult /> },
