@@ -15,7 +15,7 @@ interface FeatureCardProps {
 function FeatureCard({ icon, label, description }: FeatureCardProps) {
     return (
         <div className="card-filled-bg flex flex-1 flex-col items-center gap-xs rounded-xl px-xxs py-sm ">
-            <div className="flex text-iota-primary-30 dark:text-iota-primary-80 [&_svg]:h-5 [&_svg]:w-5">
+            <div className="flex text-iota-primary-30 dark:text-iota-primary-80 [&_svg]:h-4 [&_svg]:w-4">
                 {icon}
             </div>
             <div className="flex flex-col items-center gap-xxxs">
@@ -43,9 +43,9 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
                     <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                         {isMainnet ? 'Start building' : 'Try the IOTA network'}
                     </span>
-                    <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <span className="px-md text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                         {isMainnet
-                            ? 'Receive IOTA to start staking and exploring'
+                            ? 'The IOTA ecosystem is waiting — receive IOTA and watch your wallet come to life.'
                             : 'Request test tokens to explore the network'}
                     </span>
                 </div>
