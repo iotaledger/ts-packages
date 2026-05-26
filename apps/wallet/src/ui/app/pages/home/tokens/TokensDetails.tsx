@@ -223,7 +223,7 @@ export function TokenDetails() {
                     className="flex h-full flex-1 flex-grow flex-col items-center gap-md"
                     data-testid="coin-page"
                 >
-                    <div className="flex w-full items-center justify-between gap-lg px-sm py-lg">
+                    <div className="flex w-full items-center justify-between gap-lg rounded-xl bg-iota-neutral-96 px-sm py-lg dark:bg-iota-neutral-10">
                         <div className="flex flex-col gap-xs" data-amp-mask>
                             <Address
                                 isExternal={!!explorerHref}
@@ -258,6 +258,26 @@ export function TokenDetails() {
                             />
                         </div>
                     </div>
+                    {hasSupplyIncreaseVestingObjects || needsMigration ? (
+                        <div className="flex w-full flex-row gap-x-xs">
+                            {needsMigration ? (
+                                <OverviewHint
+                                    onClick={() => setDialogMigrationOpen(true)}
+                                    title="Migration"
+                                    icon={Migration}
+                                    subtitle="Action required"
+                                />
+                            ) : null}
+                            {hasSupplyIncreaseVestingObjects ? (
+                                <OverviewHint
+                                    onClick={() => setDialogVestingOpen(true)}
+                                    title="Vesting"
+                                    icon={Vesting}
+                                    subtitle="Action required"
+                                />
+                            ) : null}
+                        </div>
+                    ) : null}
                     <div className="flex w-full flex-grow flex-col gap-md">
                         {!accountHasIota ? (
                             <WalletEmptyState
@@ -268,26 +288,6 @@ export function TokenDetails() {
                             <div className="flex w-full flex-col items-center gap-xs">
                                 {accountHasIota || delegatedStake?.length ? (
                                     <TokenStakingOverview accountAddress={activeAccountAddress} />
-                                ) : null}
-                                {hasSupplyIncreaseVestingObjects || needsMigration ? (
-                                    <div className="flex w-full flex-row gap-x-xs">
-                                        {needsMigration ? (
-                                            <OverviewHint
-                                                onClick={() => setDialogMigrationOpen(true)}
-                                                title="Migration"
-                                                icon={Migration}
-                                                subtitle="Action required"
-                                            />
-                                        ) : null}
-                                        {hasSupplyIncreaseVestingObjects ? (
-                                            <OverviewHint
-                                                onClick={() => setDialogVestingOpen(true)}
-                                                title="Vesting"
-                                                icon={Vesting}
-                                                subtitle="Action required"
-                                            />
-                                        ) : null}
-                                    </div>
                                 ) : null}
                             </div>
                         )}

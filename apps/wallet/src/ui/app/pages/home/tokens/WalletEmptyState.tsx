@@ -37,7 +37,7 @@ interface WalletEmptyStateProps {
 
 export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyStateProps) {
     return (
-        <div className="flex w-full flex-grow flex-col items-center gap-y-xl overflow-hidden pt-lg text-center">
+        <div className="flex w-full flex-grow flex-col items-center justify-between overflow-hidden pt-lg text-center">
             <div className="flex w-full flex-col items-center gap-lg">
                 <div className="flex flex-col gap-xs">
                     <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
@@ -60,7 +60,7 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
                 {isMainnet ? (
                     <Button
                         onClick={onReceiveClick}
-                        type={ButtonType.Secondary}
+                        type={ButtonType.Primary}
                         icon={<ArrowBottomLeft />}
                         text="Receive IOTA"
                         fullWidth
