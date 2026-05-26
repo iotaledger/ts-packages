@@ -17,7 +17,7 @@ import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
 import { useBalanceVisibility } from '@/store/balanceVisibility';
-import { VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
+import { VisibilityOff } from '@iota/apps-ui-icons';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
@@ -97,7 +97,7 @@ export function AccountBalance() {
                                         }
                                         icon={
                                             isBalanceVisible ? (
-                                                <VisibilityOn className="h-4 w-4" />
+                                                <VisibilityOff className="h-4 w-4" />
                                             ) : (
                                                 <VisibilityOff className="h-4 w-4" />
                                             )
