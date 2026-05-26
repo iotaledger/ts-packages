@@ -37,8 +37,8 @@ interface WalletEmptyStateProps {
 
 export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyStateProps) {
     return (
-        <div className="relative flex w-full flex-grow flex-col items-center justify-between overflow-hidden pt-lg text-center">
-            <div className="relative z-10 flex w-full flex-col items-center gap-lg">
+        <div className="flex w-full flex-grow flex-col items-center gap-y-xl overflow-hidden pt-lg text-center">
+            <div className="flex w-full flex-col items-center gap-lg">
                 <div className="flex flex-col gap-xs">
                     <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                         {isMainnet ? 'Start building' : 'Try the IOTA network'}
@@ -49,7 +49,7 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
                             : 'Request test tokens to explore the network'}
                     </span>
                 </div>
-                <div className="relative z-10 flex w-full gap-xs">
+                <div className="flex w-full gap-xs">
                     <FeatureCard icon={<Stake />} label="Stake" description="Earn rewards" />
                     <FeatureCard icon={<Send />} label="Send" description="Instant transfers" />
                     <FeatureCard icon={<Apps />} label="Explore" description="dApps & more" />
