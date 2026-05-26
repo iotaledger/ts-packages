@@ -60,7 +60,7 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
                 {isMainnet ? (
                     <Button
                         onClick={onReceiveClick}
-                        type={ButtonType.Primary}
+                        type={ButtonType.Secondary}
                         icon={<ArrowBottomLeft />}
                         text="Receive IOTA"
                         fullWidth
