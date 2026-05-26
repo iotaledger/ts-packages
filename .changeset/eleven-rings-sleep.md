@@ -3,4 +3,4 @@
 '@iota/iota-sdk': patch
 ---
 
-Update types with latest IOTA changes
+Deprecate ObjectKind.WrappedOrDeleted
