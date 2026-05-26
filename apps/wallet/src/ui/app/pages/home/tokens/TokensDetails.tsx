@@ -10,7 +10,6 @@ import {
     useExplorerLink,
     useShouldOpenInNewTab,
 } from '_hooks';
-import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { useFeature, useAppsBackendClient } from '@iota/apps-backend-client';
 import {
     Feature,
@@ -53,6 +52,7 @@ import { ReceiveTokensDialog } from './ReceiveTokensDialog';
 import { OverviewHint } from './OverviewHint';
 import { SupplyIncreaseVestingStakingDialog } from './SupplyIncreaseVestingStakingDialog';
 import { MigrationDialog } from './MigrationDialog';
+import { WalletEmptyState } from './WalletEmptyState';
 import { openInNewTab } from '_src/shared/utils';
 import { ampli } from '_src/shared/analytics';
 
@@ -259,9 +259,12 @@ export function TokenDetails() {
                         </div>
                     </div>
                     <div className="flex w-full flex-grow flex-col gap-md">
-                        <div
-                            className={`flex w-full flex-col items-center gap-xs rounded-2xl ${!accountHasIota ? 'flex-grow justify-between' : ''}`}
-                        >
+                        {!accountHasIota ? (
+                            <WalletEmptyState
+                                isMainnet={isMainnet}
+                                onReceiveClick={() => setDialogReceiveOpen(true)}
+                            />
+                        ) : (
                             <div className="flex w-full flex-col items-center gap-xs">
                                 {accountHasIota || delegatedStake?.length ? (
                                     <TokenStakingOverview accountAddress={activeAccountAddress} />
@@ -287,19 +290,7 @@ export function TokenDetails() {
                                     </div>
                                 ) : null}
                             </div>
-                            {!accountHasIota ? (
-                                <div className="flex flex-col gap-md">
-                                    <div className="flex flex-col flex-nowrap items-center justify-center px-sm text-center">
-                                        <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                                            {isMainnet
-                                                ? 'Start by buying IOTA'
-                                                : 'Need to send transactions on the IOTA network? You’ll need IOTA in your wallet'}
-                                        </span>
-                                    </div>
-                                    {!isMainnet && <FaucetRequestButton />}
-                                </div>
-                            ) : null}
-                        </div>
+                        )}
                         {coinBalances?.length ? (
                             <MyTokens
                                 coinBalances={coinBalances ?? []}

@@ -47,6 +47,7 @@ export function FaucetRequestButton(): JSX.Element | null {
                 );
             }}
             text={`Request ${networkConfig?.name} Tokens`}
+            fullWidth
         />
     ) : null;
 }
