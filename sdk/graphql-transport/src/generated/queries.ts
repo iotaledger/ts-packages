@@ -3856,6 +3856,7 @@ export enum ObjectKind {
   /**
    * The object is deleted or wrapped and only partial information can be
    * loaded from the indexer.
+   * @deprecated will be removed with v1.26, as such objects can be considered non-existent
    */
   WrappedOrDeleted = 'WRAPPED_OR_DELETED'
 }
