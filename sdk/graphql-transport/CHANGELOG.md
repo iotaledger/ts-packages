@@ -1,5 +1,23 @@
 # @iota/graphql-transport
 
+## 0.17.0
+
+### Minor Changes
+
+-   2223521: Subscriptions recovery types generation.
+-   8043617: Add request inspector support for the GraphQLClient
+-   c4e159b: Remove ZkLogin.
+
+### Patch Changes
+
+-   Updated dependencies [76ab06f]
+-   Updated dependencies [3b04d23]
+-   Updated dependencies [3b178c6]
+-   Updated dependencies [2223521]
+-   Updated dependencies [8043617]
+-   Updated dependencies [c4e159b]
+    -   @iota/iota-sdk@1.14.0
+
 ## 0.16.0
 
 ### Minor Changes

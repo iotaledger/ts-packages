@@ -123,7 +123,7 @@ stop_and_inject_configs() {
     echo "=== Phase 3: Stopping and injecting iota-names config ==="
 
     for pid in $PID_IOTA $PID_INDEXER_WRITER $PID_INDEXER_READER $PID_GRAPHQL; do
-        kill "$pid" 2>/dev/null || true
+        kill -9 "$pid" 2>/dev/null || true
         wait "$pid" 2>/dev/null || true
     done
 

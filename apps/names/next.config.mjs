@@ -11,6 +11,7 @@ let NEXT_PUBLIC_IOTA_NAMES_REV = 'development';
 const NEXT_PUBLIC_BUILD_ENV = process.env.BUILD_ENV;
 const NEXT_PUBLIC_AMPLITUDE_ENABLED =
     process.env.NEXT_PUBLIC_AMPLITUDE_ENABLED || process.env.AMPLITUDE_ENABLED;
+const APPS_BACKEND = process.env.APPS_BACKEND;
 
 try {
     if (process.env.VERCEL_GIT_COMMIT_SHA) {
@@ -30,6 +31,7 @@ const nextConfig = withMDX({
         NEXT_PUBLIC_AMPLITUDE_ENABLED,
         NEXT_PUBLIC_IOTA_NAMES_REV,
         NEXT_PUBLIC_BUILD_ENV,
+        APPS_BACKEND,
     },
     experimental: {
         mdxRs: true,
