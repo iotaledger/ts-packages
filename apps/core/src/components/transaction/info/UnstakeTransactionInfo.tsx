@@ -44,7 +44,11 @@ export function UnstakeTransactionInfo({
                 <div className="flex flex-col gap-y-sm p-md">
                     <KeyValueInfo
                         keyText="Your Stake"
-                        value={`${formatTotalAmountWithoutRewards} ${symbol}`}
+                        value={
+                            isBalanceVisible
+                                ? `${formatTotalAmountWithoutRewards} ${symbol}`
+                                : BALANCE_MASK
+                        }
                         fullwidth
                     />
                     <KeyValueInfo
