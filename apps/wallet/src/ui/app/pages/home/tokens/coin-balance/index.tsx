@@ -6,8 +6,7 @@ import { IOTA_TYPE_ARG, CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { useMemo } from 'react';
 import { Button, ButtonSize, ButtonType, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import BigNumber from 'bignumber.js';
-import { useAppSelector } from '_src/ui/app/hooks';
-import { useBalanceVisibility } from '_hooks';
+import { useAppSelector, useBalanceVisibility } from '_src/ui/app/hooks';
 import { VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
 
 export interface CoinProps {
