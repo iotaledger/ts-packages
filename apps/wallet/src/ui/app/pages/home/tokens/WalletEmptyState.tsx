@@ -16,7 +16,7 @@ interface FeatureCardProps {
 function FeatureCard({ icon, label, description }: FeatureCardProps) {
     return (
         <div className="flex flex-1 flex-col items-center gap-xs rounded-xl bg-iota-neutral-96 px-xxs py-sm dark:bg-iota-neutral-12">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-iota-primary-30/10 text-iota-primary-40 [&_svg]:h-4 [&_svg]:w-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-iota-primary-30/10 text-iota-primary-30 [&_svg]:h-4 [&_svg]:w-4">
                 {icon}
             </div>
             <div className="flex flex-col items-center gap-xxxs">
@@ -41,7 +41,7 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
         <div className="relative flex w-full flex-grow flex-col items-center justify-between overflow-hidden pb-sm pt-2xl text-center">
             <SonarRingsAnimation />
 
-            <div className="relative z-10 flex flex-col items-center gap-sm">
+            <div className="relative z-10 flex w-full flex-col items-center gap-xl">
                 <div className="flex flex-col gap-xs">
                     <span className="text-title-md text-iota-neutral-10 dark:text-iota-neutral-92">
                         {isMainnet ? 'Your wallet is ready' : 'Try the IOTA network'}
@@ -52,12 +52,11 @@ export function WalletEmptyState({ isMainnet, onReceiveClick }: WalletEmptyState
                             : 'Request test tokens to explore the network'}
                     </span>
                 </div>
-            </div>
-
-            <div className="relative z-10 flex w-full gap-xs">
-                <FeatureCard icon={<Stake />} label="Stake" description="Earn rewards" />
-                <FeatureCard icon={<Send />} label="Send" description="Instant transfers" />
-                <FeatureCard icon={<Apps />} label="Explore" description="dApps & more" />
+                <div className="relative z-10 flex w-full gap-xs">
+                    <FeatureCard icon={<Stake />} label="Stake" description="Earn rewards" />
+                    <FeatureCard icon={<Send />} label="Send" description="Instant transfers" />
+                    <FeatureCard icon={<Apps />} label="Explore" description="dApps & more" />
+                </div>
             </div>
 
             <div className="relative z-10 w-full">

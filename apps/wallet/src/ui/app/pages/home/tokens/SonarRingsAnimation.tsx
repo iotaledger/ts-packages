@@ -15,7 +15,7 @@ export function SonarRingsAnimation() {
             {RING_CONFIG.map((ring, i) => (
                 <motion.div
                     key={i}
-                    className="absolute rounded-full border-2 border-iota-primary-30"
+                    className="absolute rounded-full border-2 border-iota-primary-90 dark:border-iota-primary-20"
                     style={{ width: 120, height: 120 }}
                     animate={{ scale: [1, 3.6], opacity: [0, 0.35, 0] }}
                     transition={{
