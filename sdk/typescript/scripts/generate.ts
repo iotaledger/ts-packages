@@ -744,8 +744,11 @@ async function generateUnionType(
 }
 
 async function formatComment(text: string) {
+    // Strip Rust-style doc links (e.g. [`Foo`](some::rust::Path)) — the `::` paths
+    // are not valid URLs and break the docs build URL validator.
+    const stripped = text.replace(/\[([^\]]+)\]\(([^)]*::[^)]*)\)/g, '$1 ($2)');
     const lines = (
-        await format(text, { ...prettierConfig, parser: 'markdown', proseWrap: 'always' })
+        await format(stripped, { ...prettierConfig, parser: 'markdown', proseWrap: 'always' })
     )
         .trim()
         .split('\n');

@@ -721,9 +721,8 @@ export type IotaSystemStateSummary =
           V2: IotaSystemStateSummaryV2;
       };
 /**
- * This is the JSON-RPC type for the
- * [`IotaSystemStateSummaryV1`](iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV1)
- * object.
+ * This is the JSON-RPC type for the `IotaSystemStateSummaryV1`
+ * (iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV1) object.
  */
 export interface IotaSystemStateSummaryV1 {
     /** The list of active validators in the current epoch. */
@@ -825,9 +824,8 @@ export interface IotaSystemStateSummaryV1 {
     validatorVeryLowStakeThreshold: string;
 }
 /**
- * This is the JSON-RPC type for the
- * [`IotaSystemStateSummaryV2`](iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV2)
- * object.
+ * This is the JSON-RPC type for the `IotaSystemStateSummaryV2`
+ * (iota_types::iota_system_state::iota_system_state_summary::IotaSystemStateSummaryV2) object.
  */
 export interface IotaSystemStateSummaryV2 {
     /** The list of active validators in the current epoch. */
