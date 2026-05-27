@@ -54,7 +54,7 @@ export function CoinItem({
             />
             <CardAction
                 type={CardActionType.SupportingText}
-                title={isBalanceVisible ? `${formatted} ${symbol}` : BALANCE_MASK}
+                title={`${isBalanceVisible ? formatted : BALANCE_MASK} ${symbol}`}
                 subtitle={isBalanceVisible ? usd?.toLocaleString('en-US') : undefined}
             />
         </Card>

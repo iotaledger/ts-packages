@@ -26,7 +26,7 @@ function WalletBalanceUsd({ amount: walletBalance, isVisible }: WalletBalanceUsd
     const walletBalanceInUsd = useMemo(() => {
         if (!formattedWalletBalance) return null;
 
-        return `~${formatBalanceToUSD(formattedWalletBalance)} USD`;
+        return `~${formatBalanceToUSD(formattedWalletBalance)}`;
     }, [formattedWalletBalance]);
 
     if (!walletBalanceInUsd) {
@@ -34,11 +34,9 @@ function WalletBalanceUsd({ amount: walletBalance, isVisible }: WalletBalanceUsd
     }
 
     return (
-        <div className="relative text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            <span className={isVisible ? '' : 'invisible'}>{walletBalanceInUsd}</span>
-            {!isVisible && (
-                <span className="absolute inset-0 flex items-center">{BALANCE_MASK}</span>
-            )}
+        <div className="flex items-center gap-1 text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+            <span>{isVisible ? walletBalanceInUsd : BALANCE_MASK}</span>
+            <span>USD</span>
         </div>
     );
 }
@@ -55,18 +53,11 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
     const shouldShowTooltip = bnBalance.gt(0) && bnBalance.lt(1);
 
     const balanceNode = (
-        <div className="relative">
-            <span
-                className={`text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92 ${!isBalanceVisible ? 'invisible' : ''}`}
-                data-testid="coin-balance"
-            >
-                {formatted}
-            </span>
-            {!isBalanceVisible && (
-                <span className="absolute inset-0 flex items-baseline text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92">
-                    {BALANCE_MASK}
-                </span>
-            )}
+        <div
+            className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+            data-testid="coin-balance"
+        >
+            {isBalanceVisible ? formatted : BALANCE_MASK}
         </div>
     );
 

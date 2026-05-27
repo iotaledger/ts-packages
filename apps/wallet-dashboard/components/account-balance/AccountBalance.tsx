@@ -72,19 +72,12 @@ export function AccountBalance() {
                                 </div>
                             )}
                             <div className="flex items-baseline gap-xs">
-                                <div className="relative">
-                                    <span
-                                        data-testid="balance-amount"
-                                        className={`text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92 ${!isBalanceVisible ? 'invisible' : ''}`}
-                                    >
-                                        {formatted}
-                                    </span>
-                                    {!isBalanceVisible && (
-                                        <span className="absolute inset-0 flex w-full items-baseline justify-end text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92">
-                                            {BALANCE_MASK}
-                                        </span>
-                                    )}
-                                </div>
+                                <span
+                                    data-testid="balance-amount"
+                                    className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+                                >
+                                    {isBalanceVisible ? formatted : BALANCE_MASK}
+                                </span>
                                 <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                     <span>{symbol}</span>
                                     <Button
@@ -106,15 +99,8 @@ export function AccountBalance() {
                                 </div>
                             </div>
                             {fiatBalance && (
-                                <div className="relative text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    <span className={!isBalanceVisible ? 'invisible' : ''}>
-                                        {fiatBalance}
-                                    </span>
-                                    {!isBalanceVisible && (
-                                        <span className="absolute inset-0 flex items-center">
-                                            {BALANCE_MASK}
-                                        </span>
-                                    )}
+                                <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                                    {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
                                 </div>
                             )}
                         </div>

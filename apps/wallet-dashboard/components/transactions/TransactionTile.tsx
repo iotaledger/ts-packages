@@ -125,9 +125,7 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
                     title={
                         txnFailed
                             ? '--'
-                            : isBalanceVisible
-                              ? `${formatAmount} ${symbol}`
-                              : BALANCE_MASK
+                            : `${isBalanceVisible ? formatAmount : BALANCE_MASK} ${symbol}`
                     }
                 />
             </Card>

@@ -125,7 +125,7 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
                 <CardAction
                     type={CardActionType.SupportingText}
                     title={
-                        error ? '--' : isBalanceVisible ? `${formatAmount} ${symbol}` : BALANCE_MASK
+                        error ? '--' : `${isBalanceVisible ? formatAmount : BALANCE_MASK} ${symbol}`
                     }
                 />
             </Card>
