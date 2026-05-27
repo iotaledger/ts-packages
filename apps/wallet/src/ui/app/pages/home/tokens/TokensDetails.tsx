@@ -52,9 +52,9 @@ import { ReceiveTokensDialog } from './ReceiveTokensDialog';
 import { OverviewHint } from './OverviewHint';
 import { SupplyIncreaseVestingStakingDialog } from './SupplyIncreaseVestingStakingDialog';
 import { MigrationDialog } from './MigrationDialog';
-import { WalletEmptyState } from './WalletEmptyState';
 import { openInNewTab } from '_src/shared/utils';
 import { ampli } from '_src/shared/analytics';
+import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 
 export function TokenDetails() {
     const navigate = useNavigate();
@@ -280,10 +280,29 @@ export function TokenDetails() {
                     ) : null}
                     <div className="flex w-full flex-grow flex-col gap-md">
                         {!accountHasIota ? (
-                            <WalletEmptyState
-                                isMainnet={isMainnet}
-                                onReceiveClick={() => setDialogReceiveOpen(true)}
-                            />
+                            <div className="flex w-full flex-grow flex-col items-center justify-center gap-xl px-sm text-center">
+                                <div className="flex flex-col gap-sm">
+                                    <span className="text-headline-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                                        {isMainnet ? 'Start with IOTA' : 'Try the IOTA network'}
+                                    </span>
+                                    <span className="px-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        Stake for rewards. Send to anyone. Explore the ecosystem.
+                                    </span>
+                                </div>
+                                <div className="w-full">
+                                    {isMainnet ? (
+                                        <Button
+                                            onClick={() => setDialogReceiveOpen(true)}
+                                            type={ButtonType.Primary}
+                                            icon={<ArrowBottomLeft />}
+                                            text="Receive IOTA"
+                                            fullWidth
+                                        />
+                                    ) : (
+                                        <FaucetRequestButton />
+                                    )}
+                                </div>
+                            </div>
                         ) : (
                             <div className="flex w-full flex-col items-center gap-xs">
                                 {accountHasIota || delegatedStake?.length ? (
