@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
-import type { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
     type ApyByValidator,
     type IotaValidatorSummaryExtended,
@@ -14,7 +14,7 @@ import {
 } from '@iota/core';
 import { ampli, getValidatorMoveEvent } from '~/lib';
 import { StakeColumn } from '~/components';
-import type { IotaEvent, IotaValidatorSummary } from '@iota/iota-sdk/client';
+import type { IotaEvent } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
@@ -200,28 +200,13 @@ export function generateValidatorsTableColumns({
         },
         {
             header: 'APY',
-            accessorKey: 'iotaAddress',
+            id: 'apy',
+            accessorFn: (validator) =>
+                rollingAverageApys?.[validator.iotaAddress]?.apy || undefined,
             enableSorting: true,
-            sortingFn: (rowA, rowB, columnId) => {
-                const apyA = rollingAverageApys?.[rowA.getValue<string>(columnId)]?.apy ?? null;
-                const apyB = rollingAverageApys?.[rowB.getValue<string>(columnId)]?.apy ?? null;
-
-                // Handle null values: move nulls to the bottom
-                if (apyA === null) return 1;
-                if (apyB === null) return -1;
-
-                return apyA - apyB;
-            },
-            cell({ getValue, row }) {
-                const validator = row.original as IotaValidatorSummaryExtended;
-                if (validator.isCandidate || validator.isPending) {
-                    return (
-                        <TableCellBase>
-                            <TableCellText>--</TableCellText>
-                        </TableCellBase>
-                    );
-                }
-                const iotaAddress = getValue<string>();
+            sortUndefined: 'last',
+            cell({ row }) {
+                const { iotaAddress } = row.original;
                 const { apy, isApyApproxZero } = rollingAverageApys?.[iotaAddress] ?? {
                     apy: null,
                 };
@@ -236,10 +221,13 @@ export function generateValidatorsTableColumns({
         },
         {
             header: 'Effective Commission',
-            accessorKey: 'effectiveCommissionRate',
             id: 'effectiveCommissionRate',
+            accessorFn: (validator) => {
+                const rate = validator.effectiveCommissionRate;
+                return rate != null ? Number(rate) / 100 : undefined;
+            },
             enableSorting: true,
-            sortingFn: sortByNumber,
+            sortUndefined: 'last',
             cell({ row }) {
                 return (
                     <TableCellBase>
@@ -250,26 +238,27 @@ export function generateValidatorsTableColumns({
                 );
             },
         },
-
         {
             header: 'Voting Power',
+            id: 'votingPower',
             meta: {
                 tooltip:
                     "This validator's share of total committee voting power, proportional to its stake. Determines influence over consensus.",
             },
-            accessorKey: 'votingPower',
+            accessorFn: (validator) => {
+                if (validator.isCandidate || validator.isPending) return undefined;
+                const power = Number(validator.votingPower);
+                return isNaN(power) ? undefined : power;
+            },
             enableSorting: true,
-            sortingFn: sortByNumber,
-            cell({ getValue, row }) {
-                const validator = row.original as IotaValidatorSummaryExtended;
-                const votingPower = getValue<string>();
-                const commission = Number(votingPower);
+            sortUndefined: 'last',
+            cell({ row }) {
+                const { isCandidate, isPending, votingPower } = row.original;
+                const power = Number(votingPower);
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            {validator.isCandidate || validator.isPending || isNaN(commission)
-                                ? '--'
-                                : `${commission / 100}%`}
+                            {isCandidate || isPending || isNaN(power) ? '--' : `${power / 100}%`}
                         </TableCellText>
                     </TableCellBase>
                 );
@@ -277,29 +266,21 @@ export function generateValidatorsTableColumns({
         },
         {
             header: 'Last Epoch Rewards',
+            id: 'lastReward',
             meta: {
                 tooltip:
                     "Total staking rewards distributed to this validator's pool at the end of the previous epoch.",
             },
-            accessorKey: 'lastReward',
-            id: 'lastReward',
+            accessorFn: (validator) =>
+                getLastReward(validatorEvents, validator.iotaAddress, currentEpoch),
             enableSorting: true,
-            sortingFn: (rowA, rowB) => {
-                const lastRewardA = getLastReward(validatorEvents, rowA, currentEpoch);
-                const lastRewardB = getLastReward(validatorEvents, rowB, currentEpoch);
-
-                if (lastRewardA === null && lastRewardB === null) return 0;
-                if (lastRewardA === null) return 1;
-                if (lastRewardB === null) return -1;
-
-                return lastRewardA > lastRewardB ? -1 : 1;
-            },
-            cell({ row }) {
-                const lastReward = getLastReward(validatorEvents, row, currentEpoch);
+            sortUndefined: 'last',
+            cell({ getValue }) {
+                const lastReward = getValue<number | undefined>();
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            {lastReward !== null ? <StakeColumn stake={lastReward} /> : '--'}
+                            {lastReward !== undefined ? <StakeColumn stake={lastReward} /> : '--'}
                         </TableCellText>
                     </TableCellBase>
                 );
@@ -319,21 +300,13 @@ function sortByString(value1: string, value2: string) {
     return value1.localeCompare(value2, undefined, { sensitivity: 'base' });
 }
 
-function sortByNumber(
-    rowA: Row<IotaValidatorSummary>,
-    rowB: Row<IotaValidatorSummary>,
-    columnId: string,
-) {
-    return Number(rowA.getValue(columnId)) - Number(rowB.getValue(columnId)) > 0 ? 1 : -1;
-}
 function getLastReward(
     validatorEvents: IotaEvent[],
-    row: Row<IotaValidatorSummaryExtended>,
+    iotaAddress: string,
     currentEpoch?: string,
-): number | null {
-    const { original: validator } = row;
-    const event = getValidatorMoveEvent(validatorEvents, validator.iotaAddress, currentEpoch) as {
+): number | undefined {
+    const event = getValidatorMoveEvent(validatorEvents, iotaAddress, currentEpoch) as {
         pool_staking_reward?: string;
     };
-    return event?.pool_staking_reward ? Number(event.pool_staking_reward) : null;
+    return event?.pool_staking_reward ? Number(event.pool_staking_reward) : undefined;
 }
