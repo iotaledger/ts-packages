@@ -14,11 +14,12 @@ interface NotarizationState {
 
 export function useNotarizationState(notarization: OnChainNotarization): NotarizationState | null {
     const state = notarization.state;
-    if (!state) {
-        return null;
-    }
 
-    const [content, lang] = useMemo((): [string, string] => {
+    const result = useMemo((): [string, string] | null => {
+        if (!state) {
+            return null;
+        }
+
         let stateContent: string;
         let contentLang = 'text';
 
@@ -41,6 +42,12 @@ export function useNotarizationState(notarization: OnChainNotarization): Notariz
 
         return [stateContent, contentLang];
     }, [state]);
+
+    if (!state || !result) {
+        return null;
+    }
+
+    const [content, lang] = result;
 
     return {
         content,
