@@ -41,8 +41,8 @@ export function TrustFrameworkProvider({ children }: PropsWithChildren) {
         (): TrustFrameworkProviderContext => ({
             identityClient,
             notarizationClient,
-}),
-[identityClient, notarizationClient],
+        }),
+        [identityClient, notarizationClient],
     );
 
     return <TrustFrameworkContext.Provider value={ctx}>{children}</TrustFrameworkContext.Provider>;
