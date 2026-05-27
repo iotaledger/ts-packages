@@ -77,9 +77,7 @@ export function TokenStakingOverview({
                     isLoading
                         ? '--'
                         : totalDelegatedStake
-                          ? isBalanceVisible
-                              ? `${formattedDelegatedStake} ${symbol}`
-                              : BALANCE_MASK
+                          ? `${isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK} ${symbol}`
                           : 'Start Staking'
                 }
                 subtitle={isLoading ? '--' : totalDelegatedStake ? 'Current Stake' : 'Earn Rewards'}
