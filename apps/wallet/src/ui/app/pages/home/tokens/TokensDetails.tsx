@@ -10,6 +10,7 @@ import {
     useExplorerLink,
     useShouldOpenInNewTab,
 } from '_hooks';
+import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { useFeature, useAppsBackendClient } from '@iota/apps-backend-client';
 import {
     Feature,
@@ -54,7 +55,6 @@ import { SupplyIncreaseVestingStakingDialog } from './SupplyIncreaseVestingStaki
 import { MigrationDialog } from './MigrationDialog';
 import { openInNewTab } from '_src/shared/utils';
 import { ampli } from '_src/shared/analytics';
-import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 
 export function TokenDetails() {
     const navigate = useNavigate();
@@ -223,7 +223,7 @@ export function TokenDetails() {
                     className="flex h-full flex-1 flex-grow flex-col items-center gap-md"
                     data-testid="coin-page"
                 >
-                    <div className="flex w-full items-center justify-between gap-lg rounded-xl bg-iota-neutral-96 px-sm py-lg dark:bg-iota-neutral-10">
+                    <div className="flex w-full items-center justify-between gap-lg px-sm py-lg">
                         <div className="flex flex-col gap-xs" data-amp-mask>
                             <Address
                                 isExternal={!!explorerHref}
