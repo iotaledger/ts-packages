@@ -2,14 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ExplorerLinkType, Loading } from '_components';
-import {
-    useActiveAccount,
-    useActiveAddress,
-    useAppSelector,
-    useExplorerLink,
-    useShouldOpenInNewTab,
-} from '_hooks';
+import { Loading } from '_components';
+import { useActiveAccount, useActiveAddress, useAppSelector, useShouldOpenInNewTab } from '_hooks';
 import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { useFeature, useAppsBackendClient } from '@iota/apps-backend-client';
 import {
@@ -32,13 +26,12 @@ import {
     Button,
     ButtonSize,
     ButtonType,
-    Address,
     InfoBox,
     InfoBoxType,
     InfoBoxStyle,
 } from '@iota/apps-ui-kit';
 import { Network } from '@iota/iota-sdk/client';
-import { formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { ArrowBottomLeft, Info, Migration, Send, Vesting } from '@iota/apps-ui-icons';
@@ -54,7 +47,6 @@ import { OverviewHint } from './OverviewHint';
 import { SupplyIncreaseVestingStakingDialog } from './SupplyIncreaseVestingStakingDialog';
 import { MigrationDialog } from './MigrationDialog';
 import { openInNewTab } from '_src/shared/utils';
-import { ampli } from '_src/shared/analytics';
 
 export function TokenDetails() {
     const navigate = useNavigate();
@@ -79,10 +71,7 @@ export function TokenDetails() {
         retry: false,
         enabled: isMainnet,
     });
-    const explorerHref = useExplorerLink({
-        type: ExplorerLinkType.Address,
-        address: activeAccountAddress,
-    });
+
     const address = useActiveAddress();
     const {
         data: coinBalances,
@@ -223,22 +212,8 @@ export function TokenDetails() {
                     className="flex h-full flex-1 flex-grow flex-col items-center gap-md"
                     data-testid="coin-page"
                 >
-                    <div className="flex w-full items-center justify-between gap-lg px-sm py-lg">
+                    <div className="flex w-full items-center justify-between gap-lg rounded-xl bg-iota-neutral-96 px-sm py-lg dark:bg-iota-neutral-10">
                         <div className="flex flex-col gap-xs" data-amp-mask>
-                            <Address
-                                isExternal={!!explorerHref}
-                                externalLink={explorerHref!}
-                                text={formatAddress(activeAccountAddress)}
-                                isCopyable
-                                copyText={activeAccountAddress}
-                                onCopySuccess={() => {
-                                    ampli.copiedElement({
-                                        type: 'address',
-                                    });
-                                    toast('Address copied');
-                                }}
-                                onOpen={() => ampli.openedLink({ type: 'address' })}
-                            />
                             <CoinBalance amount={tokenBalance} type={activeCoinType} />
                         </div>
                         <div className="flex gap-xs [&_svg]:h-5 [&_svg]:w-5">
