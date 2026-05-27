@@ -17,6 +17,7 @@ const formSchema = z
         newPassword: z
             .string()
             .nonempty('Required')
+            .min(8, 'Must be at least 8 characters')
             .superRefine((val, ctx) => {
                 const {
                     score,
@@ -68,8 +69,8 @@ export function ChangePasswordSettings() {
     async function handleSubmit(values: FormValues) {
         try {
             await backgroundClient.changePassword({
-                currentPassword: values.currentPassword.trim(),
-                newPassword: values.newPassword.trim(),
+                currentPassword: values.currentPassword,
+                newPassword: values.newPassword,
             });
             toast.success('Password updated successfully');
             navigate(-1);
