@@ -54,7 +54,7 @@
     },
     "devDependencies": {
         "@amplitude/ampli": "^1.36.2",
-        "@playwright/test": "^1.56.1",
+        "@playwright/test": "^1.60.0",
         "@tanstack/eslint-plugin-query": "^5.35.6",
         "@types/mdx": "^2.0.13",
         "@types/node": "^24.0.0",
