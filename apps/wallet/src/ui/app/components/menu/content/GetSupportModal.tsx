@@ -34,7 +34,7 @@ export function GetSupportModal({ isOpen, onClose }: GetSupportModalProps) {
                 <Header title="Get Support" onClose={onClose} />
                 <DialogBody>
                     <div className="flex flex-col gap-y-md">
-                        <div className="flex flex-col items-center gap-y-md">
+                        <div className="flex flex-col items-center gap-y-sm">
                             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-iota-neutral-96 dark:bg-iota-neutral-12">
                                 <Discord className="h-6 w-6 text-iota-neutral-10 dark:text-iota-neutral-92" />
                             </div>
