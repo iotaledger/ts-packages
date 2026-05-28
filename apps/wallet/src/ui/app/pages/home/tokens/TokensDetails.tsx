@@ -213,7 +213,7 @@ export function TokenDetails() {
                     data-testid="coin-page"
                 >
                     <div className="flex w-full items-center justify-between gap-lg rounded-xl bg-iota-neutral-96 px-sm py-lg dark:bg-iota-neutral-10">
-                        <div className="flex flex-col gap-xs" data-amp-mask>
+                        <div className="flex min-w-0 flex-1 flex-col" data-amp-mask>
                             <CoinBalance amount={tokenBalance} type={activeCoinType} />
                         </div>
                         <div className="flex gap-xs [&_svg]:h-5 [&_svg]:w-5">
