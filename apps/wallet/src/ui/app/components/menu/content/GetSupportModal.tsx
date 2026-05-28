@@ -57,7 +57,7 @@ export function GetSupportModal({ isOpen, onClose }: GetSupportModalProps) {
                         />
                         <InfoBox
                             title="Safety reminder"
-                            supportingText="Never share your 24-word phrase or private key with anyone. If you do, you risk losing access to your funds."
+                            supportingText="Never share your secrets with anyone. If you do, you risk losing access to your funds."
                             icon={<Info />}
                             type={InfoBoxType.Default}
                             style={InfoBoxStyle.Elevated}
