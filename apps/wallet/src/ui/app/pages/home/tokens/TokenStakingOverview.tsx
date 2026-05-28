@@ -67,11 +67,10 @@ export function TokenStakingOverview({
 
     return (
         <div
-            className="group relative w-full cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 to-iota-primary-10 p-md transition-all duration-200 hover:brightness-110"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 via-85% to-iota-primary-10 p-md transition-all duration-200"
             onClick={!disabled ? handleOnClick : undefined}
         >
-            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-iota-primary-30 opacity-30 blur-2xl" />
-            <div className="absolute -bottom-4 right-8 h-20 w-20 rounded-full bg-iota-primary-60 opacity-20 blur-xl" />
+            <div className="absolute bottom-6 right-3 h-28 w-28 rounded-full bg-iota-primary-60 opacity-10 blur-xl" />
 
             <div className="relative z-10 flex items-center justify-between gap-md">
                 <div className="flex flex-col gap-xxs">
@@ -80,7 +79,7 @@ export function TokenStakingOverview({
                             <span className="text-label-sm text-iota-neutral-80">
                                 Current Stake
                             </span>
-                            <span className="text-headline-sm text-iota-neutral-92">
+                            <span className="text-headline-sm text-iota-neutral-96">
                                 {isLoading
                                     ? '--'
                                     : `${isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK} ${symbol}`}
@@ -94,7 +93,7 @@ export function TokenStakingOverview({
                 <ButtonUnstyled
                     onClick={handleOnClick}
                     disabled={disabled}
-                    className={`flex shrink-0 items-center gap-xxs rounded-2xl p-xs${isStaking ? '' : ' pl-sm'} text-label-md text-iota-neutral-92 transition-all duration-200 group-hover:bg-iota-neutral-96/10 group-hover:opacity-100 group-hover:backdrop-blur-sm`}
+                    className={`flex shrink-0 items-center gap-xxs rounded-2xl p-xs ${isStaking ? '' : ' pl-sm'} text-label-md text-iota-neutral-92 transition-all duration-200 group-hover:bg-iota-neutral-96/10 group-hover:opacity-100 group-hover:backdrop-blur-sm`}
                 >
                     {!isStaking && 'Start now'}
                     <ArrowRight className={isStaking ? 'h-5 w-5' : 'h-4 w-4'} />
@@ -115,7 +114,7 @@ function TokenStakingAPYInfo({
         return (
             <span className="text-body-sm text-iota-neutral-80">
                 {isStaking ? 'Earning' : 'Earn'} up to{' '}
-                <span className="font-medium text-iota-neutral-92">{maxApy}%</span> APY
+                <span className="font-medium text-iota-neutral-96">{maxApy}%</span> APY
             </span>
         );
     }
