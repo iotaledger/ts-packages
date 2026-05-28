@@ -67,10 +67,10 @@ export function TokenStakingOverview({
 
     return (
         <div
-            className="group relative w-full cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 via-85% to-iota-primary-10 p-md transition-all duration-200"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 via-80% to-iota-primary-10 p-sm transition-all duration-200"
             onClick={!disabled ? handleOnClick : undefined}
         >
-            <div className="absolute bottom-6 right-3 h-28 w-28 rounded-full bg-iota-primary-60 opacity-10 blur-xl" />
+            <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-iota-primary-60 opacity-20 blur-lg" />
 
             <div className="relative z-10 flex items-center justify-between gap-md">
                 <div className="flex flex-col gap-xxs">
