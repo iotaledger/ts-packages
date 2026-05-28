@@ -40,6 +40,7 @@ export function ReceiptCard({ txn, activeAddress }: ReceiptCardProps) {
                 summary={summary}
                 activeAddress={activeAddress}
                 renderExplorerLink={ExplorerLinkHelper}
+                stickyStatus
             />
             <div className="flex flex-row space-x-xs pt-sm" data-amp-mask>
                 <div className="flex w-full [&_a]:w-full">
