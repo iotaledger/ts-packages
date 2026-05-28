@@ -186,7 +186,7 @@ export function MenuList() {
     return (
         <Overlay showModal title="Settings" closeOverlay={() => navigate('/tokens')}>
             <div className="flex h-full w-full flex-col justify-between">
-                <div className="flex flex-col">
+                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
                     {MENU_ITEMS.filter((item) => !item.hidden).map((item, index) => (
                         <Card key={index} type={CardType.Default} onClick={item.onClick}>
                             <CardImage type={ImageType.BgSolid}>
@@ -224,7 +224,7 @@ export function MenuList() {
                         }}
                     />
                 </div>
-                <div className="flex flex-col gap-y-lg">
+                <div className="flex flex-col gap-y-sm pt-sm">
                     <FaucetRequestButton />
                     <div className="flex flex-row items-center justify-center gap-x-md">
                         <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
