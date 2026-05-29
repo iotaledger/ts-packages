@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-      VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
       NEXT_PUBLIC_NAMES_DAPP_DEFAULT_NETWORK: "devnet"
       NEXT_PUBLIC_NAMES_DAPP_CONFIG: |
         {
