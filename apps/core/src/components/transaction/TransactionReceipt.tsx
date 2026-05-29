@@ -124,7 +124,7 @@ function TransactionStatus({ success, timestamp, isIncoming }: TransactionStatus
             />
             <button
                 onClick={() => setDismissed(true)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-xs text-iota-neutral-40 hover:text-iota-neutral-10 dark:text-iota-neutral-60 dark:hover:text-iota-neutral-92"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-xs text-iota-neutral-40 hover:text-iota-neutral-10 dark:text-iota-neutral-60 dark:hover:text-iota-neutral-92"
                 aria-label="Dismiss"
             >
                 <Close className="h-4 w-4" />
