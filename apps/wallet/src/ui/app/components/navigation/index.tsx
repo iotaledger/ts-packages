@@ -10,27 +10,22 @@ type NavbarItemWithPath = NavbarItemWithId & {
     path: string;
 };
 
+export const NAVBAR_ITEM_PATHS = {
+    home: '/tokens',
+    assets: '/nfts',
+    apps: '/apps',
+    activity: '/transactions',
+} as const;
+
 export function Navigation() {
     const navigate = useNavigate();
     const location = useLocation();
 
     const NAVBAR_ITEMS: NavbarItemWithPath[] = [
-        { id: 'home', icon: <Home />, path: '/tokens' },
-        {
-            id: 'assets',
-            icon: <Assets />,
-            path: '/nfts',
-        },
-        {
-            id: 'apps',
-            icon: <Apps />,
-            path: '/apps',
-        },
-        {
-            id: 'activity',
-            icon: <Activity />,
-            path: '/transactions',
-        },
+        { id: 'home', icon: <Home />, path: NAVBAR_ITEM_PATHS.home },
+        { id: 'assets', icon: <Assets />, path: NAVBAR_ITEM_PATHS.assets },
+        { id: 'apps', icon: <Apps />, path: NAVBAR_ITEM_PATHS.apps },
+        { id: 'activity', icon: <Activity />, path: NAVBAR_ITEM_PATHS.activity },
     ];
 
     const activeId = NAVBAR_ITEMS.find((item) => location.pathname.startsWith(item.path))?.id || '';

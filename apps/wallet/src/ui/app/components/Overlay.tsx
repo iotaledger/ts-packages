@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { Header } from '@iota/apps-ui-kit';
 import { Portal } from '../shared/Portal';
 import { useNavigate } from 'react-router-dom';
+import { useNavigationDepth } from './NavigationStackProvider';
 
 interface OverlayProps {
     title?: string;
@@ -17,7 +18,6 @@ interface OverlayProps {
     setShowModal?: (showModal: boolean) => void;
     background?: 'bg-iota-neutral-100 dark:bg-iota-neutral-6';
     titleCentered?: boolean;
-    showBackButton?: boolean;
     onBack?: () => void;
     hideCloseIcon?: boolean;
     headerAction?: ReactNode;
@@ -30,7 +30,6 @@ export function Overlay({
     closeOverlay,
     setShowModal,
     titleCentered = true,
-    showBackButton,
     onBack,
     headerAction,
     hideCloseIcon,
@@ -43,6 +42,7 @@ export function Overlay({
         [closeOverlay, setShowModal],
     );
     const navigate = useNavigate();
+    const depth = useNavigationDepth();
     const handleBack = useCallback(() => {
         if (onBack) {
             onBack();
@@ -56,9 +56,9 @@ export function Overlay({
                 {title && (
                     <div className="relative w-full">
                         <Header
-                            onBack={showBackButton ? handleBack : undefined}
+                            onBack={depth >= 1 ? handleBack : undefined}
                             title={title}
-                            onClose={!hideCloseIcon ? closeModal : undefined}
+                            onClose={!hideCloseIcon && depth >= 2 ? closeModal : undefined}
                             titleCentered={titleCentered}
                             testId="overlay-title"
                         />
