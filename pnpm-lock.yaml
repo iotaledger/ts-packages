@@ -539,6 +539,9 @@ importers:
       '@iota/iota-sdk':
         specifier: workspace:*
         version: link:../../sdk/typescript
+      '@iota/notarization':
+        specifier: 0.1.10
+        version: 0.1.10(@iota/iota-sdk@sdk+typescript)
       '@sentry/react':
         specifier: ^7.120.3
         version: 7.120.3(react@18.3.1)
@@ -5065,11 +5068,11 @@ packages:
     peerDependencies:
       '@iota/iota-sdk': ^1.6.1
 
-  '@iota/iota-interaction-ts@0.10.0':
-    resolution: {integrity: sha512-oOSVb+EAOZ+gqBylVf2tj9kYNvir/E3Q9cbMCozaE1yFyk0jFOgfkCoUUgSJgeQJlwwu1jBM8RqTOLlKOchKVw==}
+  '@iota/iota-interaction-ts@0.12.0':
+    resolution: {integrity: sha512-qGGn7DMpzDHCzdrvV4QWUXE1u/5UzX5Y7pWX9RNGkhlerD7gPk01abf4XjfmEhRkN3S2L7YBpnXK34LA6ZzC9w==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@iota/iota-sdk': ^1.9.1
+      '@iota/iota-sdk': ^1.11.0
 
   '@iota/iota-interaction-ts@0.8.0':
     resolution: {integrity: sha512-FxihkQA7ah0wB3/TbXTaEpOvJu9Jt1D+43oTNxuVCAvYfNT2rm3yeR5dEtNN5iGK+5GnK66MK0gmcWzFHFzEYQ==}
@@ -5077,11 +5080,11 @@ packages:
     peerDependencies:
       '@iota/iota-sdk': ^1.2.0
 
-  '@iota/notarization@0.1.8':
-    resolution: {integrity: sha512-rCgx7IRZaYlJSQK+G++u0p61Ky3smNFYFiX321CGV1YZWFP/jIItfvFYiGA9vIbk3BRm0jcTreLHDUuXQZ8Jqw==}
+  '@iota/notarization@0.1.10':
+    resolution: {integrity: sha512-XZMKM1G8TpvVfrCmbYNIu/h0WZe9RNmnxi33Fags+PmCcCqgjoLHZaRBUjvwlvuW2w7+i6x8+T45c1z1e209qg==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@iota/iota-sdk': ^1.9.1
+      '@iota/iota-sdk': ^1.11.0
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -21302,7 +21305,7 @@ snapshots:
     dependencies:
       '@iota/iota-interaction-ts': 0.8.0(@iota/iota-sdk@sdk+typescript)
       '@iota/iota-sdk': link:sdk/typescript
-      '@iota/notarization': 0.1.8(@iota/iota-sdk@sdk+typescript)
+      '@iota/notarization': 0.1.10(@iota/iota-sdk@sdk+typescript)
       '@noble/ed25519': 1.7.5
       '@noble/hashes': 1.8.0
       '@noble/post-quantum': 0.2.1
@@ -21313,7 +21316,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@iota/iota-interaction-ts@0.10.0(@iota/iota-sdk@sdk+typescript)':
+  '@iota/iota-interaction-ts@0.12.0(@iota/iota-sdk@sdk+typescript)':
     dependencies:
       '@iota/iota-sdk': link:sdk/typescript
 
@@ -21321,9 +21324,9 @@ snapshots:
     dependencies:
       '@iota/iota-sdk': link:sdk/typescript
 
-  '@iota/notarization@0.1.8(@iota/iota-sdk@sdk+typescript)':
+  '@iota/notarization@0.1.10(@iota/iota-sdk@sdk+typescript)':
     dependencies:
-      '@iota/iota-interaction-ts': 0.10.0(@iota/iota-sdk@sdk+typescript)
+      '@iota/iota-interaction-ts': 0.12.0(@iota/iota-sdk@sdk+typescript)
       '@iota/iota-sdk': link:sdk/typescript
 
   '@isaacs/cliui@8.0.2':
