@@ -42,7 +42,7 @@
     "devDependencies": {
         "@amplitude/ampli": "^1.36.2",
         "@amplitude/analytics-types": "^2.11.0",
-        "@playwright/test": "^1.56.1",
+        "@playwright/test": "^1.60.0",
         "@tanstack/react-query-devtools": "^5.58.0",
         "@types/jest": "^29.5.2",
         "@types/node": "^24.0.0",

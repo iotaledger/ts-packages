@@ -69,4 +69,4 @@ jobs:
       isNamesSDK: ${{ needs.diff.outputs.isNamesSDK == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-      EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      EVM_BRIDGE_CONFIG_TESTS: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
