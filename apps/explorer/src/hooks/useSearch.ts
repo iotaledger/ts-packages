@@ -20,16 +20,33 @@ import {
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { useFeatureIsOn } from '@iota/apps-backend-client';
-import {
-    tryGenerateDidFromObjectId,
-    tryDIDParse,
-    tryEncodeDidToUrl,
-} from '~/lib/utils/trust-framework/identity';
-import { useIdentityClient } from '~/contexts';
+import { type NotarizationClientReadOnly } from '@iota/notarization/web';
+import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
+import { useIdentityClient, useNotarizationClient } from '~/contexts';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
 
 type Results = { id: string; label: string; type: string }[];
+
+const getResultsForNotarization = async (
+    notarizationClient: NotarizationClientReadOnly | null,
+    isNotarizationEnabled: boolean,
+    query: string,
+): Promise<Results | null> => {
+    if (notarizationClient == null) return null; // client not available
+    if (!isNotarizationEnabled) return null; // feature flag disabled
+
+    const notarizationChain = await notarizationClient.getNotarizationById(query);
+    if (!notarizationChain) return null;
+
+    return [
+        {
+            id: notarizationChain.id,
+            label: notarizationChain.id,
+            type: 'notarization',
+        },
+    ];
+};
 
 const getResultsForDid = async (
     identityClient: IdentityClientReadOnly | null,
@@ -39,11 +56,23 @@ const getResultsForDid = async (
     if (identityClient == null) return null; // client not available
     if (!isIdentityEnabled) return null; // feature flag disabled
 
+    let didDocument = null;
     const didParsed = await tryDIDParse(query);
-    const did = didParsed ?? (await tryGenerateDidFromObjectId(query, identityClient.network()));
-    if (did == null) return null; // either invalid parsing or invalid objectId
 
-    const didDocument = await identityClient.resolveDid(did!);
+    try {
+        if (didParsed == null) {
+            const identity = await identityClient.getIdentity(query);
+            didDocument = identity.toFullFledged()?.didDocument();
+        } else {
+            didDocument = await identityClient.resolveDid(didParsed);
+        }
+    } catch {
+        // DO NOTHING! We are not interested in this error because the consequence
+        // for it to fail is only not show a selection option in the search result
+    }
+
+    if (didDocument == null) return null; // Nothing to show
+
     const didUrlEncoded = await tryEncodeDidToUrl(didDocument.id());
     if (didUrlEncoded == null) {
         throw new Error(
@@ -248,9 +277,11 @@ const getResultsForValidatorByPoolIdOrIotaAddress = async (
 export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
     const identityClient = useIdentityClient();
+    const notarizationClient = useNotarizationClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
 
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);
+    const isTFNotarizationEnabled = useFeatureIsOn(Feature.ExplorerTFNotarization as string);
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
@@ -264,6 +295,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
                     getResultsForEpoch(client, query),
                     getResultsForAddress(client, query, iotaNamesClient),
                     getResultsForDid(identityClient, isTFIdentityEnabled, query),
+                    getResultsForNotarization(notarizationClient, isTFNotarizationEnabled, query),
                     getResultsForObject(client, query),
                     getResultsForValidatorByPoolIdOrIotaAddress(systemStateSummary || null, query),
                 ])

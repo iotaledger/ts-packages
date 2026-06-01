@@ -106,7 +106,7 @@ on:
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
-      EVM_BRIDGE_CONFIG:
+      EVM_BRIDGE_CONFIG_TESTS:
         required: true
 
 concurrency:
@@ -117,7 +117,7 @@ env:
   RUST_LOG: warn
   RUST_BACKTRACE: 1
   VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
 
 jobs:
   localnet:
