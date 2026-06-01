@@ -14,7 +14,6 @@ import { useCallback } from 'react';
 import type { MouseEvent } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AutoLockAccounts } from './AutoLockAccounts';
-import { NetworkSettings } from './NetworkSettings';
 import { MenuList } from './WalletSettingsMenuList';
 import { ThemeSettings } from './ThemeSettings';
 
@@ -43,12 +42,11 @@ export function MenuContent() {
     }
 
     return (
-        <div className="absolute inset-0 z-50 flex flex-col justify-items-stretch overflow-y-auto rounded-t-xl bg-iota-neutral-100 px-2.5 pb-8 dark:bg-iota-neutral-6">
+        <div className="absolute inset-0 z-50 flex flex-col overflow-hidden bg-iota-neutral-100 dark:bg-iota-neutral-6">
             <ErrorBoundary>
                 <MainLocationContext.Provider value={mainLocation}>
                     <Routes location={menuUrl || ''}>
                         <Route path="/" element={<MenuList />} />
-                        <Route path="/network" element={<NetworkSettings />} />
                         <Route path="/auto-lock" element={<AutoLockAccounts />} />
                         <Route path="/theme" element={<ThemeSettings />} />
                         <Route path="*" element={<Navigate to={menuHomeUrl} replace={true} />} />

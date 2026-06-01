@@ -24,7 +24,7 @@ function getBottomSpace(pathname: string, isMenuVisible: boolean, isBottomNavSpa
 
     const overlayWithActionButton = [
         '/auto-lock',
-        '/manage/accounts-finder',
+        '/accounts/manage/accounts-finder',
         '/accounts/import-ledger-accounts',
         '/send',
         '/accounts/forgot-password/recover-many',
@@ -65,7 +65,8 @@ export function Toaster({ bottomNavEnabled = false }: ToasterProps) {
     return (
         <Portal containerId="toaster-portal-container">
             <ToasterCore
-                containerClassName={cl('!absolute transition-all', bottomSpace)}
+                containerClassName={cl('transition-all', bottomSpace)}
+                containerStyle={{ position: 'absolute' }}
                 snackbarWrapClassName="w-full break-words"
             />
         </Portal>

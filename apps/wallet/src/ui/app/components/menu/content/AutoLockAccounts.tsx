@@ -2,7 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Loading, Overlay, AutoLockSelector, zodSchema } from '_components';
+import { Loading, AutoLockSelector, zodSchema } from '_components';
+import { PageTemplate } from '_src/ui/app/components/PageTemplate';
 import {
     autoLockDataToMinutes,
     parseAutoLock,
@@ -47,12 +48,7 @@ export function AutoLockAccounts() {
         );
     }
     return (
-        <Overlay
-            showModal={true}
-            title="Auto Lock Profile"
-            closeOverlay={() => navigate('/tokens')}
-            showBackButton
-        >
+        <PageTemplate title="Auto Lock Profile" showBackButton onClose={() => navigate('/tokens')}>
             <Loading loading={autoLock.isPending}>
                 <Form className="flex h-full flex-col" form={form} onSubmit={handleSave}>
                     <AutoLockSelector disabled={isSubmitting} />
@@ -65,6 +61,6 @@ export function AutoLockAccounts() {
                     />
                 </Form>
             </Loading>
-        </Overlay>
+        </PageTemplate>
     );
 }

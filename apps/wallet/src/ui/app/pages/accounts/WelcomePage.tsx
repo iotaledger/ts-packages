@@ -28,7 +28,7 @@ export function WelcomePage() {
                     height={32}
                     className="text-iota-neutral-10 dark:text-iota-neutral-92"
                 />
-                <div className="flex flex-col items-center gap-8 text-center">
+                <div className="flex max-w-lg flex-col items-center gap-8 text-center">
                     <img
                         src={theme === Theme.Dark ? GetStartedImageDark : GetStartedImage}
                         alt="Get Started"
@@ -39,6 +39,10 @@ export function WelcomePage() {
                     <h1 className="font-alliance-no2 text-[28px] font-medium leading-[120%] text-iota-neutral-10 dark:text-iota-neutral-92">
                         Your Gateway to the IOTA Ecosystem
                     </h1>
+                    <span className="text-body-lg text-iota-neutral-60 dark:text-iota-neutral-40">
+                        Securely manage your assets, stake your tokens to earn rewards, and connect
+                        to dApps on the scalable IOTA network.
+                    </span>
                     <Button
                         type={ButtonType.Primary}
                         text="Get Started"
@@ -46,6 +50,7 @@ export function WelcomePage() {
                             setSourceFlow(AmpliSourceFlow.Onboarding);
                             navigate('/accounts/add-account');
                         }}
+                        fullWidth
                     />
                 </div>
                 <div className="text-label-lg text-iota-neutral-60 dark:text-iota-neutral-40">

@@ -10,18 +10,27 @@ import { IotaClient } from '@iota/iota-sdk/client';
 
 export async function setupWalletWithFunds(page: Page, extensionUrl: string) {
     await createWallet(page, extensionUrl);
-    await page.getByText(/Request localnet tokens/i).click();
+    await page.getByTestId('faucet-button').click();
     await expect(page.getByTestId('coin-balance')).not.toHaveText('0', { timeout: SHORT_TIMEOUT });
 }
 
 export async function navigateToStakePage(page: Page) {
     await page.getByText(/Start Staking/).click();
-    await page
-        .getByText(/validator-/, { exact: false })
-        .first()
-        .click();
-    await page.getByText(/Next/).click();
-    await expect(page.getByText(/IOTA Available/)).toBeVisible({ timeout: SHORT_TIMEOUT });
+    const overlay = page.locator('#overlay-portal-container');
+    await expect(page.getByTestId('overlay-title')).toHaveText('Select a Validator', {
+        timeout: SHORT_TIMEOUT,
+    });
+
+    await retryAction(async () => {
+        const validatorCard = overlay.locator('div[role="button"]').first();
+        await expect(validatorCard).toBeVisible({ timeout: SHORT_TIMEOUT });
+        await validatorCard.click();
+
+        const nextButton = overlay.getByRole('button', { name: 'Next' });
+        await expect(nextButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+        await nextButton.click();
+        await expect(page.getByText(/IOTA Available/)).toBeVisible({ timeout: SHORT_TIMEOUT });
+    });
 }
 
 export async function submitAndVerifyStaking(page: Page) {

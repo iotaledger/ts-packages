@@ -30,7 +30,7 @@ test('request IOTA from local faucet', async ({ page, extensionUrl }) => {
     await createWallet(page, extensionUrl);
 
     const originalBalance = await page.getByTestId('coin-balance').textContent();
-    await page.getByText(/Request localnet tokens/i).click();
+    await page.getByTestId('faucet-button').click();
     await expect(page.getByTestId('coin-balance')).not.toHaveText(`${originalBalance}`, {
         timeout: SHORT_TIMEOUT,
     });

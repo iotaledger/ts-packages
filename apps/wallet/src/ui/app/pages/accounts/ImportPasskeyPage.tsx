@@ -69,14 +69,14 @@ function AuthenticationRequiredContent() {
                         alt="Passkey Authentication Required"
                         height={210}
                         width="auto"
-                        className="aspect-[4/3] h-[210px] w-auto object-cover"
+                        className="mx-auto aspect-[4/3] max-h-[250px] w-auto object-cover"
                     />
 
-                    <div className="flex flex-col items-center justify-center gap-xs text-center">
-                        <h4 className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <div className="flex max-w-lg flex-col items-center justify-center gap-xs text-center">
+                        <h2 className="text-headline-sm font-medium leading-[120%] tracking-[-0.4px] text-iota-neutral-10 dark:text-iota-neutral-92">
                             Authentication Required
-                        </h4>
-                        <p className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                        </h2>
+                        <p className="text-body-lg text-iota-neutral-60 dark:text-iota-neutral-40">
                             In the next steps, you’ll be asked to confirm your identity twice using
                             your device PIN or biometrics. This is a normal part of importing a
                             passkey.

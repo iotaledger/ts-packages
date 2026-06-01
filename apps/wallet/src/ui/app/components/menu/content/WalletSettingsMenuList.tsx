@@ -2,9 +2,9 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useNextMenuUrl, Overlay, VerifyPasswordModal } from '_components';
+import { useNextMenuUrl, VerifyPasswordModal } from '_components';
+import { PageTemplate } from '_src/ui/app/components/PageTemplate';
 import { useAppSelector, formatAutoLock, useAutoLockMinutes, useLogoutMutation } from '_hooks';
-import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { getNetwork, Network } from '@iota/iota-sdk/client';
 import Browser from 'webextension-polyfill';
 import { Link, useNavigate } from 'react-router-dom';
@@ -126,6 +126,7 @@ export function MenuList() {
             subtitle: networkConfig.name,
             icon: <Globe />,
             onClick: onNetworkClick,
+            hidden: true,
         },
         {
             title: 'Auto Lock Profile',
@@ -173,11 +174,11 @@ export function MenuList() {
     ];
 
     return (
-        <Overlay showModal title="Settings" closeOverlay={() => navigate('/tokens')}>
+        <PageTemplate title="Settings" onClose={() => navigate(-1)}>
             <div className="flex h-full w-full flex-col justify-between">
                 <div className="flex flex-col">
-                    {MENU_ITEMS.filter((item) => !item.hidden).map((item, index) => (
-                        <Card key={index} type={CardType.Default} onClick={item.onClick}>
+                    {MENU_ITEMS.filter((item) => !item.hidden).map((item) => (
+                        <Card key={item.title} type={CardType.Default} onClick={item.onClick}>
                             <CardImage type={ImageType.BgSolid}>
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full  text-iota-neutral-10 dark:text-iota-neutral-92 [&_svg]:h-5 [&_svg]:w-5">
                                     <span className="text-2xl">{item.icon}</span>
@@ -214,7 +215,6 @@ export function MenuList() {
                     />
                 </div>
                 <div className="flex flex-col gap-y-lg">
-                    <FaucetRequestButton />
                     <div className="flex flex-row items-center justify-center gap-x-md">
                         <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                             IOTA Wallet v{version}
@@ -230,6 +230,6 @@ export function MenuList() {
                     </div>
                 </div>
             </div>
-        </Overlay>
+        </PageTemplate>
     );
 }

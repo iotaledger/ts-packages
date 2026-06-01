@@ -10,7 +10,6 @@ import { type SerializedUIAccount } from '_src/background/accounts/account';
 import { ampli } from '_src/shared/analytics/ampli';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { PageMainLayoutTitle } from '../../shared/page-main-layout/PageMainLayoutTitle';
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
@@ -131,7 +130,6 @@ export function SiteConnectPage() {
                         addressHidden
                         blended
                     >
-                        <PageMainLayoutTitle title="Insecure Website" />
                         <div className="flex flex-col gap-lg">
                             <InfoBox
                                 title="Your connection is insecure"
