@@ -26,7 +26,7 @@ export function AddressInput({
     resolvedNameFieldId,
     disabled,
     placeholder = '0x...',
-    label = 'Enter recipient address or @name',
+    label = 'Enter recipient address or @name a',
 }: AddressInputProps) {
     const { validateField, setFieldValue } = useFormikContext();
     const [field, meta, helpers] = useField<string>(fieldId);
