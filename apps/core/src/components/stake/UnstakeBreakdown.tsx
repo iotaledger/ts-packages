@@ -4,6 +4,7 @@
 import { Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import { GAS_SYMBOL } from '../../constants';
 import { useFormatCoin } from '../../hooks/useFormatCoin';
+import { useBalanceVisible, BALANCE_MASK } from '../../contexts/BalanceVisibilityContext';
 import type { UnstakeAmounts } from '../../utils/stake/calculateUnstakeAmounts';
 
 interface UnstakeBreakdownProps {
@@ -12,6 +13,7 @@ interface UnstakeBreakdownProps {
 }
 
 export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBreakdownProps) {
+    const isBalanceVisible = useBalanceVisible();
     const [unstakeAmountFormatted] = useFormatCoin({ balance: unstakeAmounts.unstakeAmount });
     const [rewardsFormatted, rewardSymbol] = useFormatCoin({
         balance: unstakeAmounts.proportionalRewards,
@@ -27,45 +29,47 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
         balance: unstakeAmounts.remainingTotalStaked,
     });
 
+    const mask = BALANCE_MASK;
+
     if (isPartialUnstake) {
         return (
             <>
                 <KeyValueInfo
                     keyText="Amount to Unstake"
-                    value={unstakeAmountFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={isBalanceVisible ? unstakeAmountFormatted : mask}
+                    supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Rewards Earned"
-                    value={rewardsFormatted}
-                    supportingLabel={rewardSymbol}
+                    value={isBalanceVisible ? rewardsFormatted : mask}
+                    supportingLabel={isBalanceVisible ? rewardSymbol : undefined}
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Remaining Stake"
-                    value={remainingStakeFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={isBalanceVisible ? remainingStakeFormatted : mask}
+                    supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Rewards"
-                    value={remainingRewardsFormatted}
-                    supportingLabel={remainingRewardsSymbol}
+                    value={isBalanceVisible ? remainingRewardsFormatted : mask}
+                    supportingLabel={isBalanceVisible ? remainingRewardsSymbol : undefined}
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Total Unstaked IOTA"
-                    value={totalUnstakeAmountFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={isBalanceVisible ? totalUnstakeAmountFormatted : mask}
+                    supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Total Staked IOTA"
-                    value={remainingTotalStakedFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={isBalanceVisible ? remainingTotalStakedFormatted : mask}
+                    supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
             </>
@@ -76,21 +80,21 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
         <>
             <KeyValueInfo
                 keyText="Your Stake"
-                value={unstakeAmountFormatted}
-                supportingLabel={GAS_SYMBOL}
+                value={isBalanceVisible ? unstakeAmountFormatted : mask}
+                supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                 fullwidth
             />
             <KeyValueInfo
                 keyText="Rewards Earned"
-                value={rewardsFormatted}
-                supportingLabel={rewardSymbol}
+                value={isBalanceVisible ? rewardsFormatted : mask}
+                supportingLabel={isBalanceVisible ? rewardSymbol : undefined}
                 fullwidth
             />
             <Divider />
             <KeyValueInfo
                 keyText="Total Unstaked IOTA"
-                value={totalUnstakeAmountFormatted}
-                supportingLabel={GAS_SYMBOL}
+                value={isBalanceVisible ? totalUnstakeAmountFormatted : mask}
+                supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                 fullwidth
             />
         </>
