@@ -318,17 +318,7 @@ export enum AddressTransactionBlockRelationship {
   /** Transactions that sent objects to this address. */
   Recv = 'RECV',
   /** Transactions this address has sent. */
-  Sent = 'SENT',
-  /**
-   * Transactions this address has sent. NOTE: this input filter has been
-   * deprecated in favor of `SENT` which behaves identically but is named
-   * more clearly. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `SENT` instead. This will be removed with the 1.24.0 release.
-   */
-  Sign = 'SIGN'
+  Sent = 'SENT'
 }
 
 /**
@@ -3856,6 +3846,7 @@ export enum ObjectKind {
   /**
    * The object is deleted or wrapped and only partial information can be
    * loaded from the indexer.
+   * @deprecated will be removed with v1.26, as such objects can be considered non-existent
    */
   WrappedOrDeleted = 'WRAPPED_OR_DELETED'
 }
@@ -5488,16 +5479,6 @@ export type TransactionBlockFilter = {
   recvAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Limit to transactions that were sent by the given address. */
   sentAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
-  /**
-   * Limit to transactions that were sent by the given address. NOTE: this
-   * input filter has been deprecated in favor of `sentAddress` which has
-   * clearer semantics. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `sentAddress` instead. This will be removed with the 1.24.0 release.
-   */
-  signAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Select transactions by their digest. */
   transactionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Limit to transactions that wrapped or deleted the given object. */
