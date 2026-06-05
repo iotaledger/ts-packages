@@ -23,14 +23,16 @@ export function ValidatorFilters({
     onStatusChange,
     validatorCounts,
 }: ValidatorFiltersProps): JSX.Element {
-    const options: { status: ValidatorStatus; count: number }[] = [
-        { status: 'All', count: validatorCounts.all },
-        { status: 'Committee', count: validatorCounts.committee },
-        { status: 'Active', count: validatorCounts.active },
-        { status: 'Pending', count: validatorCounts.pending },
-        { status: 'Candidate', count: validatorCounts.candidate },
-        { status: 'At Risk', count: validatorCounts.atRisk },
-    ].filter(({ status, count }) => status === 'All' || count > 0);
+    const options = (
+        [
+            { status: 'All', count: validatorCounts.all },
+            { status: 'Committee', count: validatorCounts.committee },
+            { status: 'Active', count: validatorCounts.active },
+            { status: 'Pending', count: validatorCounts.pending },
+            { status: 'Candidate', count: validatorCounts.candidate },
+            { status: 'At Risk', count: validatorCounts.atRisk },
+        ] as { status: ValidatorStatus; count: number }[]
+    ).filter(({ status, count }) => status === 'All' || count > 0);
 
     return (
         <SegmentedButton>
