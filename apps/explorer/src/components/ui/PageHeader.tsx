@@ -24,6 +24,7 @@ type PageHeaderType =
     | 'Object'
     | 'Package'
     | 'Identity'
+    | 'Notarization'
     | 'Abstract Account';
 
 export interface PageHeaderProps {
