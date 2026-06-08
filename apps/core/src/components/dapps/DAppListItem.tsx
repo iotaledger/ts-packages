@@ -24,7 +24,7 @@ export function DAppListItem({ name, icon, description, link, tags }: DAppListIt
     return (
         <Panel hasBorder>
             <div className="dark:hover:bg-shader-primary-dark-8 flex h-full flex-col rounded-xl hover:bg-shader-primary-light-8">
-                <div className="item-center box-border flex gap-sm rounded-2xl p-sm">
+                <div className="items-center box-border flex gap-sm rounded-2xl p-sm">
                     <ImageIcon
                         src={icon || null}
                         label={name}
