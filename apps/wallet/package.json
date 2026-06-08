@@ -1,6 +1,6 @@
 {
     "name": "iota-wallet",
-    "version": "1.7.0",
+    "version": "1.8.0",
     "private": true,
     "description": "A wallet for IOTA",
     "main": "./dist/ui.js",
@@ -48,7 +48,7 @@
     "devDependencies": {
         "@amplitude/ampli": "^1.36.2",
         "@amplitude/analytics-types": "^2.11.0",
-        "@playwright/test": "^1.56.1",
+        "@playwright/test": "^1.60.0",
         "@rspack/cli": "^1.7.6",
         "@rspack/core": "^1.7.6",
         "@sentry/react": "^7.120.3",
