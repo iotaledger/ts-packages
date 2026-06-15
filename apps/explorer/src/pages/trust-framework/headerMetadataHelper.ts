@@ -4,8 +4,7 @@
 import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { parseStructTag } from '@iota/iota-sdk/utils';
 import { type OnChainNotarization } from '@iota/notarization/web';
-// TODO: use '@iota/audit-trail/web' after published
-import { type OnChainAuditTrail } from '@iota/audit-trail';
+import { type OnChainAuditTrail } from '@iota/audit-trails/web';
 import { type MetaItem } from '~/components/ui/PageHeaderMeta';
 
 const IDENTITY_MODULE = 'identity';

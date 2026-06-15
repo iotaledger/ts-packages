@@ -1,8 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: use '@iota/audit-trail/web' after publish
-import { type AuditTrailHandle, type OnChainAuditTrail, type Record } from '@iota/audit-trail';
+import { type AuditTrailHandle, type OnChainAuditTrail, type Record } from '@iota/audit-trails/web';
 import { useInfiniteQuery, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAuditTrailClient } from '~/contexts';
