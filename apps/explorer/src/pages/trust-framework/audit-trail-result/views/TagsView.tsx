@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type RecordTagEntry } from '@iota/audit-trail';
+import { type RecordTagEntry } from '@iota/audit-trails/web';
 import {
     Panel,
     Title,

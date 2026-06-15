@@ -9,8 +9,7 @@ import clsx from 'clsx';
 import { ObjectLink, TransactionLink } from '~/components/ui';
 import { onCopySuccess } from '~/lib/utils';
 import { ErrorBoundary } from '~/components';
-// TODO: use '@iota/audit-trail/web' after published
-import { type OnChainAuditTrail } from '@iota/audit-trail';
+import { type OnChainAuditTrail } from '@iota/audit-trails/web';
 
 interface AuditTrailSummaryViewProps {
     auditTrailObject: OnChainAuditTrail;

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Title, TooltipPosition, Panel } from '@iota/apps-ui-kit';
-// TODO: use '@iota/audit-trail/web' after published
-import { type ImmutableMetadata, type OnChainAuditTrail } from '@iota/audit-trail';
+import { type ImmutableMetadata, type OnChainAuditTrail } from '@iota/audit-trails/web';
 import { ErrorBoundary, SyntaxHighlighter } from '~/components';
 
 interface MetadataViewProps {
