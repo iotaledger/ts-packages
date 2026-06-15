@@ -5,8 +5,7 @@ import * as identity from '@iota/identity-wasm/web';
 import identityWasmUrl from '@iota/identity-wasm/web/identity_wasm_bg.wasm?url';
 import * as notarization from '@iota/notarization/web';
 import notarizationWasmUrl from '@iota/notarization/web/notarization_wasm_bg.wasm?url';
-// TODO: update module to `@iota/audit-trail/web when it is published
-import * as auditTrail from '@iota/audit-trail';
+import * as auditTrail from '@iota/audit-trails/web';
 import auditTrailWasmUrl from '@iota/audit-trail/audit_trail_wasm_bg.wasm?url';
 import { type IotaClient, Network } from '@iota/iota-sdk/client';
 import {

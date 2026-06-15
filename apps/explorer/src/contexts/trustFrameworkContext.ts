@@ -5,8 +5,7 @@
 
 import type { IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import type { NotarizationClientReadOnly } from '@iota/notarization/web';
-// TODO: use '@iota/audit-trail/web' after publish
-import type { AuditTrailClientReadOnly } from '@iota/audit-trail';
+import type { AuditTrailClientReadOnly } from '@iota/audit-trails/web';
 import { createContext, useContext } from 'react';
 
 export interface TrustFrameworkProviderContext {
