@@ -6,7 +6,7 @@ import identityWasmUrl from '@iota/identity-wasm/web/identity_wasm_bg.wasm?url';
 import * as notarization from '@iota/notarization/web';
 import notarizationWasmUrl from '@iota/notarization/web/notarization_wasm_bg.wasm?url';
 import * as auditTrail from '@iota/audit-trails/web';
-import auditTrailWasmUrl from '@iota/audit-trail/audit_trail_wasm_bg.wasm?url';
+import auditTrailWasmUrl from '@iota/audit-trails/web/audit_trail_wasm_bg.wasm?url';
 import { type IotaClient, Network } from '@iota/iota-sdk/client';
 import {
     DID_PROTOCOL_SEGMENT_SYMBOL,
