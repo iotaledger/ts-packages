@@ -23,7 +23,7 @@ import { useFeatureIsOn } from '@iota/apps-backend-client';
 import { type NotarizationClientReadOnly } from '@iota/notarization/web';
 import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
 import { useAuditTrailClient, useIdentityClient, useNotarizationClient } from '~/contexts';
-import { type AuditTrailClientReadOnly } from '@iota/audit-trail';
+import { type AuditTrailClientReadOnly } from '@iota/audit-trails/web';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
 
