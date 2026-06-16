@@ -472,15 +472,15 @@ jobs:
         id: build-names-sdk-display
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter @iota/iota-names-sdk run build
+        run: pnpm names-sdk build
 
       - name: Build and test names-display service
         id: run-names-display
         if: (!cancelled() && !failure()) && steps.build-names-sdk-display.outcome == 'success' && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: |
-          pnpm --filter names-display run build
-          pnpm --filter names-display run test
+          pnpm names-display build
+          pnpm names-display test
 
       # ─── Names SDK ─────────────────────────────────────────────────────────
 
