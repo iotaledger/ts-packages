@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: production - apps
     outputs:
       version: ${{ steps.commit-hash.outputs.version }}
     steps:
@@ -70,4 +70,3 @@ jobs:
         Environment: production
         Image: ghcr.io/iotaledger/iota-names/iota-names-display:${{ needs.build-and-deploy.outputs.version }}
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-

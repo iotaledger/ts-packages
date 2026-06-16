@@ -39,9 +39,9 @@ jobs:
           fi
 
           if [ "$DEPLOY_TYPE" = "staging" ] || [ "$DEPLOY_TYPE" = "rc" ]; then
-            ENVIRONMENT="pre-production - apps-backend"
+            ENVIRONMENT="pre-production - apps"
           else
-            ENVIRONMENT="production - apps-backend"
+            ENVIRONMENT="production - apps"
           fi
 
           echo "deploy_type=$DEPLOY_TYPE" >> "$GITHUB_OUTPUT"
@@ -114,4 +114,3 @@ jobs:
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
         Image: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ needs.build-and-deploy.outputs.version }}
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
