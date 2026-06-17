@@ -5,7 +5,7 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import {
-    getFullnodeUrl,
+    getRpcUrl,
     IotaClient,
     IotaObjectData,
     IotaTransactionBlockResponse,
@@ -293,7 +293,7 @@ describe('GraphQL IotaClient compatibility', () => {
             data: [{ coinObjectId: id, version }],
         } = await toolbox.getGasObjectsOwnedByAddress();
         const fullNodeClient = new IotaClient({
-            url: getFullnodeUrl('localnet'),
+            url: getRpcUrl('localnet'),
         });
 
         const rpcObject = await fullNodeClient.tryGetPastObject({
