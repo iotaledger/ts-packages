@@ -15,13 +15,13 @@ npm install --save @iota/graphql-transport
 
 ```ts
 import { IotaClientGraphQLTransport } from '@iota/graphql-transport';
-import { getFullnodeUrl, getGraphQLUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, getGraphQLUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
     transport: new IotaClientGraphQLTransport({
         url: getGraphQLUrl('testnet'),
         // When specified, the transport will fallback to JSON RPC for unsupported method and parameters
-        fallbackFullNodeUrl: getFullnodeUrl('testnet'),
+        fallbackFullNodeUrl: getRpcUrl('testnet'),
     }),
 });
 ```

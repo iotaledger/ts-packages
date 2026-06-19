@@ -67,8 +67,16 @@ export function getDefaultNetwork(): Network {
     return (process.env.DEFAULT_NETWORK as Network) || Network.Mainnet;
 }
 
-export function getFullnodeUrl(network: NetworkId): string {
+export function getRpcUrl(network: NetworkId): string {
     return getNetwork(network).url;
+}
+
+/**
+ * @deprecated Use {@link getRpcUrl} instead. The network `url` is the JSON-RPC
+ * endpoint, not necessarily a fullnode, so the name no longer reflects its meaning.
+ */
+export function getFullnodeUrl(network: NetworkId): string {
+    return getRpcUrl(network);
 }
 
 export function getGraphQLUrl(network: NetworkId): string | undefined {
