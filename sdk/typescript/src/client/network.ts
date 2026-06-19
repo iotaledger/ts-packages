@@ -22,6 +22,7 @@ export interface NetworkConfiguration<Metadata = undefined> {
     explorer: string;
     chain: ChainType;
     faucet?: string;
+    faucetWebsite?: string;
     kiosk?: KioskConfiguration;
     graphql?: string;
     metadata?: Metadata;
