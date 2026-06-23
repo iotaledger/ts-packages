@@ -29,46 +29,44 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
         balance: unstakeAmounts.remainingTotalStaked,
     });
 
-    const mask = BALANCE_MASK;
-
     if (isPartialUnstake) {
         return (
             <>
                 <KeyValueInfo
                     keyText="Amount to Unstake"
-                    value={isBalanceVisible ? unstakeAmountFormatted : mask}
+                    value={isBalanceVisible ? unstakeAmountFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Rewards Earned"
-                    value={isBalanceVisible ? rewardsFormatted : mask}
+                    value={isBalanceVisible ? rewardsFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? rewardSymbol : undefined}
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Remaining Stake"
-                    value={isBalanceVisible ? remainingStakeFormatted : mask}
+                    value={isBalanceVisible ? remainingStakeFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Rewards"
-                    value={isBalanceVisible ? remainingRewardsFormatted : mask}
+                    value={isBalanceVisible ? remainingRewardsFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? remainingRewardsSymbol : undefined}
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Total Unstaked IOTA"
-                    value={isBalanceVisible ? totalUnstakeAmountFormatted : mask}
+                    value={isBalanceVisible ? totalUnstakeAmountFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Total Staked IOTA"
-                    value={isBalanceVisible ? remainingTotalStakedFormatted : mask}
+                    value={isBalanceVisible ? remainingTotalStakedFormatted : BALANCE_MASK}
                     supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                     fullwidth
                 />
@@ -80,20 +78,20 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
         <>
             <KeyValueInfo
                 keyText="Your Stake"
-                value={isBalanceVisible ? unstakeAmountFormatted : mask}
+                value={isBalanceVisible ? unstakeAmountFormatted : BALANCE_MASK}
                 supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                 fullwidth
             />
             <KeyValueInfo
                 keyText="Rewards Earned"
-                value={isBalanceVisible ? rewardsFormatted : mask}
+                value={isBalanceVisible ? rewardsFormatted : BALANCE_MASK}
                 supportingLabel={isBalanceVisible ? rewardSymbol : undefined}
                 fullwidth
             />
             <Divider />
             <KeyValueInfo
                 keyText="Total Unstaked IOTA"
-                value={isBalanceVisible ? totalUnstakeAmountFormatted : mask}
+                value={isBalanceVisible ? totalUnstakeAmountFormatted : BALANCE_MASK}
                 supportingLabel={isBalanceVisible ? GAS_SYMBOL : undefined}
                 fullwidth
             />
