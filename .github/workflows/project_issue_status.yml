@@ -31,7 +31,7 @@ jobs:
           REVIEW_STATE: ${{ github.event.review.state }}
           MERGED:       ${{ github.event.pull_request.merged }}
           DRAFT:        ${{ github.event.pull_request.draft }}
-          GH_TOKEN:     ${{ secrets.PROJECT_TOKEN }}
+          GH_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER:    ${{ github.event.pull_request.number }}
           REPO:         ${{ github.repository }}
         run: |
@@ -113,7 +113,7 @@ jobs:
       - name: Update linked issue status in project
         if: steps.resolve.outputs.target != ''
         env:
-          GH_TOKEN:  ${{ secrets.PROJECT_TOKEN }}
+          GH_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
           TARGET:    ${{ steps.resolve.outputs.target }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO:      ${{ github.repository }}
