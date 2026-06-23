@@ -8,7 +8,6 @@ import '../src/lib/styles/index.css';
 
 const preview: Preview = {
     parameters: {
-        actions: { argTypesRegex: '^on[A-Z].*' },
         controls: {
             matchers: {
                 color: /(background|color)$/i,
@@ -29,18 +28,6 @@ const preview: Preview = {
             defaultTheme: 'light',
         }),
     ],
-    globalTypes: {
-        theme: {
-            name: 'Theme',
-            description: 'Global theme for components',
-            defaultValue: 'light',
-            toolbar: {
-                icon: 'paintbrush',
-                items: ['light', 'dark', 'names'],
-                showName: true,
-            },
-        },
-    },
 };
 
 export default preview;
