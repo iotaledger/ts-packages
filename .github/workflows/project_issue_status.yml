@@ -1,0 +1,197 @@
+name: Automate linked issue status
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - synchronize
+      - closed
+      - review_requested
+      - converted_to_draft
+  pull_request_review:
+    types:
+      - submitted
+
+jobs:
+  update-issue-status:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    concurrency:
+      group: issue-status-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Determine target status
+        id: resolve
+        env:
+          EVENT:        ${{ github.event_name }}
+          ACTION:       ${{ github.event.action }}
+          REVIEW_STATE: ${{ github.event.review.state }}
+          MERGED:       ${{ github.event.pull_request.merged }}
+          DRAFT:        ${{ github.event.pull_request.draft }}
+          GH_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER:    ${{ github.event.pull_request.number }}
+          REPO:         ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TARGET=""
+
+          if [[ "$EVENT" == "pull_request" ]]; then
+            case "$ACTION" in
+              opened)
+                [[ "$DRAFT" == "true" ]] && TARGET="In Progress" || TARGET="Needs Review"
+                ;;
+              ready_for_review)
+                TARGET="Needs Review"
+                ;;
+              synchronize)
+                COMMITTER=$(gh api "repos/$REPO/pulls/$PR_NUMBER/commits" \
+                  --jq '.[-1].committer.login // empty')
+                echo "Last committer: ${COMMITTER:-unknown}"
+
+                if [[ "$COMMITTER" == "web-flow" ]]; then
+                  echo "Automated branch sync — skipping status change."
+                else
+                  NEEDS_RESET=$(gh api graphql -f query='
+                    query($owner:String!, $repo:String!, $pr:Int!) {
+                      repository(owner:$owner, name:$repo) {
+                        pullRequest(number:$pr) {
+                          closingIssuesReferences(first:10) {
+                            nodes {
+                              projectItems(first:5) {
+                                nodes {
+                                  fieldValueByName(name:"Status") {
+                                    ... on ProjectV2ItemFieldSingleSelectValue { name }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }' \
+                    -f owner="${REPO%%/*}" \
+                    -f repo="${REPO##*/}" \
+                    -F pr="$PR_NUMBER" \
+                    --jq '[.data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[].fieldValueByName.name | strings]
+                          | any((. | gsub("^[^A-Za-z]+"; "")) == "Changes Requested" or
+                                (. | gsub("^[^A-Za-z]+"; "")) == "PR Approved")')
+                  echo "Needs reset: $NEEDS_RESET"
+                  [[ "$NEEDS_RESET" == "true" ]] && TARGET="Needs Review"
+                fi
+                ;;
+              closed)
+                [[ "$MERGED" == "true" ]] && TARGET="Done"
+                ;;
+              review_requested)
+                TARGET="Needs Review"
+                ;;
+              converted_to_draft)
+                TARGET="In Progress"
+                ;;
+            esac
+          elif [[ "$EVENT" == "pull_request_review" && "$ACTION" == "submitted" ]]; then
+            case "$REVIEW_STATE" in
+              changes_requested)
+                TARGET="Changes Requested"
+                ;;
+              approved)
+                REVIEWS_DATA=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+                  | jq -s '[.[][]] | group_by(.user.login) | map(sort_by(.submitted_at) | last)')
+                APPROVALS=$(echo "$REVIEWS_DATA" | jq '[.[] | select(.state == "APPROVED")] | length')
+                CHANGES_REQUESTED=$(echo "$REVIEWS_DATA" | jq '[.[] | select(.state == "CHANGES_REQUESTED")] | length')
+                echo "Approval count: $APPROVALS, Changes requested: $CHANGES_REQUESTED"
+                [[ "$APPROVALS" -ge 2 && "$CHANGES_REQUESTED" -eq 0 ]] && TARGET="PR Approved"
+                ;;
+            esac
+          fi
+
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+
+      - name: Update linked issue status in project
+        if: steps.resolve.outputs.target != ''
+        env:
+          GH_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+          TARGET:    ${{ steps.resolve.outputs.target }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO:      ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          OWNER="${REPO%%/*}"
+          REPO_NAME="${REPO##*/}"
+
+          echo "Setting linked issues to: $TARGET"
+
+          # Single query: linked items + project/field data in one round-trip
+          ALL_DATA=$(gh api graphql -f query='
+            query($owner:String!, $repo:String!, $pr:Int!) {
+              repository(owner:$owner, name:$repo) {
+                pullRequest(number:$pr) {
+                  closingIssuesReferences(first:10, userLinkedOnly:false) {
+                    nodes {
+                      projectItems(first:5) {
+                        nodes {
+                          id
+                          project {
+                            id
+                            fields(first:50) {
+                              nodes {
+                                ... on ProjectV2SingleSelectField {
+                                  id
+                                  name
+                                  options { id name }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' \
+            -f owner="$OWNER" \
+            -f repo="$REPO_NAME" \
+            -F pr="$PR_NUMBER")
+
+          if echo "$ALL_DATA" | jq -e '.errors' > /dev/null 2>&1; then
+            echo "GraphQL error: $(echo "$ALL_DATA" | jq -r '.errors[0].message')"
+            exit 1
+          fi
+
+          # One TSV line per item: itemId, projectId, statusFieldId, optionId
+          # Option names are matched after stripping any leading emoji prefix
+          ITEMS=$(echo "$ALL_DATA" | jq -r --arg t "$TARGET" '
+            .data.repository.pullRequest.closingIssuesReferences.nodes[].projectItems.nodes[]
+            | . as $item
+            | (.project.fields.nodes[] | select(.name == "Status")) as $field
+            | ($field.options[] | select((.name | gsub("^[^A-Za-z]+"; "")) == $t)) as $opt
+            | [$item.id, $item.project.id, $field.id, $opt.id] | @tsv')
+
+          if [[ -z "$ITEMS" ]]; then
+            echo "No linked project items found, or Status option '$TARGET' not present — nothing to update."
+            exit 0
+          fi
+
+          while IFS=$'\t' read -r ITEM_ID PROJECT_ID FIELD_ID OPTION_ID; do
+            echo "  → $ITEM_ID (project $PROJECT_ID)"
+            gh api graphql -f query='
+              mutation($project:ID!, $item:ID!, $field:ID!, $option:String!) {
+                updateProjectV2ItemFieldValue(input:{
+                  projectId: $project
+                  itemId:    $item
+                  fieldId:   $field
+                  value: { singleSelectOptionId: $option }
+                }) { projectV2Item { id } }
+              }' \
+              -f project="$PROJECT_ID" \
+              -f item="$ITEM_ID" \
+              -f field="$FIELD_ID" \
+              -f option="$OPTION_ID" \
+              --silent
+          done <<< "$ITEMS"
+
+          echo "Done — all linked issues set to '$TARGET'."

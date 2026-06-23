@@ -9,6 +9,7 @@ import type { GasSummaryType, RenderExplorerLink } from '../../../types';
 import { useFormatCoin } from '../../../hooks';
 import { Divider, KeyValueInfo, Panel, CardType } from '@iota/apps-ui-kit';
 import { GasSummary, getUnstakeDetailsFromEvents, Validator } from '../../..';
+import { BALANCE_MASK, useBalanceVisible } from '../../../contexts/BalanceVisibilityContext';
 
 interface UnstakeTransactionInfoProps {
     activeAddress: string | null;
@@ -25,6 +26,7 @@ export function UnstakeTransactionInfo({
 }: UnstakeTransactionInfoProps) {
     const unstakeDetails = getUnstakeDetailsFromEvents(events);
     const { totalUnstakeAmount, validatorAddress, unstakeAmount, unstakeRewards } = unstakeDetails;
+    const isBalanceVisible = useBalanceVisible();
 
     const [formatTotalAmountWithoutRewards, symbol] = useFormatCoin({ balance: unstakeAmount });
     const [formatRewards] = useFormatCoin({ balance: unstakeRewards || 0 });
@@ -42,12 +44,16 @@ export function UnstakeTransactionInfo({
                 <div className="flex flex-col gap-y-sm p-md">
                     <KeyValueInfo
                         keyText="Your Stake"
-                        value={`${formatTotalAmountWithoutRewards} ${symbol}`}
+                        value={
+                            isBalanceVisible
+                                ? `${formatTotalAmountWithoutRewards} ${symbol}`
+                                : BALANCE_MASK
+                        }
                         fullwidth
                     />
                     <KeyValueInfo
                         keyText="Rewards Earned"
-                        value={`${formatRewards} ${symbol}`}
+                        value={isBalanceVisible ? `${formatRewards} ${symbol}` : BALANCE_MASK}
                         fullwidth
                     />
                     <Divider />
