@@ -2,10 +2,10 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useAppSelector } from '_hooks';
+import { useActiveAccount, useAppSelector } from '_hooks';
 import { getCustomNetwork, toast } from '@iota/core';
 import { getNetwork } from '@iota/iota-sdk/client';
-import { FaucetRateLimitError } from '@iota/iota-sdk/faucet';
+import { FaucetRateLimitError, getFaucetWebsiteUrl } from '@iota/iota-sdk/faucet';
 import { useFaucetMutation } from './useFaucetMutation';
 import { useFaucetRateLimiter } from './useFaucetRateLimiter';
 import { Button, ButtonType } from '@iota/apps-ui-kit';
@@ -16,16 +16,40 @@ export function FaucetRequestButton(): JSX.Element | null {
     const customRpc = useAppSelector(({ app }) => app.customRpc);
     const customFaucet = useAppSelector(({ app }) => app.customFaucet);
     const networkConfig = customRpc ? getCustomNetwork(customRpc) : getNetwork(network);
+    const activeAccount = useActiveAccount();
     const [isRateLimited, rateLimit] = useFaucetRateLimiter();
 
+    // Dual faucet system: public networks (testnet, devnet) expose a faucet
+    // website that must be opened in a new tab, while the rest (localnet,
+    // alphanet, custom) keep using the faucet API endpoint.
+    const faucetHost = customFaucet || networkConfig?.faucet;
+    const faucetWebsite = !customFaucet ? networkConfig?.faucetWebsite : undefined;
+
     const mutation = useFaucetMutation({
-        host: customFaucet || networkConfig?.faucet,
+        host: faucetHost,
         onError: (error) => {
             if (error instanceof FaucetRateLimitError) {
                 rateLimit();
             }
         },
     });
+
+    if (faucetWebsite) {
+        return activeAccount && !activeAccount.isLocked ? (
+            <Button
+                type={ButtonType.Secondary}
+                onClick={() => {
+                    window.open(
+                        getFaucetWebsiteUrl(faucetWebsite, activeAccount.address),
+                        '_blank',
+                        'noopener noreferrer',
+                    );
+                }}
+                text={`Request ${networkConfig?.name} Tokens`}
+                fullWidth
+            />
+        ) : null;
+    }
 
     return mutation.enabled ? (
         <Button

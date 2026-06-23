@@ -1,38 +1,22 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
-# Install pnpm
 RUN corepack enable
 
-# Set the working directory to the monorepo root
 WORKDIR /workspace
 
-# Copy workspace configuration and root package files
-COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
-
-# Copy all source code
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json .npmrc ./
 COPY sdk ./sdk
-COPY names-display ./names-display
-COPY build-scripts ./build-scripts
-COPY packages ./packages
+COPY apps ./apps
 
-# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build the SDK dependency first
-RUN cd sdk && pnpm build
+RUN pnpm names-display build
 
-# Build the names-display service
-RUN cd names-display && pnpm build
+WORKDIR /workspace/apps/names-display
 
-# Set working directory to names-display
-WORKDIR /workspace/names-display
-
-# Expose port
 EXPOSE 3000
 
-# Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Start the application
 CMD ["pnpm", "start"]
