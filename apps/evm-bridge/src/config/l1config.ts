@@ -9,6 +9,7 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } = createNetwork
         url: CONFIG.L1.rpcUrl,
         variables: {
             faucet: CONFIG.L1.faucetUrl,
+            faucetWebsite: CONFIG.L1.faucetWebsiteUrl,
             chain: {
                 chainId: CONFIG.L1.chainId,
                 packageId: CONFIG.L1.packageId,

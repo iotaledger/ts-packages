@@ -12,7 +12,7 @@ import { App } from './App';
 import '@iota/dapp-kit/dist/index.css';
 import './index.css';
 
-import { getFullnodeUrl } from '@iota/iota-sdk/client';
+import { getRpcUrl } from '@iota/iota-sdk/client';
 
 const queryClient = new QueryClient();
 
@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <QueryClientProvider client={queryClient}>
             <IotaClientProvider
                 defaultNetwork="testnet"
-                networks={{ testnet: { url: getFullnodeUrl('testnet') } }}
+                networks={{ testnet: { url: getRpcUrl('testnet') } }}
             >
                 <WalletProvider enableUnsafeBurner>
                     <App />
