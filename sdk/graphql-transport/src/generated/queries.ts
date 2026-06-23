@@ -755,8 +755,6 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1002,8 +1000,6 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1839,8 +1835,6 @@ export type IObject = {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   storageRebate?: Maybe<Scalars['BigInt']['output']>;
@@ -2531,8 +2525,6 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -2842,8 +2834,6 @@ export type MovePackage = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3353,8 +3343,6 @@ export type NameRegistration = IMoveObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3588,8 +3576,6 @@ export type Object = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3842,13 +3828,7 @@ export enum ObjectKind {
    * The object is loaded from serialized data, such as the contents of a
    * transaction that hasn't been indexed yet.
    */
-  NotIndexed = 'NOT_INDEXED',
-  /**
-   * The object is deleted or wrapped and only partial information can be
-   * loaded from the indexer.
-   * @deprecated will be removed with v1.26, as such objects can be considered non-existent
-   */
-  WrappedOrDeleted = 'WRAPPED_OR_DELETED'
+  NotIndexed = 'NOT_INDEXED'
 }
 
 /** The object's owner type: Immutable, Shared, Parent, or Address. */
@@ -5016,8 +4996,6 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
