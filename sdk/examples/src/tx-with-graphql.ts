@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { getGraphQLUrl } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
@@ -20,7 +20,7 @@ const graphqlTransport = new IotaClientGraphQLTransport({
 });
 
 // IOTA client for devnet
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 
 // Generate a new Ed25519 keypair (for demo only)
 const keypair = new Ed25519Keypair();
