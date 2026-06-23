@@ -2,21 +2,23 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ImageIcon, ImageIconSize } from '@iota/core';
+import { ImageIcon, ImageIconSize, DAppListItem, type DAppEntry } from '@iota/core';
 import { ExternalLink } from '_components';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getDAppUrl } from '_src/shared/utils';
 import { useState } from 'react';
-import { Card, CardImage, CardBody, ImageShape, Badge, BadgeType } from '@iota/apps-ui-kit';
+import {
+    Card,
+    CardImage,
+    CardBody,
+    ImageShape,
+    CardType,
+    CardAction,
+    CardActionType,
+} from '@iota/apps-ui-kit';
 import { DisconnectApp } from './DisconnectApp';
 
-export type DAppEntry = {
-    name: string;
-    description: string;
-    link: string;
-    icon: string;
-    tags: string[];
-};
+export type { DAppEntry };
 export type DisplayType = 'full' | 'card';
 
 interface CardViewProps {
@@ -29,7 +31,7 @@ function CardView({ name, link, icon }: CardViewProps) {
     const appUrl = getDAppUrl(link);
     const originLabel = appUrl.hostname;
     return (
-        <Card>
+        <Card type={CardType.Outlined}>
             <CardImage shape={ImageShape.SquareRounded}>
                 <ImageIcon
                     src={icon || null}
@@ -40,37 +42,8 @@ function CardView({ name, link, icon }: CardViewProps) {
                 />
             </CardImage>
             <CardBody isTextTruncated title={name} subtitle={originLabel} />
+            <CardAction type={CardActionType.Link} />
         </Card>
-    );
-}
-
-interface ListViewProps {
-    name: string;
-    icon?: string;
-    description: string;
-    tags?: string[];
-}
-
-function ListView({ name, icon, description, tags }: ListViewProps) {
-    return (
-        <div className="item-center box-border flex gap-sm rounded-2xl bg-iota-neutral-100 p-sm hover:bg-shader-primary-dark-12 dark:bg-iota-neutral-6">
-            <ImageIcon src={icon || null} label={name} fallback={name} />
-            <div className="flex flex-col justify-center gap-sm">
-                <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                    {name}
-                </span>
-                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                    {description}
-                </span>
-                {tags?.length && (
-                    <div className="flex flex-wrap gap-xxs">
-                        {tags?.map((tag) => (
-                            <Badge key={tag} label={tag} type={BadgeType.Neutral} />
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
     );
 }
 
@@ -112,7 +85,13 @@ export function IotaApp({
 
     const AppDetails =
         displayType === 'full' ? (
-            <ListView name={name} description={description} icon={icon} tags={tags} />
+            <DAppListItem
+                name={name}
+                description={description}
+                icon={icon}
+                tags={tags}
+                link={link}
+            />
         ) : (
             <CardView name={name} link={link} icon={icon} />
         );

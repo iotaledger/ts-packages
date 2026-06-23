@@ -1321,7 +1321,7 @@ export type ObjectOwner =
           AddressOwner: string;
       } /**
      * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
-     * IotaAddress as IotaAddress is universal.
+     * Address as Address is universal.
      */
     | {
           ObjectOwner: string;

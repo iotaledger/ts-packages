@@ -1,5 +1,18 @@
 # @iota/iota-sdk
 
+## 1.14.0
+
+### Minor Changes
+
+-   76ab06f: Remove experimental notations in several MoveAuthenticator APIs.
+-   3b04d23: Fix generated types from IOTA.
+-   3b178c6: Add `normalizePasskeyPublicKey` utility and update `PasskeyPublicKey` to accept DER
+    SPKI (91-byte), uncompressed (65-byte), and raw XY (64-byte) passkey public key formats in
+    addition to the standard compressed (33-byte) format.
+-   2223521: Subscriptions recovery types generation.
+-   8043617: Add request inspector support for the GraphQLClient
+-   c4e159b: Remove ZkLogin.
+
 ## 1.13.0
 
 ### Minor Changes

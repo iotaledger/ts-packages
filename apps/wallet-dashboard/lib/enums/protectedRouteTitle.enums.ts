@@ -6,6 +6,7 @@ export enum ProtectedRouteTitle {
     Assets = 'Assets',
     Staking = 'Staking',
     Activity = 'Activity',
+    Apps = 'Apps',
     Migration = 'Migration',
     Vesting = 'Vesting',
 }
