@@ -21,11 +21,11 @@ jobs:
         with:
           node-version: "24"
       - name: Run pnpm audit (moderate)
-        run: pnpm audit --prod --audit-level moderate --json > audit-moderate.json || true
+        run: pnpm audit --prod --audit-level moderate --json > audit.json || true
       - name: Parse results
         id: parse
         run: |
-          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' audit-moderate.json)
+          MODERATE=$(jq '.metadata.vulnerabilities.moderate // 0' audit.json)
 
           if [ "$MODERATE" -eq 0 ]; then
             echo "status=success" >> $GITHUB_OUTPUT
@@ -36,13 +36,13 @@ jobs:
           fi
 
   notify:
-    needs: audit-moderate
-    if: needs.audit-moderate.outputs.status == 'failure'
+    needs: audit
+    if: needs.audit.outputs.status == 'failure'
     uses: ./.github/workflows/_slack_notify.yml
     secrets:
       CI_SLACK_WEBHOOK: ${{ secrets.CI_SLACK_WEBHOOK }}
     with:
-      status: ${{ needs.audit-moderate.outputs.status }}
-      title: "Weekly pnpm Audit – Moderate"
-      message: ${{ needs.audit-moderate.outputs.message }}
+      status: ${{ needs.audit.outputs.status }}
+      title: "Turborepo Weekly checks - pnpm audit (moderate)"
+      message: ${{ needs.audit.outputs.message }}
       footer: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
