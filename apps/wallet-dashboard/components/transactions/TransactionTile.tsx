@@ -24,6 +24,8 @@ import {
     getTransactionAmountForTimelocked,
     formatDate,
     isMigrationTransaction,
+    useBalanceVisible,
+    BALANCE_MASK,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionDetailsLayout } from '../dialogs/transaction/TransactionDetailsLayout';
@@ -83,6 +85,7 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
     })();
 
     const [formatAmount, symbol] = useFormatCoin({ balance, coinType });
+    const isBalanceVisible = useBalanceVisible();
 
     function openDetailsDialog() {
         setOpen(true);
@@ -119,7 +122,11 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
-                    title={txnFailed ? '--' : `${formatAmount} ${symbol}`}
+                    title={
+                        txnFailed
+                            ? '--'
+                            : `${isBalanceVisible ? formatAmount : BALANCE_MASK} ${symbol}`
+                    }
                 />
             </Card>
             <Dialog open={open} onOpenChange={setOpen}>
