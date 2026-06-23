@@ -1,5 +1,11 @@
 # @iota/apps-ui-kit
 
+## 0.10.1
+
+### Patch Changes
+
+-   e3f680f: update storybook version
+
 ## 0.10.0
 
 ### Minor Changes
