@@ -20,7 +20,13 @@ import {
     Title,
 } from '@iota/apps-ui-kit';
 import { StakeDialog, useStakeDialog } from './dialogs';
-import { TIMELOCK_IOTA_TYPE, useCountdownByTimestamp, useFormatCoin } from '@iota/core';
+import {
+    TIMELOCK_IOTA_TYPE,
+    useCountdownByTimestamp,
+    useFormatCoin,
+    useBalanceVisible,
+    BALANCE_MASK,
+} from '@iota/core';
 import { Clock, Vesting } from '@iota/apps-ui-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { SupplyIncreaseUserType } from '@/lib/interfaces';
@@ -65,6 +71,7 @@ export function SupplyIncreaseVestingOverview({
     const [formattedAvailableStaking, availableStakingSymbol] = useFormatCoin({
         balance: supplyIncreaseVestingSchedule.availableStaking,
     });
+    const isBalanceVisible = useBalanceVisible();
 
     function handleOnSuccess(digest: string): void {
         iotaClient
@@ -129,7 +136,9 @@ export function SupplyIncreaseVestingOverview({
                                         text={
                                             nextPayoutResult.isPending
                                                 ? '-'
-                                                : `${formattedNextPayout} `
+                                                : isBalanceVisible
+                                                  ? `${formattedNextPayout} `
+                                                  : BALANCE_MASK
                                         }
                                         supportingLabel={nextPayoutSymbol}
                                     />
@@ -151,7 +160,11 @@ export function SupplyIncreaseVestingOverview({
                                     <LabelText
                                         size={LabelTextSize.Large}
                                         label="Available for staking"
-                                        text={formattedAvailableStaking}
+                                        text={
+                                            isBalanceVisible
+                                                ? formattedAvailableStaking
+                                                : BALANCE_MASK
+                                        }
                                         supportingLabel={availableStakingSymbol}
                                     />
                                 }

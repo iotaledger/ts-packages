@@ -16,6 +16,8 @@ import {
     NO_BALANCE_GENERIC_MESSAGE,
     getGasBudgetErrorMessage,
     useGetValidatorsApy,
+    useBalanceVisible,
+    BALANCE_MASK,
 } from '@iota/core';
 import * as Sentry from '@sentry/react';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -190,6 +192,7 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
         isStakeTokenTransactionLoading ||
         isStakeTokenTransactionPending;
 
+    const isBalanceVisible = useBalanceVisible();
     const gasUnstakeBuffer = minAmountTxGasBudget * BigInt(2);
     const maxSafeAmount = availableBalance - gasUnstakeBuffer;
     const [maxSafeAmountFormatted, maxSafeAmountSymbol] = useFormatCoin({
@@ -243,7 +246,7 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                                 value={amount}
                                 caption={
                                     minAmountTxGasBudget
-                                        ? `${availableBalanceFormatted} ${symbol} Available`
+                                        ? `${isBalanceVisible ? `${availableBalanceFormatted} ${symbol}` : BALANCE_MASK} Available`
                                         : '--'
                                 }
                                 suffix={' ' + symbol}
