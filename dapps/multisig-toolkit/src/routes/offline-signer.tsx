@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useCurrentAccount, useSignTransaction, useIotaClientContext } from '@iota/dapp-kit';
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AlertCircle, Terminal } from 'lucide-react';
@@ -60,7 +60,7 @@ export default function OfflineSigner() {
         mutationKey: [dryRunNetwork, 'dry-run'],
         mutationFn: async () => {
             const dryRunClient = new IotaClient({
-                url: getFullnodeUrl(dryRunNetwork),
+                url: getRpcUrl(dryRunNetwork),
             });
             const transaction = Transaction.from(bytes);
             return await dryRunClient.dryRunTransactionBlock({
