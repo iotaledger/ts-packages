@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { requestIotaFromFaucetV1, getFaucetHost } from '@iota/iota-sdk/faucet';
@@ -16,7 +16,7 @@ import { requestIotaFromFaucetV1, getFaucetHost } from '@iota/iota-sdk/faucet';
 console.log('Setting up client and keypair...');
 
 // Create a client connected to devnet
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 
 // Generate a new Ed25519 keypair (for demo only)
 const keypair = new Ed25519Keypair();
