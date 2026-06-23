@@ -1,5 +1,17 @@
 # @iota/apps-ui-kit
 
+## 0.10.0
+
+### Minor Changes
+
+-   c1b33e9: add date picker component
+
+### Patch Changes
+
+-   e5a945f: Allow react components to be passed to LabelText
+-   1ac779f: Add outlined type badge
+-   5942eac: Tooltip can have links in text prop
+
 ## 0.9.5
 
 ### Patch Changes

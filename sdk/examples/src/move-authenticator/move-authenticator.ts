@@ -9,7 +9,7 @@
  * 3. Sends a transfer from the account-abstracted address.
  */
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { requestIotaFromFaucetV1, getFaucetHost } from '@iota/iota-sdk/faucet';
 import { Transaction } from '@iota/iota-sdk/transactions';
@@ -17,7 +17,7 @@ import { MoveAuthenticatorBuilder, MoveSigner } from '@iota/iota-sdk/keypairs/mo
 import { bcs } from '@iota/iota-sdk/bcs';
 import { execSync } from 'child_process';
 
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 const keypair = new Ed25519Keypair();
 const deployerAddress = keypair.toIotaAddress();
 

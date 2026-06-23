@@ -5,6 +5,8 @@ import {
     formatPercentageDisplay,
     useValidatorInfo,
     useGetStakingValidatorDetails,
+    useBalanceVisible,
+    BALANCE_MASK,
 } from '@iota/core';
 import { KeyValueInfo, Panel, TooltipPosition } from '@iota/apps-ui-kit';
 
@@ -26,6 +28,7 @@ export function StakedInfo({ validatorAddress, accountAddress }: StakedInfoProps
             unstake: false,
         });
 
+    const isBalanceVisible = useBalanceVisible();
     const [totalValidatorStakeFormatted, totalValidatorStakeSymbol] = totalValidatorsStake;
     const [totalStakeFormatted, totalStakeSymbol] = totalStake;
 
@@ -65,8 +68,8 @@ export function StakedInfo({ validatorAddress, accountAddress }: StakedInfoProps
                     keyText="Your Staked IOTA"
                     tooltipPosition={TooltipPosition.Right}
                     tooltipText="Your current staked balance."
-                    value={totalStakeFormatted}
-                    supportingLabel={totalStakeSymbol}
+                    value={isBalanceVisible ? totalStakeFormatted : BALANCE_MASK}
+                    supportingLabel={isBalanceVisible ? totalStakeSymbol : undefined}
                     fullwidth
                 />
             </div>
