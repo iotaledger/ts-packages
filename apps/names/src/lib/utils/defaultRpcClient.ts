@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IotaClientGraphQLTransport } from '@iota/graphql-transport';
-import { createSentryRequestInspector } from '@iota/core';
+import { createSentryRequestInspector } from '@iota/core/api/sentry';
 import {
     getAllNetworks,
     getNetwork,

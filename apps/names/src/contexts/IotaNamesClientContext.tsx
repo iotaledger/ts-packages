@@ -4,7 +4,7 @@
 'use client';
 
 import { useIotaClientContext } from '@iota/dapp-kit';
-import { createSentryRequestInspector } from '@iota/core';
+import { createSentryRequestInspector } from '@iota/core/api/sentry';
 import { IotaNamesClient } from '@iota/iota-names-sdk';
 import { getNetwork, Network } from '@iota/iota-sdk/client';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
