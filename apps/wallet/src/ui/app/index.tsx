@@ -9,7 +9,9 @@ import {
     useAccounts,
     useAppDispatch,
     useAppSelector,
+    useBalanceVisibility,
 } from './hooks';
+import { BalanceVisibilityProvider } from '@iota/core';
 import { setNavVisibility } from '_redux/slices/app';
 import { isLedgerAccountSerializedUI } from '_src/background/accounts/ledgerAccount';
 import { type LedgerAccountsPublicKeys } from '_src/shared/messaging/messages/payloads/methodPayload';
@@ -149,6 +151,7 @@ export function App() {
     }, [backgroundClient, autoLockEnabled]);
     // Placeholder check for storage migration.
     // currently hook useStorageMigrationStatus always returns 'ready'
+    const { isBalanceVisible } = useBalanceVisibility();
     const storageMigration = useStorageMigrationStatus();
     if (storageMigration.isPending || !storageMigration?.data) {
         return null;
@@ -157,53 +160,58 @@ export function App() {
         return <StorageMigrationPage />;
     }
     return (
-        <Routes>
-            <Route path="restricted" element={<RestrictedPage />} />
-            <Route path="/*" element={<HomePage />}>
-                <Route path="apps/*" element={<AppsPage />} />
-                <Route path="kiosk" element={<KioskDetailsPage />} />
-                <Route path="nft-details" element={<NFTDetailsPage />} />
-                <Route path="nft-transfer/:nftId" element={<NftTransferPage />} />
-                <Route path="nfts/*" element={<AssetsPage />} />
-                <Route path="receipt" element={<ReceiptPage />} />
-                <Route path="send" element={<TransferCoinPage />} />
-                <Route path="send/select" element={<CoinsSelectorPage />} />
-                <Route path="stake/*" element={<StakingPage />} />
-                <Route path="tokens/*" element={<TokenDetailsPage />} />
-                <Route path="transactions/:status?" element={<TransactionBlocksPage />} />
-                <Route path="*" element={<Navigate to="/tokens" replace={true} />} />
-            </Route>
-            <Route path="accounts/*" element={<AccountsPage />}>
-                <Route path="welcome" element={<WelcomePage />} />
-                <Route path="add-account" element={<AddAccountPage />} />
-                <Route path="create-new" element={<CreateNewWallet />} />
-                <Route path="import-existing" element={<ImportExistingWallet />} />
-                <Route path="import-ledger-accounts" element={<ImportLedgerAccountsPage />} />
-                <Route path="import-passphrase" element={<ImportPassphrasePage />} />
-                <Route path="import-private-key" element={<ImportPrivateKeyPage />} />
-                <Route path="import-seed" element={<ImportSeedPage />} />
-                <Route path="passkey-account" element={<CreateNewPasskey />} />
-                <Route path="import-passkey" element={<ImportPasskeyPage />} />
-                <Route path="import-keystone" element={<ImportKeystone />} />
-                <Route path="manage" element={<ManageAccountsPage />} />
-                <Route path="manage/accounts-finder/intro" element={<AccountsFinderIntroPage />} />
-                <Route
-                    path="manage/accounts-finder/:accountSourceId"
-                    element={<AccountsFinderPage />}
-                />
-                <Route path="protect-account" element={<ProtectAccountPage />} />
-                <Route path="backup/:accountSourceID" element={<BackupMnemonicPage />} />
-                <Route path="export/:accountID" element={<ExportAccountPage />} />
-                <Route
-                    path="export/passphrase/:accountSourceID"
-                    element={<ExportPassphrasePage />}
-                />
-                <Route path="export/seed/:accountSourceID" element={<ExportSeedPage />} />
-            </Route>
-            <Route path="/dapp/*" element={<HomePage disableNavigation />}>
-                <Route path="connect/:requestID" element={<SiteConnectPage />} />
-                <Route path="approve/:requestID" element={<ApprovalRequestPage />} />
-            </Route>
-        </Routes>
+        <BalanceVisibilityProvider isVisible={isBalanceVisible}>
+            <Routes>
+                <Route path="restricted" element={<RestrictedPage />} />
+                <Route path="/*" element={<HomePage />}>
+                    <Route path="apps/*" element={<AppsPage />} />
+                    <Route path="kiosk" element={<KioskDetailsPage />} />
+                    <Route path="nft-details" element={<NFTDetailsPage />} />
+                    <Route path="nft-transfer/:nftId" element={<NftTransferPage />} />
+                    <Route path="nfts/*" element={<AssetsPage />} />
+                    <Route path="receipt" element={<ReceiptPage />} />
+                    <Route path="send" element={<TransferCoinPage />} />
+                    <Route path="send/select" element={<CoinsSelectorPage />} />
+                    <Route path="stake/*" element={<StakingPage />} />
+                    <Route path="tokens/*" element={<TokenDetailsPage />} />
+                    <Route path="transactions/:status?" element={<TransactionBlocksPage />} />
+                    <Route path="*" element={<Navigate to="/tokens" replace={true} />} />
+                </Route>
+                <Route path="accounts/*" element={<AccountsPage />}>
+                    <Route path="welcome" element={<WelcomePage />} />
+                    <Route path="add-account" element={<AddAccountPage />} />
+                    <Route path="create-new" element={<CreateNewWallet />} />
+                    <Route path="import-existing" element={<ImportExistingWallet />} />
+                    <Route path="import-ledger-accounts" element={<ImportLedgerAccountsPage />} />
+                    <Route path="import-passphrase" element={<ImportPassphrasePage />} />
+                    <Route path="import-private-key" element={<ImportPrivateKeyPage />} />
+                    <Route path="import-seed" element={<ImportSeedPage />} />
+                    <Route path="passkey-account" element={<CreateNewPasskey />} />
+                    <Route path="import-passkey" element={<ImportPasskeyPage />} />
+                    <Route path="import-keystone" element={<ImportKeystone />} />
+                    <Route path="manage" element={<ManageAccountsPage />} />
+                    <Route
+                        path="manage/accounts-finder/intro"
+                        element={<AccountsFinderIntroPage />}
+                    />
+                    <Route
+                        path="manage/accounts-finder/:accountSourceId"
+                        element={<AccountsFinderPage />}
+                    />
+                    <Route path="protect-account" element={<ProtectAccountPage />} />
+                    <Route path="backup/:accountSourceID" element={<BackupMnemonicPage />} />
+                    <Route path="export/:accountID" element={<ExportAccountPage />} />
+                    <Route
+                        path="export/passphrase/:accountSourceID"
+                        element={<ExportPassphrasePage />}
+                    />
+                    <Route path="export/seed/:accountSourceID" element={<ExportSeedPage />} />
+                </Route>
+                <Route path="/dapp/*" element={<HomePage disableNavigation />}>
+                    <Route path="connect/:requestID" element={<SiteConnectPage />} />
+                    <Route path="approve/:requestID" element={<ApprovalRequestPage />} />
+                </Route>
+            </Routes>
+        </BalanceVisibilityProvider>
     );
 }

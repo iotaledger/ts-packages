@@ -21,6 +21,8 @@ import {
     useIsValidatorCommitteeMember,
     useIsActiveValidator,
     useGetNextEpochCommitteeMember,
+    useBalanceVisible,
+    BALANCE_MASK,
 } from '@iota/core';
 import { Network, type StakeObject } from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG, CoinFormat } from '@iota/iota-sdk/utils';
@@ -111,6 +113,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
         apy: 0,
     };
 
+    const isBalanceVisible = useBalanceVisible();
     const [iotaEarnedFormatted, iotaEarnedSymbol] = useFormatCoin({ balance: iotaEarned });
     const [totalStakeFormatted, totalStakeSymbol] = useFormatCoin({ balance: totalStake });
     const [totalStakeFormattedPlain] = useFormatCoin({
@@ -183,14 +186,14 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
                     <div className="flex flex-col gap-y-sm p-md">
                         <KeyValueInfo
                             keyText="Your Stake"
-                            value={totalStakeFormatted}
-                            supportingLabel={totalStakeSymbol}
+                            value={isBalanceVisible ? totalStakeFormatted : BALANCE_MASK}
+                            supportingLabel={isBalanceVisible ? totalStakeSymbol : undefined}
                             fullwidth
                         />
                         <KeyValueInfo
                             keyText="Earned"
-                            value={iotaEarnedFormatted}
-                            supportingLabel={iotaEarnedSymbol}
+                            value={isBalanceVisible ? iotaEarnedFormatted : BALANCE_MASK}
+                            supportingLabel={isBalanceVisible ? iotaEarnedSymbol : undefined}
                             fullwidth
                         />
                         <Divider />

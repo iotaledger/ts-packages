@@ -13,6 +13,7 @@ import {
     ImageType,
 } from '@iota/apps-ui-kit';
 import { useFormatCoin } from '../../../hooks';
+import { BALANCE_MASK, useBalanceVisible } from '../../../contexts/BalanceVisibilityContext';
 
 interface TransactionAmountProps {
     amount: string | number | bigint;
@@ -30,6 +31,7 @@ export function TransactionAmount({
     approximation,
 }: TransactionAmountProps) {
     const [formatAmount, symbol] = useFormatCoin({ balance: Math.abs(Number(amount)), coinType });
+    const isBalanceVisible = useBalanceVisible();
 
     return Number(amount) !== 0 ? (
         <Card type={CardType.Filled}>
@@ -39,7 +41,11 @@ export function TransactionAmount({
                 </div>
             </CardImage>
             <CardBody
-                title={`${approximation ? '~' : ''}${formatAmount} ${symbol}`}
+                title={
+                    isBalanceVisible
+                        ? `${approximation ? '~' : ''}${formatAmount} ${symbol}`
+                        : BALANCE_MASK
+                }
                 subtitle={subtitle}
             />
             <CardAction type={CardActionType.SupportingText} />
