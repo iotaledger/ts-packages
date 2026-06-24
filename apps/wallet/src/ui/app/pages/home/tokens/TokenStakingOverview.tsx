@@ -10,8 +10,6 @@ import {
     useTotalDelegatedStake,
     DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
     DELEGATED_STAKES_QUERY_STALE_TIME,
-    useBalanceVisible,
-    BALANCE_MASK,
 } from '@iota/core';
 import {
     Card,
@@ -38,7 +36,6 @@ export function TokenStakingOverview({
 }) {
     const navigate = useNavigate();
     const shouldOpenNewTab = useShouldOpenInNewTab();
-    const isBalanceVisible = useBalanceVisible();
     const { data: delegatedStake, isPending } = useGetDelegatedStake({
         address: accountAddress,
         staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
@@ -77,7 +74,7 @@ export function TokenStakingOverview({
                     isLoading
                         ? '--'
                         : totalDelegatedStake
-                          ? `${isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK} ${symbol}`
+                          ? `${formattedDelegatedStake} ${symbol}`
                           : 'Start Staking'
                 }
                 subtitle={isLoading ? '--' : totalDelegatedStake ? 'Current Stake' : 'Earn Rewards'}
