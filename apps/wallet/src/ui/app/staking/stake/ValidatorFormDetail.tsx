@@ -6,8 +6,6 @@ import {
     EFFECTIVE_COMMISSION_TOOLTIP,
     formatPercentageDisplay,
     useGetStakingValidatorDetails,
-    useBalanceVisible,
-    BALANCE_MASK,
 } from '@iota/core';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveAddress } from '_hooks';
@@ -28,7 +26,6 @@ interface ValidatorFormDetailProps {
 }
 
 export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorFormDetailProps) {
-    const isBalanceVisible = useBalanceVisible();
     const accountAddress = useActiveAddress();
     const [searchParams] = useSearchParams();
     const stakeIdParams = searchParams.get('staked');
@@ -113,8 +110,8 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
                                 keyText="Your Staked IOTA"
                                 tooltipPosition={TooltipPosition.Bottom}
                                 tooltipText="Your current staked balance."
-                                value={isBalanceVisible ? totalStakeFormatted : BALANCE_MASK}
-                                supportingLabel={isBalanceVisible ? totalStakeSymbol : undefined}
+                                value={totalStakeFormatted}
+                                supportingLabel={totalStakeSymbol}
                                 fullwidth
                             />
                         </>
