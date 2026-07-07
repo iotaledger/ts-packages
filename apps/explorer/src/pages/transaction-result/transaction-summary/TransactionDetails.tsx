@@ -3,6 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DisplayStats } from '@iota/apps-ui-kit';
+import { formatBalanceToUSD, useBalanceInUSD, useFormatCoin } from '@iota/core';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { type Network } from '@iota/iota-sdk/client';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { AddressLink, CheckpointSequenceLink, DateDisplay, EpochLink } from '~/components';
 import { onCopySuccess } from '~/lib/utils';
 
@@ -11,6 +15,7 @@ interface TransactionDetailsProps {
     checkpoint?: string | null;
     executedEpoch?: string;
     timestamp?: string | null;
+    totalGas?: string;
 }
 
 export function TransactionDetails({
@@ -18,9 +23,14 @@ export function TransactionDetails({
     checkpoint,
     executedEpoch,
     timestamp,
+    totalGas,
 }: TransactionDetailsProps): JSX.Element {
+    const { network } = useIotaClientContext();
+    const [formattedGas, gasSymbol] = useFormatCoin({ balance: totalGas });
+    const gasInUSD = useBalanceInUSD(IOTA_TYPE_ARG, totalGas ?? 0, network as Network);
+
     return (
-        <div className="grid grid-cols-1 gap-sm md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-sm md:grid-cols-5">
             {sender && (
                 <DisplayStats
                     label="Sender"
@@ -54,6 +64,18 @@ export function TransactionDetails({
                 <DisplayStats
                     label="Date"
                     value={<DateDisplay timestamp={timestamp} type="transaction" showTimeAgo />}
+                />
+            )}
+
+            {totalGas && (
+                <DisplayStats
+                    label="Gas Fee"
+                    value={`${formattedGas} ${gasSymbol}`}
+                    supportingLabel={
+                        gasInUSD && Math.abs(gasInUSD) >= 0.005
+                            ? formatBalanceToUSD(gasInUSD)
+                            : undefined
+                    }
                 />
             )}
         </div>

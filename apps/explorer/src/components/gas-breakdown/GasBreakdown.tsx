@@ -152,8 +152,10 @@ export function GasBreakdown({ summary }: GasBreakdownProps): JSX.Element | null
     return (
         <CollapsibleCard
             collapsible
+            initialClose
             render={({ isOpen }) => <Title title="Gas & Storage Fee" />}
             hideBorder
+            rawData={gasData}
         >
             <div className="px-md--rs pb-lg pt-xs">
                 <Accordion hideBorder>

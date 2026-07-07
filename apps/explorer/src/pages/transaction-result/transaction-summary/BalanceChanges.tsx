@@ -16,12 +16,16 @@ import {
 import {
     type BalanceChange,
     type BalanceChangeSummary,
+    formatBalanceToUSD,
     getRecognizedUnRecognizedTokenChanges,
+    useBalanceInUSD,
     useCoinMetadata,
     useFormatCoin,
     ImageIconSize,
     CoinIcon,
 } from '@iota/core';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { type Network } from '@iota/iota-sdk/client';
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import { RecognizedBadge } from '@iota/apps-ui-icons';
 import { useMemo } from 'react';
@@ -40,6 +44,8 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
     const coinFormat = isMdScreen ? CoinFormat.Rounded : CoinFormat.Full;
     const [formatted, symbol] = useFormatCoin({ balance: amount, coinType, format: coinFormat });
     const { data: coinMetaData } = useCoinMetadata(coinType);
+    const { network } = useIotaClientContext();
+    const amountInUSD = useBalanceInUSD(coinType, amount, network as Network);
     const isPositive = BigInt(amount) > 0n;
 
     if (!change) {
@@ -48,23 +54,36 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
 
     return (
         <div className="flex flex-col gap-xs">
-            <Card type={CardType.Filled}>
-                <CardImage type={ImageType.BgTransparent}>
-                    <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
-                </CardImage>
-                <CardBody
-                    title={coinMetaData?.name || symbol}
-                    icon={
-                        !unRecognizedToken ? (
-                            <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
-                        ) : null
-                    }
-                />
-                <CardAction
-                    type={CardActionType.SupportingText}
-                    title={`${isPositive ? '+' : ''} ${formatted} ${symbol}`}
-                />
-            </Card>
+            <div
+                className={
+                    isPositive
+                        ? '[&_.card-action-title-color]:!text-iota-tertiary-30 dark:[&_.card-action-title-color]:!text-iota-tertiary-80'
+                        : '[&_.card-action-title-color]:!text-iota-error-30 dark:[&_.card-action-title-color]:!text-iota-error-80'
+                }
+            >
+                <Card type={CardType.Filled}>
+                    <CardImage type={ImageType.BgTransparent}>
+                        <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                    </CardImage>
+                    <CardBody
+                        title={coinMetaData?.name || symbol}
+                        icon={
+                            !unRecognizedToken ? (
+                                <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
+                            ) : null
+                        }
+                    />
+                    <CardAction
+                        type={CardActionType.SupportingText}
+                        title={`${isPositive ? '+' : ''} ${formatted} ${symbol}`}
+                        subtitle={
+                            amountInUSD && Math.abs(amountInUSD) >= 0.005
+                                ? formatBalanceToUSD(Math.abs(amountInUSD))
+                                : undefined
+                        }
+                    />
+                </Card>
+            </div>
             {recipient && (
                 <div className="flex flex-wrap items-center justify-between px-sm py-xs">
                     <span className="w-full flex-shrink-0 text-label-lg text-iota-neutral-40 md:w-40 dark:text-iota-neutral-60">
@@ -87,10 +106,11 @@ function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner
         <CollapsibleCard
             title="Balance Changes"
             isTransparentPanel
+            rawData={changes}
             footer={
                 owner ? (
-                    <div className="flex flex-wrap justify-between px-md--rs py-sm--rs">
-                        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <div className="flex flex-wrap items-center justify-between px-md--rs py-sm--rs">
+                        <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
                             Owner
                         </span>
                         <div className="flex flex-row items-center gap-xs">

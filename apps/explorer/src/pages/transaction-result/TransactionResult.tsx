@@ -2,11 +2,19 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetTransaction, getUserFriendlyDryRunExecutionError } from '@iota/core';
+import {
+    useGetTransaction,
+    getUserFriendlyDryRunExecutionError,
+    getTransactionAction,
+    ACTION_LABELS,
+    TransactionIcon,
+    TransactionIconSize,
+} from '@iota/core';
 import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { useParams } from 'react-router-dom';
 import { PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
+import { TransactionActionSummary } from './TransactionActionSummary';
 import { TransactionView } from './TransactionView';
 import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
@@ -28,12 +36,33 @@ function TransactionResultPageHeader({
 
     const isProgrammableTransaction = txnKindName === 'ProgrammableTransaction';
 
+    const sender = transaction?.transaction?.data.sender;
+    const txnAction =
+        transaction && isProgrammableTransaction
+            ? getTransactionAction(transaction, sender)
+            : undefined;
+
     return (
         <PageHeader
             loading={loading}
             type="Transaction"
             title={txnDigest}
             subtitle={!isProgrammableTransaction ? txnKindName : undefined}
+            typeBadge={
+                txnAction && (
+                    <div className="badge-bg-color-primary-soft badge-border-color-soft flex items-center gap-xxs rounded-full border px-sm py-xxs">
+                        <TransactionIcon
+                            variant={txnAction}
+                            size={TransactionIconSize.Small}
+                            txnFailed={txnStatus === 'failure'}
+                        />
+                        <span className="badge-text-color-primary-soft text-label-md">
+                            {ACTION_LABELS[txnAction]}
+                        </span>
+                    </div>
+                )
+            }
+            summary={transaction && <TransactionActionSummary transaction={transaction} />}
             error={error}
             status={txnStatus}
         />
