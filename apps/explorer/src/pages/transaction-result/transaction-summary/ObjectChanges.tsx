@@ -329,6 +329,7 @@ export function ObjectChangeEntriesCards({ data, type }: ObjectChangeEntriesCard
                                 <Badge label={badgeLabel} type={BadgeType.PrimarySoft} />
                             </div>
                         }
+                        rawData={[...changes.changesWithDisplay, ...changes.changes]}
                     >
                         <div className="flex flex-col gap-4">
                             {!!changes.changesWithDisplay.length && (

@@ -114,6 +114,7 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
             items={expandableItems}
             itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
             count={inputs.length}
+            rawData={inputs}
         />
     );
 }

@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    Badge,
-    BadgeType,
     ButtonUnstyled,
     InfoBox,
     InfoBoxStyle,
@@ -12,7 +10,7 @@ import {
     Panel,
     Placeholder,
 } from '@iota/apps-ui-kit';
-import { Copy, Warning } from '@iota/apps-ui-icons';
+import { CheckmarkFilled, Copy, Warning } from '@iota/apps-ui-icons';
 import { useCopyToClipboard } from '@iota/core';
 import clsx from 'clsx';
 import { type MetaItem, PageHeaderMeta } from './PageHeaderMeta';
@@ -32,6 +30,8 @@ export interface PageHeaderProps {
     subtitle?: string | null;
     metaItems?: MetaItem[];
     type: PageHeaderType;
+    typeBadge?: React.ReactNode;
+    summary?: React.ReactNode;
     status?: 'success' | 'failure';
     after?: React.ReactNode;
     error?: string;
@@ -40,11 +40,44 @@ export interface PageHeaderProps {
     isLoadingSubtitle?: boolean;
 }
 
+const STATUS_CHIP_CONTENT: Record<
+    NonNullable<PageHeaderProps['status']>,
+    { label: string; icon: React.ReactNode; classes: string }
+> = {
+    success: {
+        label: 'Success',
+        icon: <CheckmarkFilled className="size-5 shrink-0" />,
+        classes: 'bg-success-surface text-on-success',
+    },
+    failure: {
+        label: 'Failed',
+        icon: <Warning className="size-5 shrink-0" />,
+        classes: 'bg-error-surface text-on-error',
+    },
+};
+
+function StatusChip({ status }: { status: NonNullable<PageHeaderProps['status']> }): JSX.Element {
+    const { label, icon, classes } = STATUS_CHIP_CONTENT[status];
+    return (
+        <div
+            className={clsx(
+                'flex items-center gap-xs rounded-full px-md py-xs text-label-lg',
+                classes,
+            )}
+        >
+            {icon}
+            <span>{label}</span>
+        </div>
+    );
+}
+
 export function PageHeader({
     title,
     subtitle,
     metaItems,
     type,
+    typeBadge,
+    summary,
     error,
     loading,
     after,
@@ -86,20 +119,12 @@ export function PageHeader({
                         ) : (
                             <>
                                 {type && (
-                                    <div className="flex flex-row items-center gap-xxs">
+                                    <div className="flex flex-row items-center gap-xs">
                                         <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                                             {type}
                                         </span>
-                                        {status && (
-                                            <Badge
-                                                label={status}
-                                                type={
-                                                    status === 'success'
-                                                        ? BadgeType.PrimarySoft
-                                                        : BadgeType.Neutral
-                                                }
-                                            />
-                                        )}
+                                        {typeBadge}
+                                        {status && <StatusChip status={status} />}
                                     </div>
                                 )}
                                 {title && (
@@ -128,6 +153,8 @@ export function PageHeader({
                                         {subtitle}
                                     </span>
                                 ) : null}
+
+                                {summary && <div className="mt-xs">{summary}</div>}
 
                                 {metaItems && <PageHeaderMeta items={metaItems} />}
                                 {error && (
