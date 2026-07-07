@@ -165,7 +165,9 @@ export function SupplyIncreaseVestingOverview({
                                                 ? formattedAvailableStaking
                                                 : BALANCE_MASK
                                         }
-                                        supportingLabel={availableStakingSymbol}
+                                        supportingLabel={
+                                            isBalanceVisible ? availableStakingSymbol : undefined
+                                        }
                                     />
                                 }
                             />

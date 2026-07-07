@@ -1,12 +1,7 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { dirname, join } from 'path';
 import type { StorybookConfig } from '@storybook/react-vite';
-
-function getAbsolutePath(value: string): any {
-    return dirname(require.resolve(join(value, 'package.json')));
-}
 
 const config: StorybookConfig = {
     stories: [
@@ -14,18 +9,21 @@ const config: StorybookConfig = {
         '../src/storybook/stories/**/*.stories.@(js|jsx|ts|tsx)',
     ],
     addons: [
-        getAbsolutePath('@storybook/addon-links'),
-        getAbsolutePath('@storybook/addon-essentials'),
-        getAbsolutePath('@storybook/addon-interactions'),
+        '@storybook/addon-docs',
+        '@storybook/addon-a11y',
+        '@storybook/addon-themes',
         '@chromatic-com/storybook',
     ],
 
     framework: {
-        name: getAbsolutePath('@storybook/react-vite'),
+        name: '@storybook/react-vite',
         options: {},
     },
     typescript: {
         reactDocgen: 'react-docgen-typescript',
+        reactDocgenTypescriptOptions: {
+            exclude: ['**/.storybook/**'],
+        },
     },
     docs: {},
 };

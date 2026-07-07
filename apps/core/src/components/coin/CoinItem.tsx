@@ -26,6 +26,7 @@ interface CoinItemProps {
     usd?: number;
     pricePerCoin?: number;
     format?: CoinFormat;
+    hideMask?: boolean;
 }
 
 export function CoinItem({
@@ -37,9 +38,10 @@ export function CoinItem({
     usd,
     pricePerCoin,
     format,
+    hideMask,
 }: CoinItemProps): React.JSX.Element {
     const [formatted, symbol, { data: coinMeta }] = useFormatCoin({ balance, coinType, format });
-    const isBalanceVisible = useBalanceVisible();
+    const isBalanceVisible = useBalanceVisible() || hideMask;
     const isIota = coinType === IOTA_TYPE_ARG;
 
     const coinName = isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol;
@@ -68,7 +70,7 @@ export function CoinItem({
             <CardAction
                 type={CardActionType.SupportingText}
                 title={`${isBalanceVisible ? formatted : BALANCE_MASK} ${symbol}`}
-                subtitle={usdBalance}
+                subtitle={isBalanceVisible ? usdBalance : undefined}
             />
         </Card>
     );

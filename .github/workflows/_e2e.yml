@@ -106,7 +106,7 @@ on:
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
-      EVM_BRIDGE_CONFIG:
+      EVM_BRIDGE_CONFIG_TESTS:
         required: true
 
 concurrency:
@@ -117,7 +117,7 @@ env:
   RUST_LOG: warn
   RUST_BACKTRACE: 1
   VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
 
 jobs:
   localnet:
@@ -472,15 +472,15 @@ jobs:
         id: build-names-sdk-display
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter @iota/iota-names-sdk run build
+        run: pnpm names-sdk build
 
       - name: Build and test names-display service
         id: run-names-display
         if: (!cancelled() && !failure()) && steps.build-names-sdk-display.outcome == 'success' && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: |
-          pnpm --filter names-display run build
-          pnpm --filter names-display run test
+          pnpm names-display build
+          pnpm names-display test
 
       # ─── Names SDK ─────────────────────────────────────────────────────────
 

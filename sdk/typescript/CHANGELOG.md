@@ -1,5 +1,24 @@
 # @iota/iota-sdk
 
+## 1.15.0
+
+### Minor Changes
+
+-   2520592: Deprecate `WRAPPED_OR_DELETED`
+-   c41898c: Add `getRpcUrl` and deprecate `getFullnodeUrl`. The network `url` is the JSON-RPC
+    endpoint, so the new name better reflects its meaning. `getFullnodeUrl` still works as an alias.
+-   e92cc33: Add an optional `faucetWebsite` field to `NetworkConfiguration` and a
+    `getFaucetWebsiteUrl` helper for networks whose faucet is a website instead of an API endpoint.
+    `getFaucetHost` now throws a clearer error when the network exposes a `faucetWebsite` rather
+    than a programmatic `faucet`.
+
+### Patch Changes
+
+-   55acfff: Deprecate ObjectKind.WrappedOrDeleted
+-   55acfff: Remove deprecated signAddress and SIGN signer filters from GraphQL schema, replaced by
+    sentAddress and SENT
+-   0615535: Update comment in ObjectOwner type.
+
 ## 1.14.0
 
 ### Minor Changes

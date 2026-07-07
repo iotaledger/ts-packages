@@ -318,17 +318,7 @@ export enum AddressTransactionBlockRelationship {
   /** Transactions that sent objects to this address. */
   Recv = 'RECV',
   /** Transactions this address has sent. */
-  Sent = 'SENT',
-  /**
-   * Transactions this address has sent. NOTE: this input filter has been
-   * deprecated in favor of `SENT` which behaves identically but is named
-   * more clearly. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `SENT` instead. This will be removed with the 1.24.0 release.
-   */
-  Sign = 'SIGN'
+  Sent = 'SENT'
 }
 
 /**
@@ -765,8 +755,6 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1012,8 +1000,6 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1849,8 +1835,6 @@ export type IObject = {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   storageRebate?: Maybe<Scalars['BigInt']['output']>;
@@ -2541,8 +2525,6 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -2852,8 +2834,6 @@ export type MovePackage = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3363,8 +3343,6 @@ export type NameRegistration = IMoveObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3598,8 +3576,6 @@ export type Object = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3852,12 +3828,7 @@ export enum ObjectKind {
    * The object is loaded from serialized data, such as the contents of a
    * transaction that hasn't been indexed yet.
    */
-  NotIndexed = 'NOT_INDEXED',
-  /**
-   * The object is deleted or wrapped and only partial information can be
-   * loaded from the indexer.
-   */
-  WrappedOrDeleted = 'WRAPPED_OR_DELETED'
+  NotIndexed = 'NOT_INDEXED'
 }
 
 /** The object's owner type: Immutable, Shared, Parent, or Address. */
@@ -5025,8 +4996,6 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -5488,16 +5457,6 @@ export type TransactionBlockFilter = {
   recvAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Limit to transactions that were sent by the given address. */
   sentAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
-  /**
-   * Limit to transactions that were sent by the given address. NOTE: this
-   * input filter has been deprecated in favor of `sentAddress` which has
-   * clearer semantics. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `sentAddress` instead. This will be removed with the 1.24.0 release.
-   */
-  signAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Select transactions by their digest. */
   transactionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Limit to transactions that wrapped or deleted the given object. */
