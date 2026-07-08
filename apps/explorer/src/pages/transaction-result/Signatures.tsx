@@ -32,7 +32,7 @@ function SignaturePanel({ title, signature: data }: SignaturePanelProps): JSX.El
     return (
         <div className="flex w-full flex-col gap-md">
             <ButtonSegment selected label={title} type={ButtonSegmentType.Underlined} isNested />
-            <KeyValueInfo keyText="Scheme" value={signatureScheme} fullwidth />
+            <KeyValueInfo keyText="Scheme" value={signatureScheme} />
             <KeyValueInfo
                 keyText="Address"
                 value={
@@ -41,7 +41,6 @@ function SignaturePanel({ title, signature: data }: SignaturePanelProps): JSX.El
                         copyText={'address' in data ? data.address : data.publicKey.toIotaAddress()}
                     />
                 }
-                fullwidth
             />
             {'publicKey' in data ? (
                 <KeyValueInfo
@@ -50,7 +49,6 @@ function SignaturePanel({ title, signature: data }: SignaturePanelProps): JSX.El
                     copyText={data.publicKey.toIotaPublicKey()}
                     onCopySuccess={onCopySuccess}
                     isTruncated
-                    fullwidth
                 />
             ) : null}
             <KeyValueInfo
@@ -59,7 +57,6 @@ function SignaturePanel({ title, signature: data }: SignaturePanelProps): JSX.El
                 onCopySuccess={onCopySuccess}
                 value={toBase64(signature)}
                 isTruncated
-                fullwidth
             />
         </div>
     );

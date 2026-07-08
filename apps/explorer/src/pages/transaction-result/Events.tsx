@@ -31,7 +31,6 @@ function Event({ event, divider }: { event: IotaEvent; divider: boolean }): JSX.
                     value={objectLinkLabel}
                     copyText={[address, module, name].join('::')}
                     onCopySuccess={onCopySuccess}
-                    fullwidth
                     isTruncated
                 />
 
@@ -45,12 +44,11 @@ function Event({ event, divider }: { event: IotaEvent; divider: boolean }): JSX.
                             copyText={event.packageId}
                         />
                     }
-                    fullwidth
                     isTruncated
                 />
                 <Accordion hideBorder>
                     <AccordionHeader hideArrow isExpanded={open} onToggle={() => setOpen(!open)}>
-                        <div className="flex w-full flex-row justify-between gap-xxxs pl-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
+                        <div className="flex w-full flex-row items-center gap-xxxs pl-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
                             <span className="text-body-md">
                                 {open ? 'Hide' : 'View'} Event Data
                             </span>

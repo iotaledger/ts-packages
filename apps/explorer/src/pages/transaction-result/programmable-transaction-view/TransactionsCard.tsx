@@ -33,7 +33,6 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
 
     return (
         <ProgrammableTxnBlockCard
-            initialClose
             items={expandableItems}
             itemsLabel={transactions.length > 1 ? 'Transactions' : 'Transaction'}
             count={transactions.length}

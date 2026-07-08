@@ -1,4 +1,4 @@
-// Copyright (c) 2024 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -31,6 +31,7 @@ interface ActionSummaryDetails {
     address?: string;
     isValidator?: boolean;
     recipientCount?: number;
+    nftCount?: number;
 }
 
 function getAddressOwner(owner?: ObjectOwner | null): string | undefined {
@@ -81,30 +82,86 @@ export function TransactionActionSummary({
                     isValidator: true,
                 };
             }
-            case TransactionAction.Migration:
-                return { verb: 'Migrated assets from the Stardust network' };
-            case TransactionAction.TimelockedCollect:
-                return { verb: 'Unlocked vested tokens' };
+            case TransactionAction.Migration: {
+                const received = (transaction.balanceChanges ?? []).filter((change) => {
+                    const owner = getAddressOwner(change.owner);
+                    return BigInt(change.amount) > 0n && owner && owner === sender;
+                });
+                const amount = received.reduce((sum, change) => sum + BigInt(change.amount), 0n);
+                const nftCount = (transaction.objectChanges ?? []).filter(
+                    (change) => 'objectType' in change && change.objectType.includes('::nft::Nft'),
+                ).length;
+                if (amount === 0n && !nftCount) {
+                    return { verb: 'Migrated assets from the Stardust network' };
+                }
+                return {
+                    verb: 'Migrated',
+                    amount: amount > 0n ? amount : undefined,
+                    outgoing: false,
+                    nftCount,
+                    connector: 'from the Stardust network',
+                };
+            }
+            case TransactionAction.TimelockedCollect: {
+                const received = (transaction.balanceChanges ?? []).filter((change) => {
+                    const owner = getAddressOwner(change.owner);
+                    return BigInt(change.amount) > 0n && owner && owner === sender;
+                });
+                const amount = received.reduce((sum, change) => sum + BigInt(change.amount), 0n);
+                if (amount === 0n) {
+                    return { verb: 'Unlocked vested tokens' };
+                }
+                return {
+                    verb: 'Unlocked',
+                    amount,
+                    outgoing: false,
+                    connector: 'of vested tokens',
+                };
+            }
             case TransactionAction.Send: {
                 const received = (transaction.balanceChanges ?? []).filter((change) => {
                     const owner = getAddressOwner(change.owner);
                     return BigInt(change.amount) > 0n && owner && owner !== sender;
                 });
-                if (!received.length) return null;
+                const sentObjectRecipients = (transaction.objectChanges ?? [])
+                    .map((change) => {
+                        if (
+                            !('objectType' in change) ||
+                            change.objectType.startsWith('0x2::coin::Coin')
+                        ) {
+                            return undefined;
+                        }
+                        if (change.type === 'transferred') {
+                            return getAddressOwner(change.recipient);
+                        }
+                        if (change.type === 'mutated' || change.type === 'created') {
+                            const owner = getAddressOwner(change.owner);
+                            return owner && owner !== sender ? owner : undefined;
+                        }
+                        return undefined;
+                    })
+                    .filter((recipient): recipient is string => !!recipient);
+                if (!received.length && !sentObjectRecipients.length) return null;
 
                 const coinTypes = new Set(received.map((change) => change.coinType));
-                const recipients = new Set(received.map((change) => getAddressOwner(change.owner)));
+                const recipients = new Set(
+                    [
+                        ...received.map((change) => getAddressOwner(change.owner)),
+                        ...sentObjectRecipients,
+                    ].filter(Boolean),
+                );
                 return {
                     verb: 'Sent',
                     amount:
-                        coinTypes.size === 1
+                        received.length > 0 && coinTypes.size === 1
                             ? received.reduce((sum, change) => sum + BigInt(change.amount), 0n)
                             : undefined,
                     outgoing: true,
-                    coinType: [...coinTypes][0],
+                    coinType: received.length > 0 ? [...coinTypes][0] : undefined,
                     connector: 'to',
                     address: recipients.size === 1 ? [...recipients][0] : undefined,
                     recipientCount: recipients.size,
+                    nftCount: sentObjectRecipients.length,
                 };
             }
             default:
@@ -149,7 +206,17 @@ export function TransactionActionSummary({
                     ({formatBalanceToUSD(amountInUSD)})
                 </span>
             ) : null}
-            {details.verb === 'Sent' && details.amount === undefined && <span>assets</span>}
+            {!!details.nftCount && (
+                <span>
+                    {details.amount !== undefined && 'and '}
+                    <span className="font-medium">
+                        {details.nftCount} NFT{details.nftCount > 1 ? 's' : ''}
+                    </span>
+                </span>
+            )}
+            {details.verb === 'Sent' && details.amount === undefined && !details.nftCount && (
+                <span>assets</span>
+            )}
             {details.connector && <span>{details.connector}</span>}
             {details.address ? (
                 details.isValidator ? (
