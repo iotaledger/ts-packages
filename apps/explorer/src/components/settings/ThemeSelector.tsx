@@ -29,7 +29,6 @@ export function ThemeSelectorMenu(): JSX.Element {
     );
 }
 
-
 export function ThemeSwitcherButton(): JSX.Element {
     const { theme, setThemePreference } = useTheme();
     const isDark = theme === Theme.Dark;
@@ -44,7 +43,7 @@ export function ThemeSwitcherButton(): JSX.Element {
             type={ButtonType.Outlined}
             size={ButtonSize.Small}
             aria-label="Toggle theme"
-            icon={<Icon className={cx('size-5 m-px')} />}
+            icon={<Icon className={cx('m-px size-5')} />}
             onClick={onClick}
         />
     );

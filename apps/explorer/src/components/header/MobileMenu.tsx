@@ -32,7 +32,7 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps): JSX.Element
                                     className={cx(
                                         'rounded-lg px-md py-sm text-title-md text-iota-neutral-10 hover:bg-shader-neutral-light-8 dark:text-iota-neutral-92 dark:hover:bg-shader-neutral-dark-8',
                                         isActive &&
-                                        'bg-shader-neutral-light-8 dark:bg-shader-neutral-dark-8',
+                                            'bg-shader-neutral-light-8 dark:bg-shader-neutral-dark-8',
                                     )}
                                 >
                                     {label}
