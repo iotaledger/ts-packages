@@ -13,6 +13,11 @@ import {
 } from '@iota/core';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
+// Scale before the BigInt division so the percentage keeps two decimal places,
+// then divide the resulting Number by the divisor to get the final value.
+const STAKING_RATIO_SCALE = 10_000n;
+const STAKING_RATIO_DIVISOR = 100;
+
 export function StakingHeroCard(): JSX.Element {
     const { data } = useIotaClientQuery('getLatestIotaSystemState');
     const { data: totalSupplyData } = useIotaClientQuery('getTotalSupply', {
@@ -21,18 +26,15 @@ export function StakingHeroCard(): JSX.Element {
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: participationMetrics } = useIotaClientQuery('getParticipationMetrics');
 
-    const totalStaked = useMemo(() => {
-        if (!data) return 0;
-        return data.committeeMembers.reduce(
-            (acc, cur) => acc + Number(cur.stakingPoolIotaBalance),
-            0,
-        );
-    }, [data]);
+    const totalStaked = data
+        ? data.committeeMembers.reduce((acc, cur) => acc + BigInt(cur.stakingPoolIotaBalance), 0n)
+        : 0n;
 
-    const stakingRatioPct = useMemo(() => {
-        if (!totalSupplyData?.value || !totalStaked) return null;
-        return Number(((totalStaked / Number(totalSupplyData.value)) * 100).toFixed(2));
-    }, [totalStaked, totalSupplyData]);
+    const stakingRatioPct =
+        totalSupplyData?.value && totalStaked
+            ? Number((totalStaked * STAKING_RATIO_SCALE) / BigInt(totalSupplyData.value)) /
+              STAKING_RATIO_DIVISOR
+            : null;
 
     const averageAPY = useMemo(() => {
         if (!validatorsApy || Object.keys(validatorsApy).length === 0) return null;

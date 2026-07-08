@@ -48,6 +48,11 @@ export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridPro
     const { network } = useIotaClientContext();
     const isFiatEnabled = useFeatureEnabledByNetwork(Feature.FiatConversion, network as Network);
     const iotaPrice = useBalanceInUSD(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
+    const marketCapUSD = useBalanceInUSD(
+        IOTA_TYPE_ARG,
+        circulatingSupply?.value ?? 0,
+        network as Network,
+    );
 
     const totalAddresses = networkMetrics?.totalAddresses
         ? formatBalance(networkMetrics.totalAddresses, 0, CoinFormat.Rounded)
@@ -75,11 +80,8 @@ export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridPro
 
     const priceDisplay = isFiatEnabled && iotaPrice !== null ? formatBalanceToUSD(iotaPrice) : null;
 
-    const marketCapDisplay = (() => {
-        if (!isFiatEnabled || iotaPrice === null || !circulatingSupply?.value) return null;
-        const supplyInIota = Number(circulatingSupply.value) / Math.pow(10, IOTA_DECIMALS);
-        return formatBalanceToUSD(supplyInIota * iotaPrice);
-    })();
+    const marketCapDisplay =
+        isFiatEnabled && marketCapUSD ? formatBalanceToUSD(marketCapUSD) : null;
 
     const stats: StatItem[] = [
         {
