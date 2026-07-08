@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import cx from 'clsx';
-import { SettingsMenu } from '../settings';
+import { NetworkMenu, ThemeSwitcherButton } from '../settings';
 import { SearchButton, SearchModal } from '../search';
 import { LinkWithQuery } from '~/components/ui';
 import { ThemedIotaLogo } from '~/components';
@@ -28,7 +28,7 @@ function HeaderNav(): JSX.Element {
                         to={to}
                         className={cx(
                             "relative pb-0.5 text-label-lg text-iota-neutral-10 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-center after:scale-x-0 after:bg-iota-primary-30 after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100 dark:text-iota-neutral-92 dark:after:bg-iota-primary-70",
-                            isActive && 'font-semibold after:scale-x-100',
+                            isActive && 'after:scale-x-100',
                         )}
                     >
                         {label}
@@ -60,14 +60,17 @@ export function Header(): JSX.Element {
                 <div className="flex flex-row items-center gap-xs">
                     <SearchButton onClick={() => setSearchOpen(true)} />
                     <div className="hidden items-stretch md:flex">
-                        <SettingsMenu />
+                        <ThemeSwitcherButton />
+                    </div>
+                    <div className="hidden items-stretch md:flex">
+                        <NetworkMenu />
                     </div>
                     <div className="flex items-stretch md:hidden">
                         <Button
                             type={ButtonType.Outlined}
                             size={ButtonSize.Small}
                             aria-label="Open menu"
-                            icon={<MenuIcon className="h-5 w-5" />}
+                            icon={<MenuIcon className="size-5" />}
                             onClick={() => setMenuOpen(true)}
                         />
                     </div>

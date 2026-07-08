@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './ExpandableSection';
+export * from './NetworkMenu';
 export * from './NetworkSelector';
 export * from './NetworkVersion';
-export * from './SettingsMenu';
 export * from './ThemeSelector';

@@ -2,7 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { forwardRef, useCallback, useEffect, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useState, type KeyboardEvent } from 'react';
+import cx from 'clsx';
 
 import { useNavigateWithQuery } from '~/components/ui';
 import { Badge, BadgeSize, BadgeType, LoadingIndicator } from '@iota/apps-ui-kit';
@@ -23,6 +24,7 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
     ref,
 ) {
     const [query, setQuery] = useState('');
+    const [activeIndex, setActiveIndex] = useState(0);
     const trimmedQuery = query.trim();
     const debouncedQuery = useDebouncedValue(trimmedQuery);
     const { isPending, data: results } = useSearch(debouncedQuery);
@@ -47,6 +49,28 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
     );
 
     useEffect(() => {
+        setActiveIndex(0);
+    }, [results]);
+
+    const handleInputKeyDown = useCallback(
+        (event: KeyboardEvent<HTMLInputElement>) => {
+            if (!results?.length) return;
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setActiveIndex((index) => (index + 1) % results.length);
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setActiveIndex((index) => (index - 1 + results.length) % results.length);
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                const result = results[Math.min(activeIndex, results.length - 1)];
+                if (result) handleSelectResult(result);
+            }
+        },
+        [results, activeIndex, handleSelectResult],
+    );
+
+    useEffect(() => {
         if (debouncedQuery) {
             ampli.completedSearch({ searchQuery: debouncedQuery });
         }
@@ -61,6 +85,7 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                     type="text"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
+                    onKeyDown={handleInputKeyDown}
                     placeholder="Search an IOTA @name, transaction, object..."
                     className="w-full bg-transparent text-title-lg text-iota-neutral-10 placeholder:text-title-md placeholder:text-iota-neutral-40 focus:outline-none dark:text-iota-neutral-92"
                     autoFocus={autoFocus}
@@ -83,12 +108,18 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                 </div>
             ) : hasResults ? (
                 <div className="flex flex-col gap-xs">
-                    {results.map((result) => (
+                    {results.map((result, index) => (
                         <button
                             key={`${result.type}-${result.id}`}
                             type="button"
                             onClick={() => handleSelectResult(result)}
-                            className="state-layer relative flex items-center justify-between gap-md rounded-2xl bg-shader-neutral-light-8 px-lg py-md text-start dark:bg-shader-neutral-dark-8"
+                            onMouseEnter={() => setActiveIndex(index)}
+                            className={cx(
+                                'state-layer relative flex items-center justify-between gap-md rounded-2xl px-lg py-md text-start',
+                                index === activeIndex
+                                    ? 'bg-shader-neutral-light-16 dark:bg-shader-neutral-dark-16'
+                                    : 'bg-shader-neutral-light-8 dark:bg-shader-neutral-dark-8',
+                            )}
                         >
                             <span className="truncate text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                                 {result.label}

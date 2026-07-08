@@ -4,14 +4,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, ButtonSize, ButtonType, Divider, Dropdown } from '@iota/apps-ui-kit';
-import { MoreHoriz } from '@iota/apps-ui-icons';
+import { Globe } from '@iota/apps-ui-icons';
 import { Transition } from '@headlessui/react';
-import { ExpandableSection } from './ExpandableSection';
 import { NetworkSelector } from './NetworkSelector';
 import { NetworkVersion } from './NetworkVersion';
-import { ThemeSelector } from './ThemeSelector';
 
-export function SettingsMenu(): JSX.Element {
+export function NetworkMenu(): JSX.Element {
     const elementRef = useRef<HTMLDivElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -37,15 +35,13 @@ export function SettingsMenu(): JSX.Element {
 
     return (
         <div ref={elementRef} className="relative self-center">
-            <div className="[&_button]:p-2.5">
-                <Button
-                    type={ButtonType.Outlined}
-                    size={ButtonSize.Small}
-                    aria-label="Settings"
-                    icon={<MoreHoriz className="h-5 w-5" />}
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                />
-            </div>
+            <Button
+                type={ButtonType.Outlined}
+                size={ButtonSize.Small}
+                aria-label="Network"
+                icon={<Globe className="size-5 m-0.5" />}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            />
             <Transition
                 show={isDropdownOpen}
                 enter="transition ease-in duration-100"
@@ -58,12 +54,7 @@ export function SettingsMenu(): JSX.Element {
                 <div className="absolute right-0 z-50 mt-xs w-72">
                     <Dropdown>
                         <div className="flex flex-col">
-                            <ExpandableSection title="Network">
-                                <NetworkSelector />
-                            </ExpandableSection>
-                            <ExpandableSection title="Theme">
-                                <ThemeSelector />
-                            </ExpandableSection>
+                            <NetworkSelector />
                             <Divider />
                             <NetworkVersion />
                         </div>
