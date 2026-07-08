@@ -27,12 +27,24 @@ interface StatItem {
     supportingLabel?: string;
 }
 
+interface NetworkDataGridProps {
+    showAnalyticsLink?: boolean;
+}
+
 const FALLBACK = '--';
 
-export function NetworkDataGrid(): JSX.Element {
+function formatSupply(value: string | undefined): string {
+    if (!value) return FALLBACK;
+    return formatBalance(value, IOTA_DECIMALS, CoinFormat.Rounded);
+}
+
+export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridProps): JSX.Element {
     const { data: networkMetrics } = useGetNetworkMetrics();
     const { data: totalTransactions } = useIotaClientQuery('getTotalTransactionBlocks');
     const { data: circulatingSupply } = useIotaClientQuery('getCirculatingSupply');
+    const { data: totalSupply } = useIotaClientQuery('getTotalSupply', {
+        coinType: IOTA_TYPE_ARG,
+    });
     const { network } = useIotaClientContext();
     const isFiatEnabled = useFeatureEnabledByNetwork(Feature.FiatConversion, network as Network);
     const iotaPrice = useBalanceInUSD(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
@@ -53,6 +65,14 @@ export function NetworkDataGrid(): JSX.Element {
         ? formatBalance(totalTransactions, 0, CoinFormat.Rounded)
         : FALLBACK;
 
+    const tpsNow = networkMetrics?.currentTps
+        ? formatBalance(Math.floor(networkMetrics.currentTps), 0, CoinFormat.Rounded)
+        : FALLBACK;
+
+    const tpsPeak = networkMetrics?.tps30Days
+        ? formatBalance(Math.floor(networkMetrics.tps30Days), 0, CoinFormat.Rounded)
+        : FALLBACK;
+
     const priceDisplay = isFiatEnabled && iotaPrice !== null ? formatBalanceToUSD(iotaPrice) : null;
 
     const marketCapDisplay = (() => {
@@ -62,6 +82,18 @@ export function NetworkDataGrid(): JSX.Element {
     })();
 
     const stats: StatItem[] = [
+        {
+            label: 'Circulating Supply',
+            value: formatSupply(circulatingSupply?.value),
+            supportingLabel: circulatingSupply?.value ? 'IOTA' : undefined,
+        },
+        {
+            label: 'Total Supply',
+            value: formatSupply(totalSupply?.value),
+            supportingLabel: totalSupply?.value ? 'IOTA' : undefined,
+        },
+        { label: 'TPS', value: tpsNow },
+        { label: 'Peak TPS (30d)', value: tpsPeak },
         { label: 'Total Transactions', value: totalTx },
         { label: 'Total Addresses', value: totalAddresses },
         { label: 'Total Packages', value: totalPackages },
@@ -80,13 +112,15 @@ export function NetworkDataGrid(): JSX.Element {
                 <span className="text-title-md text-iota-neutral-10 dark:text-iota-neutral-92">
                     Network Data
                 </span>
-                <Link
-                    to="/recent"
-                    className="flex items-center gap-xxs text-label-md text-iota-primary-30 hover:underline dark:text-iota-primary-80"
-                >
-                    View full analytics
-                    <ArrowTopRight className="h-3.5 w-3.5" />
-                </Link>
+                {showAnalyticsLink ? (
+                    <Link
+                        to="/analytics"
+                        className="flex items-center gap-xxs text-label-md text-iota-primary-30 hover:underline dark:text-iota-primary-80"
+                    >
+                        View full analytics
+                        <ArrowTopRight className="h-3.5 w-3.5" />
+                    </Link>
+                ) : null}
             </div>
             <div className="grid grid-cols-2 gap-md--rs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 {stats.map(({ label, value, supportingLabel }) => (

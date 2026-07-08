@@ -8,13 +8,12 @@ import {
     NetworkDataGrid,
     EpochHeroCard,
     StakingHeroCard,
-    SupplySnapshot,
     PageLayout,
     TopValidatorsCard,
 } from '~/components';
 
 const TRANSACTIONS_LIMIT = 15;
-const TOP_VALIDATORS_LIMIT = 5;
+const TOP_VALIDATORS_LIMIT = 10;
 
 export function Home(): JSX.Element {
     return (
@@ -27,8 +26,8 @@ export function Home(): JSX.Element {
                         <StakingHeroCard />
                     </div>
 
-                    {/* Supply Snapshot */}
-                    <SupplySnapshot />
+                    {/* Network Data */}
+                    <NetworkDataGrid />
 
                     {/* Activity */}
                     <ErrorBoundary>
@@ -43,9 +42,6 @@ export function Home(): JSX.Element {
                     <div data-testid="validators-table">
                         <TopValidatorsCard limit={TOP_VALIDATORS_LIMIT} showIcon />
                     </div>
-
-                    {/* Network Data */}
-                    <NetworkDataGrid />
                 </div>
             }
         />

@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React, { useMemo } from 'react';
-import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
-import { useQuery } from '@tanstack/react-query';
+import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
+    formatAmount,
     formatBalance,
     CoinFormat,
     IOTA_DECIMALS,
     IOTA_TYPE_ARG,
-    NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
 import { formatDate } from '@iota/core';
-import type { EpochMetrics } from '@iota/iota-sdk/client';
+import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
-import { Sparkline } from '../Sparkline';
-import { ParentSize } from '@visx/responsive';
-
-const X_AXIS_INTERVAL = 10;
-const EPOCHS_LIMIT = X_AXIS_INTERVAL * 10;
-const Y_AXIS_ZOOM_FACTOR = 0.2;
+import { StatisticsPanel } from '../StatisticsPanel';
+import {
+    useEpochMetricsHistory,
+    sampleEpochs,
+    nanosToIota,
+    EPOCH_METRICS_SAMPLE_INTERVAL,
+} from '~/hooks';
 
 type EpochSupplyPoint = {
     epoch: string;
@@ -40,80 +40,54 @@ function TooltipContent({ data }: { data: EpochSupplyPoint }): JSX.Element {
 }
 
 export function SupplyHistoryChart(): React.JSX.Element {
-    const client = useIotaClient();
-
-    const { data: epochMetrics } = useQuery({
-        queryKey: ['epoch-metrics', 'supply-history', EPOCHS_LIMIT],
-        queryFn: () => client.getEpochMetrics({ limit: EPOCHS_LIMIT, descendingOrder: true }),
-    });
-
+    const { data: completedEpochs, isPending } = useEpochMetricsHistory();
     const { data: totalSupply } = useIotaClientQuery('getTotalSupply', { coinType: IOTA_TYPE_ARG });
 
-    const { chartData, yDomain } = useMemo(() => {
-        const empty = {
-            chartData: [] as EpochSupplyPoint[],
-            yDomain: undefined as [number, number] | undefined,
-        };
-        if (!epochMetrics?.data || !totalSupply?.value) return empty;
-
-        type CompletedEpoch = EpochMetrics & {
-            endOfEpochInfo: NonNullable<EpochMetrics['endOfEpochInfo']>;
-        };
-
-        // Only completed epochs carry endOfEpochInfo; flip to ascending order.
-        const completed = epochMetrics.data
-            .filter((e): e is CompletedEpoch => e.endOfEpochInfo != null)
-            .reverse();
-
-        if (completed.length === 0) return empty;
+    const chartData = useMemo(() => {
+        if (!completedEpochs?.length || !totalSupply?.value) return [] as EpochSupplyPoint[];
 
         // current total supply ≈ supply at the end of the most recent completed epoch.
         let supply = BigInt(totalSupply.value);
-        const allPoints: EpochSupplyPoint[] = new Array(completed.length);
+        const allPoints: EpochSupplyPoint[] = new Array(completedEpochs.length);
 
-        for (let i = completed.length - 1; i >= 0; i--) {
+        for (let i = completedEpochs.length - 1; i >= 0; i--) {
             allPoints[i] = {
-                epoch: completed[i].epoch,
-                epochStartTimestamp: completed[i].epochStartTimestamp,
+                epoch: completedEpochs[i].epoch,
+                epochStartTimestamp: completedEpochs[i].epochStartTimestamp,
                 supplyNanos: supply,
             };
             if (i > 0) {
                 supply =
                     supply -
-                    BigInt(completed[i].endOfEpochInfo.mintedTokensAmount) +
-                    BigInt(completed[i].endOfEpochInfo.burntTokensAmount);
+                    BigInt(completedEpochs[i].endOfEpochInfo.mintedTokensAmount) +
+                    BigInt(completedEpochs[i].endOfEpochInfo.burntTokensAmount);
             }
         }
 
-        const sampled = allPoints.filter(
-            (p, i) => Number(p.epoch) % X_AXIS_INTERVAL === 0 || i === allPoints.length - 1,
-        );
+        return sampleEpochs(allPoints, EPOCH_METRICS_SAMPLE_INTERVAL);
+    }, [completedEpochs, totalSupply]);
 
-        const yValues = sampled.map((p) => Number(p.supplyNanos / NANOS_PER_IOTA));
-        const yMin = Math.min(...yValues);
-        const yMax = Math.max(...yValues);
-        const yRange = yMax - yMin || 1;
-        const yPad = yRange * Y_AXIS_ZOOM_FACTOR;
-
-        return {
-            chartData: sampled,
-            yDomain: [yMin - yPad, yMax + yPad] as [number, number],
-        };
-    }, [epochMetrics, totalSupply]);
+    const totalSupplyFormatted = totalSupply?.value
+        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Rounded)
+        : '--';
 
     return (
-        <ParentSize className="absolute py-sm">
-            {({ height, width }) => (
-                <Sparkline
-                    data={chartData}
-                    width={width}
-                    height={height}
-                    getX={({ epoch }) => Number(epoch)}
-                    getY={({ supplyNanos }) => Number(supplyNanos / NANOS_PER_IOTA)}
-                    yDomain={yDomain}
-                    tooltipContent={TooltipContent}
-                />
-            )}
-        </ParentSize>
+        <StatisticsPanel
+            title="Historical Supply"
+            data={chartData}
+            isPending={isPending}
+            stats={[
+                {
+                    size: LabelTextSize.Large,
+                    label: 'Total Supply',
+                    text: totalSupplyFormatted,
+                    supportingLabel: totalSupply?.value ? 'IOTA' : undefined,
+                },
+            ]}
+            getX={({ epoch }) => Number(epoch)}
+            getY={({ supplyNanos }) => nanosToIota(supplyNanos.toString())}
+            formatY={formatAmount}
+            tooltipContent={TooltipContent}
+        />
     );
 }

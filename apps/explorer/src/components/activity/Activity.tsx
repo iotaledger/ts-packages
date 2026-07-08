@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useFeatureIsOn } from '@iota/apps-backend-client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Feature, toast } from '@iota/core';
 import { CheckpointsTable } from '../checkpoints/CheckpointsTable';
 import { EpochsActivityTable } from './EpochsActivityTable';
@@ -19,12 +19,12 @@ import {
     ToggleSize,
 } from '@iota/apps-ui-kit';
 
-enum ActivityCategory {
+export enum ActivityCategory {
     Transactions = 'transactions',
     Epochs = 'epochs',
     Checkpoints = 'checkpoints',
 }
-const ACTIVITY_CATEGORIES = [
+export const ACTIVITY_CATEGORIES = [
     {
         label: 'Transactions',
         value: ActivityCategory.Transactions,
@@ -44,16 +44,23 @@ type ActivityProps = {
     initialLimit: number;
     disablePagination?: boolean;
     defaultShowSystemTransactions?: boolean;
+    onCategoryChange?: (category: ActivityCategory) => void;
 };
 
 const AUTO_REFRESH_ID = 'auto-refresh';
 const REFETCH_INTERVAL_SECONDS = 10;
 const REFETCH_INTERVAL = REFETCH_INTERVAL_SECONDS * 1000;
 
+function toActivityCategory(value: string | null | undefined): ActivityCategory | undefined {
+    return Object.values(ActivityCategory).find((category) => category === value);
+}
+
 export function Activity({
+    initialTab,
     initialLimit,
     disablePagination,
     defaultShowSystemTransactions = true,
+    onCategoryChange,
 }: ActivityProps): JSX.Element {
     const pollingTxnTableEnabled = useFeatureIsOn(Feature.PollingTxnTable as string);
 
@@ -62,8 +69,15 @@ export function Activity({
         defaultShowSystemTransactions,
     );
     const [selectedCategory, setSelectedCategory] = useState<ActivityCategory>(
-        ActivityCategory.Transactions,
+        toActivityCategory(initialTab) ?? ActivityCategory.Transactions,
     );
+
+    useEffect(() => {
+        const category = toActivityCategory(initialTab);
+        if (category) {
+            setSelectedCategory(category);
+        }
+    }, [initialTab]);
 
     const handlePauseChange = () => {
         if (paused) {
@@ -77,6 +91,11 @@ export function Activity({
         setPaused((paused) => !paused);
     };
 
+    const handleCategoryChange = (category: ActivityCategory) => {
+        setSelectedCategory(category);
+        onCategoryChange?.(category);
+    };
+
     const refetchInterval = paused || !pollingTxnTableEnabled ? undefined : REFETCH_INTERVAL;
     return (
         <Panel>
@@ -88,7 +107,7 @@ export function Activity({
                     {ACTIVITY_CATEGORIES.map(({ label, value }) => (
                         <ButtonSegment
                             key={value}
-                            onClick={() => setSelectedCategory(value)}
+                            onClick={() => handleCategoryChange(value)}
                             label={label}
                             selected={selectedCategory === value}
                             type={ButtonSegmentType.Underlined}
