@@ -30,7 +30,7 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
         >
             <div
                 data-testid="inputs-card-content"
-                className="flex flex-col gap-2 px-md pb-lg pt-xs"
+                className="flex flex-col gap-2 px-md pb-lg pt-xs md:max-w-4xl"
             >
                 {Object.entries(input).map(([key, value]) => {
                     let renderValue;
@@ -110,7 +110,6 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
 
     return (
         <ProgrammableTxnBlockCard
-            initialClose
             items={expandableItems}
             itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
             count={inputs.length}

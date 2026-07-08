@@ -32,6 +32,7 @@ export interface PageHeaderProps {
     type: PageHeaderType;
     typeBadge?: React.ReactNode;
     summary?: React.ReactNode;
+    navigation?: React.ReactNode;
     status?: 'success' | 'failure';
     after?: React.ReactNode;
     error?: string;
@@ -78,6 +79,7 @@ export function PageHeader({
     type,
     typeBadge,
     summary,
+    navigation,
     error,
     loading,
     after,
@@ -173,6 +175,7 @@ export function PageHeader({
                     {after && <div className="w-full md:w-1/4">{after}</div>}
                 </div>
             </div>
+            {!loading && navigation}
         </Panel>
     );
 }

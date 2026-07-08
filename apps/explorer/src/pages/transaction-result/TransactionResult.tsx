@@ -4,7 +4,6 @@
 
 import {
     useGetTransaction,
-    getUserFriendlyDryRunExecutionError,
     getTransactionAction,
     ACTION_LABELS,
     TransactionIcon,
@@ -14,7 +13,7 @@ import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { useParams } from 'react-router-dom';
 import { PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
-import { TransactionActionSummary } from './TransactionActionSummary';
+import { TransactionNav } from './TransactionNav';
 import { TransactionView } from './TransactionView';
 import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
@@ -31,7 +30,6 @@ function TransactionResultPageHeader({
     loading,
 }: TransactionResultPageHeaderProps): JSX.Element {
     const txnKindName = transaction?.transaction?.data.transaction?.kind;
-    const txnDigest = transaction?.digest ?? '';
     const txnStatus = transaction?.effects?.status.status;
 
     const isProgrammableTransaction = txnKindName === 'ProgrammableTransaction';
@@ -46,25 +44,36 @@ function TransactionResultPageHeader({
         <PageHeader
             loading={loading}
             type="Transaction"
-            title={txnDigest}
+            title=""
             subtitle={!isProgrammableTransaction ? txnKindName : undefined}
             typeBadge={
                 txnAction && (
-                    <div className="badge-bg-color-primary-soft badge-border-color-soft flex items-center gap-xxs rounded-full border px-sm py-xxs">
+                    <div
+                        className={
+                            txnStatus === 'failure'
+                                ? 'flex items-center gap-xxs rounded-full border border-error-surface bg-error-surface px-sm py-xxs'
+                                : 'badge-bg-color-primary-soft badge-border-color-soft flex items-center gap-xxs rounded-full border px-sm py-xxs'
+                        }
+                    >
                         <TransactionIcon
                             variant={txnAction}
                             size={TransactionIconSize.Small}
                             txnFailed={txnStatus === 'failure'}
                         />
-                        <span className="badge-text-color-primary-soft text-label-md">
+                        <span
+                            className={
+                                txnStatus === 'failure'
+                                    ? 'text-label-md text-on-error'
+                                    : 'badge-text-color-primary-soft text-label-md'
+                            }
+                        >
                             {ACTION_LABELS[txnAction]}
                         </span>
                     </div>
                 )
             }
-            summary={transaction && <TransactionActionSummary transaction={transaction} />}
+            navigation={transaction && <TransactionNav transaction={transaction} />}
             error={error}
-            status={txnStatus}
         />
     );
 }
@@ -77,11 +86,7 @@ export function TransactionResult(): JSX.Element {
         data,
         error: getTxnError,
     } = useGetTransaction(id as string);
-    const executionError = data?.effects?.status.error;
     const txnQueryErrorMessage = getTxnError?.message;
-    const txnErrorText = executionError
-        ? getUserFriendlyDryRunExecutionError(executionError)
-        : txnQueryErrorMessage;
 
     return (
         <PageLayout
@@ -90,7 +95,7 @@ export function TransactionResult(): JSX.Element {
                 <div className="flex flex-col gap-2xl">
                     <TransactionResultPageHeader
                         transaction={data}
-                        error={txnErrorText}
+                        error={txnQueryErrorMessage}
                         loading={isPending}
                     />
                     {getTxnErrorBool || !data ? (

@@ -29,22 +29,21 @@ export function TransactionData({ transaction }: TransactionDataProps): JSX.Elem
     const programmableTxn = transaction.transaction!.data.transaction as ProgrammableTransaction;
 
     return (
-        <div className="flex w-full flex-col gap-3 pl-1 pr-2 md:gap-6">
-            <section className="flex w-full flex-1 flex-col gap-3  md:gap-6">
-                {isProgrammableTransaction && (
-                    <div data-testid="inputs-card">
+        <div className="flex w-full flex-col gap-3 md:gap-6">
+            {isProgrammableTransaction && (
+                <section className="flex w-full flex-1 flex-col gap-3 md:gap-6">
+                    <div data-testid="gas-breakdown" id="gas-section" className="scroll-mt-2xl">
+                        <GasBreakdown summary={summary} />
+                    </div>
+                    <div data-testid="inputs-card" id="inputs-section" className="scroll-mt-2xl">
                         <InputsCard inputs={programmableTxn.inputs} />
                     </div>
-                )}
-            </section>
-
-            {isProgrammableTransaction && (
-                <section className="md:min-w-transactionColumn flex w-full flex-1 flex-col gap-3 md:gap-6">
-                    <div data-testid="transactions-card">
+                    <div
+                        data-testid="transactions-card"
+                        id="transactions-section"
+                        className="scroll-mt-2xl"
+                    >
                         <TransactionsCard transactions={programmableTxn.transactions} />
-                    </div>
-                    <div data-testid="gas-breakdown">
-                        <GasBreakdown summary={summary} />
                     </div>
                 </section>
             )}

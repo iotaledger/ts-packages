@@ -85,8 +85,8 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
                 </Card>
             </div>
             {recipient && (
-                <div className="flex flex-wrap items-center justify-between px-sm py-xs">
-                    <span className="w-full flex-shrink-0 text-label-lg text-iota-neutral-40 md:w-40 dark:text-iota-neutral-60">
+                <div className="flex flex-wrap items-center px-sm py-xs">
+                    <span className="w-full flex-shrink-0 text-label-lg text-iota-neutral-40 md:w-1/4 dark:text-iota-neutral-60">
                         Recipient
                     </span>
                     <AddressLink address={recipient} copyText={recipient} />
@@ -109,8 +109,8 @@ function BalanceChangeCard({ changes, owner }: { changes: BalanceChange[]; owner
             rawData={changes}
             footer={
                 owner ? (
-                    <div className="flex flex-wrap items-center justify-between px-md--rs py-sm--rs">
-                        <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <div className="flex flex-wrap items-center px-md--rs py-sm--rs">
+                        <span className="w-1/4 shrink-0 text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
                             Owner
                         </span>
                         <div className="flex flex-row items-center gap-xs">
