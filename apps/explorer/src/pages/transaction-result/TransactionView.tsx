@@ -13,14 +13,7 @@ import { PageSection } from './TransactionNav';
 import { TransactionOverview } from './TransactionOverview';
 import { TransactionStatusHero } from './TransactionStatusHero';
 import { useRecognizedPackages, useTransactionSummary } from '@iota/core';
-import {
-    ButtonSegment,
-    ButtonSegmentType,
-    Divider,
-    Panel,
-    SegmentedButton,
-    SegmentedButtonType,
-} from '@iota/apps-ui-kit';
+import { ButtonSegment, ButtonSegmentType, Divider, Panel } from '@iota/apps-ui-kit';
 
 interface TransactionViewProps {
     transaction: IotaTransactionBlockResponse;
@@ -58,10 +51,7 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
             <div className="flex h-full flex-col gap-lg">
                 <div id={PageSection.Summary} className="scroll-mt-2xl">
                     <Panel>
-                        <SegmentedButton
-                            type={SegmentedButtonType.Transparent}
-                            shape={ButtonSegmentType.Underlined}
-                        >
+                        <div className="grid grid-cols-2 gap-x-md gap-y-xs sm:flex sm:flex-row sm:flex-wrap">
                             <ButtonSegment
                                 onClick={() => setActiveTab(TabCategory.Summary)}
                                 label="Summary"
@@ -90,7 +80,7 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
                                 selected={activeTab === TabCategory.RawJson}
                                 type={ButtonSegmentType.Underlined}
                             />
-                        </SegmentedButton>
+                        </div>
                         {activeTab === TabCategory.Summary && (
                             <TransactionSummary transaction={transaction} />
                         )}

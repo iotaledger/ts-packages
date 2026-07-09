@@ -1,12 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    ButtonSegment,
-    ButtonSegmentType,
-    SegmentedButton,
-    SegmentedButtonType,
-} from '@iota/apps-ui-kit';
+import { ButtonSegment, ButtonSegmentType } from '@iota/apps-ui-kit';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { useState } from 'react';
 
@@ -50,10 +45,7 @@ export function TransactionNav({ transaction }: TransactionNavProps): JSX.Elemen
     }
 
     return (
-        <SegmentedButton
-            type={SegmentedButtonType.Transparent}
-            shape={ButtonSegmentType.Underlined}
-        >
+        <div className="grid grid-cols-2 gap-x-md gap-y-xs sm:flex sm:flex-row sm:flex-wrap">
             {pageSections.map((section) => (
                 <ButtonSegment
                     key={section}
@@ -63,6 +55,6 @@ export function TransactionNav({ transaction }: TransactionNavProps): JSX.Elemen
                     type={ButtonSegmentType.Underlined}
                 />
             ))}
-        </SegmentedButton>
+        </div>
     );
 }
