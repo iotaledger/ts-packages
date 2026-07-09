@@ -34,6 +34,8 @@ jobs:
       deploy_type: ${{ steps.resolve.outputs.deploy_type }}
       environment: ${{ steps.resolve.outputs.environment }}
       apps_backend_secret: ${{ steps.resolve.outputs.apps_backend_secret }}
+      mainnet_url: ${{ steps.resolve.outputs.mainnet_url }}
+      testnet_url: ${{ steps.resolve.outputs.testnet_url }}
     steps:
       - name: Resolve deploy type
         id: resolve
@@ -57,6 +59,14 @@ jobs:
               ;;
           esac
 
+          if [ "$DEPLOY_TYPE" = "production" ]; then
+            echo "mainnet_url=https://iotanames.com" >> "$GITHUB_OUTPUT"
+            echo "testnet_url=https://testnet.iotanames.com" >> "$GITHUB_OUTPUT"
+          else
+            echo "mainnet_url=https://iota-names-${DEPLOY_TYPE}-iota1.vercel.app" >> "$GITHUB_OUTPUT"
+            echo "testnet_url=https://testnet-iota-names-${DEPLOY_TYPE}-iota1.vercel.app" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
     needs: resolve-deploy-type
     runs-on: ubuntu-latest
@@ -68,7 +78,7 @@ jobs:
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.IOTA_NAMES_VERCEL_PROJECT_ID }}
-      SENTRY_AUTH_TOKEN: ${{ secrets.NAMES_DAPP_SENTRY_AUTH_TOKEN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.TOOLING_SENTRY_AUTH_TOKEN }}
       APPS_BACKEND: ${{ secrets[needs.resolve-deploy-type.outputs.apps_backend_secret] }}
       NEXT_PUBLIC_NAMES_DAPP_CONFIG: ${{ secrets.NAMES_DAPP_CONFIG }}
       NEXT_PUBLIC_NAMES_DAPP_FORBIDDEN_LIST: ${{ secrets.NAMES_DAPP_FORBIDDEN_LIST }}
@@ -135,3 +145,18 @@ jobs:
 
             vercel alias set "$URL" "${ALIAS_PREFIX}iota-names-${DEPLOY_TYPE}-iota1.vercel.app" $VERCEL_FLAGS
           fi
+
+  notify:
+    needs: [resolve-deploy-type, deploy]
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Names dApp ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Mainnet URL: ${{ needs.resolve-deploy-type.outputs.mainnet_url }}
+        Testnet URL: ${{ needs.resolve-deploy-type.outputs.testnet_url }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

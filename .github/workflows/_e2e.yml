@@ -106,7 +106,7 @@ on:
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
-      EVM_BRIDGE_CONFIG:
+      EVM_BRIDGE_CONFIG_TESTS:
         required: true
 
 concurrency:
@@ -117,7 +117,7 @@ env:
   RUST_LOG: warn
   RUST_BACKTRACE: 1
   VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+  VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
 
 jobs:
   localnet:
@@ -167,6 +167,8 @@ jobs:
           echo "runNamesSDK=${{ inputs.isNightly || inputs.isNamesSDK || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
 
       - name: Download IOTA Binary
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           .github/scripts/download-iota-binary.sh
 
@@ -221,6 +223,22 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
 
+      # ─── Playwright browsers (shared) ────────────────────────────────────────
+
+      - name: Install Playwright Browsers
+        id: install-playwright
+        if: >-
+          (!cancelled() && !failure()) && (
+            steps.conditions.outputs.runExplorer == 'true' ||
+            steps.conditions.outputs.runDashboard == 'true' ||
+            steps.conditions.outputs.runWallet == 'true' ||
+            steps.conditions.outputs.runEvmBridge == 'true' ||
+            steps.conditions.outputs.runNamesDapp == 'true'
+          )
+        continue-on-error: ${{ inputs.isNightly }}
+        # Any app works, they use the same playwright version
+        run: pnpm --filter iota-explorer playwright install --with-deps chromium
+
       # ─── RPC / GraphQL ───────────────────────────────────────────────────────
 
       - name: Run RPC/GraphQL compatibility e2e tests
@@ -233,7 +251,14 @@ jobs:
 
       - name: Build apps-backend
         id: build-apps-backend
-        if: (!cancelled() && !failure()) && (steps.conditions.outputs.runAppsBackend == 'true' || steps.conditions.outputs.runDashboard == 'true' || steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runNamesDapp == 'true')
+        if: >-
+          (!cancelled() && !failure()) && (
+            steps.conditions.outputs.runAppsBackend == 'true' ||
+            steps.conditions.outputs.runDashboard == 'true' ||
+            steps.conditions.outputs.runWallet == 'true' ||
+            steps.conditions.outputs.runEvmBridge == 'true' ||
+            steps.conditions.outputs.runNamesDapp == 'true'
+          )
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm turbo --filter apps-backend build
 
@@ -245,12 +270,6 @@ jobs:
 
       # ─── Explorer ────────────────────────────────────────────────────────────
 
-      - name: Install Explorer Playwright Browsers
-        id: install-playwright-explorer
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runExplorer == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter iota-explorer playwright install --with-deps chromium
-
       - name: Build explorer
         id: build-explorer
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runExplorer == 'true'
@@ -261,7 +280,7 @@ jobs:
 
       - name: Run Explorer e2e tests
         id: run-explorer
-        if: (!cancelled() && !failure()) && steps.install-playwright-explorer.outcome == 'success' && steps.build-explorer.outcome == 'success' && steps.conditions.outputs.runExplorer == 'true'
+        if: (!cancelled() && !failure()) && steps.install-playwright.outcome == 'success' && steps.build-explorer.outcome == 'success' && steps.conditions.outputs.runExplorer == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm --filter iota-explorer playwright test
 
@@ -282,15 +301,14 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm turbo --filter wallet-dashboard build
 
-      - name: Install Dashboard Playwright Browsers
-        id: install-playwright-dashboard
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runDashboard == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter wallet-dashboard playwright install --with-deps  --only-shell
-
       - name: Run Dashboard e2e tests
         id: run-dashboard
-        if: (!cancelled() && !failure()) && steps.install-playwright-dashboard.outcome == 'success' && steps.build-dashboard.outcome == 'success' && steps.conditions.outputs.runDashboard == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.build-dashboard.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runDashboard == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter wallet-dashboard playwright test
 
@@ -323,15 +341,14 @@ jobs:
         if: (!cancelled() && !failure()) && (steps.conditions.outputs.runWallet == 'true' || steps.conditions.outputs.runEvmBridge == 'true')
         run: iota-localnet start --force-regenesis --with-faucet --epoch-duration-ms 10000 &
 
-      - name: Install Playwright Browsers for Wallet
-        id: install-playwright-wallet
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runWallet == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter ./apps/wallet playwright install --with-deps chromium
-
       - name: Run Wallet e2e tests
         id: run-wallet
-        if: (!cancelled() && !failure()) && steps.install-playwright-wallet.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.conditions.outputs.runWallet == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.build-wallet.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runWallet == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- pnpm --filter iota-wallet playwright test
 
@@ -352,12 +369,6 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm evm-bridge build
 
-      - name: Install Playwright Browsers for Evm-bridge
-        id: install-playwright-evm-bridge
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runEvmBridge == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter ./apps/evm-bridge playwright install --with-deps chromium
-
       - name: Prepare evm-bridge e2e tests (downloads wallet artifact dist)
         id: prepare-evm-bridge
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runEvmBridge == 'true'
@@ -367,7 +378,13 @@ jobs:
 
       - name: Run evm-bridge tests
         id: run-evm-bridge
-        if: (!cancelled() && !failure()) && steps.build-evm-bridge.outcome == 'success' && steps.install-playwright-evm-bridge.outcome == 'success' && steps.prepare-evm-bridge.outcome == 'success' && steps.conditions.outputs.runEvmBridge == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.build-evm-bridge.outcome == 'success' &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.prepare-evm-bridge.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runEvmBridge == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         working-directory: ./apps/evm-bridge
         run: DEBUG=pw:webserver xvfb-run --auto-servernum pnpm run test:e2e
@@ -390,13 +407,6 @@ jobs:
           DB_URL: "postgres://postgres:postgrespw@localhost:5432/iota_indexer"
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
         run: .github/scripts/setup-names-network.sh
-
-      - name: Install Names Dapp Playwright Browsers
-        id: install-playwright-names
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDapp == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        working-directory: ./apps/names
-        run: pnpm run playwright:install
 
       - name: Inject localnet config and start Names indexer
         id: start-names-indexer
@@ -422,7 +432,13 @@ jobs:
 
       - name: Run Names Dapp e2e tests
         id: run-names-dapp
-        if: (!cancelled() && !failure()) && steps.install-playwright-names.outcome == 'success' && steps.start-names-indexer.outcome == 'success' && steps.build-wallet.outcome == 'success' && steps.build-apps-backend.outcome == 'success' && steps.conditions.outputs.runNamesDapp == 'true'
+        if: >-
+          (!cancelled() && !failure()) &&
+          steps.install-playwright.outcome == 'success' &&
+          steps.start-names-indexer.outcome == 'success' &&
+          steps.build-wallet.outcome == 'success' &&
+          steps.build-apps-backend.outcome == 'success' &&
+          steps.conditions.outputs.runNamesDapp == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         env:
           ADMIN_MNEMONIC: "say credit unknown distance behave outside convince embrace planet ginger phrase isolate"
@@ -456,15 +472,15 @@ jobs:
         id: build-names-sdk-display
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm --filter @iota/iota-names-sdk run build
+        run: pnpm names-sdk build
 
       - name: Build and test names-display service
         id: run-names-display
         if: (!cancelled() && !failure()) && steps.build-names-sdk-display.outcome == 'success' && steps.conditions.outputs.runNamesDisplay == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: |
-          pnpm --filter names-display run build
-          pnpm --filter names-display run test
+          pnpm names-display build
+          pnpm names-display test
 
       # ─── Names SDK ─────────────────────────────────────────────────────────
 

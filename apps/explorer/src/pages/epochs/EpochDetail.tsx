@@ -81,7 +81,7 @@ export function EpochDetail() {
     const tableColumns = useMemo(() => {
         if (!epochData?.validators || epochData.validators.length === 0) return null;
         const includeColumns = [
-            'Name',
+            'Validator',
             'Stake',
             'APY',
             'Effective Commission',

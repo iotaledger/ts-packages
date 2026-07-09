@@ -75,10 +75,12 @@ export async function submitAndVerifyUnstaking(
     validatorName: string = 'validator-0',
 ): Promise<void> {
     await page.getByText(validatorName).click();
-    await page.getByText('Unstake').click();
+    await page.getByText('Unstake', { exact: true }).click();
 
+    const unstakeButton = page.getByRole('button', { name: 'Unstake', exact: true });
+    await expect(unstakeButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
     const walletApprovePagePromise = context.waitForEvent('page');
-    await page.getByRole('button', { name: 'Unstake' }).click();
+    await unstakeButton.click();
     const walletApprovePage = await walletApprovePagePromise;
     await walletApprovePage.getByRole('button', { name: 'Approve' }).click();
 
@@ -92,7 +94,50 @@ export async function submitAndVerifyUnstaking(
     expect(page.getByText(validatorName)).not.toBeVisible({ timeout: SHORT_TIMEOUT });
 }
 
+export async function submitAndVerifyPartialUnstaking(
+    page: Page,
+    context: BrowserContext,
+    amount: string,
+    validatorName: string = 'validator-0',
+): Promise<void> {
+    await page.getByText(validatorName).click();
+    await page.getByText('Unstake', { exact: true }).click();
+
+    // Switch to partial unstake mode and enter amount
+    await page.getByRole('button', { name: 'Partial Unstake' }).click();
+    await page.getByPlaceholder('Enter amount to unstake').fill(amount);
+
+    const unstakeButton = page.getByRole('button', { name: 'Unstake', exact: true });
+    await expect(unstakeButton).toBeEnabled({ timeout: SHORT_TIMEOUT });
+
+    const walletApprovePagePromise = context.waitForEvent('page');
+    await unstakeButton.click();
+    const walletApprovePage = await walletApprovePagePromise;
+    await walletApprovePage.getByRole('button', { name: 'Approve' }).click();
+
+    await page.bringToFront();
+    await expect(page.getByText('Successfully sent')).toBeVisible({
+        timeout: SHORT_TIMEOUT,
+    });
+    await page.getByTestId('close-icon').click();
+}
+
 export async function getStakedAmount(page: Page): Promise<string | null> {
+    // Navigate to staking via sidebar — goto() would lose the wallet connection.
+    // Closing dialogs (e.g. after unstaking) may redirect to /home.
+    await page.getByTestId('sidebar-staking').click();
+    await page.mouse.move(200, 0);
+
+    // Retry: the indexer may need time to reflect new stake data after a tx.
+    const label = page.locator('span:text("Your stake")');
+    for (let i = 0; i < 10; i++) {
+        await page.waitForLoadState('networkidle');
+        if (await label.isVisible()) break;
+        await page.waitForTimeout(2000);
+        await page.reload({ waitUntil: 'networkidle' });
+    }
+    await expect(label).toBeVisible({ timeout: SHORT_TIMEOUT });
+
     return page
         .locator('div:has(> span:text("Your stake"))')
         .locator('xpath=../../div/span')

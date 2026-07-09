@@ -6,11 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { Feature } from '@iota/core/enums/features.enums';
 import { Network } from '@iota/iota-sdk/client';
 import { Response } from 'express';
-import {
-    NAME_ADDRESS_RESOLUTION_FEATURE,
-    KNOWN_ADDRESSES_ALIASES,
-    RECOGNIZED_PACKAGES,
-} from './features.constants';
+import { KNOWN_ADDRESSES_ALIASES, RECOGNIZED_PACKAGES } from './features.constants';
+import { LEGACY_FEATURE_FLAGS } from './legacy-features.constants';
 import { RECOGNIZED_DAPPS } from './dapps.constants';
 
 @Controller('/api/features')
@@ -76,15 +73,6 @@ export class FeaturesController {
                         minVersion: '',
                     },
                 },
-                [Feature.WalletPasskeys]: {
-                    defaultValue: {
-                        [Network.Mainnet]: true,
-                        [Network.Devnet]: true,
-                        [Network.Testnet]: true,
-                        [Network.Localnet]: true,
-                        [Network.Custom]: true,
-                    },
-                },
                 [Feature.PollingTxnTable]: {
                     defaultValue: true,
                 },
@@ -92,15 +80,6 @@ export class FeaturesController {
                     defaultValue: false,
                 },
                 [Feature.ModuleSourceVerification]: {
-                    defaultValue: true,
-                },
-                [Feature.AccountFinder]: {
-                    defaultValue: true,
-                },
-                [Feature.StardustMigration]: {
-                    defaultValue: true,
-                },
-                [Feature.SupplyIncreaseVesting]: {
                     defaultValue: true,
                 },
                 [Feature.FiatConversion]: {
@@ -121,12 +100,13 @@ export class FeaturesController {
                         '0xe1e88f4962b3ea96cfad19aee42f666b04bbce4dc4327c3cd63f1b8ff16e13b2::tool_coin::TOOL_COIN',
                     ],
                 },
-                [Feature.IotaNames]: {
-                    defaultValue: NAME_ADDRESS_RESOLUTION_FEATURE,
-                },
                 [Feature.ExplorerTFIdentity]: {
                     defaultValue: true,
                 },
+                [Feature.ExplorerTFNotarization]: {
+                    defaultValue: true,
+                },
+                ...LEGACY_FEATURE_FLAGS,
             },
             dateUpdated: new Date().toISOString(),
         };
@@ -169,15 +149,6 @@ export class FeaturesController {
                         minVersion: '',
                     },
                 },
-                [Feature.WalletPasskeys]: {
-                    defaultValue: {
-                        [Network.Mainnet]: true,
-                        [Network.Devnet]: true,
-                        [Network.Testnet]: true,
-                        [Network.Localnet]: true,
-                        [Network.Custom]: true,
-                    },
-                },
                 [Feature.PollingTxnTable]: {
                     defaultValue: true,
                 },
@@ -185,15 +156,6 @@ export class FeaturesController {
                     defaultValue: false,
                 },
                 [Feature.ModuleSourceVerification]: {
-                    defaultValue: true,
-                },
-                [Feature.AccountFinder]: {
-                    defaultValue: true,
-                },
-                [Feature.StardustMigration]: {
-                    defaultValue: true,
-                },
-                [Feature.SupplyIncreaseVesting]: {
                     defaultValue: true,
                 },
                 [Feature.FiatConversion]: {
@@ -210,15 +172,16 @@ export class FeaturesController {
                 },
                 [Feature.KnownIotaEVMCoinTypes]: {
                     defaultValue: [
-                        '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
+                        '0x3fbd238eea1f4ce7d797148954518fce853f24a8be01b47388bfa2262602fefa::vusd::VUSD',
                     ],
-                },
-                [Feature.IotaNames]: {
-                    defaultValue: NAME_ADDRESS_RESOLUTION_FEATURE,
                 },
                 [Feature.ExplorerTFIdentity]: {
                     defaultValue: true,
                 },
+                [Feature.ExplorerTFNotarization]: {
+                    defaultValue: true,
+                },
+                ...LEGACY_FEATURE_FLAGS,
             },
             dateUpdated: new Date().toISOString(),
         };

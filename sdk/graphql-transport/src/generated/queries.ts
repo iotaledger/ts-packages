@@ -121,46 +121,6 @@ export type Scalars = {
   UInt53: { input: any; output: any; }
 };
 
-export type ActiveJwk = {
-  __typename?: 'ActiveJwk';
-  /** The JWK algorithm parameter, (RFC 7517, Section 4.4). */
-  alg: Scalars['String']['output'];
-  /** The JWK RSA public exponent, (RFC 7517, Section 9.3). */
-  e: Scalars['String']['output'];
-  /** The most recent epoch in which the JWK was validated. */
-  epoch?: Maybe<Epoch>;
-  /** The string (Issuing Authority) that identifies the OIDC provider. */
-  iss: Scalars['String']['output'];
-  /**
-   * The string (Key ID) that identifies the JWK among a set of JWKs, (RFC
-   * 7517, Section 4.5).
-   */
-  kid: Scalars['String']['output'];
-  /** The JWK key type parameter, (RFC 7517, Section 4.1). */
-  kty: Scalars['String']['output'];
-  /** The JWK RSA modulus, (RFC 7517, Section 9.3). */
-  n: Scalars['String']['output'];
-};
-
-export type ActiveJwkConnection = {
-  __typename?: 'ActiveJwkConnection';
-  /** A list of edges. */
-  edges: Array<ActiveJwkEdge>;
-  /** A list of nodes. */
-  nodes: Array<ActiveJwk>;
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
-};
-
-/** An edge in a connection. */
-export type ActiveJwkEdge = {
-  __typename?: 'ActiveJwkEdge';
-  /** A cursor for use in pagination */
-  cursor: Scalars['String']['output'];
-  /** The item at the end of the edge */
-  node: ActiveJwk;
-};
-
 /**
  * The 32-byte address that is an account address (corresponding to a public
  * key).
@@ -358,55 +318,8 @@ export enum AddressTransactionBlockRelationship {
   /** Transactions that sent objects to this address. */
   Recv = 'RECV',
   /** Transactions this address has sent. */
-  Sent = 'SENT',
-  /**
-   * Transactions this address has sent. NOTE: this input filter has been
-   * deprecated in favor of `SENT` which behaves identically but is named
-   * more clearly. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `SENT` instead. This will be removed with the 1.24.0 release.
-   */
-  Sign = 'SIGN'
+  Sent = 'SENT'
 }
-
-/** System transaction for creating the on-chain state used by zkLogin. */
-export type AuthenticatorStateCreateTransaction = {
-  __typename?: 'AuthenticatorStateCreateTransaction';
-  /** A workaround to define an empty variant of a GraphQL union. */
-  _?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type AuthenticatorStateExpireTransaction = {
-  __typename?: 'AuthenticatorStateExpireTransaction';
-  /** The initial version that the AuthenticatorStateUpdateV1 was shared at. */
-  authenticatorObjInitialSharedVersion: Scalars['UInt53']['output'];
-  /** Expire JWKs that have a lower epoch than this. */
-  minEpoch?: Maybe<Epoch>;
-};
-
-/** System transaction for updating the on-chain state used by zkLogin. */
-export type AuthenticatorStateUpdateTransaction = {
-  __typename?: 'AuthenticatorStateUpdateTransaction';
-  /** The initial version of the authenticator object that it was shared at. */
-  authenticatorObjInitialSharedVersion: Scalars['UInt53']['output'];
-  /** Epoch of the authenticator state update transaction. */
-  epoch?: Maybe<Epoch>;
-  /** Newly active JWKs (JSON Web Keys). */
-  newActiveJwks: ActiveJwkConnection;
-  /** Consensus round of the authenticator state update. */
-  round: Scalars['UInt53']['output'];
-};
-
-
-/** System transaction for updating the on-chain state used by zkLogin. */
-export type AuthenticatorStateUpdateTransactionNewActiveJwksArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  last?: InputMaybe<Scalars['Int']['input']>;
-};
 
 /**
  * Range of checkpoints that the RPC is guaranteed to produce a consistent
@@ -842,8 +755,6 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1089,8 +1000,6 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1376,7 +1285,7 @@ export type EndOfEpochTransactionTransactionsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type EndOfEpochTransactionKind = AuthenticatorStateCreateTransaction | AuthenticatorStateExpireTransaction | ChangeEpochTransaction | ChangeEpochTransactionV2;
+export type EndOfEpochTransactionKind = ChangeEpochTransaction | ChangeEpochTransactionV2;
 
 export type EndOfEpochTransactionKindConnection = {
   __typename?: 'EndOfEpochTransactionKindConnection';
@@ -1926,8 +1835,6 @@ export type IObject = {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   storageRebate?: Maybe<Scalars['BigInt']['output']>;
@@ -2618,8 +2525,6 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -2929,8 +2834,6 @@ export type MovePackage = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3440,8 +3343,6 @@ export type NameRegistration = IMoveObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3675,8 +3576,6 @@ export type Object = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3929,12 +3828,7 @@ export enum ObjectKind {
    * The object is loaded from serialized data, such as the contents of a
    * transaction that hasn't been indexed yet.
    */
-  NotIndexed = 'NOT_INDEXED',
-  /**
-   * The object is deleted or wrapped and only partial information can be
-   * loaded from the indexer.
-   */
-  WrappedOrDeleted = 'WRAPPED_OR_DELETED'
+  NotIndexed = 'NOT_INDEXED'
 }
 
 /** The object's owner type: Immutable, Shared, Parent, or Address. */
@@ -4537,23 +4431,6 @@ export type Query = {
    * layout information. Fails if the type is malformed.
    */
   type: MoveType;
-  /**
-   * Verify a zkLogin signature based on the provided transaction or personal
-   * message based on current epoch, chain id, and latest JWKs fetched
-   * on-chain. If the signature is valid, the function returns a
-   * `ZkLoginVerifyResult` with success as true and an empty list of
-   * errors. If the signature is invalid, the function returns
-   * a `ZkLoginVerifyResult` with success as false with a list of errors.
-   *
-   * - `bytes` is either the personal message in raw bytes or transaction
-   * data bytes in BCS-encoded and then Base64-encoded.
-   * - `signature` is a serialized zkLogin signature that is Base64-encoded.
-   * - `intentScope` is an enum that specifies the intent scope to be used to
-   * parse bytes.
-   * - `author` is the address of the signer of the transaction or personal
-   * msg.
-   */
-  verifyZkloginSignature: ZkLoginVerifyResult;
 };
 
 
@@ -4705,14 +4582,6 @@ export type QueryTransactionBlocksByDigestsArgs = {
 
 export type QueryTypeArgs = {
   type: Scalars['String']['input'];
-};
-
-
-export type QueryVerifyZkloginSignatureArgs = {
-  author: Scalars['IotaAddress']['input'];
-  bytes: Scalars['Base64']['input'];
-  intentScope: ZkLoginIntentScope;
-  signature: Scalars['Base64']['input'];
 };
 
 /** System transaction to update the source of on-chain randomness. */
@@ -5127,8 +4996,6 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -5272,12 +5139,38 @@ export type Subscription = {
    * Subscribe to incoming events from the IOTA network.
    *
    * If no filter is provided, all events will be returned.
+   *
+   * # Stream recovery
+   *
+   * Events are streamed in transaction order, all events from a single
+   * transaction arrive contiguously before any events from the next one.
+   *
+   * When `start_after` is provided with a transaction digest, the stream
+   * resumes from the transaction immediately after it.
+   *
+   * Because a single transaction can emit multiple events, a disconnection
+   * may leave the client with only a partial set of events from the
+   * transaction it was last receiving. A transaction is considered fully
+   * received only once the client has seen an event from the following
+   * transaction (a digest change signals the previous transaction is
+   * complete).
+   *
+   * On reconnect, clients should pass the digest of the last fully
+   * received transaction as `start_after`. The stream resumes from the
+   * next transaction, so no partial transaction is ever observed.
    */
   events: EventSubscriptionPayload;
   /**
    * Subscribe to incoming transactions from the IOTA network.
    *
    * If no filter is provided, all transactions will be returned.
+   *
+   * # Stream recovery
+   *
+   * When `start_after` is provided with the digest of the last transaction
+   * the client received, the stream resumes from the transaction
+   * immediately after it. The identified transaction itself is not
+   * emitted.
    */
   transactions: TransactionBlockSubscriptionPayload;
 };
@@ -5285,11 +5178,13 @@ export type Subscription = {
 
 export type SubscriptionEventsArgs = {
   filter?: InputMaybe<SubscriptionEventFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type SubscriptionTransactionsArgs = {
   filter?: InputMaybe<SubscriptionTransactionFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Filter incoming events in a subscription. */
@@ -5562,16 +5457,6 @@ export type TransactionBlockFilter = {
   recvAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Limit to transactions that were sent by the given address. */
   sentAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
-  /**
-   * Limit to transactions that were sent by the given address. NOTE: this
-   * input filter has been deprecated in favor of `sentAddress` which has
-   * clearer semantics. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `sentAddress` instead. This will be removed with the 1.24.0 release.
-   */
-  signAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Select transactions by their digest. */
   transactionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Limit to transactions that wrapped or deleted the given object. */
@@ -5582,12 +5467,10 @@ export type TransactionBlockFilter = {
  * The kind of transaction block, either a programmable transaction or a system
  * transaction.
  */
-export type TransactionBlockKind = AuthenticatorStateUpdateTransaction | ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction;
+export type TransactionBlockKind = ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction;
 
 /** An input filter selecting for either system or programmable transactions. */
 export enum TransactionBlockKindInput {
-  /** The authenticator state update transaction block. */
-  AuthenticatorStateUpdateV1 = 'AUTHENTICATOR_STATE_UPDATE_V1',
   /** The consensus commit prologue transaction block. */
   ConsensusCommitPrologueV1 = 'CONSENSUS_COMMIT_PROLOGUE_V1',
   /** The end of epoch transaction block. */
@@ -5929,32 +5812,12 @@ export type ValidatorSetCommitteeMembersArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-/**
- * An enum that specifies the intent scope to be used to parse the bytes for
- * signature verification.
- */
-export enum ZkLoginIntentScope {
-  /** Indicates that the bytes are to be parsed as a personal message. */
-  PersonalMessage = 'PERSONAL_MESSAGE',
-  /** Indicates that the bytes are to be parsed as transaction data bytes. */
-  TransactionData = 'TRANSACTION_DATA'
-}
-
-/** The result of the zkLogin signature verification. */
-export type ZkLoginVerifyResult = {
-  __typename?: 'ZkLoginVerifyResult';
-  /** The errors field captures any verification error */
-  errors: Array<Scalars['String']['output']>;
-  /** The boolean result of the verification. If true, errors should be empty. */
-  success: Scalars['Boolean']['output'];
-};
-
 export type GetCheckpointQueryVariables = Exact<{
   id?: InputMaybe<CheckpointId>;
 }>;
 
 
-export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'AuthenticatorStateUpdateTransaction' } | { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'AuthenticatorStateCreateTransaction' } | { __typename: 'AuthenticatorStateExpireTransaction' } | { __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } } | null };
+export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } } | null };
 
 export type GetCheckpointsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -5964,7 +5827,7 @@ export type GetCheckpointsQueryVariables = Exact<{
 }>;
 
 
-export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'AuthenticatorStateUpdateTransaction' } | { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'AuthenticatorStateCreateTransaction' } | { __typename: 'AuthenticatorStateExpireTransaction' } | { __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } }> } };
+export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } }> } };
 
 export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
   id?: InputMaybe<CheckpointId>;
@@ -5974,7 +5837,7 @@ export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
 
 export type PaginateCheckpointTransactionBlocksQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> } } | null };
 
-export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'AuthenticatorStateUpdateTransaction' } | { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'AuthenticatorStateCreateTransaction' } | { __typename: 'AuthenticatorStateExpireTransaction' } | { __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } };
+export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } };
 
 export type DevInspectTransactionBlockQueryVariables = Exact<{
   txBytes: Scalars['String']['input'];

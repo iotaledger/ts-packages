@@ -38,80 +38,15 @@ jobs:
         id: turbo
 
 
-  sync:
-    name: ts-sdk sync with Node Changes
-    needs: diff
-    runs-on: ubuntu-latest
-    concurrency:
-      group: turbo-sync-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: ${{ github.ref != 'refs/heads/develop' }}
-    if: (!cancelled() && !failure() && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
-    steps:
-      - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
-        with:
-          fetch-depth: 2
-          submodules: true
-      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
-      - name: Install Nodejs
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: "24"
-          cache: "pnpm"
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Turbo Cache
-        id: turbo-cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: .turbo
-          key: turbo-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            turbo-${{ runner.os }}-
-      - name: Node Sync
-        run: |
-          pnpm codegen
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No sync needed"
-          else
-            echo "Sync is needed! Run: 'pnpm codegen' in the root."
-            git status
-            exit 1
-          fi
-
-  sync-cancel:
-    needs: [sync]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cancel workflow run
-        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-
   build:
-    if: >-
-      !cancelled() && !failure()
-      && (
-        needs.diff.outputs.isExplorer == 'true'
-        || needs.diff.outputs.isTypescriptSDK == 'true'
-        || needs.diff.outputs.isWallet == 'true'
-        || needs.diff.outputs.isWalletDashboard == 'true'
-        || needs.diff.outputs.isEvmBridge == 'true'
-        || needs.diff.outputs.isNamesSDK == 'true'
-        || needs.diff.outputs.isNamesDapp == 'true'
-        || needs.diff.outputs.isNamesDisplay == 'true'
-      )
-      && (
-        github.ref_name == 'develop'
-        || github.event.pull_request.draft == false
-        || contains(github.event.pull_request.body, '[run-ci]')
-      )
+    if: (!cancelled() && !failure() && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
     needs: diff
     uses: ./.github/workflows/_build_lint_test.yml
+    with:
+      isAffected: ${{ needs.diff.outputs.isExplorer == 'true' || needs.diff.outputs.isTypescriptSDK == 'true' || needs.diff.outputs.isWallet == 'true' || needs.diff.outputs.isWalletDashboard == 'true' || needs.diff.outputs.isEvmBridge == 'true' || needs.diff.outputs.isNamesSDK == 'true' || needs.diff.outputs.isNamesDapp == 'true' || needs.diff.outputs.isNamesDisplay == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-      EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      EVM_BRIDGE_CONFIG_TESTS: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
 
   e2e:
     if: (!cancelled() && !failure() && (github.ref_name == 'develop' || github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
@@ -134,4 +69,4 @@ jobs:
       isNamesSDK: ${{ needs.diff.outputs.isNamesSDK == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-      EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      EVM_BRIDGE_CONFIG_TESTS: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}

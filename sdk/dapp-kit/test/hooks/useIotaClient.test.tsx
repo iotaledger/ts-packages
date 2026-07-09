@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { renderHook } from '@testing-library/react';
 
 import { useIotaClient } from '../../src/index.js';
@@ -15,7 +15,7 @@ describe('useIotaClient', () => {
     });
 
     test('returns a IotaClient', () => {
-        const iotaClient = new IotaClient({ url: getFullnodeUrl('localnet') });
+        const iotaClient = new IotaClient({ url: getRpcUrl('localnet') });
         const wrapper = createIotaClientContextWrapper(iotaClient);
         const { result } = renderHook(() => useIotaClient(), { wrapper });
 

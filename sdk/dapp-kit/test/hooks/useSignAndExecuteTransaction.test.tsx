@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { bcs } from '@iota/iota-sdk/bcs';
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { expect, type Mock } from 'vitest';
@@ -63,7 +63,7 @@ describe('useSignAndExecuteTransaction', () => {
             features: iotaFeatures,
         });
 
-        const iotaClient = new IotaClient({ url: getFullnodeUrl('localnet') });
+        const iotaClient = new IotaClient({ url: getRpcUrl('localnet') });
         const mockSignMessageFeature = mockWallet.features['iota:signTransaction'];
         const signTransaction = mockSignMessageFeature!.signTransaction as Mock;
 
@@ -141,7 +141,7 @@ describe('useSignAndExecuteTransaction', () => {
             features: iotaFeatures,
         });
 
-        const iotaClient = new IotaClient({ url: getFullnodeUrl('localnet') });
+        const iotaClient = new IotaClient({ url: getRpcUrl('localnet') });
         const mockSignMessageFeature = mockWallet.features['iota:signTransaction'];
         const signTransaction = mockSignMessageFeature!.signTransaction as Mock;
 

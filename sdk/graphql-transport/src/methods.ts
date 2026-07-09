@@ -659,10 +659,6 @@ export const RPC_METHODS: {
                     graphqlTransactionKindFilter =
                         TransactionBlockKindInput.ConsensusCommitPrologueV1;
                     break;
-                case 'AuthenticatorStateUpdateV1':
-                    graphqlTransactionKindFilter =
-                        TransactionBlockKindInput.AuthenticatorStateUpdateV1;
-                    break;
                 case 'RandomnessStateUpdate':
                     graphqlTransactionKindFilter = TransactionBlockKindInput.RandomnessStateUpdate;
                     break;
@@ -700,7 +696,7 @@ export const RPC_METHODS: {
                               inputObject: 'InputObject' in filter ? filter.InputObject : undefined,
                               changedObject:
                                   'ChangedObject' in filter ? filter.ChangedObject : undefined,
-                              signAddress: 'FromAddress' in filter ? filter.FromAddress : undefined,
+                              sentAddress: 'FromAddress' in filter ? filter.FromAddress : undefined,
                               recvAddress: 'ToAddress' in filter ? filter.ToAddress : undefined,
                               kind: graphqlTransactionKindFilter,
                           }
