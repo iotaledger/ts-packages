@@ -19,6 +19,7 @@ import {
     EpochLink,
     ObjectLink,
 } from '~/components';
+import { useBreakpoint } from '~/hooks';
 import { onCopySuccess } from '~/lib/utils';
 
 interface TransactionOverviewProps {
@@ -32,6 +33,7 @@ export function TransactionOverview({
 }: TransactionOverviewProps): JSX.Element {
     const { network } = useIotaClientContext();
     const [showAllGasPayment, setShowAllGasPayment] = useState(false);
+    const isMediumOrAbove = useBreakpoint('md');
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
     const sender = transaction.transaction?.data.sender;
@@ -50,7 +52,12 @@ export function TransactionOverview({
             {transactionKindName && (
                 <KeyValueInfo
                     keyText="Transaction Type"
-                    value={<Badge label={transactionKindName} type={BadgeType.PrimarySoft} />}
+                    value={
+                        <div className="whitespace-nowrap">
+                            <Badge label={transactionKindName} type={BadgeType.PrimarySoft} />
+                        </div>
+                    }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             <KeyValueInfo
@@ -59,6 +66,7 @@ export function TransactionOverview({
                 copyText={transaction.digest}
                 onCopySuccess={onCopySuccess}
                 isTruncated
+                fullwidth={!isMediumOrAbove}
             />
             {transaction.checkpoint && (
                 <KeyValueInfo
@@ -70,6 +78,7 @@ export function TransactionOverview({
                     }
                     copyText={transaction.checkpoint}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {transaction.effects?.executedEpoch && (
@@ -80,6 +89,7 @@ export function TransactionOverview({
                             {transaction.effects.executedEpoch}
                         </EpochLink>
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {transaction.timestampMs && (
@@ -92,6 +102,7 @@ export function TransactionOverview({
                             showTimeAgo
                         />
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {sender && (
@@ -100,6 +111,7 @@ export function TransactionOverview({
                     value={<AddressLink address={sender} />}
                     copyText={sender}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {totalGas && (
@@ -111,10 +123,15 @@ export function TransactionOverview({
                             ? formatBalanceToUSD(gasInUSD)
                             : undefined
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {gasBudget && (
-                <KeyValueInfo keyText="Gas Budget" value={`${formattedBudget} ${budgetSymbol}`} />
+                <KeyValueInfo
+                    keyText="Gas Budget"
+                    value={`${formattedBudget} ${budgetSymbol}`}
+                    fullwidth={!isMediumOrAbove}
+                />
             )}
             {!!gasPayment?.length && (
                 <KeyValueInfo
@@ -143,6 +160,7 @@ export function TransactionOverview({
                             )}
                         </div>
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {gasOwner && (
@@ -151,6 +169,7 @@ export function TransactionOverview({
                     value={<AddressLink address={gasOwner} />}
                     copyText={gasOwner}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {!!signatures?.length && (
@@ -167,6 +186,7 @@ export function TransactionOverview({
                     }
                     copyText={signatures.length === 1 ? signatures[0] : undefined}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
         </div>

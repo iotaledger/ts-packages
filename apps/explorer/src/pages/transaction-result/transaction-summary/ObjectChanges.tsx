@@ -161,7 +161,7 @@ function ObjectDetail({ objectType, objectId, display }: ObjectDetailProps): JSX
     return (
         <ObjectDetailPanel
             headerContent={
-                <div className="flex shrink-0 items-center gap-sm">
+                <div className="flex min-w-0 items-center gap-sm">
                     <Badge type={BadgeType.Neutral} label={name} />
                     {objectId && (
                         <div className="flex flex-col items-end gap-xxxs">

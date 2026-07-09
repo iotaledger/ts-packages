@@ -4,11 +4,11 @@
 import {
     ImageIcon,
     ImageIconSize,
+    STAKING_REQUEST_EVENT,
     TransactionAction,
-    getStakeDetailsFromEvents,
+    UNSTAKING_REQUEST_EVENT,
     getTransactionAction,
     formatBalanceToUSD,
-    getUnstakeDetailsFromEvents,
     useBalanceInUSD,
     useCopyToClipboard,
     useFormatCoin,
@@ -47,40 +47,56 @@ interface TransactionActionSummaryProps {
 export function TransactionActionSummary({
     transaction,
 }: TransactionActionSummaryProps): JSX.Element | null {
-    const copyToClipboard = useCopyToClipboard();
     const sender = transaction.transaction?.data.sender;
     const action = getTransactionAction(transaction, sender);
-    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
 
-    const details: ActionSummaryDetails | null = useMemo(() => {
+    const detailsList: ActionSummaryDetails[] = useMemo(() => {
         const events = transaction.events ?? [];
         switch (action) {
             case TransactionAction.Staked:
-            case TransactionAction.TimelockedStaked: {
-                const { totalStakedAmount, validatorAddress } = getStakeDetailsFromEvents(events);
-                return {
-                    verb: 'Staked',
-                    amount: BigInt(totalStakedAmount),
-                    outgoing: true,
-                    vested: action === TransactionAction.TimelockedStaked,
-                    connector: 'with validator',
-                    address: validatorAddress,
-                    isValidator: true,
-                };
-            }
+            case TransactionAction.TimelockedStaked:
             case TransactionAction.Unstaked:
             case TransactionAction.TimelockedUnstaked: {
-                const { totalUnstakeAmount, validatorAddress } =
-                    getUnstakeDetailsFromEvents(events);
-                return {
-                    verb: 'Unstaked',
-                    amount: totalUnstakeAmount,
-                    outgoing: false,
-                    vested: action === TransactionAction.TimelockedUnstaked,
-                    connector: 'from validator',
-                    address: validatorAddress,
-                    isValidator: true,
-                };
+                return events
+                    .filter(
+                        (event) =>
+                            event.type === STAKING_REQUEST_EVENT ||
+                            event.type === UNSTAKING_REQUEST_EVENT,
+                    )
+                    .map((event) => {
+                        const vested = event.transactionModule === 'timelocked_staking';
+                        if (event.type === STAKING_REQUEST_EVENT) {
+                            const json = event.parsedJson as {
+                                amount?: string;
+                                validator_address?: string;
+                            };
+                            return {
+                                verb: 'Staked',
+                                amount: BigInt(json.amount ?? 0),
+                                outgoing: true,
+                                vested,
+                                connector: 'with validator',
+                                address: json.validator_address,
+                                isValidator: true,
+                            };
+                        }
+                        const json = event.parsedJson as {
+                            principal_amount?: string;
+                            reward_amount?: string;
+                            validator_address?: string;
+                        };
+                        return {
+                            verb: 'Unstaked',
+                            amount:
+                                BigInt(json.principal_amount ?? 0) +
+                                BigInt(json.reward_amount ?? 0),
+                            outgoing: false,
+                            vested,
+                            connector: 'from validator',
+                            address: json.validator_address,
+                            isValidator: true,
+                        };
+                    });
             }
             case TransactionAction.Migration: {
                 const received = (transaction.balanceChanges ?? []).filter((change) => {
@@ -92,15 +108,17 @@ export function TransactionActionSummary({
                     (change) => 'objectType' in change && change.objectType.includes('::nft::Nft'),
                 ).length;
                 if (amount === 0n && !nftCount) {
-                    return { verb: 'Migrated assets from the Stardust network' };
+                    return [{ verb: 'Migrated assets from the Stardust network' }];
                 }
-                return {
-                    verb: 'Migrated',
-                    amount: amount > 0n ? amount : undefined,
-                    outgoing: false,
-                    nftCount,
-                    connector: 'from the Stardust network',
-                };
+                return [
+                    {
+                        verb: 'Migrated',
+                        amount: amount > 0n ? amount : undefined,
+                        outgoing: false,
+                        nftCount,
+                        connector: 'from the Stardust network',
+                    },
+                ];
             }
             case TransactionAction.TimelockedCollect: {
                 const received = (transaction.balanceChanges ?? []).filter((change) => {
@@ -109,14 +127,16 @@ export function TransactionActionSummary({
                 });
                 const amount = received.reduce((sum, change) => sum + BigInt(change.amount), 0n);
                 if (amount === 0n) {
-                    return { verb: 'Unlocked vested tokens' };
+                    return [{ verb: 'Unlocked vested tokens' }];
                 }
-                return {
-                    verb: 'Unlocked',
-                    amount,
-                    outgoing: false,
-                    connector: 'of vested tokens',
-                };
+                return [
+                    {
+                        verb: 'Unlocked',
+                        amount,
+                        outgoing: false,
+                        connector: 'of vested tokens',
+                    },
+                ];
             }
             case TransactionAction.Send: {
                 const received = (transaction.balanceChanges ?? []).filter((change) => {
@@ -141,7 +161,7 @@ export function TransactionActionSummary({
                         return undefined;
                     })
                     .filter((recipient): recipient is string => !!recipient);
-                if (!received.length && !sentObjectRecipients.length) return null;
+                if (!received.length && !sentObjectRecipients.length) return [];
 
                 const coinTypes = new Set(received.map((change) => change.coinType));
                 const recipients = new Set(
@@ -150,37 +170,56 @@ export function TransactionActionSummary({
                         ...sentObjectRecipients,
                     ].filter(Boolean),
                 );
-                return {
-                    verb: 'Sent',
-                    amount:
-                        received.length > 0 && coinTypes.size === 1
-                            ? received.reduce((sum, change) => sum + BigInt(change.amount), 0n)
-                            : undefined,
-                    outgoing: true,
-                    coinType: received.length > 0 ? [...coinTypes][0] : undefined,
-                    connector: 'to',
-                    address: recipients.size === 1 ? [...recipients][0] : undefined,
-                    recipientCount: recipients.size,
-                    nftCount: sentObjectRecipients.length,
-                };
+                return [
+                    {
+                        verb: 'Sent',
+                        amount:
+                            received.length > 0 && coinTypes.size === 1
+                                ? received.reduce((sum, change) => sum + BigInt(change.amount), 0n)
+                                : undefined,
+                        outgoing: true,
+                        coinType: received.length > 0 ? [...coinTypes][0] : undefined,
+                        connector: 'to',
+                        address: recipients.size === 1 ? [...recipients][0] : undefined,
+                        recipientCount: recipients.size,
+                        nftCount: sentObjectRecipients.length,
+                    },
+                ];
             }
             default:
-                return null;
+                return [];
         }
     }, [action, transaction, sender]);
 
+    if (!detailsList.length || transaction.effects?.status.status !== 'success') return null;
+
+    return (
+        <div className="flex flex-col items-center gap-y-xs">
+            {detailsList.map((details, index) => (
+                <ActionSummaryLine key={index} details={details} transaction={transaction} />
+            ))}
+        </div>
+    );
+}
+
+interface ActionSummaryLineProps {
+    details: ActionSummaryDetails;
+    transaction: IotaTransactionBlockResponse;
+}
+
+function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JSX.Element {
+    const copyToClipboard = useCopyToClipboard();
+    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
     const [formattedAmount, symbol] = useFormatCoin({
-        balance: details?.amount?.toString(),
-        coinType: details?.coinType,
+        balance: details.amount?.toString(),
+        coinType: details.coinType,
     });
     const { network } = useIotaClientContext();
     const amountInUSD = useBalanceInUSD(
-        details?.coinType ?? IOTA_TYPE_ARG,
-        details?.amount?.toString() ?? 0,
+        details.coinType ?? IOTA_TYPE_ARG,
+        details.amount?.toString() ?? 0,
         network as Network,
     );
-
-    if (!details || transaction.effects?.status.status !== 'success') return null;
 
     const validator = details.isValidator
         ? systemState?.activeValidators.find((v) => v.iotaAddress === details.address)

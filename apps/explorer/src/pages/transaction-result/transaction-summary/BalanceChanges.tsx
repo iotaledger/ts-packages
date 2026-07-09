@@ -38,10 +38,8 @@ interface BalanceChangesProps {
 
 function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element | null {
     const { amount, coinType, recipient, unRecognizedToken } = change;
-    const isMdScreen = useMediaQuery(
-        `(min-width: ${BREAK_POINT.md}px) and (max-width: ${BREAK_POINT.lg - 1}px)`,
-    );
-    const coinFormat = isMdScreen ? CoinFormat.Rounded : CoinFormat.Full;
+    const isLargeScreen = useMediaQuery(`(min-width: ${BREAK_POINT.lg}px)`);
+    const coinFormat = isLargeScreen ? CoinFormat.Full : CoinFormat.Rounded;
     const [formatted, symbol] = useFormatCoin({ balance: amount, coinType, format: coinFormat });
     const { data: coinMetaData } = useCoinMetadata(coinType);
     const { network } = useIotaClientContext();
