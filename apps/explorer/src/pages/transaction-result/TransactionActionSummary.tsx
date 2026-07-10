@@ -18,8 +18,10 @@ import { Copy } from '@iota/apps-ui-icons';
 import { useIotaClientContext, useIotaClientQuery } from '@iota/dapp-kit';
 import { IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse, Network, ObjectOwner } from '@iota/iota-sdk/client';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AddressLink, ValidatorLink } from '~/components/ui';
+
+const MAX_VISIBLE_LINES = 3;
 
 interface ActionSummaryDetails {
     verb: string;
@@ -49,6 +51,7 @@ export function TransactionActionSummary({
 }: TransactionActionSummaryProps): JSX.Element | null {
     const sender = transaction.transaction?.data.sender;
     const action = getTransactionAction(transaction, sender);
+    const [showAll, setShowAll] = useState(false);
 
     const detailsList: ActionSummaryDetails[] = useMemo(() => {
         const events = transaction.events ?? [];
@@ -193,11 +196,21 @@ export function TransactionActionSummary({
 
     if (!detailsList.length || transaction.effects?.status.status !== 'success') return null;
 
+    const visibleDetails = showAll ? detailsList : detailsList.slice(0, MAX_VISIBLE_LINES);
+
     return (
         <div className="flex flex-col items-center gap-y-xs">
-            {detailsList.map((details, index) => (
+            {visibleDetails.map((details, index) => (
                 <ActionSummaryLine key={index} details={details} transaction={transaction} />
             ))}
+            {detailsList.length > MAX_VISIBLE_LINES && (
+                <ButtonUnstyled
+                    className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                    onClick={() => setShowAll(!showAll)}
+                >
+                    {showAll ? 'Show less' : `Show all ${detailsList.length} actions`}
+                </ButtonUnstyled>
+            )}
         </div>
     );
 }
