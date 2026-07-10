@@ -104,6 +104,7 @@ export function ExpandableList({
                 showAll,
                 items,
                 defaultItemsToShow,
+                itemsLabel,
             }}
         >
             {children || (

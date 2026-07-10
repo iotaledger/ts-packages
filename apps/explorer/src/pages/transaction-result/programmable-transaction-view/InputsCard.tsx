@@ -114,6 +114,7 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
             itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
             count={inputs.length}
             rawData={inputs}
+            defaultItemsToShow={4}
         />
     );
 }

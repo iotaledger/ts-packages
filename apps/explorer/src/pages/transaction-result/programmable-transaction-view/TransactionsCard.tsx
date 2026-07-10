@@ -37,6 +37,7 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
             itemsLabel={transactions.length > 1 ? 'Transactions' : 'Transaction'}
             count={transactions.length}
             rawData={transactions}
+            defaultItemsToShow={4}
         />
     );
 }
