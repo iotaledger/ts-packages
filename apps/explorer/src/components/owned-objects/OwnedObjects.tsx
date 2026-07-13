@@ -194,7 +194,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
 
     if (ownedObjects.isAnyError) {
         return (
-            <div className="p-sm--rs">
+            <div className="py-sm--rs">
                 <InfoBox
                     title="Error"
                     supportingText="Failed to load Assets"
@@ -215,9 +215,11 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                     })}
                 >
                     <div className="flex w-full flex-col flex-wrap items-start justify-between gap-xs sm:min-h-[72px] sm:flex-row sm:items-center md:gap-0">
-                        <Title size={TitleSize.Medium} title="Assets" />
+                        <div className="-mx-md--rs">
+                            <Title size={TitleSize.Medium} title="Assets" />
+                        </div>
                         {hasVisualAssets && availableCategories.length > 0 && (
-                            <div className="flex flex-col gap-sm px-md--rs sm:flex-row sm:gap-0">
+                            <div className="flex flex-col gap-sm sm:flex-row sm:gap-0">
                                 <div className="flex items-center gap-sm">
                                     {availableViewModes.map((mode) => {
                                         const selected = mode.value === viewMode;
@@ -280,7 +282,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                     ) : (
                         <div
                             className={clsx(
-                                'flex-2 flex w-full flex-col overflow-hidden p-md',
+                                'flex-2 flex w-full flex-col overflow-hidden py-md',
                                 ownedObjectsContainerHeight,
                             )}
                         >
@@ -305,7 +307,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                         </div>
                     )}
 
-                    <div className="flex flex-col items-center justify-between gap-sm px-sm--rs py-sm--rs md:flex-row">
+                    <div className="flex flex-col items-center justify-between gap-sm py-sm--rs md:flex-row">
                         {showPagination && hasVisualAssets && activeCategoryData && (
                             <Pagination {...activeCategoryData.pagination} />
                         )}

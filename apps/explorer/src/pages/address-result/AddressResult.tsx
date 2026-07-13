@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
+import { AddressPageContent, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
-import { AddressBalanceBreakdown } from './AddressBalanceBreakdown';
+import { AddressBalanceHero, AddressBalanceTiles } from './AddressBalance';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress } from '@iota/iota-sdk/utils';
-import { useAbstractAccountData } from '~/hooks';
+import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
 
 interface AddressResultPageHeaderProps {
     address: string;
@@ -18,6 +18,7 @@ interface AddressResultPageHeaderProps {
 function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): React.JSX.Element {
     const copyToClipboard = useCopyToClipboard();
     const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(address);
+    const balanceSummary = useAddressBalanceSummary(address);
 
     return (
         <PageHeader
@@ -30,6 +31,8 @@ function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): Rea
             isLoadingSubtitle={isLoadingName}
             subtitle={name}
             showCopyButton={false}
+            after={<AddressBalanceHero summary={balanceSummary} />}
+            bottom={<AddressBalanceTiles summary={balanceSummary} />}
         />
     );
 }
@@ -38,12 +41,7 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
     const isName = isValidIotaName(addressOrName);
     const { data } = useGetDefaultIotaName(isName ? addressOrName : undefined);
 
-    return (
-        <>
-            <OwnedObjectsPanel address={data ?? addressOrName} />
-            <TransactionBlocksPanel address={data ?? addressOrName} />
-        </>
-    );
+    return <AddressPageContent address={data ?? addressOrName} />;
 }
 
 export function AddressResultPage(): JSX.Element {
@@ -61,7 +59,6 @@ export function AddressResultPage(): JSX.Element {
             content={
                 <div className="flex flex-col gap-2xl">
                     <AddressResultPageHeader address={id!} />
-                    <AddressBalanceBreakdown address={id!} />
                     <AddressOrNameResult addressOrName={id!} />
                 </div>
             }

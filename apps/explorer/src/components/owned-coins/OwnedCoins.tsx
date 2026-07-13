@@ -2,12 +2,21 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getCoinSymbol, useGetAllBalances, useRecognizedPackages } from '@iota/core';
-import { type CoinBalance } from '@iota/iota-sdk/client';
-import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import {
+    formatBalanceToUSD,
+    getCoinSymbol,
+    useBalanceInUSD,
+    useGetAllBalances,
+    useRecognizedPackages,
+} from '@iota/core';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { type CoinBalance, type Network } from '@iota/iota-sdk/client';
+import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { FilterList, Warning, SortByDown, SortByUp, SortByDefault } from '@iota/apps-ui-icons';
+import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { OwnedCoinView } from './OwnedCoinView';
+import { COIN_TABLE_COLUMN_ALIGNMENT, getCoinRowGridClasses } from './coinTableLayout';
 import {
     Button,
     ButtonType,
@@ -59,6 +68,7 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
     const owner = normalizeIotaAddress(id);
     const { isPending, data, isError } = useGetAllBalances(owner);
     const recognizedPackages = useRecognizedPackages();
+    const { network } = useIotaClientContext();
 
     const balances: Record<CoinFilter, CoinBalanceVerified[]> = useMemo(() => {
         const balanceData = data?.reduce(
@@ -145,9 +155,23 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
     const coinBalanceHeader =
         `${displayedBalances.length ?? 0} Coin` + (displayedBalances.length !== 1 ? 's' : '');
 
+    // Only IOTA has a fiat price mapping today, so the total fiat value only reflects the IOTA balance.
+    const iotaBalanceTotal = useMemo(
+        () =>
+            balances.allBalances.find((coinBalance) => coinBalance.coinType === IOTA_TYPE_ARG)
+                ?.totalBalance ?? '0',
+        [balances.allBalances],
+    );
+    const totalFiatValue = useBalanceInUSD(IOTA_TYPE_ARG, iotaBalanceTotal, network as Network);
+    // A null/undefined total means the fiat/price infra is unavailable (e.g. non-mainnet
+    // or the feature is off), so the whole Price column is dropped rather than showing '--'
+    // for every row. 0 is a valid value, so the column still shows in that case.
+    const showPrice = totalFiatValue !== null && totalFiatValue !== undefined;
+    const totalFiatValueLabel = showPrice ? formatBalanceToUSD(totalFiatValue) : null;
+
     if (isError) {
         return (
-            <div className="p-sm--rs">
+            <div className="py-sm--rs">
                 <InfoBox
                     title="Error"
                     supportingText="Failed to load Coins"
@@ -169,9 +193,17 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                 </div>
             ) : (
                 <div className="flex h-full flex-col">
-                    <div className="flex flex-col justify-center sm:min-h-[72px]">
+                    <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px]">
                         <Title
                             title={coinBalanceHeader}
+                            supportingElement={
+                                totalFiatValueLabel && (
+                                    <span className="ml-xs flex items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        <span aria-hidden="true">·</span>
+                                        {totalFiatValueLabel}
+                                    </span>
+                                )
+                            }
                             trailingElement={
                                 hasCoinsBalance && (
                                     <div className="flex items-center gap-xs">
@@ -188,7 +220,7 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                     </div>
                     {hasCoinsBalance ? (
                         <>
-                            <div className="relative overflow-y-auto p-sm--rs pt-0">
+                            <div className="relative overflow-y-auto pb-sm--rs">
                                 {filterValue === CoinFilter.Unrecognized && (
                                     <div className="sticky top-0 z-[1] bg-iota-neutral-100 p-sm dark:bg-iota-neutral-10">
                                         <InfoBox
@@ -199,16 +231,18 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                                         />
                                     </div>
                                 )}
+                                <CoinTableHeader showPrice={showPrice} />
                                 <CoinList
                                     coins={visibleCoins}
                                     id={id}
                                     sortField={sortField}
                                     sortOrder={sortOrder}
+                                    showPrice={showPrice}
                                 />
                             </div>
 
                             {displayedBalances.length > limit && (
-                                <div className="flex flex-row flex-wrap items-center justify-between gap-xs px-sm--rs py-sm--rs">
+                                <div className="flex flex-row flex-wrap items-center justify-between gap-xs py-sm--rs">
                                     <Pagination
                                         hasFirst={currentSlice !== 1}
                                         onNext={() => setCurrentSlice(currentSlice + 1)}
@@ -408,9 +442,10 @@ interface CoinListProps {
     id: string;
     sortField: SortField;
     sortOrder: SortOrder;
+    showPrice: boolean;
 }
 
-function CoinList({ coins, id, sortField, sortOrder }: CoinListProps) {
+function CoinList({ coins, id, sortField, sortOrder, showPrice }: CoinListProps) {
     return (
         <div className="flex max-h-[400px] w-full flex-col gap-xxs md:max-h-[650px]">
             {coins.map((coin, index) => (
@@ -420,8 +455,33 @@ function CoinList({ coins, id, sortField, sortOrder }: CoinListProps) {
                     id={id}
                     sortField={sortField}
                     sortOrder={sortOrder}
+                    showPrice={showPrice}
                 />
             ))}
+        </div>
+    );
+}
+
+interface CoinTableHeaderProps {
+    showPrice: boolean;
+}
+
+function CoinTableHeader({ showPrice }: CoinTableHeaderProps): JSX.Element {
+    return (
+        <div
+            className={clsx(
+                getCoinRowGridClasses(showPrice),
+                'px-md--rs py-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60',
+            )}
+        >
+            <span>Name</span>
+            {showPrice && (
+                <span className={clsx('hidden sm:block', COIN_TABLE_COLUMN_ALIGNMENT.price)}>
+                    Price
+                </span>
+            )}
+            <span>Amount</span>
+            <span className={COIN_TABLE_COLUMN_ALIGNMENT.objects}>Objects</span>
         </div>
     );
 }

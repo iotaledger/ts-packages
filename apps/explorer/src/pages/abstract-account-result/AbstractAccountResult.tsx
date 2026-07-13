@@ -20,12 +20,12 @@ import {
 } from '@iota/core';
 import { formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useParams } from 'react-router-dom';
-import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
+import { AddressPageContent, PageLayout } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
-import { useAbstractAccountData } from '~/hooks';
+import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
 import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
-import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
+import { AddressBalanceHero, AddressBalanceTiles } from '../address-result/AddressBalance';
 
 export function AbstractAccountResultPage(): JSX.Element {
     const { id } = useParams();
@@ -35,6 +35,7 @@ export function AbstractAccountResultPage(): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
     const { data: defaultName, isLoading: isLoadingName } = useGetDefaultIotaName(accountId);
+    const balanceSummary = useAddressBalanceSummary(validAccountId ?? accountId);
     const {
         data: accountObjectData,
         isPending: isObjectPending,
@@ -138,10 +139,7 @@ export function AbstractAccountResultPage(): JSX.Element {
                     </div>
                 </Panel>
 
-                <AddressBalanceBreakdown address={validAccountId ?? accountId} />
-
-                <OwnedObjectsPanel address={validAccountId ?? accountId} />
-                <TransactionBlocksPanel address={validAccountId ?? accountId} />
+                <AddressPageContent address={validAccountId ?? accountId} />
             </>
         );
     }
@@ -163,6 +161,16 @@ export function AbstractAccountResultPage(): JSX.Element {
                         isLoadingSubtitle={isLoadingName}
                         subtitle={defaultName}
                         showCopyButton={false}
+                        after={
+                            validAccountId ? (
+                                <AddressBalanceHero summary={balanceSummary} />
+                            ) : undefined
+                        }
+                        bottom={
+                            validAccountId ? (
+                                <AddressBalanceTiles summary={balanceSummary} />
+                            ) : undefined
+                        }
                     />
 
                     {detailsContent}

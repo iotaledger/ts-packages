@@ -35,6 +35,7 @@ export interface PageHeaderProps {
     navigation?: React.ReactNode;
     status?: 'success' | 'failure';
     after?: React.ReactNode;
+    bottom?: React.ReactNode;
     error?: string;
     loading?: boolean;
     showCopyButton?: boolean;
@@ -83,6 +84,7 @@ export function PageHeader({
     error,
     loading,
     after,
+    bottom,
     status,
     showCopyButton = true,
     isLoadingSubtitle,
@@ -176,6 +178,7 @@ export function PageHeader({
                 </div>
             </div>
             {!loading && navigation}
+            {bottom && !loading && <div className="w-full px-md--rs pb-md--rs">{bottom}</div>}
         </Panel>
     );
 }
