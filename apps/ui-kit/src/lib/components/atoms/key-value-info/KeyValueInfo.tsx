@@ -29,7 +29,7 @@ interface KeyValueProps {
     /**
      * The supporting label of the KeyValue (optional).
      */
-    supportingLabel?: string;
+    supportingLabel?: string | ReactNode;
     /**
      * The size of the value (optional).
      */

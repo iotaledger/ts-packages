@@ -16,16 +16,13 @@ import {
 import {
     type BalanceChange,
     type BalanceChangeSummary,
-    formatBalanceToUSD,
+    CoinFiatValue,
     getRecognizedUnRecognizedTokenChanges,
-    useBalanceInUSD,
     useCoinMetadata,
     useFormatCoin,
     ImageIconSize,
     CoinIcon,
 } from '@iota/core';
-import { useIotaClientContext } from '@iota/dapp-kit';
-import { type Network } from '@iota/iota-sdk/client';
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import { RecognizedBadge } from '@iota/apps-ui-icons';
 import { useMemo } from 'react';
@@ -42,8 +39,6 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
     const coinFormat = isLargeScreen ? CoinFormat.Full : CoinFormat.Rounded;
     const [formatted, symbol] = useFormatCoin({ balance: amount, coinType, format: coinFormat });
     const { data: coinMetaData } = useCoinMetadata(coinType);
-    const { network } = useIotaClientContext();
-    const amountInUSD = useBalanceInUSD(coinType, amount, network as Network);
     const isPositive = BigInt(amount) > 0n;
 
     if (!change) {
@@ -75,9 +70,12 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
                         type={CardActionType.SupportingText}
                         title={`${isPositive ? '+' : ''} ${formatted} ${symbol}`}
                         subtitle={
-                            amountInUSD && Math.abs(amountInUSD) >= 0.005
-                                ? formatBalanceToUSD(Math.abs(amountInUSD))
-                                : undefined
+                            <CoinFiatValue
+                                coinType={coinType}
+                                amount={amount}
+                                withParentheses={false}
+                                className=""
+                            />
                         }
                     />
                 </Card>

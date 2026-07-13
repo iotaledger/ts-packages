@@ -3,15 +3,9 @@
 
 import { useState } from 'react';
 import { Badge, BadgeType, ButtonUnstyled, KeyValueInfo } from '@iota/apps-ui-kit';
-import {
-    formatBalanceToUSD,
-    useBalanceInUSD,
-    useFormatCoin,
-    type GasSummaryType,
-} from '@iota/core';
-import { useIotaClientContext } from '@iota/dapp-kit';
-import type { IotaTransactionBlockResponse, Network } from '@iota/iota-sdk/client';
-import { IOTA_TYPE_ARG, formatAddress, formatDigest } from '@iota/iota-sdk/utils';
+import { CoinFiatValue, useFormatCoin, type GasSummaryType } from '@iota/core';
+import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
+import { formatAddress, formatDigest } from '@iota/iota-sdk/utils';
 import {
     AddressLink,
     CheckpointSequenceLink,
@@ -31,7 +25,6 @@ export function TransactionOverview({
     transaction,
     gasSummary,
 }: TransactionOverviewProps): JSX.Element {
-    const { network } = useIotaClientContext();
     const [showAllGasPayment, setShowAllGasPayment] = useState(false);
     const isMediumOrAbove = useBreakpoint('md');
 
@@ -45,7 +38,6 @@ export function TransactionOverview({
 
     const [formattedTotalGas, totalGasSymbol] = useFormatCoin({ balance: totalGas });
     const [formattedBudget, budgetSymbol] = useFormatCoin({ balance: gasBudget });
-    const gasInUSD = useBalanceInUSD(IOTA_TYPE_ARG, totalGas ?? 0, network as Network);
 
     return (
         <div className="flex flex-col gap-sm p-md--rs md:max-w-4xl">
@@ -119,9 +111,11 @@ export function TransactionOverview({
                     keyText="Total Gas Fee"
                     value={`${formattedTotalGas} ${totalGasSymbol}`}
                     supportingLabel={
-                        gasInUSD && Math.abs(gasInUSD) >= 0.005
-                            ? formatBalanceToUSD(gasInUSD)
-                            : undefined
+                        <CoinFiatValue
+                            amount={totalGas ?? 0}
+                            withParentheses={false}
+                            className=""
+                        />
                     }
                     fullwidth={!isMediumOrAbove}
                 />
