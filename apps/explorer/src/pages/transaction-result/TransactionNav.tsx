@@ -45,7 +45,7 @@ export function TransactionNav({ transaction }: TransactionNavProps): JSX.Elemen
     }
 
     return (
-        <div className="grid grid-cols-2 gap-x-md gap-y-xs sm:flex sm:flex-row sm:flex-wrap">
+        <div className="grid grid-cols-2 gap-x-md gap-y-xs px-md--rs sm:flex sm:flex-row sm:flex-wrap sm:px-0">
             {pageSections.map((section) => (
                 <ButtonSegment
                     key={section}

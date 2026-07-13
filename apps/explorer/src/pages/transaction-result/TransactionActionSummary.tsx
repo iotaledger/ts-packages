@@ -2,22 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    CoinFiatValue,
     ImageIcon,
     ImageIconSize,
     STAKING_REQUEST_EVENT,
     TransactionAction,
     UNSTAKING_REQUEST_EVENT,
     getTransactionAction,
-    formatBalanceToUSD,
-    useBalanceInUSD,
     useCopyToClipboard,
     useFormatCoin,
 } from '@iota/core';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { Copy } from '@iota/apps-ui-icons';
-import { useIotaClientContext, useIotaClientQuery } from '@iota/dapp-kit';
+import { useIotaClientQuery } from '@iota/dapp-kit';
 import { IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
-import type { IotaTransactionBlockResponse, Network, ObjectOwner } from '@iota/iota-sdk/client';
+import type { IotaTransactionBlockResponse, ObjectOwner } from '@iota/iota-sdk/client';
 import { useMemo, useState } from 'react';
 import { AddressLink, ValidatorLink } from '~/components/ui';
 
@@ -227,12 +226,6 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
         balance: details.amount?.toString(),
         coinType: details.coinType,
     });
-    const { network } = useIotaClientContext();
-    const amountInUSD = useBalanceInUSD(
-        details.coinType ?? IOTA_TYPE_ARG,
-        details.amount?.toString() ?? 0,
-        network as Network,
-    );
 
     const validator = details.isValidator
         ? systemState?.activeValidators.find((v) => v.iotaAddress === details.address)
@@ -253,11 +246,12 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
                     {formattedAmount} {details.vested ? `vested ${symbol}` : symbol}
                 </span>
             )}
-            {details.amount !== undefined && amountInUSD && Math.abs(amountInUSD) >= 0.005 ? (
-                <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    ({formatBalanceToUSD(amountInUSD)})
-                </span>
-            ) : null}
+            {details.amount !== undefined && (
+                <CoinFiatValue
+                    coinType={details.coinType ?? IOTA_TYPE_ARG}
+                    amount={details.amount}
+                />
+            )}
             {!!details.nftCount && (
                 <span>
                     {details.amount !== undefined && 'and '}
