@@ -1,4 +1,4 @@
-// Copyright (c) 2024 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
 import { useIotaClientContext } from '@iota/dapp-kit';
@@ -14,12 +14,6 @@ export interface CoinFiatValueProps {
     withParentheses?: boolean;
 }
 
-/**
- * Renders the fiat (USD) value of a coin amount.
- *
- * Renders nothing when fiat conversion is unavailable (feature-gated to mainnet)
- * or when the resulting value is below one cent.
- */
 export function CoinFiatValue({
     amount,
     coinType = IOTA_TYPE_ARG,
