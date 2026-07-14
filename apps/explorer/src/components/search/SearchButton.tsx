@@ -18,7 +18,7 @@ export function SearchButton({ onClick }: SearchButtonProps): JSX.Element {
                 type="button"
                 onClick={onClick}
                 aria-label="Open search"
-                className="button-border-color-outline state-layer flex flex-row items-center gap-2 rounded-full bg-transparent px-md py-xs transition-all duration-150 ease-in"
+                className="button-border-color-outline state-layer flex h-10 flex-row items-center gap-2 rounded-full bg-transparent px-md transition-all duration-150 ease-in"
             >
                 <SearchIcon className="button-text-color-neutral m-px size-5" />
                 <span className="hidden md:block">
