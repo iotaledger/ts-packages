@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import cx from 'clsx';
 import { Dialog, DialogContent, DialogPosition, Divider, Header } from '@iota/apps-ui-kit';
 import { LinkWithQuery } from '~/components/ui';
-import { ExpandableSection, NetworkSelector, NetworkVersion, ThemeSelectorMenu } from '../settings';
+import { ExpandableSection, NetworkVersion, ThemeSelectorMenu } from '../settings';
 import { NAV_LINKS, isNavLinkActive } from './navLinks';
 
 interface MobileMenuProps {
@@ -41,9 +41,6 @@ export function MobileMenu({ open, onOpenChange }: MobileMenuProps): JSX.Element
                         })}
                     </nav>
                     <Divider />
-                    <ExpandableSection title="Network">
-                        <NetworkSelector />
-                    </ExpandableSection>
                     <ExpandableSection title="Theme">
                         <ThemeSelectorMenu />
                     </ExpandableSection>

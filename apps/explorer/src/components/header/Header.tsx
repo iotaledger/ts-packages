@@ -62,7 +62,7 @@ export function Header(): JSX.Element {
                     <div className="hidden items-stretch md:flex">
                         <ThemeSwitcherButton />
                     </div>
-                    <div className="hidden items-stretch md:flex">
+                    <div className="flex items-stretch">
                         <NetworkMenu />
                     </div>
                     <div className="flex items-stretch md:hidden">
@@ -70,7 +70,7 @@ export function Header(): JSX.Element {
                             type={ButtonType.Outlined}
                             size={ButtonSize.Small}
                             aria-label="Open menu"
-                            icon={<MenuIcon className="size-5" />}
+                            icon={<MenuIcon className="m-px size-5" />}
                             onClick={() => setMenuOpen(true)}
                         />
                     </div>

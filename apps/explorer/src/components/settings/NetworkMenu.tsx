@@ -46,7 +46,7 @@ export function NetworkMenu(): JSX.Element {
                 size={ButtonSize.Small}
                 aria-label="Network"
                 text={capitalize(currentNetworkName)}
-                icon={<Globe className="m-0.5 size-5" />}
+                icon={<Globe className="m-px size-5" />}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             />
             <Transition
