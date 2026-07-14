@@ -9,13 +9,17 @@ import { Transition } from '@headlessui/react';
 import { getAllNetworks } from '@iota/iota-sdk/client';
 import { capitalize } from '@iota/core';
 import { NetworkContext } from '~/contexts';
+import { useMediaQuery } from '~/hooks';
 import { NetworkSelector } from './NetworkSelector';
 import { NetworkVersion } from './NetworkVersion';
+
+const SHOW_NETWORK_NAME_MIN_WIDTH = 414;
 
 export function NetworkMenu(): JSX.Element {
     const elementRef = useRef<HTMLDivElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [network] = useContext(NetworkContext);
+    const showNetworkName = useMediaQuery(`(min-width: ${SHOW_NETWORK_NAME_MIN_WIDTH}px)`);
 
     const currentNetworkName = getAllNetworks()[network]?.name ?? 'Custom';
 
@@ -45,7 +49,7 @@ export function NetworkMenu(): JSX.Element {
                 type={ButtonType.Outlined}
                 size={ButtonSize.Small}
                 aria-label="Network"
-                text={capitalize(currentNetworkName)}
+                text={showNetworkName ? capitalize(currentNetworkName) : undefined}
                 icon={<Globe className="m-px size-5" />}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             />
