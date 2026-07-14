@@ -18,9 +18,9 @@ export function SearchButton({ onClick }: SearchButtonProps): JSX.Element {
                 type="button"
                 onClick={onClick}
                 aria-label="Open search"
-                className="button-border-color-outline state-layer flex flex-row items-center gap-2 rounded-full bg-transparent px-md py-[6.5px] transition-all duration-150 ease-in"
+                className="button-border-color-outline state-layer flex flex-row items-center gap-2 rounded-full bg-transparent px-md py-xs transition-all duration-150 ease-in"
             >
-                <SearchIcon className="button-text-color-neutral h-5 w-5" />
+                <SearchIcon className="button-text-color-neutral m-px size-5" />
                 <span className="hidden md:block">
                     <Badge type={BadgeType.Neutral} size={BadgeSize.Small} label={SHORTCUT_LABEL} />
                 </span>

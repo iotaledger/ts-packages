@@ -59,11 +59,11 @@ export function Header(): JSX.Element {
                 </div>
                 <div className="flex flex-row items-center gap-xs">
                     <SearchButton onClick={() => setSearchOpen(true)} />
-                    <div className="hidden items-stretch md:flex">
-                        <ThemeSwitcherButton />
-                    </div>
                     <div className="flex items-stretch">
                         <NetworkMenu />
+                    </div>
+                    <div className="hidden items-stretch md:flex">
+                        <ThemeSwitcherButton />
                     </div>
                     <div className="flex items-stretch md:hidden">
                         <Button
