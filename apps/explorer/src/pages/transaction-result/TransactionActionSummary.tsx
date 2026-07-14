@@ -294,7 +294,7 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
                         )}
                     </span>
                 ) : (
-                    <AddressLink address={details.address} />
+                    <AddressLink address={details.address} copyText={details.address} />
                 )
             ) : details.recipientCount && details.recipientCount > 1 ? (
                 <span>{details.recipientCount} recipients</span>
