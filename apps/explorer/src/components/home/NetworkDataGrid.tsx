@@ -124,7 +124,7 @@ export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridPro
                     </Link>
                 ) : null}
             </div>
-            <div className="grid grid-cols-2 gap-md--rs sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-md--rs sm:grid-cols-3 md:grid-cols-4">
                 {stats.map(({ label, value, supportingLabel }) => (
                     <DisplayStats
                         key={label}

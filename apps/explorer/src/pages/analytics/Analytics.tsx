@@ -27,7 +27,7 @@ export function Analytics(): JSX.Element {
     return (
         <PageLayout
             content={
-                <div className="flex w-full flex-col gap-xl">
+                <div className="flex w-full flex-col gap-2xl">
                     <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                         Analytics
                     </div>

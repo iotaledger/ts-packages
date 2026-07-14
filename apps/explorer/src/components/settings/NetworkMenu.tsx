@@ -1,17 +1,23 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import { Button, ButtonSize, ButtonType, Divider, Dropdown } from '@iota/apps-ui-kit';
 import { Globe } from '@iota/apps-ui-icons';
 import { Transition } from '@headlessui/react';
+import { getAllNetworks } from '@iota/iota-sdk/client';
+import { capitalize } from '@iota/core';
+import { NetworkContext } from '~/contexts';
 import { NetworkSelector } from './NetworkSelector';
 import { NetworkVersion } from './NetworkVersion';
 
 export function NetworkMenu(): JSX.Element {
     const elementRef = useRef<HTMLDivElement>(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [network] = useContext(NetworkContext);
+
+    const currentNetworkName = getAllNetworks()[network]?.name ?? 'Custom';
 
     useEffect(() => {
         const listener = (event: MouseEvent | TouchEvent) => {
@@ -39,6 +45,7 @@ export function NetworkMenu(): JSX.Element {
                 type={ButtonType.Outlined}
                 size={ButtonSize.Small}
                 aria-label="Network"
+                text={capitalize(currentNetworkName)}
                 icon={<Globe className="m-0.5 size-5" />}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             />
