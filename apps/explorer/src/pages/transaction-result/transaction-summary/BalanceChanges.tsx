@@ -74,7 +74,6 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }): JSX.Element 
                                 coinType={coinType}
                                 amount={amount}
                                 withParentheses={false}
-                                className=""
                             />
                         }
                     />

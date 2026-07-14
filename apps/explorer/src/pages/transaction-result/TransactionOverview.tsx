@@ -111,11 +111,7 @@ export function TransactionOverview({
                     keyText="Total Gas Fee"
                     value={`${formattedTotalGas} ${totalGasSymbol}`}
                     supportingLabel={
-                        <CoinFiatValue
-                            amount={totalGas ?? 0}
-                            withParentheses={false}
-                            className=""
-                        />
+                        <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
                     }
                     fullwidth={!isMediumOrAbove}
                 />
