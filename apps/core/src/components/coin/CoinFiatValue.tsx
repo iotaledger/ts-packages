@@ -10,14 +10,12 @@ import { formatBalanceToUSD } from '../../utils/formatBalanceToUSD';
 export interface CoinFiatValueProps {
     amount: bigint | string | number;
     coinType?: string;
-    className?: string;
     withParentheses?: boolean;
 }
 
 export function CoinFiatValue({
     amount,
     coinType = IOTA_TYPE_ARG,
-    className = 'text-body-md text-iota-neutral-40 dark:text-iota-neutral-60',
     withParentheses = true,
 }: CoinFiatValueProps): JSX.Element | null {
     const { network } = useIotaClientContext();
@@ -30,7 +28,7 @@ export function CoinFiatValue({
     const formattedValue = formatBalanceToUSD(Math.abs(value));
 
     return (
-        <span className={className}>
+        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
             {withParentheses ? `(${formattedValue})` : formattedValue}
         </span>
     );
