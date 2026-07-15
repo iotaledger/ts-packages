@@ -10,9 +10,16 @@ import {
     useMaxCommitteeSize,
     useGetCandidateValidators,
     useGetPendingValidator,
+    type ValidatorEpochInfoEvent,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
-import { PageLayout, ValidatorMeta, ValidatorStats, ValidatorStatusLegend } from '~/components';
+import {
+    PageLayout,
+    ValidatorMeta,
+    ValidatorStats,
+    ValidatorStatusLegend,
+    ValidatorStakingHistory,
+} from '~/components';
 import { VALIDATOR_LOW_STAKE_GRACE_PERIOD } from '~/lib/constants';
 import { getValidatorMoveEvent } from '~/lib/utils';
 import {
@@ -31,12 +38,7 @@ import { Info, Warning } from '@iota/apps-ui-icons';
 import type { LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 
-type PrevEpochEventData = {
-    pool_staking_reward?: string;
-    stake?: string;
-    reference_gas_survey_quote?: string;
-    commission_rate?: string;
-};
+type PrevEpochEventData = Partial<ValidatorEpochInfoEvent>;
 
 const getAtRiskRemainingEpochs = (
     data: LatestIotaSystemStateSummary | undefined,
@@ -269,6 +271,7 @@ function ValidatorDetails(): JSX.Element {
                             style={InfoBoxStyle.Elevated}
                         />
                     )}
+                    <ValidatorStakingHistory validatorAddress={activeValidatorData.iotaAddress} />
                     <ValidatorStatusLegend />
                 </div>
             }

@@ -11,10 +11,18 @@ type GetValidatorsEvent = {
 };
 
 // NOTE: This copies the query limit from our Rust JSON RPC backend, this needs to be kept in sync!
-const QUERY_MAX_RESULT_LIMIT = 50;
+export const QUERY_MAX_RESULT_LIMIT = 50;
 export const VALIDATORS_EVENTS_QUERY = '0x3::validator_set::ValidatorEpochInfoEventV1';
 
-//TODO: get validatorEvents by validator address
+export interface ValidatorEpochInfoEvent {
+    epoch: string;
+    validator_address: string;
+    pool_staking_reward: string;
+    stake: string;
+    reference_gas_survey_quote: string;
+    commission_rate: string;
+}
+
 export function useGetValidatorsEvents({ limit, order }: GetValidatorsEvent) {
     const client = useIotaClient();
     // Since we are getting events based on the number of validators, we need to make sure that the limit
