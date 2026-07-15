@@ -29,6 +29,7 @@ interface StatItem {
 
 interface NetworkDataGridProps {
     showAnalyticsLink?: boolean;
+    showExtendedStats?: boolean;
 }
 
 const FALLBACK = '--';
@@ -38,7 +39,10 @@ function formatSupply(value: string | undefined): string {
     return formatBalance(value, IOTA_DECIMALS, CoinFormat.Rounded);
 }
 
-export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridProps): JSX.Element {
+export function NetworkDataGrid({
+    showAnalyticsLink = true,
+    showExtendedStats = true,
+}: NetworkDataGridProps): JSX.Element {
     const { data: networkMetrics } = useGetNetworkMetrics();
     const { data: totalTransactions } = useIotaClientQuery('getTotalTransactionBlocks');
     const { data: circulatingSupply } = useIotaClientQuery('getCirculatingSupply');
@@ -100,10 +104,10 @@ export function NetworkDataGrid({ showAnalyticsLink = true }: NetworkDataGridPro
         { label: 'Total Addresses', value: totalAddresses },
         { label: 'Total Packages', value: totalPackages },
         { label: 'Total Objects', value: totalObjects },
-        ...(isFiatEnabled && priceDisplay
+        ...(showExtendedStats && isFiatEnabled && priceDisplay
             ? [{ label: 'Token Price', value: priceDisplay, supportingLabel: 'per IOTA' }]
             : []),
-        ...(isFiatEnabled && marketCapDisplay
+        ...(showExtendedStats && isFiatEnabled && marketCapDisplay
             ? [{ label: 'Market Cap', value: marketCapDisplay }]
             : []),
     ];

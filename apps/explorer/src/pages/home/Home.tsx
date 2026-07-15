@@ -27,7 +27,7 @@ export function Home(): JSX.Element {
                     </div>
 
                     {/* Network Data */}
-                    <NetworkDataGrid />
+                    <NetworkDataGrid showExtendedStats={false} />
 
                     {/* Activity */}
                     <ErrorBoundary>
