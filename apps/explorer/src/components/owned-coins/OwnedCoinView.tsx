@@ -53,8 +53,7 @@ export function OwnedCoinView({
     sortOrder,
     showPrice,
 }: OwnedCoinViewProps): JSX.Element {
-    const isIotaCoin = coin.coinType === IOTA_TYPE_ARG;
-    const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(isIotaCoin);
+    const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(false);
     const [formattedTotalBalance, symbol] = useFormatCoin({
         balance: coin.totalBalance,
         coinType: coin.coinType,

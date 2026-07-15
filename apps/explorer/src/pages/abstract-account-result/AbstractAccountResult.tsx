@@ -25,7 +25,7 @@ import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
 import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
-import { AddressBalanceHero, AddressBalanceTiles } from '../address-result/AddressBalance';
+import { AddressBalanceBreakdown, AddressBalanceHero } from '../address-result/AddressBalance';
 
 export function AbstractAccountResultPage(): JSX.Element {
     const { id } = useParams();
@@ -166,12 +166,9 @@ export function AbstractAccountResultPage(): JSX.Element {
                                 <AddressBalanceHero summary={balanceSummary} />
                             ) : undefined
                         }
-                        bottom={
-                            validAccountId ? (
-                                <AddressBalanceTiles summary={balanceSummary} />
-                            ) : undefined
-                        }
                     />
+
+                    {validAccountId && <AddressBalanceBreakdown summary={balanceSummary} />}
 
                     {detailsContent}
                 </div>

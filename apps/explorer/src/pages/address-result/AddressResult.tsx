@@ -6,7 +6,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { AddressPageContent, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
-import { AddressBalanceHero, AddressBalanceTiles } from './AddressBalance';
+import { AddressBalanceBreakdown, AddressBalanceHero } from './AddressBalance';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
@@ -21,19 +21,21 @@ function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): Rea
     const balanceSummary = useAddressBalanceSummary(address);
 
     return (
-        <PageHeader
-            type="Address"
-            title={
-                <div className="flex flex-col gap-xs">
-                    <AddressAlias address={address} onCopy={() => copyToClipboard(address)} />
-                </div>
-            }
-            isLoadingSubtitle={isLoadingName}
-            subtitle={name}
-            showCopyButton={false}
-            after={<AddressBalanceHero summary={balanceSummary} />}
-            bottom={<AddressBalanceTiles summary={balanceSummary} />}
-        />
+        <>
+            <PageHeader
+                type="Address"
+                title={
+                    <div className="flex flex-col gap-xs">
+                        <AddressAlias address={address} onCopy={() => copyToClipboard(address)} />
+                    </div>
+                }
+                isLoadingSubtitle={isLoadingName}
+                subtitle={name}
+                showCopyButton={false}
+                after={<AddressBalanceHero summary={balanceSummary} />}
+            />
+            <AddressBalanceBreakdown summary={balanceSummary} />
+        </>
     );
 }
 

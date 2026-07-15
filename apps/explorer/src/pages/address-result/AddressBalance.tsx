@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CoinFiatValue, IOTA_COIN_METADATA, useCopyToClipboard, useFormatCoin } from '@iota/core';
-import { ButtonUnstyled, Skeleton, Tooltip } from '@iota/apps-ui-kit';
+import { ButtonUnstyled, Panel, Skeleton, Title, TitleSize, Tooltip } from '@iota/apps-ui-kit';
 import { Copy, Info } from '@iota/apps-ui-icons';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { onCopySuccess } from '~/lib';
@@ -10,8 +10,10 @@ import type { AddressBalanceSummary } from '~/hooks';
 
 const TOOLTIP_TEXT = 'This balance breakdown does not include unmigrated stardust funds.';
 const AVAILABLE_TOOLTIP_TEXT = 'IOTA that can be used or transferred immediately.';
-const STAKING_TOOLTIP_TEXT =
-    'IOTA currently locked in staking, including funds that are both timelocked and staked. Cannot be used until unstaked.';
+const STAKED_TOOLTIP_TEXT =
+    'IOTA staked with validators. The secondary figure shows estimated rewards accrued, which are not part of the staked principal. Cannot be used until unstaked.';
+const TIMELOCKED_STAKED_TOOLTIP_TEXT =
+    'Timelocked IOTA that is currently staked. The secondary figure shows estimated rewards accrued. Cannot be used until unstaked and the timelock expires.';
 const TIMELOCKED_TOOLTIP_TEXT =
     "IOTA locked until a specific time. Depending on the lock's expiration, these funds can either be used for staking or collected when the timelock allows it.";
 
@@ -83,49 +85,66 @@ export function AddressBalanceHero({ summary }: AddressBalanceHeroProps): React.
     );
 }
 
-interface AddressBalanceTilesProps {
+interface AddressBalanceBreakdownProps {
     summary: AddressBalanceSummary;
 }
 
-export function AddressBalanceTiles({ summary }: AddressBalanceTilesProps): React.JSX.Element {
+export function AddressBalanceBreakdown({
+    summary,
+}: AddressBalanceBreakdownProps): React.JSX.Element {
     const {
         availableBalance,
         isLoadingAvailableBalance,
         isAvailableBalanceErrored,
-        stakingBalance,
-        stakingRewards,
-        isLoadingStaking,
-        isStakingErrored,
+        stakedBalance,
+        stakedRewards,
+        isLoadingStaked,
+        isStakedErrored,
+        timelockedStakedBalance,
+        timelockedStakedRewards,
+        isLoadingTimelockedStaked,
+        isTimelockedStakedErrored,
         timelockedBalance,
         isLoadingTimelocked,
         isTimelockedErrored,
     } = summary;
 
     return (
-        <div className="grid grid-cols-1 gap-sm sm:grid-cols-3">
-            <BalanceTile
-                label="Available"
-                tooltipText={AVAILABLE_TOOLTIP_TEXT}
-                value={availableBalance}
-                isLoading={isLoadingAvailableBalance}
-                isError={isAvailableBalanceErrored}
-            />
-            <BalanceTile
-                label="Staking"
-                tooltipText={STAKING_TOOLTIP_TEXT}
-                value={stakingBalance}
-                isLoading={isLoadingStaking}
-                isError={isStakingErrored}
-                rewards={stakingRewards}
-            />
-            <BalanceTile
-                label="Timelocked"
-                tooltipText={TIMELOCKED_TOOLTIP_TEXT}
-                value={timelockedBalance}
-                isLoading={isLoadingTimelocked}
-                isError={isTimelockedErrored}
-            />
-        </div>
+        <Panel>
+            <Title size={TitleSize.Small} title="Balance Breakdown" tooltipText={TOOLTIP_TEXT} />
+            <div className="grid grid-cols-1 gap-sm px-md pb-md pt-xs sm:grid-cols-2 lg:grid-cols-4">
+                <BalanceTile
+                    label="Available"
+                    tooltipText={AVAILABLE_TOOLTIP_TEXT}
+                    value={availableBalance}
+                    isLoading={isLoadingAvailableBalance}
+                    isError={isAvailableBalanceErrored}
+                />
+                <BalanceTile
+                    label="Staked"
+                    tooltipText={STAKED_TOOLTIP_TEXT}
+                    value={stakedBalance}
+                    isLoading={isLoadingStaked}
+                    isError={isStakedErrored}
+                    rewards={stakedRewards}
+                />
+                <BalanceTile
+                    label="Timelocked Staked"
+                    tooltipText={TIMELOCKED_STAKED_TOOLTIP_TEXT}
+                    value={timelockedStakedBalance}
+                    isLoading={isLoadingTimelockedStaked}
+                    isError={isTimelockedStakedErrored}
+                    rewards={timelockedStakedRewards}
+                />
+                <BalanceTile
+                    label="Timelocked"
+                    tooltipText={TIMELOCKED_TOOLTIP_TEXT}
+                    value={timelockedBalance}
+                    isLoading={isLoadingTimelocked}
+                    isError={isTimelockedErrored}
+                />
+            </div>
+        </Panel>
     );
 }
 
@@ -146,16 +165,9 @@ function BalanceTile({
     isError,
     rewards,
 }: BalanceTileProps): React.JSX.Element {
-    const [roundedAmount] = useFormatCoin({
-        balance: value,
-    });
-    const [fullAmount, symbol] = useFormatCoin({
-        balance: value,
-        format: CoinFormat.Full,
-    });
-    const [roundedRewards] = useFormatCoin({
-        balance: rewards ?? 0n,
-    });
+    const [roundedAmount] = useFormatCoin({ balance: value });
+    const [fullAmount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+    const [roundedRewards] = useFormatCoin({ balance: rewards ?? 0n });
 
     return (
         <div className="flex flex-col gap-xs rounded-xl bg-iota-neutral-96 p-md dark:bg-iota-neutral-10">
@@ -176,16 +188,22 @@ function BalanceTile({
                     --
                 </span>
             ) : (
-                <Tooltip openDelay={100} text={`${fullAmount} ${symbol}`}>
-                    <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
-                        {roundedAmount} {symbol}
-                    </span>
-                </Tooltip>
+                <div className="flex flex-row flex-wrap items-baseline gap-x-xs">
+                    <Tooltip openDelay={100} text={`${fullAmount} ${symbol}`}>
+                        <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                            {roundedAmount} {symbol}
+                        </span>
+                    </Tooltip>
+                    <CoinFiatValue
+                        amount={value}
+                        withParentheses={false}
+                        className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
+                    />
+                </div>
             )}
-            {!isLoading && !isError && <CoinFiatValue amount={value} withParentheses={false} />}
             {!isLoading && !isError && rewards !== undefined && rewards > 0n && (
-                <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    incl. {roundedRewards} {symbol} rewards
+                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    +{roundedRewards} {symbol} rewards
                 </span>
             )}
         </div>

@@ -23,10 +23,15 @@ export interface AddressBalanceSummary {
     isLoadingAvailableBalance: boolean;
     isAvailableBalanceErrored: boolean;
 
-    stakingBalance: bigint;
-    stakingRewards: bigint;
-    isLoadingStaking: boolean;
-    isStakingErrored: boolean;
+    stakedBalance: bigint;
+    stakedRewards: bigint;
+    isLoadingStaked: boolean;
+    isStakedErrored: boolean;
+
+    timelockedStakedBalance: bigint;
+    timelockedStakedRewards: bigint;
+    isLoadingTimelockedStaked: boolean;
+    isTimelockedStakedErrored: boolean;
 
     timelockedBalance: bigint;
     isLoadingTimelocked: boolean;
@@ -82,12 +87,6 @@ export function useAddressBalanceSummary(address: string): AddressBalanceSummary
         BigInt(0),
     );
 
-    const stakingBalance = totalDelegatedStake + totalTimelockedStaked;
-    const stakingRewards = totalDelegatedStakeRewards + totalTimelockedStakedRewards;
-
-    const isLoadingStaking = isLoadingDelegatedStakes || isLoadingTimelockedStakeObjects;
-    const isStakingErrored = isDelegatedStakeErrored || isTimelockedStakedObjectsErrored;
-
     const totalBalance =
         BigInt(balance?.totalBalance || 0) +
         BigInt(totalDelegatedStake || 0) +
@@ -115,10 +114,15 @@ export function useAddressBalanceSummary(address: string): AddressBalanceSummary
         isLoadingAvailableBalance: isLoadingBalance,
         isAvailableBalanceErrored: isBalanceErrored,
 
-        stakingBalance,
-        stakingRewards,
-        isLoadingStaking,
-        isStakingErrored,
+        stakedBalance: totalDelegatedStake,
+        stakedRewards: totalDelegatedStakeRewards,
+        isLoadingStaked: isLoadingDelegatedStakes,
+        isStakedErrored: isDelegatedStakeErrored,
+
+        timelockedStakedBalance: totalTimelockedStaked,
+        timelockedStakedRewards: totalTimelockedStakedRewards,
+        isLoadingTimelockedStaked: isLoadingTimelockedStakeObjects,
+        isTimelockedStakedErrored: isTimelockedStakedObjectsErrored,
 
         timelockedBalance: totalTimelockedTokens,
         isLoadingTimelocked: isTimelockedObjectsLoading,
