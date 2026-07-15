@@ -2,3 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './AddressPageContent';
+export * from './AddressBalanceHero';
+export * from './AddressStakingTab';

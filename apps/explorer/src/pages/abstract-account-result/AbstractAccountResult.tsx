@@ -20,12 +20,11 @@ import {
 } from '@iota/core';
 import { formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useParams } from 'react-router-dom';
-import { AddressPageContent, PageLayout } from '~/components';
+import { AddressBalanceHero, AddressPageContent, PageLayout } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
-import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
+import { useAbstractAccountData } from '~/hooks';
 import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
-import { AddressBalanceBreakdown, AddressBalanceHero } from '../address-result/AddressBalance';
 
 export function AbstractAccountResultPage(): JSX.Element {
     const { id } = useParams();
@@ -35,7 +34,6 @@ export function AbstractAccountResultPage(): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
     const { data: defaultName, isLoading: isLoadingName } = useGetDefaultIotaName(accountId);
-    const balanceSummary = useAddressBalanceSummary(validAccountId ?? accountId);
     const {
         data: accountObjectData,
         isPending: isObjectPending,
@@ -163,12 +161,10 @@ export function AbstractAccountResultPage(): JSX.Element {
                         showCopyButton={false}
                         after={
                             validAccountId ? (
-                                <AddressBalanceHero summary={balanceSummary} />
+                                <AddressBalanceHero address={validAccountId} />
                             ) : undefined
                         }
                     />
-
-                    {validAccountId && <AddressBalanceBreakdown summary={balanceSummary} />}
 
                     {detailsContent}
                 </div>

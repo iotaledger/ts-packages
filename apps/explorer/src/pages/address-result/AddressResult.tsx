@@ -3,22 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { AddressPageContent, PageLayout } from '~/components';
+import { AddressBalanceHero, AddressPageContent, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
-import { AddressBalanceBreakdown, AddressBalanceHero } from './AddressBalance';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress } from '@iota/iota-sdk/utils';
-import { useAbstractAccountData, useAddressBalanceSummary } from '~/hooks';
+import { useAbstractAccountData } from '~/hooks';
 
-interface AddressResultPageHeaderProps {
-    address: string;
-}
-
-function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): React.JSX.Element {
+function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
+    const isName = isValidIotaName(addressOrName);
+    const { data: resolvedAddress } = useGetDefaultIotaName(isName ? addressOrName : undefined);
+    const address = resolvedAddress ?? addressOrName;
+
     const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(address);
-    const balanceSummary = useAddressBalanceSummary(address);
 
     return (
         <>
@@ -32,18 +30,11 @@ function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): Rea
                 isLoadingSubtitle={isLoadingName}
                 subtitle={name}
                 showCopyButton={false}
-                after={<AddressBalanceHero summary={balanceSummary} />}
+                after={<AddressBalanceHero address={address} />}
             />
-            <AddressBalanceBreakdown summary={balanceSummary} />
+            <AddressPageContent address={address} />
         </>
     );
-}
-
-function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
-    const isName = isValidIotaName(addressOrName);
-    const { data } = useGetDefaultIotaName(isName ? addressOrName : undefined);
-
-    return <AddressPageContent address={data ?? addressOrName} />;
 }
 
 export function AddressResultPage(): JSX.Element {
@@ -60,7 +51,6 @@ export function AddressResultPage(): JSX.Element {
         <PageLayout
             content={
                 <div className="flex flex-col gap-2xl">
-                    <AddressResultPageHeader address={id!} />
                     <AddressOrNameResult addressOrName={id!} />
                 </div>
             }
