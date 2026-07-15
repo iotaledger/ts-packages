@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Chip } from '@iota/apps-ui-kit';
+import { ButtonSegment } from '@iota/apps-ui-kit';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { useEffect, useRef, useState } from 'react';
 
@@ -70,7 +70,7 @@ export function TransactionNav({ transaction }: TransactionNavProps): JSX.Elemen
         <div ref={navRef} className="sticky top-[128px] z-10 md:top-[88px]">
             <div className="panel-bg panel-border-color flex flex-row flex-wrap items-center gap-x-xs gap-y-xs rounded-3xl border p-xs sm:gap-x-md sm:rounded-full">
                 {pageSections.map((section) => (
-                    <Chip
+                    <ButtonSegment
                         key={section}
                         onClick={() => goToSection(section)}
                         label={PAGE_SECTION_LABELS[section]}

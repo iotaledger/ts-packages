@@ -232,7 +232,7 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
         : undefined;
 
     return (
-        <div className="flex flex-wrap items-center gap-x-xs gap-y-xxs text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+        <div className="flex flex-wrap items-center justify-center gap-x-xs gap-y-xxs text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
             <span>{details.verb}</span>
             {details.amount !== undefined && (
                 <span
