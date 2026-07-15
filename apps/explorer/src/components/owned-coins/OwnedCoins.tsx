@@ -193,12 +193,12 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                 </div>
             ) : (
                 <div className="flex h-full flex-col">
-                    <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px]">
+                    <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px] [&_h4]:whitespace-nowrap">
                         <Title
                             title={coinBalanceHeader}
                             supportingElement={
                                 totalFiatValueLabel && (
-                                    <span className="ml-xs flex items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    <span className="ml-xs flex items-center gap-x-xs whitespace-nowrap text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                         <span aria-hidden="true">·</span>
                                         {totalFiatValueLabel}
                                     </span>
@@ -206,7 +206,7 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                             }
                             trailingElement={
                                 hasCoinsBalance && (
-                                    <div className="flex items-center gap-xs">
+                                    <div className="flex items-center gap-xs whitespace-nowrap">
                                         <SortDropdown
                                             sortField={sortField}
                                             sortOrder={sortOrder}

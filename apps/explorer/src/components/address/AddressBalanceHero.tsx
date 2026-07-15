@@ -56,7 +56,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
         <div className="flex flex-col gap-xxs md:items-end">
             <div className="flex flex-row items-center gap-x-xxs">
                 <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    IOTA Balance
+                    IOTA Available Balance
                 </span>
                 <Tooltip text={BALANCE_TOOLTIP_TEXT}>
                     <Info className="text-iota-neutral-40 dark:text-iota-neutral-60" />

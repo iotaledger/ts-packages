@@ -8,10 +8,15 @@
 // The Objects track is wide enough to fit the "Objects" header label without
 // wrapping/overflowing, while still comfortably fitting the count + chevron
 // row content left-aligned within the same track.
+//
+// On mobile the Amount track is `auto` so it only takes the width its content
+// needs, leaving the remaining space to the Name column instead of reserving a
+// fixed width that would crush short coin symbols. The amount cell caps its
+// own width (max-w + truncate) so a huge amount can't crush the Name column.
 export function getCoinRowGridClasses(showPrice: boolean): string {
     return showPrice
-        ? 'grid grid-cols-[minmax(0,1fr)_minmax(0,110px)_64px] items-start gap-x-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,90px)_minmax(0,140px)_64px]'
-        : 'grid grid-cols-[minmax(0,1fr)_minmax(0,110px)_64px] items-start gap-x-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,140px)_64px]';
+        ? 'grid grid-cols-[minmax(0,1fr)_auto_64px] items-start gap-x-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,90px)_minmax(0,140px)_64px]'
+        : 'grid grid-cols-[minmax(0,1fr)_auto_64px] items-start gap-x-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,140px)_64px]';
 }
 
 // Shared per-column text/content alignment so the header and row cells for a

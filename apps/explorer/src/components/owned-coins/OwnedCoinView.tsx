@@ -108,7 +108,7 @@ export function OwnedCoinView({
                         {priceLabel}
                     </span>
                 )}
-                <div className="flex min-w-0 flex-col">
+                <div className="flex min-w-0 max-w-[150px] flex-col">
                     <span className="truncate text-label-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                         {formattedTotalBalance} {symbol}
                     </span>
@@ -116,7 +116,7 @@ export function OwnedCoinView({
                         amount={coin.totalBalance}
                         coinType={coin.coinType}
                         withParentheses={false}
-                        className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
+                        className="truncate text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
                     />
                 </div>
                 <div

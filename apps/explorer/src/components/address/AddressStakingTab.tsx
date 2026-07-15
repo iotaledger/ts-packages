@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import {
+    CoinFiatValue,
     formatDelegatedStake,
     formatDelegatedTimelockedStake,
     ImageIcon,
@@ -237,8 +238,17 @@ function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX
         <DisplayStats
             label={label}
             tooltipText={tooltipText}
-            value={roundedAmount}
-            supportingLabel={symbol}
+            value={
+                <div className="flex flex-row items-baseline gap-xxs">
+                    <span>{roundedAmount}</span>
+                    <span className="text-label-md opacity-40">{symbol}</span>
+                    <CoinFiatValue
+                        amount={value}
+                        withParentheses={false}
+                        className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
+                    />
+                </div>
+            }
         />
     );
 }
@@ -261,7 +271,9 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <StakeColumn stake={getValue<bigint>()} />
+                    <div className="w-40">
+                        <StakeColumn stake={getValue<bigint>()} />
+                    </div>
                 </TableCellBase>
             );
         },
@@ -272,7 +284,9 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <StakeColumn stake={getValue<bigint>()} />
+                    <div className="w-40">
+                        <StakeColumn stake={getValue<bigint>()} />
+                    </div>
                 </TableCellBase>
             );
         },
@@ -300,7 +314,7 @@ function ValidatorCell({ address }: ValidatorCellProps): React.JSX.Element {
                 address={address}
                 showAddressAlias={false}
                 label={
-                    <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <div className="flex w-[280px] items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">
                         <div className="h-8 w-8 shrink-0">
                             <ImageIcon
                                 src={validator?.imageUrl}

@@ -36,7 +36,7 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
 
     return (
         <Panel>
-            <div className="grid grid-cols-2 gap-x-md gap-y-xs px-md--rs sm:flex sm:flex-row sm:flex-wrap sm:px-0">
+            <div className="px-md--rs sm:px-0 [&>div::-webkit-scrollbar]:hidden [&>div]:[scrollbar-width:none] [&_button_span]:whitespace-nowrap">
                 <SegmentedButton
                     type={SegmentedButtonType.Transparent}
                     shape={ButtonSegmentType.Underlined}
