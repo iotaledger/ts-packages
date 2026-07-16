@@ -7,14 +7,8 @@ import {
     getTransactionAction,
     TransactionIcon,
     TransactionIconSize,
-    ACTION_LABELS,
 } from '@iota/core';
-import type {
-    BalanceChange,
-    IotaTransactionBlockKind,
-    IotaTransactionBlockResponse,
-    IotaTransactionKind,
-} from '@iota/iota-sdk/client';
+import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -27,78 +21,48 @@ import {
     NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
 import { DateDisplay } from '~/components';
+import {
+    getIotaBalanceChangeForAddress,
+    getTransactionTypeLabel,
+} from './generateTransactionsTableColumns';
 
-/**
- * Humanized labels for non-programmable (system) transaction kinds, shown instead of the
- * generic "Transaction" label used by `ACTION_LABELS` from `@iota/core`.
- */
-const SYSTEM_TRANSACTION_KIND_LABELS: Record<
-    Exclude<IotaTransactionKind, 'ProgrammableTransaction'>,
-    string
-> = {
-    SystemTransaction: 'System',
-    ConsensusCommitPrologueV1: 'Consensus Commit',
-    EndOfEpochTransaction: 'Epoch Change',
-    Genesis: 'Genesis',
-    RandomnessStateUpdate: 'Randomness Update',
-};
-
-/**
- * Whether a transaction's kind is `ProgrammableTransaction` (i.e. not a system transaction).
- */
-export function isProgrammableTransaction(txn: IotaTransactionBlockResponse): boolean {
-    return txn.transaction?.data.transaction.kind === 'ProgrammableTransaction';
-}
-
-export function getTransactionTypeLabel(
-    txn: IotaTransactionBlockResponse,
-    action: ReturnType<typeof getTransactionAction>,
-    isSuccess: boolean,
-): string {
-    if (!isSuccess) {
-        return 'Failed';
-    }
-    const kind = txn.transaction?.data.transaction.kind;
-    if (kind && kind !== 'ProgrammableTransaction') {
-        return SYSTEM_TRANSACTION_KIND_LABELS[kind];
-    }
-    return ACTION_LABELS[action];
-}
-
-/**
- * Find the IOTA balance change for a given address in a transaction, if any.
- */
-export function getIotaBalanceChangeForAddress(
+function getCounterpartyAddress(
     txn: IotaTransactionBlockResponse,
     address: string,
-): BalanceChange | undefined {
-    const balanceChanges = txn.balanceChanges;
-    return balanceChanges?.find(
+): string | undefined {
+    const sender = txn.transaction?.data.sender;
+    if (sender && sender !== address) {
+        return sender;
+    }
+    const recipient = txn.balanceChanges?.find(
         (change) =>
             change.owner &&
             typeof change.owner === 'object' &&
             'AddressOwner' in change.owner &&
-            change.owner.AddressOwner === address &&
-            change.coinType === IOTA_TYPE_ARG,
+            change.owner.AddressOwner !== address &&
+            Number(change.amount) > 0,
     );
+    return recipient && typeof recipient.owner === 'object' && 'AddressOwner' in recipient.owner
+        ? recipient.owner.AddressOwner
+        : undefined;
 }
 
 /**
- * Generate table columns renderers for the transactions data.
+ * Generate table columns renderers for the "Activity" view of an address's transactions:
+ * a more digestible, human-friendly presentation than the raw "Transaction Blocks" table.
  */
-export function generateTransactionsTableColumns(
-    address?: string,
+export function generateActivityTableColumns(
+    address: string,
 ): ColumnDef<IotaTransactionBlockResponse>[] {
-    const columns: ColumnDef<IotaTransactionBlockResponse>[] = [
+    return [
         {
             header: 'Type',
             accessorKey: 'Type',
             cell: ({ row }) => {
                 const txn = row.original;
                 const digest = txn.digest;
-                const actionAddress = address ?? txn.transaction?.data.sender;
                 const isSuccess = txn.effects?.status.status === 'success';
-                const action = getTransactionAction(txn, actionAddress);
+                const action = getTransactionAction(txn, address);
                 const typeLabel = getTransactionTypeLabel(txn, action, isSuccess);
                 return (
                     <TableCellBase>
@@ -128,46 +92,21 @@ export function generateTransactionsTableColumns(
             },
         },
         {
-            header: 'Sender',
-            accessorKey: 'transaction.data.sender',
-            cell: ({ getValue }) => {
-                const address = getValue<string>();
-                return (
-                    <TableCellBase>
-                        <AddressLink
-                            address={address}
-                            copyText={address}
-                            className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            display="block"
-                        />
-                    </TableCellBase>
-                );
-            },
-        },
-        {
-            header: 'Txns',
-            accessorKey: 'transaction.data.transaction',
-            cell: ({ getValue }) => {
-                const transaction = getValue<IotaTransactionBlockKind>();
-                const txns =
-                    transaction.kind === 'ProgrammableTransaction'
-                        ? transaction.transactions.length.toString()
-                        : '--';
-                return (
-                    <TableCellBase>
-                        <TableCellText>{txns}</TableCellText>
-                    </TableCellBase>
-                );
-            },
-        },
-    ];
-
-    if (address) {
-        columns.push({
             header: 'Balance Change',
             accessorKey: 'balanceChanges',
             cell: ({ row }) => {
-                const balanceChange = getIotaBalanceChangeForAddress(row.original, address);
+                const txn = row.original;
+                const balanceChange = getIotaBalanceChangeForAddress(txn, address);
+                const otherCoinChangesCount =
+                    txn.balanceChanges?.filter(
+                        (change) =>
+                            change.owner &&
+                            typeof change.owner === 'object' &&
+                            'AddressOwner' in change.owner &&
+                            change.owner.AddressOwner === address &&
+                            change.coinType !== IOTA_TYPE_ARG,
+                    ).length ?? 0;
+
                 if (!balanceChange) {
                     return (
                         <TableCellBase>
@@ -175,6 +114,7 @@ export function generateTransactionsTableColumns(
                         </TableCellBase>
                     );
                 }
+
                 const amount = balanceChange.amount;
                 const formatted = formatBalance(
                     Math.abs(Number(amount)) / Number(NANOS_PER_IOTA),
@@ -183,28 +123,57 @@ export function generateTransactionsTableColumns(
                 );
                 const isPositive = Number(amount) >= 0;
                 const sign = isPositive ? '+' : '-';
+
                 return (
                     <TableCellBase>
-                        <TableCellText supportingLabel="IOTA">
+                        <div className="flex flex-col">
                             <span
                                 className={
-                                    isPositive
+                                    'text-label-lg ' +
+                                    (isPositive
                                         ? 'text-iota-primary-30 dark:text-iota-primary-80'
-                                        : 'text-iota-error-30 dark:text-iota-error-80'
+                                        : 'text-iota-error-30 dark:text-iota-error-80')
                                 }
                             >
-                                {sign + formatted}
+                                {sign + formatted} IOTA
                             </span>
-                        </TableCellText>
+                            {otherCoinChangesCount > 0 && (
+                                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    +{otherCoinChangesCount} other coin
+                                    {otherCoinChangesCount > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },
-        });
-    }
-
-    columns.push(
+        },
         {
-            header: 'Gas',
+            header: 'With',
+            accessorKey: 'with',
+            cell: ({ row }) => {
+                const counterparty = getCounterpartyAddress(row.original, address);
+                if (!counterparty) {
+                    return (
+                        <TableCellBase>
+                            <TableCellText>--</TableCellText>
+                        </TableCellBase>
+                    );
+                }
+                return (
+                    <TableCellBase>
+                        <AddressLink
+                            address={counterparty}
+                            copyText={counterparty}
+                            className="[&>div]:max-w-[200px] [&>div]:truncate"
+                            display="block"
+                        />
+                    </TableCellBase>
+                );
+            },
+        },
+        {
+            header: 'Gas Fee',
             accessorKey: 'effects',
             cell: ({ getValue }) => {
                 const effects = getValue<IotaTransactionBlockResponse['effects']>();
@@ -243,7 +212,5 @@ export function generateTransactionsTableColumns(
                 );
             },
         },
-    );
-
-    return columns;
+    ];
 }

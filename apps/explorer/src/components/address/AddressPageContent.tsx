@@ -11,6 +11,7 @@ import { OwnedObjects } from '../owned-objects';
 import { TransactionsForAddress } from '../transactions';
 
 enum AddressPageSection {
+    Activity = 'activity-section',
     Portfolio = 'portfolio-section',
     TransactionBlocks = 'transaction-blocks-section',
     Staking = 'staking-section',
@@ -42,6 +43,7 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
     const showStakingSection = isLoadingStakingData || isStakingDataErrored || hasStakingData;
 
     const sections = [
+        { id: AddressPageSection.Activity, label: 'Activity' },
         { id: AddressPageSection.Portfolio, label: 'Portfolio' },
         ...(showStakingSection ? [{ id: AddressPageSection.Staking, label: 'Staking' }] : []),
         { id: AddressPageSection.TransactionBlocks, label: 'Transaction Blocks' },
@@ -52,6 +54,19 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
             <PageSectionNav sections={sections} />
             <ErrorBoundary>
                 <div className="flex flex-col gap-lg">
+                    <PageSectionAnchor id={AddressPageSection.Activity}>
+                        <Panel>
+                            <div className="py-sm">
+                                <Title title="Activity" />
+                            </div>
+                            <div
+                                data-testid="tx"
+                                className="relative h-full min-h-14 overflow-auto px-md--rs py-md md:py-sm"
+                            >
+                                <TransactionsForAddress address={address} view="activity" />
+                            </div>
+                        </Panel>
+                    </PageSectionAnchor>
                     <PageSectionAnchor id={AddressPageSection.Portfolio}>
                         <Panel>
                             <div className="py-sm">
@@ -84,7 +99,10 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                                 data-testid="tx"
                                 className="relative h-full min-h-14 overflow-auto px-md--rs py-md md:py-sm"
                             >
-                                <TransactionsForAddress address={address} />
+                                <TransactionsForAddress
+                                    address={address}
+                                    view="transaction-blocks"
+                                />
                             </div>
                         </Panel>
                     </PageSectionAnchor>
