@@ -21,7 +21,8 @@ import {
     setCookieAccepted,
 } from '@iota/core';
 import { appsBackendClient } from '@/lib/utils';
-import { ThemeProvider } from '@iota/core';
+import { ThemeProvider, BalanceVisibilityProvider } from '@iota/core';
+import { useBalanceVisibilityStore } from '@/store/balanceVisibility';
 import { createIotaClient } from '@/lib/utils/defaultRpcClient';
 import { captureException } from '@/instrumentation';
 import { LEGAL_LINKS } from '@/lib/constants/routes.constants';
@@ -30,6 +31,7 @@ import { ExternalLink } from '@/components/ExternalLink';
 appsBackendClient.init();
 
 export function AppProviders({ children }: React.PropsWithChildren) {
+    const isBalanceVisible = useBalanceVisibilityStore((state) => state.isBalanceVisible);
     const [queryClient] = useState(
         () =>
             new QueryClient({
@@ -86,7 +88,11 @@ export function AppProviders({ children }: React.PropsWithChildren) {
                                     >
                                         <ClipboardPasteSafetyWrapper>
                                             <ThemeProvider appId="iota-dashboard">
-                                                {children}
+                                                <BalanceVisibilityProvider
+                                                    isVisible={isBalanceVisible}
+                                                >
+                                                    {children}
+                                                </BalanceVisibilityProvider>
                                                 <Toaster containerClassName="!right-8" />
                                                 <Disclaimer onClose={setCookieAccepted}>
                                                     <div>

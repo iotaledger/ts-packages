@@ -7,6 +7,8 @@ import {
     useFormatCoin,
     useTotalDelegatedRewards,
     useTotalDelegatedStake,
+    useBalanceVisible,
+    BALANCE_MASK,
 } from '@iota/core';
 import { DelegatedStake } from '@iota/iota-sdk/client';
 interface StakingDataProps {
@@ -14,6 +16,7 @@ interface StakingDataProps {
 }
 
 export function StakingData({ stakingData }: StakingDataProps) {
+    const isBalanceVisible = useBalanceVisible();
     const extendedStakes = stakingData ? formatDelegatedStake(stakingData) : [];
     const totalDelegatedStake = useTotalDelegatedStake(extendedStakes);
     const totalDelegatedRewards = useTotalDelegatedRewards(extendedStakes);
@@ -32,7 +35,13 @@ export function StakingData({ stakingData }: StakingDataProps) {
                     <LabelText
                         size={LabelTextSize.Large}
                         label="Staked"
-                        text={stakeResult.isPending ? '-' : `${formattedDelegatedStake}`}
+                        text={
+                            stakeResult.isPending
+                                ? '-'
+                                : isBalanceVisible
+                                  ? `${formattedDelegatedStake}`
+                                  : BALANCE_MASK
+                        }
                         supportingLabel={stakeSymbol}
                     />
                 </div>
@@ -40,7 +49,13 @@ export function StakingData({ stakingData }: StakingDataProps) {
                     <LabelText
                         size={LabelTextSize.Large}
                         label="Earned"
-                        text={`${rewardsResult.isPending ? '-' : formattedDelegatedRewards}`}
+                        text={
+                            rewardsResult.isPending
+                                ? '-'
+                                : isBalanceVisible
+                                  ? `${formattedDelegatedRewards}`
+                                  : BALANCE_MASK
+                        }
                         supportingLabel={rewardsSymbol}
                     />
                 </div>

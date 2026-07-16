@@ -110,6 +110,7 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
                 )
             }
             format={CoinFormat.Full}
+            hideMask
         />
     );
 }
