@@ -5,6 +5,7 @@ import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
 import { PageHeader, PageLayout } from '~/components';
 import { onCopySuccess } from '~/lib';
+import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import { useNotarizationPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
 import {
@@ -60,17 +61,27 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (objectResult == null) {
+    if (objectResult == null || objectResult.data == null) {
         return (
             <PageLayout
                 content={
-                    <InfoBox
-                        title="Error fetching Notarization Object"
-                        supportingText={`Could not fetch Object ID ${objectId} from the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
+                    objectResult?.isHistoryUnavailable ? (
+                        <InfoBox
+                            title="Notarization No Longer Available"
+                            supportingText={`Notarization ${objectId} was deleted and its history is older than ${INDEXER_RETENTION_DAYS} days, so its details can no longer be displayed.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    ) : (
+                        <InfoBox
+                            title="Error fetching Notarization Object"
+                            supportingText={`Could not fetch Object ID ${objectId} from the current network.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Error}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )
                 }
             />
         );

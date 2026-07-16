@@ -20,6 +20,14 @@ export interface OwnerEntry {
     timestampMs: string | null;
 }
 
+export interface NotarizationOwnerHistory {
+    owners: OwnerEntry[];
+    // Whether the fetched pages include the transaction that created the object.
+    // When all pages are fetched and this is false, the oldest ownership changes
+    // are beyond the indexer retention period and the history is incomplete.
+    hasCreationEntry: boolean;
+}
+
 /**
  * Fetches and processes the ownership history of a specified object ID.
  * It queries for transaction blocks that changed the object and extracts the owner from each relevant transaction.
@@ -44,7 +52,7 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
     const client = useIotaClient();
     const normalizedId = useMemo(() => normalizeIotaObjectId(objectId), [objectId]);
 
-    return useInfiniteQuery<PaginatedTransactionResponse, Error, OwnerEntry[]>({
+    return useInfiniteQuery<PaginatedTransactionResponse, Error, NotarizationOwnerHistory>({
         queryKey: ['get-owner-history', objectId],
         queryFn: async ({ pageParam }) =>
             await client.queryTransactionBlocks({
@@ -65,6 +73,7 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
         select: (data) => {
             const entries: OwnerEntry[] = [];
             let lastOwnerAddress: string | null = null;
+            let hasCreationEntry = false;
 
             for (const page of data.pages) {
                 for (const tx of page.data) {
@@ -73,10 +82,20 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
                         entries.push(entry);
                         lastOwnerAddress = entry.ownerAddress;
                     }
+                    if (
+                        !hasCreationEntry &&
+                        tx.objectChanges?.some(
+                            (change) =>
+                                (change.type === 'created' || change.type === 'unwrapped') &&
+                                change.objectId === normalizedId,
+                        )
+                    ) {
+                        hasCreationEntry = true;
+                    }
                 }
             }
 
-            return entries;
+            return { owners: entries, hasCreationEntry };
         },
     });
 }

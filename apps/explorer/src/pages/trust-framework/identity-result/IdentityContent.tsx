@@ -7,6 +7,7 @@ import type { IotaDID } from '@iota/identity-wasm/web';
 import { PageHeader, PageLayout } from '~/components';
 import { useResolveDid } from '~/hooks/useResolveDid';
 import { onCopySuccess } from '~/lib';
+import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import { useIdentityPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
 import { getIdentityType, getLegacyMetadata, MetadataBuilder } from '../headerMetadataHelper';
@@ -56,13 +57,23 @@ export function IdentityContent({ did }: IdentityContentProps) {
         return (
             <PageLayout
                 content={
-                    <InfoBox
-                        title="Error fetching DID Object"
-                        supportingText={`Could not fetch DID Object ${did.tag()} from the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
+                    objectResult?.isHistoryUnavailable ? (
+                        <InfoBox
+                            title="DID No Longer Available"
+                            supportingText={`DID Object ${did.tag()} was deleted and its history is older than ${INDEXER_RETENTION_DAYS} days, so its details can no longer be displayed.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    ) : (
+                        <InfoBox
+                            title="Error fetching DID Object"
+                            supportingText={`Could not fetch DID Object ${did.tag()} from the current network.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Error}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )
                 }
             />
         );

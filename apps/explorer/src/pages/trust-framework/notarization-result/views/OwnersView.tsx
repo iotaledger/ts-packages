@@ -27,6 +27,7 @@ import {
     ObjectLink,
     TransactionLink,
 } from '~/components';
+import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import {
     useGetNotarizationOwnerHistory,
     type OwnerEntry,
@@ -42,14 +43,11 @@ interface OwnersViewProps {
 }
 
 export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
-    const {
-        data: owners,
-        isPending,
-        isError,
-        hasNextPage,
-        isFetchingNextPage,
-        fetchNextPage,
-    } = useGetNotarizationOwnerHistory(objectId);
+    const { data, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
+        useGetNotarizationOwnerHistory(objectId);
+
+    const owners = data?.owners;
+    const isHistoryIncomplete = !!data && !hasNextPage && !data.hasCreationEntry;
 
     return (
         <ErrorBoundary>
@@ -71,6 +69,24 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                             supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
                             icon={<Warning />}
                             type={InfoBoxType.Error}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )}
+                    {!isPending && !isError && !owners?.length && !hasNextPage && (
+                        <InfoBox
+                            title="No ownership history available"
+                            supportingText={`This object has had no ownership changes in the last ${INDEXER_RETENTION_DAYS} days. Older changes are no longer available.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )}
+                    {!!owners?.length && isHistoryIncomplete && (
+                        <InfoBox
+                            title={`Showing the last ${INDEXER_RETENTION_DAYS} days`}
+                            supportingText="Older ownership changes are no longer available, so this history may be incomplete."
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
                             style={InfoBoxStyle.Elevated}
                         />
                     )}

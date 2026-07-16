@@ -22,6 +22,9 @@ const DEFAULT_GET_OBJECT_OPTIONS = {
 
 export interface UseGetObjectOrPastObject extends IotaObjectResponse {
     isViewingPastVersion?: boolean | IotaObjectData | null;
+    // The object existed but was deleted, and the transaction that last touched
+    // it is beyond the indexer retention period, so no past version can be recovered.
+    isHistoryUnavailable?: boolean;
 }
 
 const extractPreviousVersionFromTxData = (
@@ -94,6 +97,11 @@ export async function fetchObjectOrPastObject(
     const previousVersion = await findPreviousObjectVersion(client, normalizedObjId);
 
     if (previousVersion === null) {
+        // A deleted object with no transaction found via the InputObject filter
+        // means its history lies beyond the indexer retention period.
+        if (getObjectResponse.error?.code === 'deleted') {
+            return { error: getObjectResponse.error, isHistoryUnavailable: true };
+        }
         return { error: { code: 'display', error: 'Object version not found' } };
     }
 
