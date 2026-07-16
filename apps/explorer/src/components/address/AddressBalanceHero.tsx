@@ -72,11 +72,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                     <Copy className="text-iota-neutral-60 dark:text-iota-neutral-40" />
                 </ButtonUnstyled>
             </div>
-            <CoinFiatValue
-                amount={value}
-                withParentheses={false}
-                className="text-body-lg text-iota-neutral-40 dark:text-iota-neutral-60"
-            />
+            <CoinFiatValue amount={value} withParentheses={false} />
         </div>
     );
 }

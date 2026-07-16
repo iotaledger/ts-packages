@@ -13,10 +13,8 @@ import { useIotaClientContext } from '@iota/dapp-kit';
 import { type CoinBalance, type Network } from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { FilterList, Warning, SortByDown, SortByUp, SortByDefault } from '@iota/apps-ui-icons';
-import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { OwnedCoinView } from './OwnedCoinView';
-import { COIN_TABLE_COLUMN_ALIGNMENT, getCoinRowGridClasses } from './coinTableLayout';
 import {
     Button,
     ButtonType,
@@ -225,19 +223,18 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                                     <div className="sticky top-0 z-[1] bg-iota-neutral-100 p-sm dark:bg-iota-neutral-10">
                                         <InfoBox
                                             icon={<Warning />}
+                                            title="Unrecognized Coins"
                                             supportingText="These coins have not been recognized by the IOTA Foundation."
                                             type={InfoBoxType.Warning}
                                             style={InfoBoxStyle.Default}
                                         />
                                     </div>
                                 )}
-                                <CoinTableHeader showPrice={showPrice} />
                                 <CoinList
                                     coins={visibleCoins}
                                     id={id}
                                     sortField={sortField}
                                     sortOrder={sortOrder}
-                                    showPrice={showPrice}
                                 />
                             </div>
 
@@ -442,10 +439,9 @@ interface CoinListProps {
     id: string;
     sortField: SortField;
     sortOrder: SortOrder;
-    showPrice: boolean;
 }
 
-function CoinList({ coins, id, sortField, sortOrder, showPrice }: CoinListProps) {
+function CoinList({ coins, id, sortField, sortOrder }: CoinListProps) {
     return (
         <div className="flex max-h-[400px] w-full flex-col gap-xxs md:max-h-[650px]">
             {coins.map((coin, index) => (
@@ -455,33 +451,8 @@ function CoinList({ coins, id, sortField, sortOrder, showPrice }: CoinListProps)
                     id={id}
                     sortField={sortField}
                     sortOrder={sortOrder}
-                    showPrice={showPrice}
                 />
             ))}
-        </div>
-    );
-}
-
-interface CoinTableHeaderProps {
-    showPrice: boolean;
-}
-
-function CoinTableHeader({ showPrice }: CoinTableHeaderProps): JSX.Element {
-    return (
-        <div
-            className={clsx(
-                getCoinRowGridClasses(showPrice),
-                'px-md--rs py-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60',
-            )}
-        >
-            <span>Name</span>
-            {showPrice && (
-                <span className={clsx('hidden sm:block', COIN_TABLE_COLUMN_ALIGNMENT.price)}>
-                    Price
-                </span>
-            )}
-            <span>Amount</span>
-            <span className={COIN_TABLE_COLUMN_ALIGNMENT.objects}>Objects</span>
         </div>
     );
 }

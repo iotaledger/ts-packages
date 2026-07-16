@@ -2,14 +2,11 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useElementDimensions, useGetCoins, useOnScreen } from '@iota/core';
-import clsx from 'clsx';
+import { useGetCoins, useOnScreen } from '@iota/core';
 import { useEffect, useRef, useMemo } from 'react';
 import { CoinItem } from './CoinItem';
 import { LoadingIndicator } from '@iota/apps-ui-kit';
 import { SortField, SortOrder } from './OwnedCoins';
-
-const MIN_CONTAINER_WIDTH_SIZE = 500;
 
 type CoinsPanelProps = {
     coinType: string;
@@ -20,13 +17,11 @@ type CoinsPanelProps = {
 
 export function CoinsPanel({ coinType, id, sortField, sortOrder }: CoinsPanelProps): JSX.Element {
     const containerRef = useRef(null);
-    const coinsSectionRef = useRef(null);
     const { isIntersecting } = useOnScreen(containerRef);
     const { data, isPending, isFetchingNextPage, fetchNextPage, hasNextPage } = useGetCoins(
         coinType,
         id,
     );
-    const [_, containerWidth] = useElementDimensions(coinsSectionRef);
 
     const isSpinnerVisible = (hasNextPage && isFetchingNextPage) || isPending;
 
@@ -53,23 +48,26 @@ export function CoinsPanel({ coinType, id, sortField, sortOrder }: CoinsPanelPro
         });
     }, [data, sortField, sortOrder]);
 
-    const multiCols = containerWidth > MIN_CONTAINER_WIDTH_SIZE;
-
     return (
-        <div className="max-h-[230px] overflow-auto">
-            <div className="flex flex-col flex-wrap gap-xs firefox:pr-xs" ref={coinsSectionRef}>
+        <div className="max-h-[230px] overflow-y-auto">
+            <div className="hidden items-center gap-x-sm text-body-sm text-iota-neutral-40 sm:grid sm:grid-cols-4 dark:text-iota-neutral-60">
+                <span>Object ID</span>
+                <span>Amount</span>
+                <span>Version</span>
+                <span>Last Tx ID</span>
+            </div>
+            <div className="flex flex-col gap-xs pt-xs firefox:pr-xs">
                 {sortedCoins.map((coin) => (
-                    <div
-                        key={coin.coinObjectId}
-                        className={clsx('w-full', multiCols && 'basis-1/3')}
-                    >
-                        <CoinItem coin={coin} />
-                    </div>
+                    <CoinItem key={coin.coinObjectId} coin={coin} />
                 ))}
             </div>
-            <div className="flex justify-center" ref={containerRef}>
+            {/* overflow-hidden: the spinner's rotating svg visually overflows its box by a few
+                pixels, which would otherwise register as scrollable overflow on the panel and
+                flash the scrollbar while loading. h-6 matches the height of a loaded coin row so
+                the panel doesn't shrink (and re-flash the page scrollbar) when the data arrives. */}
+            <div className="flex justify-center overflow-hidden" ref={containerRef}>
                 {isSpinnerVisible && (
-                    <div className="mt-5 flex">
+                    <div className="flex h-6 items-center">
                         <LoadingIndicator />
                     </div>
                 )}

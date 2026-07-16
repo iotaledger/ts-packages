@@ -242,11 +242,7 @@ function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX
                 <div className="flex flex-row items-baseline gap-xxs">
                     <span>{roundedAmount}</span>
                     <span className="text-label-md opacity-40">{symbol}</span>
-                    <CoinFiatValue
-                        amount={value}
-                        withParentheses={false}
-                        className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
-                    />
+                    <CoinFiatValue amount={value} withParentheses={false} />
                 </div>
             }
         />
