@@ -5,7 +5,7 @@
 import { type TransactionFilter } from '@iota/iota-sdk/client';
 import { type Dispatch, type SetStateAction, useReducer, useState } from 'react';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
-import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
+import { INDEXER_RETENTION_DAYS, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
@@ -145,16 +145,16 @@ export function TransactionBlocksForAddress({
                             style={InfoBoxStyle.Elevated}
                         />
                     ) : (
-                        <div className="flex flex-col gap-sm">
+                        <>
                             <InfoBox
-                                title={`Showing the last ${INDEXER_RETENTION_DAYS} days`}
+                                title={RETENTION_BANNER_TITLE}
                                 supportingText={`Transactions older than ${INDEXER_RETENTION_DAYS} days are not displayed.`}
                                 icon={<Warning />}
                                 type={InfoBoxType.Warning}
                                 style={InfoBoxStyle.Elevated}
                             />
                             <TableCard data={data.pages[currentPage].data} columns={tableColumns} />
-                        </div>
+                        </>
                     )}
 
                     {(hasNextPage || (data && data?.pages.length > 1)) && (

@@ -27,7 +27,7 @@ import {
     ObjectLink,
     TransactionLink,
 } from '~/components';
-import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
+import { INDEXER_RETENTION_DAYS, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import {
     useGetNotarizationOwnerHistory,
     type OwnerEntry,
@@ -47,7 +47,7 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
         useGetNotarizationOwnerHistory(objectId);
 
     const owners = data?.owners;
-    const isHistoryIncomplete = !!data && !hasNextPage && !data.hasCreationEntry;
+    const isHistoryIncomplete = !hasNextPage && !data?.hasCreationEntry;
 
     return (
         <ErrorBoundary>
@@ -72,7 +72,7 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                             style={InfoBoxStyle.Elevated}
                         />
                     )}
-                    {!isPending && !isError && !owners?.length && !hasNextPage && (
+                    {owners && !owners.length && !hasNextPage && (
                         <InfoBox
                             title="No ownership history available"
                             supportingText={`This object has had no ownership changes in the last ${INDEXER_RETENTION_DAYS} days. Older changes are no longer available.`}
@@ -83,7 +83,7 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                     )}
                     {!!owners?.length && isHistoryIncomplete && (
                         <InfoBox
-                            title={`Showing the last ${INDEXER_RETENTION_DAYS} days`}
+                            title={RETENTION_BANNER_TITLE}
                             supportingText="Older ownership changes are no longer available, so this history may be incomplete."
                             icon={<Warning />}
                             type={InfoBoxType.Warning}

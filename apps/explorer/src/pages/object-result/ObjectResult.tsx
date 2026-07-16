@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { ErrorBoundary, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { usePackageUpgradePolicy } from '~/hooks';
-import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
+import { getHistoryUnavailableMessage, INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import { ObjectView } from '~/pages/object-result/views/ObjectView';
 import { translate, type DataType } from './ObjectResultType';
 import { PkgView, TokenView } from './views';
@@ -75,7 +75,7 @@ export function ObjectResult(): JSX.Element {
                     {data?.isHistoryUnavailable ? (
                         <InfoBox
                             title="Object No Longer Available"
-                            supportingText={`This object was deleted and its history is older than ${INDEXER_RETENTION_DAYS} days, so its details can no longer be displayed.`}
+                            supportingText={getHistoryUnavailableMessage('This object')}
                             icon={<Warning />}
                             type={InfoBoxType.Warning}
                             style={InfoBoxStyle.Elevated}

@@ -59,7 +59,7 @@ const extractPreviousVersionFromTxData = (
 const findPreviousObjectVersion = async (
     client: IotaClient,
     objectId: string,
-): Promise<number | null> => {
+): Promise<{ hasRecentTransactions: boolean; version: number | null }> => {
     const txsWithObjectInput = await client.queryTransactionBlocks({
         filter: { InputObject: objectId },
         order: 'descending',
@@ -67,9 +67,17 @@ const findPreviousObjectVersion = async (
         limit: 1,
     });
 
-    if (!txsWithObjectInput?.data.length) return null;
+    if (!txsWithObjectInput?.data.length) {
+        return { hasRecentTransactions: false, version: null };
+    }
 
-    return extractPreviousVersionFromTxData(txsWithObjectInput.data[0].transaction?.data, objectId);
+    return {
+        hasRecentTransactions: true,
+        version: extractPreviousVersionFromTxData(
+            txsWithObjectInput.data[0].transaction?.data,
+            objectId,
+        ),
+    };
 };
 
 export async function fetchObjectOrPastObject(
@@ -94,12 +102,15 @@ export async function fetchObjectOrPastObject(
         return { ...getObjectResponse, isViewingPastVersion: false };
     }
 
-    const previousVersion = await findPreviousObjectVersion(client, normalizedObjId);
+    const { hasRecentTransactions, version } = await findPreviousObjectVersion(
+        client,
+        normalizedObjId,
+    );
 
-    if (previousVersion === null) {
+    if (version === null) {
         // A deleted object with no transaction found via the InputObject filter
         // means its history lies beyond the indexer retention period.
-        if (getObjectResponse.error?.code === 'deleted') {
+        if (!hasRecentTransactions && getObjectResponse.error?.code === 'deleted') {
             return { error: getObjectResponse.error, isHistoryUnavailable: true };
         }
         return { error: { code: 'display', error: 'Object version not found' } };
@@ -107,7 +118,7 @@ export async function fetchObjectOrPastObject(
 
     const pastObjectResponse = await client.tryGetPastObject({
         id: normalizedObjId,
-        version: previousVersion,
+        version,
         options: DEFAULT_GET_OBJECT_OPTIONS,
     });
 

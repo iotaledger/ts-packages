@@ -5,8 +5,7 @@ import { useGetTransaction } from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { useMemo } from 'react';
-import { UPGRADE_POLICIES, type UpgradePolicyInfo } from '~/lib';
-import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
+import { INDEXER_RETENTION_DAYS, UPGRADE_POLICIES, type UpgradePolicyInfo } from '~/lib';
 
 const UPGRADE_CAP_TYPE = '0x2::package::UpgradeCap';
 
@@ -129,17 +128,15 @@ export function usePackageUpgradePolicy(txDigest: string | null | undefined): {
             return wasMadeImmutable ? IMMUTABLE_POLICY : CUSTOM_POLICY;
         }
 
-        // The cap's last transaction is beyond the indexer retention period or
-        // cannot be inspected. A `deleted` object response still proves the cap
-        // was destroyed, which is only possible through `0x2::package::make_immutable`.
-        if (lastCapTxData) {
-            if (!lastCapTxData.data.length && upgradeCapData?.error?.code === 'deleted') {
-                return IMMUTABLE_POLICY;
-            }
-            return INDETERMINATE_POLICY;
+        if (!lastCapTxData) return null;
+
+        // Last tx is unavailable or unreadable; a `deleted` error alone confirms
+        // the cap was destroyed, which is only possible via `make_immutable`.
+        if (upgradeCapData?.error?.code === 'deleted') {
+            return IMMUTABLE_POLICY;
         }
 
-        return null;
+        return INDETERMINATE_POLICY;
     }, [
         txDigest,
         upgradeCapObjectId,

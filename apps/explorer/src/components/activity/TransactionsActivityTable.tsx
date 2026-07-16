@@ -15,7 +15,11 @@ import { numberSuffix } from '~/lib/utils';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
-import { INDEXER_RETENTION_DAYS, PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import {
+    INDEXER_RETENTION_DAYS,
+    PAGE_SIZES_RANGE_20_60,
+    RETENTION_BANNER_TITLE,
+} from '~/lib/constants';
 import { type IotaTransactionBlockResponse, type IotaTransactionKind } from '@iota/iota-sdk/client';
 import { EVM_ANCHOR_ADDRESSES } from '~/lib/constants/evm.constants';
 
@@ -76,15 +80,6 @@ export function TransactionsActivityTable({
                 />
             ) : (
                 <div className="flex flex-col space-y-3 text-left">
-                    {transactionKindFilter && !!displayData?.data?.length && (
-                        <InfoBox
-                            title={`Showing the last ${INDEXER_RETENTION_DAYS} days`}
-                            supportingText="Older transactions are not included when filtering by type."
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
                     {isPending || isFetching || !displayData?.data ? (
                         <PlaceholderTable
                             rowCount={limit}
@@ -93,15 +88,24 @@ export function TransactionsActivityTable({
                         />
                     ) : (
                         <>
-                            {transactionKindFilter && !data?.data.length && (
-                                <InfoBox
-                                    title="No recent activity"
-                                    supportingText={`No matching transactions were found in the last ${INDEXER_RETENTION_DAYS} days. Older transactions are not available when filtering by type.`}
-                                    icon={<Warning />}
-                                    type={InfoBoxType.Warning}
-                                    style={InfoBoxStyle.Elevated}
-                                />
-                            )}
+                            {transactionKindFilter &&
+                                (data?.data.length ? (
+                                    <InfoBox
+                                        title={RETENTION_BANNER_TITLE}
+                                        supportingText="Older transactions are not included when filtering by type."
+                                        icon={<Warning />}
+                                        type={InfoBoxType.Warning}
+                                        style={InfoBoxStyle.Elevated}
+                                    />
+                                ) : (
+                                    <InfoBox
+                                        title="No recent activity"
+                                        supportingText={`No matching transactions were found in the last ${INDEXER_RETENTION_DAYS} days. Older transactions are not available when filtering by type.`}
+                                        icon={<Warning />}
+                                        type={InfoBoxType.Warning}
+                                        style={InfoBoxStyle.Elevated}
+                                    />
+                                ))}
                             <TableCard
                                 data={displayData!.data}
                                 columns={tableColumns}

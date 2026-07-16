@@ -82,16 +82,11 @@ export function useGetNotarizationOwnerHistory(objectId: string) {
                         entries.push(entry);
                         lastOwnerAddress = entry.ownerAddress;
                     }
-                    if (
-                        !hasCreationEntry &&
-                        tx.objectChanges?.some(
-                            (change) =>
-                                (change.type === 'created' || change.type === 'unwrapped') &&
-                                change.objectId === normalizedId,
-                        )
-                    ) {
-                        hasCreationEntry = true;
-                    }
+                    hasCreationEntry ||= !!tx.objectChanges?.some(
+                        (change) =>
+                            (change.type === 'created' || change.type === 'unwrapped') &&
+                            change.objectId === normalizedId,
+                    );
                 }
             }
 

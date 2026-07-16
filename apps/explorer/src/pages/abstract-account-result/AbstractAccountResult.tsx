@@ -23,7 +23,7 @@ import { useParams } from 'react-router-dom';
 import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
-import { INDEXER_RETENTION_DAYS } from '~/lib/constants';
+import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
 import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
 
@@ -63,7 +63,7 @@ export function AbstractAccountResultPage(): JSX.Element {
         detailsContent = (
             <InfoBox
                 title="Account No Longer Available"
-                supportingText={`This account was deleted and its history is older than ${INDEXER_RETENTION_DAYS} days, so its details can no longer be displayed.`}
+                supportingText={getHistoryUnavailableMessage('This account')}
                 icon={<Warning />}
                 type={InfoBoxType.Warning}
                 style={InfoBoxStyle.Elevated}
