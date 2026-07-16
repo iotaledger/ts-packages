@@ -22,6 +22,7 @@ import {
     Panel,
     Toggle,
     ToggleLabelPosition,
+    ToggleSize,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 
@@ -91,6 +92,7 @@ function TransactionResultPageHeader({
                             name="raw-json-toggle"
                             label="Raw JSON"
                             labelPosition={ToggleLabelPosition.Left}
+                            size={ToggleSize.Small}
                             isToggled={showRawJson}
                             onChange={(isToggled) => onRawJsonChange(isToggled)}
                         />
