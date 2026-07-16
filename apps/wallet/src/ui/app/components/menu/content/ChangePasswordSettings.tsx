@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { useEffect } from 'react';
 import { useZodForm, toast } from '@iota/core';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
@@ -8,8 +9,8 @@ import { Button, ButtonHtmlType, ButtonType, Input, InputType } from '@iota/apps
 import { Overlay } from '_components';
 import { Form } from '_src/ui/app/shared/forms/Form';
 import { CheckboxField } from '_src/ui/app/shared/forms/CheckboxField';
+import { validatePasswordStrength } from '_src/ui/app/shared/forms/passwordValidation';
 import { useBackgroundClient } from '_src/ui/app/hooks/useBackgroundClient';
-import zxcvbn from 'zxcvbn';
 
 const formSchema = z
     .object({
@@ -18,30 +19,32 @@ const formSchema = z
             .string()
             .nonempty('Required')
             .min(8, 'Must be at least 8 characters')
-            .superRefine((val, ctx) => {
-                const {
-                    score,
-                    feedback: { warning, suggestions },
-                } = zxcvbn(val);
-                if (score <= 2) {
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: `${warning ? `${warning}.` : 'Password is not strong enough.'}${suggestions?.length ? ` ${suggestions.join(' ')}` : ''}`,
-                    });
-                }
-            }),
+            .superRefine(validatePasswordStrength),
         confirmPassword: z.string().nonempty('Required'),
-        confirmed: z.literal<boolean>(true, {
-            errorMap: () => ({ message: 'You must confirm you understand this change' }),
-        }),
+        confirmed: z.boolean(),
     })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-        path: ['confirmPassword'],
-        message: "Passwords don't match",
-    })
-    .refine((data) => data.newPassword !== data.currentPassword, {
-        path: ['newPassword'],
-        message: 'New password must be different from current password',
+    .superRefine((data, ctx) => {
+        if (data.confirmPassword && data.newPassword !== data.confirmPassword) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['confirmPassword'],
+                message: "Passwords don't match",
+            });
+        }
+        if (data.currentPassword && data.newPassword === data.currentPassword) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['newPassword'],
+                message: 'New password must be different from current password',
+            });
+        }
+        if (!data.confirmed) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['confirmed'],
+                message: 'You must confirm you understand this change',
+            });
+        }
     });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -57,14 +60,30 @@ export function ChangePasswordSettings() {
             currentPassword: '',
             newPassword: '',
             confirmPassword: '',
-            confirmed: false as unknown as true,
+            confirmed: false,
         },
     });
 
     const {
         register,
+        watch,
+        trigger,
+        getValues,
         formState: { isSubmitting, isValid, errors },
     } = form;
+
+    useEffect(() => {
+        const { unsubscribe } = watch((_, { name, type }) => {
+            if (type !== 'change') return;
+            if (name !== 'newPassword' && getValues('newPassword')) {
+                trigger('newPassword');
+            }
+            if (name !== 'confirmPassword' && getValues('confirmPassword')) {
+                trigger('confirmPassword');
+            }
+        });
+        return unsubscribe;
+    }, [watch, trigger, getValues]);
 
     async function handleSubmit(values: FormValues) {
         try {
