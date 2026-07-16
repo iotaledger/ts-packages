@@ -86,9 +86,11 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     onKeyDown={handleInputKeyDown}
-                    placeholder="Search an IOTA @name, transaction, object..."
+                    placeholder="Search for an IOTA @name, transaction, object..."
                     className="w-full bg-transparent text-title-lg text-iota-neutral-10 placeholder:text-title-md placeholder:text-iota-neutral-40 focus:outline-none dark:text-iota-neutral-92"
                     autoFocus={autoFocus}
+                    aria-label="Search for an IOTA name, transaction, or object"
+                    data-testid="Search input"
                 />
                 {query ? (
                     <button
