@@ -5,7 +5,6 @@ export * from './collapsible';
 export * from './header';
 export * from './modal';
 
-export * from './AccountIdentityLink';
 export * from './ButtonOrLink';
 export * from './IconBadge';
 export * from './ExpandableList';

@@ -9,22 +9,49 @@ import {
     AddressAlias,
     useGetDefaultIotaName,
     useCopyToClipboard,
+    ImageIcon,
+    ImageIconSize,
 } from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { formatAddress, formatDigest, formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import React, { type ReactNode } from 'react';
 
+import { useValidatorByAddress } from '~/hooks';
 import { Link, type LinkProps } from '~/components/ui';
 
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
+    showValidatorImage?: boolean;
     noTruncate?: boolean;
     label?: string | ReactNode;
     renderAddressAlias?: (alias: string) => ReactNode;
     queryStrings?: Record<string, string>;
     copyText?: string;
     onCopyError?: (e: unknown, text: string) => void;
+}
+
+function ValidatorIdentityLabel({
+    name,
+    imageUrl,
+}: {
+    name: string;
+    imageUrl?: string | null;
+}): ReactNode {
+    return (
+        <div className="flex items-center gap-x-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+            <div className="h-5 w-5 shrink-0">
+                <ImageIcon
+                    src={imageUrl}
+                    label={name}
+                    fallback={name}
+                    size={ImageIconSize.Small}
+                    rounded
+                />
+            </div>
+            <span className="truncate text-label-lg">{name}</span>
+        </div>
+    );
 }
 
 function createInternalLink<T extends string>(
@@ -41,6 +68,7 @@ function createInternalLink<T extends string>(
         onCopyError,
         renderAddressAlias,
         showAddressAlias = ['address', 'object', 'validator'].includes(base),
+        showValidatorImage = false,
         className,
         ...props
     }: BaseInternalLinkProps & Record<T, string>) => {
@@ -52,6 +80,9 @@ function createInternalLink<T extends string>(
 
         const isResolveIotaName = base === 'address' && isValidIotaAddress(id);
         const { data: iotaName } = useGetDefaultIotaName(isResolveIotaName ? id : null);
+        const validator = useValidatorByAddress(
+            showValidatorImage && base === 'address' ? id : undefined,
+        );
         const copyToClipboard = useCopyToClipboard();
 
         async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
@@ -64,7 +95,11 @@ function createInternalLink<T extends string>(
             }
         }
 
-        if (showAddressAlias) {
+        const validatorLabel = validator ? (
+            <ValidatorIdentityLabel name={validator.name} imageUrl={validator.imageUrl} />
+        ) : null;
+
+        if (showAddressAlias && !validatorLabel) {
             return (
                 <AddressAlias
                     address={id}
@@ -102,7 +137,7 @@ function createInternalLink<T extends string>(
                     to={to}
                     {...props}
                 >
-                    {label || truncatedAddress}
+                    {validatorLabel || label || truncatedAddress}
                 </Link>
                 {copyText && (
                     <ButtonUnstyled onClick={handleCopyClick} aria-label="Copy to clipboard">
