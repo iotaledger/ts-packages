@@ -87,7 +87,7 @@ export function TransactionsActivityTable({
                             data={displayData!.data}
                             columns={tableColumns}
                             totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
-                            viewAll="/recent"
+                            viewAll={disablePagination ? '/recent' : undefined}
                             paginationOptions={!disablePagination ? pagination : undefined}
                             pageSizeSelector={
                                 !disablePagination && (
