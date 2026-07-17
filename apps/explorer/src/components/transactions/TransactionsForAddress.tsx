@@ -5,7 +5,6 @@
 import {
     ButtonSegment,
     ButtonSegmentType,
-    Checkbox,
     DropdownPosition,
     InfoBox,
     InfoBoxStyle,
@@ -15,6 +14,7 @@ import {
     SegmentedButtonType,
     Select,
     SelectSize,
+    Toggle,
     type TablePaginationOptions,
 } from '@iota/apps-ui-kit';
 import { useIotaClient } from '@iota/dapp-kit';
@@ -222,10 +222,10 @@ export function TransactionsForAddressTable({
                     />
                 ))}
             </SegmentedButton>
-            <Checkbox
+            <Toggle
                 label="Hide system transactions"
-                isChecked={hideSystemTxs}
-                onCheckedChange={(e) => setHideSystemTxs(e.target.checked)}
+                isToggled={hideSystemTxs}
+                onChange={(isToggled) => setHideSystemTxs(isToggled)}
                 name="hide-system-transactions"
             />
         </div>

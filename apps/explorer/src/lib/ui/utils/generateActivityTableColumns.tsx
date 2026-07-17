@@ -12,7 +12,7 @@ import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AddressLink, TransactionLink } from '../../../components/ui';
+import { AccountIdentityLink, TransactionLink } from '../../../components/ui';
 import {
     CoinFormat,
     formatBalance,
@@ -162,7 +162,7 @@ export function generateActivityTableColumns(
                 }
                 return (
                     <TableCellBase>
-                        <AddressLink
+                        <AccountIdentityLink
                             address={counterparty}
                             copyText={counterparty}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
