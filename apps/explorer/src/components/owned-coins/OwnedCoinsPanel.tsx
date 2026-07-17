@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useGetCoins, useOnScreen } from '@iota/core';
-import { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { CoinItem } from './CoinItem';
-import { LoadingIndicator } from '@iota/apps-ui-kit';
+import { Divider, LoadingIndicator } from '@iota/apps-ui-kit';
 import { SortField, SortOrder } from './OwnedCoins';
 
 type CoinsPanelProps = {
@@ -49,7 +49,7 @@ export function CoinsPanel({ coinType, id, sortField, sortOrder }: CoinsPanelPro
     }, [data, sortField, sortOrder]);
 
     return (
-        <div className="max-h-[230px] overflow-y-auto">
+        <div className="max-h-[300px] overflow-y-auto">
             <div className="hidden items-center gap-x-sm text-body-sm text-iota-neutral-40 sm:grid sm:grid-cols-4 dark:text-iota-neutral-60">
                 <span>Object ID</span>
                 <span>Amount</span>
@@ -57,8 +57,11 @@ export function CoinsPanel({ coinType, id, sortField, sortOrder }: CoinsPanelPro
                 <span>Last Tx ID</span>
             </div>
             <div className="flex flex-col gap-xs pt-xs firefox:pr-xs">
-                {sortedCoins.map((coin) => (
-                    <CoinItem key={coin.coinObjectId} coin={coin} />
+                {sortedCoins.map((coin, index) => (
+                    <React.Fragment key={coin.coinObjectId}>
+                        <CoinItem coin={coin} />
+                        {index < sortedCoins.length - 1 && <Divider />}
+                    </React.Fragment>
                 ))}
             </div>
             {/* overflow-hidden: the spinner's rotating svg visually overflows its box by a few

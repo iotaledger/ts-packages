@@ -20,18 +20,20 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
     const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(false);
 
     return (
-        <div data-testid="ownedcoinlabel" className="flex flex-col gap-y-xs">
+        <div data-testid="ownedcoinlabel" className="flex flex-col gap-y-xs py-xxs">
             <button
                 type="button"
                 aria-expanded={areCoinDetailsOpen}
                 onClick={() => setAreCoinDetailsOpen((prev) => !prev)}
-                className={clsx('flex w-full flex-row gap-x-md')}
+                className={clsx(
+                    'flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
+                )}
             >
                 <CoinItem coinType={coin.coinType} balance={BigInt(coin.totalBalance)} />
 
                 <div
                     className={clsx(
-                        'flex items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60',
+                        'flex shrink-0 items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
                     <span className="sr-only">
@@ -42,12 +44,12 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     </span>
                     <ArrowUp
                         aria-hidden="true"
-                        className={clsx('h-4 w-4', { 'rotate-180': !areCoinDetailsOpen })}
+                        className={clsx('h-4 w-4 shrink-0', { 'rotate-180': !areCoinDetailsOpen })}
                     />
                 </div>
             </button>
             {areCoinDetailsOpen && (
-                <div className="rounded-lg bg-iota-neutral-96 p-sm dark:bg-iota-neutral-10">
+                <div className="rounded-lg bg-iota-neutral-96 p-xxs sm:p-sm dark:bg-iota-neutral-10">
                     <CoinsPanel
                         id={id}
                         coinType={coin.coinType}

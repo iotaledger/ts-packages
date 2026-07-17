@@ -15,6 +15,7 @@ interface AddressAliasProps {
     onCopy?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     renderAddress?: (addressToDisplay: string) => React.ReactNode;
     renderAlias?: (addressAlias: string) => React.ReactNode;
+    hideAlias?: boolean;
 }
 
 export function AddressAlias({
@@ -24,6 +25,7 @@ export function AddressAlias({
     onCopy,
     renderAddress,
     renderAlias,
+    hideAlias = false,
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
 
@@ -34,7 +36,7 @@ export function AddressAlias({
 
     return (
         <div className="flex flex-col gap-xxs">
-            {addressAlias && (
+            {!hideAlias && addressAlias && (
                 <div
                     className={cx(
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',

@@ -46,15 +46,15 @@ export function CoinItem({ coin }: CoinItemProps): JSX.Element {
     return (
         <div>
             <div className="flex flex-col gap-xxs rounded-lg bg-iota-neutral-96 p-sm sm:hidden dark:bg-iota-neutral-10">
-                <div className="flex flex-row items-center justify-between gap-x-sm">
-                    {objectLink}
-                    {amount}
+                <div className="flex flex-col items-start justify-between gap-y-xxs whitespace-nowrap text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <span className="flex flex-row gap-x-xs">Object ID: {objectLink}</span>
+                    <span className="flex flex-row gap-x-xs">Amount: {amount}</span>
                 </div>
-                <div className="flex flex-row items-center justify-between gap-x-sm">
+                <div className="flex flex-col items-start justify-between gap-y-xxs">
                     <span className="min-w-0 truncate text-body-sm tabular-nums text-iota-neutral-40 dark:text-iota-neutral-60">
-                        Version {coin.version}
+                        Version: {coin.version}
                     </span>
-                    <div className="flex shrink-0 flex-row items-baseline gap-x-xxs">
+                    <div className="flex shrink-0 flex-row items-baseline gap-x-xs">
                         <span className="whitespace-nowrap text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                             Last Tx
                         </span>

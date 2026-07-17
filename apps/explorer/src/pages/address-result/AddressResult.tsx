@@ -3,12 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { AddressBalanceHero, AddressPageContent, PageLayout } from '~/components';
+import {
+    AddressBalanceHero,
+    AddressPageContent,
+    PageLayout,
+    ValidatorAddressHeader,
+} from '~/components';
 import { PageHeader } from '~/components/ui';
 import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress } from '@iota/iota-sdk/utils';
-import { useAbstractAccountData } from '~/hooks';
+import { useAbstractAccountData, useValidatorByAddress } from '~/hooks';
 
 function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
@@ -17,6 +22,7 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
     const address = resolvedAddress ?? addressOrName;
 
     const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(address);
+    const validator = useValidatorByAddress(address);
 
     return (
         <>
@@ -24,11 +30,16 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                 type="Address"
                 title={
                     <div className="flex flex-col gap-xs">
-                        <AddressAlias address={address} onCopy={() => copyToClipboard(address)} />
+                        {validator && <ValidatorAddressHeader validator={validator} />}
+                        <AddressAlias
+                            address={address}
+                            onCopy={() => copyToClipboard(address)}
+                            hideAlias={!!validator}
+                        />
                     </div>
                 }
-                isLoadingSubtitle={isLoadingName}
-                subtitle={name}
+                isLoadingSubtitle={!validator && isLoadingName}
+                subtitle={validator ? null : name}
                 showCopyButton={false}
                 after={<AddressBalanceHero address={address} />}
             />

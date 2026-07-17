@@ -4,3 +4,4 @@
 export * from './AddressPageContent';
 export * from './AddressBalanceHero';
 export * from './AddressStakingTab';
+export * from './ValidatorAddressHeader';

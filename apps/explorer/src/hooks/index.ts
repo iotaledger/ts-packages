@@ -26,3 +26,4 @@ export * from './useFormattedDate';
 export * from './useAbstractAccountData';
 export * from './useLocalTablePagination';
 export * from './useDeserializedSignatures';
+export * from './useValidatorByAddress';

@@ -4,6 +4,8 @@
 
 import { useGetCategorizedOwnedObjects, OwnedObjectCategory, useLocalStorage } from '@iota/core';
 import {
+    Badge,
+    BadgeType,
     Button,
     ButtonSize,
     Divider,
@@ -21,6 +23,7 @@ import {
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
+    Tooltip,
 } from '@iota/apps-ui-kit';
 import { ListViewLarge, ListViewMedium, ListViewSmall, Warning } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
@@ -216,7 +219,18 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                 >
                     <div className="flex w-full flex-col flex-wrap items-start justify-between gap-xs sm:min-h-[72px] sm:flex-row sm:items-center md:gap-0">
                         <div className="-mx-md--rs">
-                            <Title size={TitleSize.Medium} title="Assets" />
+                            <Title
+                                size={TitleSize.Medium}
+                                title="Assets"
+                                supportingElement={
+                                    <Tooltip text="Total assets owned">
+                                        <Badge
+                                            type={BadgeType.Neutral}
+                                            label={String(sortedDataByDisplayImages.length)}
+                                        />
+                                    </Tooltip>
+                                }
+                            />
                         </div>
                         {hasVisualAssets && availableCategories.length > 0 && (
                             <div className="flex flex-col gap-sm sm:flex-row sm:gap-0">

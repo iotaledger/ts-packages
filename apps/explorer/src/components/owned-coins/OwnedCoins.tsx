@@ -2,20 +2,16 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    formatBalanceToUSD,
-    getCoinSymbol,
-    useBalanceInUSD,
-    useGetAllBalances,
-    useRecognizedPackages,
-} from '@iota/core';
-import { useIotaClientContext } from '@iota/dapp-kit';
-import { type CoinBalance, type Network } from '@iota/iota-sdk/client';
-import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { getCoinSymbol, useGetAllBalances, useRecognizedPackages } from '@iota/core';
+import { type CoinBalance } from '@iota/iota-sdk/client';
+import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { FilterList, Warning, SortByDown, SortByUp, SortByDefault } from '@iota/apps-ui-icons';
+import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { OwnedCoinView } from './OwnedCoinView';
 import {
+    Badge,
+    BadgeType,
     Button,
     ButtonType,
     Dropdown,
@@ -28,6 +24,7 @@ import {
     Select,
     SelectSize,
     Title,
+    Tooltip,
 } from '@iota/apps-ui-kit';
 import { Pagination } from '../ui';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
@@ -66,7 +63,6 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
     const owner = normalizeIotaAddress(id);
     const { isPending, data, isError } = useGetAllBalances(owner);
     const recognizedPackages = useRecognizedPackages();
-    const { network } = useIotaClientContext();
 
     const balances: Record<CoinFilter, CoinBalanceVerified[]> = useMemo(() => {
         const balanceData = data?.reduce(
@@ -150,22 +146,13 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
 
     const hasCoinsBalance = balances.allBalances.length > 0;
     const displayedBalances = useMemo(() => balances[filterValue], [balances, filterValue]);
-    const coinBalanceHeader =
-        `${displayedBalances.length ?? 0} Coin` + (displayedBalances.length !== 1 ? 's' : '');
-
-    // Only IOTA has a fiat price mapping today, so the total fiat value only reflects the IOTA balance.
-    const iotaBalanceTotal = useMemo(
-        () =>
-            balances.allBalances.find((coinBalance) => coinBalance.coinType === IOTA_TYPE_ARG)
-                ?.totalBalance ?? '0',
-        [balances.allBalances],
+    const coinCountBadge = (
+        <span className="ml-sm">
+            <Tooltip text="Total coins owned">
+                <Badge type={BadgeType.Neutral} label={String(displayedBalances.length ?? 0)} />
+            </Tooltip>
+        </span>
     );
-    const totalFiatValue = useBalanceInUSD(IOTA_TYPE_ARG, iotaBalanceTotal, network as Network);
-    // A null/undefined total means the fiat/price infra is unavailable (e.g. non-mainnet
-    // or the feature is off), so the whole Price column is dropped rather than showing '--'
-    // for every row. 0 is a valid value, so the column still shows in that case.
-    const showPrice = totalFiatValue !== null && totalFiatValue !== undefined;
-    const totalFiatValueLabel = showPrice ? formatBalanceToUSD(totalFiatValue) : null;
 
     if (isError) {
         return (
@@ -193,15 +180,8 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                 <div className="flex h-full flex-col">
                     <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px] [&_h4]:whitespace-nowrap">
                         <Title
-                            title={coinBalanceHeader}
-                            supportingElement={
-                                totalFiatValueLabel && (
-                                    <span className="ml-xs flex items-center gap-x-xs whitespace-nowrap text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                        <span aria-hidden="true">·</span>
-                                        {totalFiatValueLabel}
-                                    </span>
-                                )
-                            }
+                            title="Coins"
+                            supportingElement={coinCountBadge}
                             trailingElement={
                                 hasCoinsBalance && (
                                     <div className="flex items-center gap-xs whitespace-nowrap">
@@ -443,7 +423,13 @@ interface CoinListProps {
 
 function CoinList({ coins, id, sortField, sortOrder }: CoinListProps) {
     return (
-        <div className="flex max-h-[400px] w-full flex-col gap-xxs md:max-h-[650px]">
+        <div
+            className={clsx(
+                'flex max-h-[400px] w-full flex-col divide-y divide-shader-neutral-light-8 md:max-h-[650px] dark:divide-shader-neutral-dark-8',
+                coins.length === 1 &&
+                    'border-b border-shader-neutral-light-8 dark:border-shader-neutral-dark-8',
+            )}
+        >
             {coins.map((coin, index) => (
                 <OwnedCoinView
                     key={`${coin.coinType}-${index}`}
