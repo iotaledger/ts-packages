@@ -64,7 +64,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
             </div>
             <div className="flex flex-row items-center gap-x-xs">
                 <Tooltip openDelay={100} text={`${fullAmount} ${symbol}`}>
-                    <span className="text-headline-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                         {roundedAmount} {symbol}
                     </span>
                 </Tooltip>
