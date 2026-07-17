@@ -16,13 +16,14 @@ test('address page', async ({ page }) => {
 test('owned objects (coins) are displayed', async ({ page }) => {
     const address = await faucet();
     await page.goto(`/address/${address}`);
-    await page.waitForSelector('h4:has-text("Owned Objects")');
-    await expect(page.getByTestId('ownedcoinlabel')).toContainText('IOTA');
+    await page.getByTestId('ownedcoinlabel').first().waitFor();
+    await expect(page.getByTestId('ownedcoinlabel').first()).toContainText('IOTA');
 });
 
 test('transactions table is displayed', async ({ page }) => {
     const address = await faucet();
     await split_coin(address);
     await page.goto(`/address/${address}`);
+    await page.getByRole('button', { name: 'Transaction Blocks' }).click();
     await page.getByTestId('tx').locator('td').first().waitFor();
 });
