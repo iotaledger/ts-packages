@@ -3,7 +3,7 @@
 
 import type { ProtectedRoute, PublicRoute } from '../interfaces';
 import { ProtectedRouteTitle } from '../enums';
-import { Activity, Assets, Home, Migration, Stake, Vesting } from '@iota/apps-ui-icons';
+import { Activity, Apps, Assets, Home, Migration, Stake, Vesting } from '@iota/apps-ui-icons';
 import { ToS_LINK } from '@iota/core';
 
 export const CONNECT_ROUTE: PublicRoute = {
@@ -41,6 +41,12 @@ export const ACTIVITY_ROUTE: ProtectedRoute = {
     icon: Activity,
     id: 'activity',
 };
+export const APPS_ROUTE: ProtectedRoute = {
+    title: ProtectedRouteTitle.Apps,
+    path: '/apps',
+    icon: Apps,
+    id: 'apps',
+};
 export const MIGRATION_ROUTE: ProtectedRoute = {
     title: ProtectedRouteTitle.Migration,
     path: '/migration',
@@ -59,6 +65,7 @@ export const PROTECTED_ROUTES = [
     ASSETS_ROUTE,
     STAKING_ROUTE,
     ACTIVITY_ROUTE,
+    APPS_ROUTE,
     VESTING_ROUTE,
     MIGRATION_ROUTE,
 ] as const satisfies ProtectedRoute[];

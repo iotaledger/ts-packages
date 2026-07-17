@@ -27,14 +27,12 @@ const withMDX = nextMdx();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = withMDX({
+    pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
     env: {
         NEXT_PUBLIC_AMPLITUDE_ENABLED,
         NEXT_PUBLIC_IOTA_NAMES_REV,
         NEXT_PUBLIC_BUILD_ENV,
         APPS_BACKEND,
-    },
-    experimental: {
-        mdxRs: true,
     },
     turbopack: {
         resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],

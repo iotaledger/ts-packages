@@ -52,9 +52,6 @@ jobs:
     permissions:
       contents: read
 
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
-
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.EXPLORER_VERCEL_PROJECT_ID }}
@@ -93,18 +90,16 @@ jobs:
           if [ "$DEPLOY_TYPE" = "production" ]; then
             vercel build --prod $VERCEL_FLAGS
             vercel deploy --prod --prebuilt $VERCEL_FLAGS
-            PUBLIC_URL="https://explorer.iota.org"
+            echo "url=https://explorer.iota.org" >> "$GITHUB_OUTPUT"
+          elif [ "$DEPLOY_TYPE" = "rc" ]; then
+            vercel build $VERCEL_FLAGS
+            DEPLOY_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
+            vercel alias set "$DEPLOY_URL" explorer-rc-iota1.vercel.app $VERCEL_FLAGS
+            echo "url=https://explorer-rc-iota1.vercel.app" >> "$GITHUB_OUTPUT"
           else
             vercel build $VERCEL_FLAGS
-            if [ "$DEPLOY_TYPE" = "rc" ]; then
-              vercel alias set "$(vercel deploy --prebuilt $VERCEL_FLAGS)" explorer-rc-iota1.vercel.app $VERCEL_FLAGS
-              PUBLIC_URL="https://explorer-rc-iota1.vercel.app"
-            else
-              PUBLIC_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
-            fi
+            echo "url=$(vercel deploy --prebuilt $VERCEL_FLAGS)" >> "$GITHUB_OUTPUT"
           fi
-
-          echo "url=$PUBLIC_URL" >> "$GITHUB_OUTPUT"
 
   notify:
     needs: [resolve-deploy-type, deploy]
@@ -116,6 +111,6 @@ jobs:
       title: "Explorer ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
       message: |
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
-        URL: ${{ needs.deploy.outputs.url }}
+        URL: ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && 'https://explorer.iota.org' || 'https://explorer-rc-iota1.vercel.app' }}
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 

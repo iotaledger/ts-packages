@@ -1,5 +1,17 @@
 # @iota/signers
 
+## 0.4.3
+
+### Patch Changes
+
+-   Updated dependencies [55acfff]
+-   Updated dependencies [2520592]
+-   Updated dependencies [55acfff]
+-   Updated dependencies [c41898c]
+-   Updated dependencies [0615535]
+-   Updated dependencies [e92cc33]
+    -   @iota/iota-sdk@1.15.0
+
 ## 0.4.2
 
 ### Patch Changes

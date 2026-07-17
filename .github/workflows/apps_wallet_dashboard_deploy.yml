@@ -47,8 +47,6 @@ jobs:
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
     permissions:
       contents: read
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.WALLET_DASHBOARD_VERCEL_PROJECT_ID }}
@@ -86,18 +84,16 @@ jobs:
           if [ "$DEPLOY_TYPE" = "production" ]; then
             vercel build --prod $VERCEL_FLAGS
             vercel deploy --prod --prebuilt $VERCEL_FLAGS
-            PUBLIC_URL="https://wallet-dashboard.iota.org"
+            echo "url=https://wallet-dashboard.iota.org" >> "$GITHUB_OUTPUT"
+          elif [ "$DEPLOY_TYPE" = "rc" ]; then
+            vercel build $VERCEL_FLAGS
+            DEPLOY_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
+            vercel alias "$DEPLOY_URL" wallet-dashboard-rc-iota1.vercel.app $VERCEL_FLAGS
+            echo "url=https://wallet-dashboard-rc-iota1.vercel.app" >> "$GITHUB_OUTPUT"
           else
             vercel build $VERCEL_FLAGS
-            if [ "$DEPLOY_TYPE" = "rc" ]; then
-              vercel alias "$(vercel deploy --prebuilt $VERCEL_FLAGS)" wallet-dashboard-rc-iota1.vercel.app $VERCEL_FLAGS
-              PUBLIC_URL="https://wallet-dashboard-rc-iota1.vercel.app"
-            else
-              PUBLIC_URL=$(vercel deploy --prebuilt $VERCEL_FLAGS)
-            fi
+            echo "url=$(vercel deploy --prebuilt $VERCEL_FLAGS)" >> "$GITHUB_OUTPUT"
           fi
-
-          echo "url=$PUBLIC_URL" >> "$GITHUB_OUTPUT"
 
   notify:
     needs: [resolve-deploy-type, deploy]
@@ -109,6 +105,6 @@ jobs:
       title: "Wallet Dashboard ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
       message: |
         Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
-        URL: ${{ needs.deploy.outputs.url }}
+        URL: ${{ needs.resolve-deploy-type.outputs.deploy_type == 'production' && 'https://wallet-dashboard.iota.org' || 'https://wallet-dashboard-rc-iota1.vercel.app' }}
         Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 

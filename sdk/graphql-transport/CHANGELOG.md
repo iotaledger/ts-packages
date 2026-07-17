@@ -1,5 +1,24 @@
 # @iota/graphql-transport
 
+## 0.18.0
+
+### Minor Changes
+
+-   2520592: Deprecate `WRAPPED_OR_DELETED`
+
+### Patch Changes
+
+-   55acfff: Deprecate ObjectKind.WrappedOrDeleted
+-   55acfff: Remove deprecated signAddress and SIGN signer filters from GraphQL schema, replaced by
+    sentAddress and SENT
+-   Updated dependencies [55acfff]
+-   Updated dependencies [2520592]
+-   Updated dependencies [55acfff]
+-   Updated dependencies [c41898c]
+-   Updated dependencies [0615535]
+-   Updated dependencies [e92cc33]
+    -   @iota/iota-sdk@1.15.0
+
 ## 0.17.0
 
 ### Minor Changes

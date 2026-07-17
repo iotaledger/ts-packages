@@ -12,7 +12,7 @@ import type {
     IotaObjectChangePublished,
     IotaTransactionBlockResponse,
 } from '@iota/iota-sdk/client';
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { getFaucetHost, requestIotaFromFaucet } from '@iota/iota-sdk/faucet';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
@@ -25,7 +25,7 @@ import { KioskTransaction } from '../../src/index.js';
 //@ts-expect-error env not found on meta
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
 //@ts-expect-error env not found on meta
-const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
+const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getRpcUrl('localnet');
 //@ts-expect-error env not found on meta
 const IOTA_BIN =
     import.meta.env.VITE_IOTA_BIN ??
