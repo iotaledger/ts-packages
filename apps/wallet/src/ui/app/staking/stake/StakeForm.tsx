@@ -16,6 +16,7 @@ import {
     NO_BALANCE_GENERIC_MESSAGE,
     getGasBudgetErrorMessage,
     useGetValidatorsApy,
+    AmountWithFiat,
 } from '@iota/core';
 import * as Sentry from '@sentry/react';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -242,9 +243,18 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                                 placeholder={`0 ${symbol}`}
                                 value={amount}
                                 caption={
-                                    minAmountTxGasBudget
-                                        ? `${availableBalanceFormatted} ${symbol} Available`
-                                        : '--'
+                                    minAmountTxGasBudget ? (
+                                        <span className="flex flex-row items-baseline gap-1">
+                                            <AmountWithFiat
+                                                amount={availableBalance}
+                                                formatted={availableBalanceFormatted}
+                                                symbol={symbol}
+                                            />
+                                            <span>Available</span>
+                                        </span>
+                                    ) : (
+                                        '--'
+                                    )
                                 }
                                 suffix={' ' + symbol}
                                 errorMessage={amount && meta.error ? meta.error : undefined}

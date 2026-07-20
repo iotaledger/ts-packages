@@ -5,6 +5,7 @@ import { Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import { GAS_SYMBOL } from '../../constants';
 import { useFormatCoin } from '../../hooks/useFormatCoin';
 import type { UnstakeAmounts } from '../../utils/stake/calculateUnstakeAmounts';
+import { AmountWithFiat } from '../coin';
 
 interface UnstakeBreakdownProps {
     isPartialUnstake: boolean;
@@ -32,40 +33,70 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
             <>
                 <KeyValueInfo
                     keyText="Amount to Unstake"
-                    value={unstakeAmountFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={
+                        <AmountWithFiat
+                            formatted={unstakeAmountFormatted}
+                            symbol={GAS_SYMBOL}
+                            amount={unstakeAmounts.unstakeAmount}
+                        />
+                    }
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Rewards Earned"
-                    value={rewardsFormatted}
-                    supportingLabel={rewardSymbol}
+                    value={
+                        <AmountWithFiat
+                            formatted={rewardsFormatted}
+                            symbol={rewardSymbol}
+                            amount={unstakeAmounts.proportionalRewards}
+                        />
+                    }
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Remaining Stake"
-                    value={remainingStakeFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={
+                        <AmountWithFiat
+                            formatted={remainingStakeFormatted}
+                            symbol={GAS_SYMBOL}
+                            amount={unstakeAmounts.remainingStake}
+                        />
+                    }
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Rewards"
-                    value={remainingRewardsFormatted}
-                    supportingLabel={remainingRewardsSymbol}
+                    value={
+                        <AmountWithFiat
+                            formatted={remainingRewardsFormatted}
+                            symbol={remainingRewardsSymbol}
+                            amount={unstakeAmounts.remainingRewards}
+                        />
+                    }
                     fullwidth
                 />
                 <Divider />
                 <KeyValueInfo
                     keyText="Total Unstaked IOTA"
-                    value={totalUnstakeAmountFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={
+                        <AmountWithFiat
+                            formatted={totalUnstakeAmountFormatted}
+                            symbol={GAS_SYMBOL}
+                            amount={unstakeAmounts.totalUnstakeAmount}
+                        />
+                    }
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Remaining Total Staked IOTA"
-                    value={remainingTotalStakedFormatted}
-                    supportingLabel={GAS_SYMBOL}
+                    value={
+                        <AmountWithFiat
+                            formatted={remainingTotalStakedFormatted}
+                            symbol={GAS_SYMBOL}
+                            amount={unstakeAmounts.remainingTotalStaked}
+                        />
+                    }
                     fullwidth
                 />
             </>
@@ -76,21 +107,36 @@ export function UnstakeBreakdown({ isPartialUnstake, unstakeAmounts }: UnstakeBr
         <>
             <KeyValueInfo
                 keyText="Your Stake"
-                value={unstakeAmountFormatted}
-                supportingLabel={GAS_SYMBOL}
+                value={
+                    <AmountWithFiat
+                        formatted={unstakeAmountFormatted}
+                        symbol={GAS_SYMBOL}
+                        amount={unstakeAmounts.unstakeAmount}
+                    />
+                }
                 fullwidth
             />
             <KeyValueInfo
                 keyText="Rewards Earned"
-                value={rewardsFormatted}
-                supportingLabel={rewardSymbol}
+                value={
+                    <AmountWithFiat
+                        formatted={rewardsFormatted}
+                        symbol={rewardSymbol}
+                        amount={unstakeAmounts.proportionalRewards}
+                    />
+                }
                 fullwidth
             />
             <Divider />
             <KeyValueInfo
                 keyText="Total Unstaked IOTA"
-                value={totalUnstakeAmountFormatted}
-                supportingLabel={GAS_SYMBOL}
+                value={
+                    <AmountWithFiat
+                        formatted={totalUnstakeAmountFormatted}
+                        symbol={GAS_SYMBOL}
+                        amount={unstakeAmounts.totalUnstakeAmount}
+                    />
+                }
                 fullwidth
             />
         </>

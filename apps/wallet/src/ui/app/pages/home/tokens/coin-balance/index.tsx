@@ -1,9 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { formatBalanceToUSD, useBalanceInUSD, useFormatCoin, BALANCE_MASK } from '@iota/core';
-import { IOTA_TYPE_ARG, CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
-import { useMemo } from 'react';
+import { CoinFiatValue, useBalanceInUSD, useFormatCoin, BALANCE_MASK } from '@iota/core';
+import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { Button, ButtonSize, ButtonType, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import BigNumber from 'bignumber.js';
 import { useAppSelector, useBalanceVisibility } from '_src/ui/app/hooks';
@@ -16,27 +15,33 @@ export interface CoinProps {
 
 interface WalletBalanceUsdProps {
     amount: bigint;
+    coinType: string;
     isVisible: boolean;
 }
 
-function WalletBalanceUsd({ amount: walletBalance, isVisible }: WalletBalanceUsdProps) {
+function WalletBalanceUsd({ amount: walletBalance, coinType, isVisible }: WalletBalanceUsdProps) {
     const network = useAppSelector((state) => state.app.network);
-    const formattedWalletBalance = useBalanceInUSD(IOTA_TYPE_ARG, walletBalance, network);
+    const usdValue = useBalanceInUSD(coinType, walletBalance, network);
 
-    const walletBalanceInUsd = useMemo(() => {
-        if (!formattedWalletBalance) return null;
-
-        return `~${formatBalanceToUSD(formattedWalletBalance)}`;
-    }, [formattedWalletBalance]);
-
-    if (!walletBalanceInUsd) {
+    if (usdValue === null || usdValue === undefined || Math.abs(usdValue) < 0.005) {
         return null;
     }
 
     return (
-        <div className="flex items-center gap-1 text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            <span>{isVisible ? walletBalanceInUsd : BALANCE_MASK}</span>
-            <span>USD</span>
+        <div className="flex items-center gap-1 text-label-md text-iota-neutral-40 dark:text-iota-neutral-60 [&>span]:!text-label-md">
+            {isVisible ? (
+                <>
+                    <span>~</span>
+                    <CoinFiatValue
+                        amount={walletBalance}
+                        coinType={coinType}
+                        withParentheses={false}
+                    />
+                    <span>USD</span>
+                </>
+            ) : (
+                <span>{BALANCE_MASK}</span>
+            )}
         </div>
     );
 }
@@ -96,7 +101,7 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
                     />
                 </div>
             </div>
-            <WalletBalanceUsd amount={walletBalance} isVisible={isBalanceVisible} />
+            <WalletBalanceUsd amount={walletBalance} coinType={type} isVisible={isBalanceVisible} />
         </>
     );
 }

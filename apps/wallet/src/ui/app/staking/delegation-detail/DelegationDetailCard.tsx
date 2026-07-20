@@ -21,6 +21,7 @@ import {
     useIsValidatorCommitteeMember,
     useIsActiveValidator,
     useGetNextEpochCommitteeMember,
+    AmountWithFiat,
 } from '@iota/core';
 import { Network, type StakeObject } from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG, CoinFormat } from '@iota/iota-sdk/utils';
@@ -183,14 +184,24 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
                     <div className="flex flex-col gap-y-sm p-md">
                         <KeyValueInfo
                             keyText="Your Stake"
-                            value={totalStakeFormatted}
-                            supportingLabel={totalStakeSymbol}
+                            value={
+                                <AmountWithFiat
+                                    amount={totalStake}
+                                    formatted={totalStakeFormatted}
+                                    symbol={totalStakeSymbol}
+                                />
+                            }
                             fullwidth
                         />
                         <KeyValueInfo
                             keyText="Earned"
-                            value={iotaEarnedFormatted}
-                            supportingLabel={iotaEarnedSymbol}
+                            value={
+                                <AmountWithFiat
+                                    amount={iotaEarned}
+                                    formatted={iotaEarnedFormatted}
+                                    symbol={iotaEarnedSymbol}
+                                />
+                            }
                             fullwidth
                         />
                         <Divider />

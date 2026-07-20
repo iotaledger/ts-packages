@@ -17,6 +17,7 @@ import { ExtendedDelegatedStake } from '../../utils';
 import { useFormatCoin, useStakeRewardStatus, useGetInactiveValidator } from '../../hooks';
 import { RewardsOff, Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
+import { AmountWithFiat } from '../coin';
 
 interface StakedCardProps {
     extendedStake: ExtendedDelegatedStake;
@@ -68,7 +69,13 @@ export function StakedCard({
             </CardImage>
             <CardBody
                 title={name}
-                subtitle={`${principalStaked} ${symbol}`}
+                subtitle={
+                    <AmountWithFiat
+                        amount={principal}
+                        formatted={principalStaked}
+                        symbol={symbol}
+                    />
+                }
                 icon={
                     activeButNotInTheCommittee ? (
                         <RewardsOff className="text-iota-warning-60" />
