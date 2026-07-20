@@ -16,7 +16,7 @@
         "@nestjs/cache-manager": "^3.0.1",
         "@nestjs/common": "^11.1.6",
         "@nestjs/config": "^4.0.2",
-        "@nestjs/core": "^11.1.6",
+        "@nestjs/core": "^11.1.28",
         "@nestjs/platform-express": "^11.1.6",
         "@nestjs/schedule": "^6.0.1",
         "cache-manager": "^7.2.4",
