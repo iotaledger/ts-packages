@@ -1,0 +1,89 @@
+name: Deploy Previews
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.affected.outputs.matrix }}
+      has_affected: ${{ steps.affected.outputs.has_affected }}
+    steps:
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - name: Install Nodejs
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Resolve affected apps
+        id: affected
+        env:
+          TURBO_DAEMON: false
+        run: |
+          set -euo pipefail
+
+          APPS='[
+            {"name":"ui-kit","package":"@iota/apps-ui-kit","project_id_secret":"UI_KIT_VERCEL_PROJECT_ID"},
+            {"name":"multisig-toolkit","package":"multisig-toolkit","project_id_secret":"MULTISIG_TOOLKIT_VERCEL_PROJECT_ID"},
+            {"name":"explorer","package":"iota-explorer","project_id_secret":"EXPLORER_VERCEL_PROJECT_ID"},
+            {"name":"wallet-dashboard","package":"wallet-dashboard","project_id_secret":"WALLET_DASHBOARD_VERCEL_PROJECT_ID"},
+            {"name":"names-dapp","package":"names-dapp","project_id_secret":"IOTA_NAMES_VERCEL_PROJECT_ID"},
+            {"name":"evm-bridge","package":"iota-evm-bridge","project_id_secret":"EVM_BRIDGE_VERCEL_PROJECT_ID"}
+          ]'
+
+          TURBO_VERSION="$(node -p "require('./package.json').devDependencies.turbo.replace(/[^0-9.]/g, '')")"
+
+          AFFECTED="$(pnpm dlx "turbo@${TURBO_VERSION}" query affected \
+            --packages --base=HEAD^1 --head=HEAD \
+            | jq -c '[.data.affectedPackages.items[].name]')"
+
+          echo "Affected packages: $AFFECTED"
+
+          INCLUDE="$(echo "$APPS" | jq -c --argjson affected "$AFFECTED" \
+            '[.[] | select(.package as $p | $affected | index($p))]')"
+
+          echo "matrix={\"include\":$INCLUDE}" >> "$GITHUB_OUTPUT"
+          echo "has_affected=$([ "$(echo "$INCLUDE" | jq 'length')" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: detect
+    if: needs.detect.outputs.has_affected == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - name: Install Nodejs
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install Vercel CLI
+        run: pnpm add --global vercel@canary
+      - name: Deploy ${{ matrix.name }} preview
+        uses: iotaledger/deploy-to-vercel-action@a2dab15073871214dd8669e4308a12139b94b71b
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets[matrix.project_id_secret] }}
+          VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+          COMMENT_IDENTIFIER: ${{ matrix.name }}
+          GITHUB_DEPLOYMENT_ENV: Preview – ${{ matrix.name }}
