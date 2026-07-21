@@ -20,6 +20,7 @@ import { CoinFormat, IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse, ObjectOwner } from '@iota/iota-sdk/client';
 import { useMemo, useState } from 'react';
 import { AddressLink, ValidatorLink } from '~/components/ui';
+import { getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
 
@@ -146,33 +147,13 @@ export function TransactionActionSummary({
                     const owner = getAddressOwner(change.owner);
                     return BigInt(change.amount) > 0n && owner && owner !== sender;
                 });
-                const sentObjectRecipients = (transaction.objectChanges ?? [])
-                    .map((change) => {
-                        if (
-                            !('objectType' in change) ||
-                            change.objectType.startsWith('0x2::coin::Coin')
-                        ) {
-                            return undefined;
-                        }
-                        if (change.type === 'transferred') {
-                            return getAddressOwner(change.recipient);
-                        }
-                        if (change.type === 'mutated' || change.type === 'created') {
-                            const owner = getAddressOwner(change.owner);
-                            return owner && owner !== sender ? owner : undefined;
-                        }
-                        return undefined;
-                    })
-                    .filter((recipient): recipient is string => !!recipient);
-                if (!received.length && !sentObjectRecipients.length) return [];
+                const { addresses: recipients, sentObjectCount } = getSendRecipients(
+                    transaction,
+                    sender,
+                );
+                if (!received.length && !sentObjectCount) return [];
 
                 const coinTypes = new Set(received.map((change) => change.coinType));
-                const recipients = new Set(
-                    [
-                        ...received.map((change) => getAddressOwner(change.owner)),
-                        ...sentObjectRecipients,
-                    ].filter(Boolean),
-                );
                 return [
                     {
                         verb: 'Send',
@@ -185,7 +166,7 @@ export function TransactionActionSummary({
                         connector: 'to',
                         address: recipients.size === 1 ? [...recipients][0] : undefined,
                         recipientCount: recipients.size,
-                        nftCount: sentObjectRecipients.length,
+                        nftCount: sentObjectCount,
                     },
                 ];
             }
