@@ -7,20 +7,20 @@ import { useEffect, useRef, useState } from 'react';
 
 export enum PageSection {
     Overview = 'overview-section',
-    Summary = 'summary-section',
+    Changes = 'changes-section',
     Inputs = 'inputs-section',
     Transactions = 'transactions-section',
-    Gas = 'gas-section',
+    Events = 'events-section',
 }
 
 const SCROLL_SPY_OFFSET = 160;
 
 const PAGE_SECTION_LABELS: Record<PageSection, string> = {
     [PageSection.Overview]: 'Overview',
-    [PageSection.Summary]: 'Summary',
+    [PageSection.Changes]: 'Changes',
     [PageSection.Inputs]: 'Inputs',
     [PageSection.Transactions]: 'Transactions',
-    [PageSection.Gas]: 'Gas & Storage Fee',
+    [PageSection.Events]: 'Events',
 };
 
 interface TransactionNavProps {
@@ -33,13 +33,13 @@ export function TransactionNav({ transaction }: TransactionNavProps): JSX.Elemen
 
     const isProgrammableTransaction =
         transaction.transaction?.data.transaction?.kind === 'ProgrammableTransaction';
+    const hasEvents = !!transaction.events?.length;
 
     const pageSections = [
         PageSection.Overview,
-        PageSection.Summary,
-        ...(isProgrammableTransaction
-            ? [PageSection.Gas, PageSection.Inputs, PageSection.Transactions]
-            : []),
+        PageSection.Changes,
+        ...(isProgrammableTransaction ? [PageSection.Inputs, PageSection.Transactions] : []),
+        ...(hasEvents ? [PageSection.Events] : []),
     ];
 
     function goToSection(section: PageSection) {

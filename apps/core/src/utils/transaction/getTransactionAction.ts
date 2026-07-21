@@ -8,7 +8,7 @@ import { checkIfIsTimelockedStaking } from '../stake';
 import { isMigrationTransaction, isUnlockTimelockedObjectTransaction } from '..';
 
 export const ACTION_LABELS: Record<TransactionAction, string> = {
-    [TransactionAction.Send]: 'Sent',
+    [TransactionAction.Send]: 'Send',
     [TransactionAction.Receive]: 'Received',
     [TransactionAction.Transaction]: 'Transaction',
     [TransactionAction.Staked]: 'Stake',
