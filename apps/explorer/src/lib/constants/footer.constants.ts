@@ -39,4 +39,4 @@ export const LEGAL_LINKS = [
     },
 ];
 
-export const TEST = []
+export const TEST = [];
