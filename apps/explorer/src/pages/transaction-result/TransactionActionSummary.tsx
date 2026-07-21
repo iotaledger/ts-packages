@@ -3,6 +3,7 @@
 
 import {
     CoinFiatValue,
+    CoinIcon,
     ImageIcon,
     ImageIconSize,
     STAKING_REQUEST_EVENT,
@@ -13,9 +14,9 @@ import {
     useFormatCoin,
 } from '@iota/core';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
-import { Copy } from '@iota/apps-ui-icons';
+import { Copy, IotaLogoMark } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
+import { CoinFormat, IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse, ObjectOwner } from '@iota/iota-sdk/client';
 import { useMemo, useState } from 'react';
 import { AddressLink, ValidatorLink } from '~/components/ui';
@@ -73,7 +74,7 @@ export function TransactionActionSummary({
                                 validator_address?: string;
                             };
                             return {
-                                verb: 'Staked',
+                                verb: 'Stake',
                                 amount: BigInt(json.amount ?? 0),
                                 outgoing: true,
                                 vested,
@@ -174,7 +175,7 @@ export function TransactionActionSummary({
                 );
                 return [
                     {
-                        verb: 'Sent',
+                        verb: 'Send',
                         amount:
                             received.length > 0 && coinTypes.size === 1
                                 ? received.reduce((sum, change) => sum + BigInt(change.amount), 0n)
@@ -225,6 +226,7 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
     const [formattedAmount, symbol] = useFormatCoin({
         balance: details.amount?.toString(),
         coinType: details.coinType,
+        format: CoinFormat.Full,
     });
 
     const validator = details.isValidator
@@ -235,15 +237,21 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
         <div className="flex flex-wrap items-center justify-center gap-x-xs gap-y-xxs text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
             <span>{details.verb}</span>
             {details.amount !== undefined && (
-                <span
-                    className={
-                        details.outgoing
-                            ? 'text-iota-error-30 dark:text-iota-error-80'
-                            : 'text-iota-tertiary-30 dark:text-iota-tertiary-80'
-                    }
-                >
-                    {details.outgoing ? '-' : '+'}
-                    {formattedAmount} {details.vested ? `vested ${symbol}` : symbol}
+                <span className="flex items-center gap-x-xs">
+                    <CoinIcon
+                        coinType={details.coinType ?? IOTA_TYPE_ARG}
+                        size={ImageIconSize.Small}
+                    />
+                    <span
+                        className={
+                            details.outgoing
+                                ? 'text-iota-error-30 dark:text-iota-error-80'
+                                : 'text-iota-tertiary-30 dark:text-iota-tertiary-80'
+                        }
+                    >
+                        {details.outgoing ? '-' : '+'}
+                        {formattedAmount} {details.vested ? `vested ${symbol}` : symbol}
+                    </span>
                 </span>
             )}
             {details.amount !== undefined && (
@@ -260,14 +268,14 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
                     </span>
                 </span>
             )}
-            {details.verb === 'Sent' && details.amount === undefined && !details.nftCount && (
+            {details.verb === 'Send' && details.amount === undefined && !details.nftCount && (
                 <span>assets</span>
             )}
             {details.connector && <span>{details.connector}</span>}
             {details.address ? (
                 details.isValidator ? (
                     <span className="flex items-center gap-x-xs">
-                        {validator && (
+                        {validator?.imageUrl ? (
                             <ImageIcon
                                 src={validator.imageUrl}
                                 label={validator.name}
@@ -275,6 +283,8 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
                                 size={ImageIconSize.Small}
                                 rounded
                             />
+                        ) : (
+                            <IotaLogoMark className="h-5 w-5 shrink-0" />
                         )}
                         <ValidatorLink
                             address={details.address}

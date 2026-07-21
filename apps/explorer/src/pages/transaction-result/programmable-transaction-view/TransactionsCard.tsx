@@ -21,7 +21,13 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
         const [[type, data]] = Object.entries(transaction);
 
         return (
-            <CollapsibleCard key={index} title={type} titleSize={TitleSize.Small} collapsible>
+            <CollapsibleCard
+                key={index}
+                title={type}
+                titleSize={TitleSize.Small}
+                collapsible
+                initialClose
+            >
                 <div data-testid="transactions-card-content">
                     <div className="px-md pb-lg pt-xs">
                         <Transaction key={index} type={type} data={data} />
@@ -34,8 +40,7 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
     return (
         <ProgrammableTxnBlockCard
             items={expandableItems}
-            itemsLabel={transactions.length > 1 ? 'Transactions' : 'Transaction'}
-            count={transactions.length}
+            itemsLabel="Transactions"
             rawData={transactions}
             defaultItemsToShow={4}
         />

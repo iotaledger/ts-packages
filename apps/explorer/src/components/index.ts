@@ -5,7 +5,6 @@ export * from './activity';
 export * from './checkpoints';
 export * from './error-boundary';
 export * from './footer';
-export * from './gas-breakdown';
 export * from './header';
 export * from './home-metrics';
 export * from './layout';

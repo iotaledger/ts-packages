@@ -21,3 +21,5 @@ export * from './useVerifiedSourceCode';
 export * from './useEndOfEpochTransactionFromCheckpoint';
 export * from './useFormattedDate';
 export * from './useAbstractAccountData';
+export * from './useLocalTablePagination';
+export * from './useDeserializedSignatures';

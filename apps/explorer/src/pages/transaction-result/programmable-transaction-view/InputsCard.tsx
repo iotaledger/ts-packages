@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { ImageIcon, ImageIconSize, useAddressAliasLookup } from '@iota/core';
+import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
 import { ProgrammableTxnBlockCard, AddressLink, ObjectLink, CollapsibleCard } from '~/components';
@@ -15,6 +17,45 @@ interface InputsCardProps {
     inputs: IotaCallArg[];
 }
 
+function getInputAddress(input: IotaCallArg): string | undefined {
+    if (input.type === 'object' && 'objectId' in input) {
+        return input.objectId;
+    }
+
+    if (input.type === 'pure' && 'valueType' in input && input.valueType === 'address') {
+        return String(input.value);
+    }
+
+    return undefined;
+}
+
+function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element | null {
+    const getAddressAlias = useAddressAliasLookup();
+    const address = getInputAddress(input);
+    const addressAlias = address ? getAddressAlias(address) : null;
+
+    if (!addressAlias) {
+        return null;
+    }
+
+    return (
+        <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+            {addressAlias.imageUrl ? (
+                <ImageIcon
+                    src={addressAlias.imageUrl}
+                    label={addressAlias.alias}
+                    fallback={addressAlias.alias}
+                    size={ImageIconSize.Small}
+                    rounded
+                />
+            ) : (
+                <IotaLogoMark className="aspect-square h-full shrink-0" />
+            )}
+            <span>{addressAlias.alias}</span>
+        </div>
+    );
+}
+
 export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
     const isMediumOrAbove = useBreakpoint('md');
     if (!inputs?.length) {
@@ -25,7 +66,9 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
         <CollapsibleCard
             key={index}
             title={`Input ${index}`}
+            supportingTitleElement={<InputSupportingElement input={input} />}
             collapsible
+            initialClose
             titleSize={TitleSize.Small}
         >
             <div
@@ -111,8 +154,7 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
     return (
         <ProgrammableTxnBlockCard
             items={expandableItems}
-            itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
-            count={inputs.length}
+            itemsLabel="Inputs"
             rawData={inputs}
             defaultItemsToShow={4}
         />
