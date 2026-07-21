@@ -20,8 +20,6 @@ import { LEGAL_LINKS } from './lib';
 import { Link } from './components';
 import { initIdentityWasmWeb, initNotarizationWasmWeb } from './lib/utils/trust-framework/client';
 
-//
-
 // Load Amplitude as early as we can:
 initAmplitude();
 

@@ -38,3 +38,5 @@ export const LEGAL_LINKS = [
         href: '/cookie-policy',
     },
 ];
+
+export const TEST = []
