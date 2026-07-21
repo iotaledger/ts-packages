@@ -79,7 +79,7 @@ jobs:
       - name: Install Vercel CLI
         run: pnpm add --global vercel@canary
       - name: Deploy ${{ matrix.name }} preview
-        uses: iotaledger/deploy-to-vercel-action@a2dab15073871214dd8669e4308a12139b94b71b
+        uses: iotaledger/deploy-to-vercel-action@41c4a8a4d8b6020b6f9eb87420402b4f285b07f5
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -88,3 +88,4 @@ jobs:
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
           COMMENT_IDENTIFIER: ${{ matrix.name }}
           GITHUB_DEPLOYMENT_ENV: Preview – ${{ matrix.name }}
+          LOGS: true
