@@ -3,8 +3,14 @@
 
 import { useState } from 'react';
 import { Badge, BadgeType, ButtonUnstyled, KeyValueInfo } from '@iota/apps-ui-kit';
-import { CoinFiatValue, useFormatCoin, type GasSummaryType } from '@iota/core';
-import { ArrowDown } from '@iota/apps-ui-icons';
+import {
+    CoinFiatValue,
+    TransactionAction,
+    getTransactionAction,
+    useFormatCoin,
+    type GasSummaryType,
+} from '@iota/core';
+import { ArrowBottomLeft, ArrowDown, ArrowTopRight } from '@iota/apps-ui-icons';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { CoinFormat, formatAddress, toBase64 } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
@@ -16,7 +22,7 @@ import {
     ObjectLink,
 } from '~/components';
 import { useBreakpoint, useDeserializedSignatures, type SignaturePubkeyPair } from '~/hooks';
-import { onCopySuccess } from '~/lib/utils';
+import { getSendRecipientAddress, onCopySuccess } from '~/lib/utils';
 
 function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPair }): JSX.Element {
     const { signature, signatureScheme } = data;
@@ -104,6 +110,11 @@ export function TransactionOverview({
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
     const sender = transaction.transaction?.data.sender;
     const signatures = transaction.transaction?.txSignatures;
+    const action = getTransactionAction(transaction, sender);
+    const recipient =
+        action === TransactionAction.Send
+            ? getSendRecipientAddress(transaction, sender)
+            : undefined;
     const totalGas = gasSummary?.totalGas;
     const gasBudget = gasSummary?.budget;
     const gasPayment = gasSummary?.payment;
@@ -181,8 +192,27 @@ export function TransactionOverview({
             {sender && (
                 <KeyValueInfo
                     keyText="Sender"
-                    value={<AddressLink address={sender} />}
+                    value={
+                        <div className="flex items-center gap-xs">
+                            <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
+                            <AddressLink address={sender} />
+                        </div>
+                    }
                     copyText={sender}
+                    onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {recipient && (
+                <KeyValueInfo
+                    keyText="Recipient"
+                    value={
+                        <div className="flex items-center gap-xs">
+                            <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
+                            <AddressLink address={recipient} />
+                        </div>
+                    }
+                    copyText={recipient}
                     onCopySuccess={onCopySuccess}
                     fullwidth={!isMediumOrAbove}
                 />

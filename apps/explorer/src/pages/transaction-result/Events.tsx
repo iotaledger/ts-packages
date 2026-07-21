@@ -79,17 +79,26 @@ export function Events({ events }: EventsProps): JSX.Element | null {
         return null;
     }
 
-    const expandableItems = events.map((event, index) => (
-        <CollapsibleCard
-            key={index}
-            title={`Event ${index}`}
-            collapsible
-            initialClose
-            titleSize={TitleSize.Small}
-        >
-            <EventContent event={event} />
-        </CollapsibleCard>
-    ));
+    const expandableItems = events.map((event, index) => {
+        const { name } = parseStructTag(event.type);
+
+        return (
+            <CollapsibleCard
+                key={index}
+                title={`Event ${index}`}
+                supportingTitleElement={
+                    <span className="ml-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                        {name}
+                    </span>
+                }
+                collapsible
+                initialClose
+                titleSize={TitleSize.Small}
+            >
+                <EventContent event={event} />
+            </CollapsibleCard>
+        );
+    });
 
     return (
         <ProgrammableTxnBlockCard
