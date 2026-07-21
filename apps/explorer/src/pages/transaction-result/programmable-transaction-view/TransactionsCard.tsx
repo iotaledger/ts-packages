@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type IotaTransaction } from '@iota/iota-sdk/client';
+import { type MoveCallIotaTransaction, type IotaTransaction } from '@iota/iota-sdk/client';
 
 import { Transaction } from './Transaction';
 import { CollapsibleCard, ProgrammableTxnBlockCard } from '~/components';
@@ -10,6 +10,19 @@ import { TitleSize } from '@iota/apps-ui-kit';
 
 interface TransactionsCardProps {
     transactions: IotaTransaction[];
+}
+
+function getTransactionSupportingElement(type: string, data: unknown): JSX.Element | null {
+    if (type === 'MoveCall') {
+        const { function: func } = data as MoveCallIotaTransaction;
+        return (
+            <span className="ml-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                {func}
+            </span>
+        );
+    }
+
+    return null;
 }
 
 export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.Element | null {
@@ -24,6 +37,7 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
             <CollapsibleCard
                 key={index}
                 title={type}
+                supportingTitleElement={getTransactionSupportingElement(type, data)}
                 titleSize={TitleSize.Small}
                 collapsible
                 initialClose
