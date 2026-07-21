@@ -67,7 +67,7 @@ export function TokenStakingOverview({
 
     return (
         <div
-            className="group relative w-full cursor-pointer overflow-hidden rounded-xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 via-80% to-iota-primary-10 p-sm transition-all duration-200"
+            className="group relative w-full cursor-pointer overflow-hidden rounded-xl bg-gradient-to-br from-iota-primary-30 via-iota-primary-20 via-80% to-iota-primary-10 p-sm transition-all duration-200 hover:brightness-110"
             onClick={!disabled ? handleOnClick : undefined}
         >
             <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-iota-primary-60 opacity-20 blur-lg" />
@@ -93,10 +93,12 @@ export function TokenStakingOverview({
                 <ButtonUnstyled
                     onClick={handleOnClick}
                     disabled={disabled}
-                    className={`flex shrink-0 items-center gap-xxs rounded-2xl p-xs ${isStaking ? '' : ' pl-sm'} text-label-md text-iota-neutral-92 transition-all duration-200 group-hover:bg-iota-neutral-96/10 group-hover:opacity-100 group-hover:backdrop-blur-sm`}
+                    className={`flex shrink-0 items-center gap-xxs rounded-2xl p-xs ${isStaking ? '' : ' pl-sm'} text-label-md text-iota-neutral-92 transition-all duration-200`}
                 >
                     {!isStaking && 'Start now'}
-                    <ArrowRight className={isStaking ? 'h-5 w-5' : 'h-4 w-4'} />
+                    <ArrowRight
+                        className={`duration-100 ease-in group-hover:translate-x-1 ${isStaking ? 'h-5 w-5' : 'h-4 w-4'}`}
+                    />
                 </ButtonUnstyled>
             </div>
         </div>
