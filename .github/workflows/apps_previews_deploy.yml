@@ -57,6 +57,7 @@ jobs:
           echo "has_affected=$([ "$(echo "$INCLUDE" | jq 'length')" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   deploy:
+    name: deploy - ${{ matrix.name }}
     needs: detect
     if: needs.detect.outputs.has_affected == 'true'
     runs-on: ubuntu-latest
