@@ -25,12 +25,7 @@ export function TransactionSummary({ transaction }: TransactionChangesProps): JS
 
     return (
         <div className="flex flex-col gap-sm">
-            <CollapsibleCard
-                collapsible
-                title="Changes"
-                hideBorder
-                rawData={{ balanceChanges, objectSummary }}
-            >
+            <CollapsibleCard title="Changes" hideBorder rawData={{ balanceChanges, objectSummary }}>
                 <div className="flex flex-col gap-lg px-md--rs pb-lg pt-xs">
                     {transactionKindName === 'ProgrammableTransaction' && (
                         <BalanceChanges changes={balanceChanges ?? null} />
