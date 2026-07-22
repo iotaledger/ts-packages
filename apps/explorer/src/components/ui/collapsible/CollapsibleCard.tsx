@@ -125,11 +125,11 @@ export function CollapsibleCard({
         </div>
     ) : (
         <Panel hasBorder={!hideBorder} bgColor={isTransparentPanel ? 'bg-transparent' : undefined}>
-            <div className="flex w-full items-center">
+            <div className="flex w-full items-center py-sm--rs">
                 <div className="flex-1">
                     <Title size={titleSize} title={title ?? ''} />
                 </div>
-                {rawToggle && <div className="pr-md">{rawToggle}</div>}
+                {rawToggle && <div className="pr-md--rs">{rawToggle}</div>}
             </div>
             <div>{content}</div>
             {footer && (

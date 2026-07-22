@@ -15,6 +15,10 @@ interface KeyValueProps {
      */
     keyText: string;
     /**
+     * An icon shown next to the key text (optional).
+     */
+    keyIcon?: ReactNode;
+    /**
      * The value of the KeyValue.
      */
     value: ReactNode;
@@ -66,6 +70,7 @@ interface KeyValueProps {
 
 export function KeyValueInfo({
     keyText,
+    keyIcon,
     value,
     tooltipPosition,
     tooltipText,
@@ -111,6 +116,7 @@ export function KeyValueInfo({
                     'w-1/4': !fullwidth,
                 })}
             >
+                {keyIcon}
                 <span className="key-value-key-text-color text-body-md">{keyText}</span>
                 {tooltipText && (
                     <Tooltip text={tooltipText} position={tooltipPosition}>
@@ -119,7 +125,7 @@ export function KeyValueInfo({
                 )}
             </div>
             <div
-                className={cx('flex flex-row items-baseline gap-1 break-all', {
+                className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
                     'w-3/4': !fullwidth,
                     truncate: isTruncated,
                 })}
@@ -127,7 +133,7 @@ export function KeyValueInfo({
                 <span
                     title={valueHoverTitle}
                     className={cx(
-                        'key-value-hover-text-color',
+                        'key-value-hover-text-color min-w-0',
                         size === ValueSize.Medium ? 'text-body-lg' : 'text-body-md',
                         { truncate: isTruncated },
                     )}

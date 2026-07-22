@@ -15,7 +15,6 @@ interface ProgrammableTxnBlockCardProps {
     itemsLabel: string;
     defaultItemsToShow?: number;
     noExpandableList?: boolean;
-    initialClose?: boolean;
     rawData?: unknown;
 }
 
@@ -23,7 +22,6 @@ export function ProgrammableTxnBlockCard({
     items,
     itemsLabel,
     noExpandableList,
-    initialClose,
     defaultItemsToShow,
     rawData,
 }: ProgrammableTxnBlockCardProps): JSX.Element | null {
@@ -34,13 +32,7 @@ export function ProgrammableTxnBlockCard({
     const itemsToShow = defaultItemsToShow || items.length;
 
     return (
-        <CollapsibleCard
-            collapsible
-            initialClose={initialClose}
-            title={itemsLabel}
-            hideBorder
-            rawData={rawData}
-        >
+        <CollapsibleCard title={itemsLabel} hideBorder rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
                 <div className="flex flex-col gap-xs overflow-y-auto p-md--rs pt-xs--rs">
                     {noExpandableList ? <>{items}</> : <ExpandableListItems />}

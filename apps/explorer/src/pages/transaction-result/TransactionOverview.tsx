@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
-import { Badge, BadgeType, ButtonUnstyled, KeyValueInfo } from '@iota/apps-ui-kit';
+import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
     TransactionAction,
@@ -192,12 +192,10 @@ export function TransactionOverview({
             {sender && (
                 <KeyValueInfo
                     keyText="Sender"
-                    value={
-                        <div className="flex items-center gap-xs">
-                            <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
-                            <AddressLink address={sender} />
-                        </div>
+                    keyIcon={
+                        <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
                     }
+                    value={<AddressLink address={sender} />}
                     copyText={sender}
                     onCopySuccess={onCopySuccess}
                     fullwidth={!isMediumOrAbove}
@@ -206,12 +204,10 @@ export function TransactionOverview({
             {recipient && (
                 <KeyValueInfo
                     keyText="Recipient"
-                    value={
-                        <div className="flex items-center gap-xs">
-                            <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
-                            <AddressLink address={recipient} />
-                        </div>
+                    keyIcon={
+                        <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
                     }
+                    value={<AddressLink address={recipient} />}
                     copyText={recipient}
                     onCopySuccess={onCopySuccess}
                     fullwidth={!isMediumOrAbove}
@@ -345,12 +341,15 @@ export function TransactionOverview({
                             </ButtonUnstyled>
                             {showFullSignatures && (
                                 <div className="flex w-full flex-col gap-md">
-                                    {userSignatures.map((signature, index) => (
-                                        <SignatureBreakdown key={index} signature={signature} />
+                                    {[
+                                        ...userSignatures,
+                                        ...(sponsorSignature ? [sponsorSignature] : []),
+                                    ].map((signature, index) => (
+                                        <div key={index} className="flex w-full flex-col gap-md">
+                                            {index > 0 && <Divider />}
+                                            <SignatureBreakdown signature={signature} />
+                                        </div>
                                     ))}
-                                    {sponsorSignature && (
-                                        <SignatureBreakdown signature={sponsorSignature} />
-                                    )}
                                 </div>
                             )}
                         </div>
