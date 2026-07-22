@@ -17,6 +17,8 @@ import { RouterProvider } from 'react-router-dom';
 import { queryClient } from './lib/queryClient';
 import { router } from './routes';
 
+console.log(`git rev: ${COMMIT_REV}`);
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
