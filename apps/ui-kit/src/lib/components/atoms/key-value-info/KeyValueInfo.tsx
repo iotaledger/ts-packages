@@ -107,7 +107,7 @@ export function KeyValueInfo({
                 'flex w-full items-baseline gap-xs py-xxs font-inter',
                 flexDirectionClass,
                 {
-                    'justify-between': fullwidth,
+                    'flex-wrap justify-between': fullwidth,
                 },
             )}
         >
@@ -117,7 +117,9 @@ export function KeyValueInfo({
                 })}
             >
                 {keyIcon}
-                <span className="key-value-key-text-color text-body-md">{keyText}</span>
+                <span className="key-value-key-text-color break-normal text-body-md">
+                    {keyText}
+                </span>
                 {tooltipText && (
                     <Tooltip text={tooltipText} position={tooltipPosition}>
                         <Info className="key-supporting-text-color" />
@@ -127,6 +129,7 @@ export function KeyValueInfo({
             <div
                 className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
                     'w-3/4': !fullwidth,
+                    'flex-wrap': fullwidth,
                     truncate: isTruncated,
                 })}
             >
