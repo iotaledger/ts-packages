@@ -87,7 +87,7 @@ function TransactionResultPageHeader({
             }
             after={
                 transaction && (
-                    <div className="flex w-full justify-end">
+                    <div className="flex w-full md:justify-end">
                         <Toggle
                             name="raw-json-toggle"
                             label="Raw JSON"
