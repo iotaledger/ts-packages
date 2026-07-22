@@ -23,6 +23,7 @@ import { useParams } from 'react-router-dom';
 import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
+import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
 import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
 
@@ -58,7 +59,17 @@ export function AbstractAccountResultPage(): JSX.Element {
 
     let detailsContent: JSX.Element | null = null;
 
-    if (isNotFound) {
+    if (accountObjectData?.isHistoryUnavailable) {
+        detailsContent = (
+            <InfoBox
+                title="Account No Longer Available"
+                supportingText={getHistoryUnavailableMessage('This account')}
+                icon={<Warning />}
+                type={InfoBoxType.Warning}
+                style={InfoBoxStyle.Elevated}
+            />
+        );
+    } else if (isNotFound) {
         detailsContent = (
             <InfoBox
                 title="Invalid Account"
