@@ -44,22 +44,6 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (notarizationDocument == null) {
-        return (
-            <PageLayout
-                content={
-                    <InfoBox
-                        title="Error resolving Notarization Document"
-                        supportingText={`Could not resolve Notarization ${objectId} in the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
-                }
-            />
-        );
-    }
-
     if (objectResult?.isHistoryUnavailable) {
         return (
             <PageLayout
@@ -69,6 +53,22 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                         supportingText={getHistoryUnavailableMessage(`Notarization ${objectId}`)}
                         icon={<Warning />}
                         type={InfoBoxType.Warning}
+                        style={InfoBoxStyle.Elevated}
+                    />
+                }
+            />
+        );
+    }
+
+    if (notarizationDocument == null) {
+        return (
+            <PageLayout
+                content={
+                    <InfoBox
+                        title="Error resolving Notarization Document"
+                        supportingText={`Could not resolve Notarization ${objectId} in the current network.`}
+                        icon={<Warning />}
+                        type={InfoBoxType.Error}
                         style={InfoBoxStyle.Elevated}
                     />
                 }

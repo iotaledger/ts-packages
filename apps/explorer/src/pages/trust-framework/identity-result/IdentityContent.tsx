@@ -36,22 +36,6 @@ export function IdentityContent({ did }: IdentityContentProps) {
         return <PageLayout loading loadingText="Loading DID Document and Object..." content={[]} />;
     }
 
-    if (didDocument == null) {
-        return (
-            <PageLayout
-                content={
-                    <InfoBox
-                        title="Error resolving DID Document"
-                        supportingText={`Could not resolve the DID ${did.toString()} in the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
-                }
-            />
-        );
-    }
-
     if (objectResult?.isHistoryUnavailable) {
         return (
             <PageLayout
@@ -61,6 +45,22 @@ export function IdentityContent({ did }: IdentityContentProps) {
                         supportingText={getHistoryUnavailableMessage(`DID Object ${did.tag()}`)}
                         icon={<Warning />}
                         type={InfoBoxType.Warning}
+                        style={InfoBoxStyle.Elevated}
+                    />
+                }
+            />
+        );
+    }
+
+    if (didDocument == null) {
+        return (
+            <PageLayout
+                content={
+                    <InfoBox
+                        title="Error resolving DID Document"
+                        supportingText={`Could not resolve the DID ${did.toString()} in the current network.`}
+                        icon={<Warning />}
+                        type={InfoBoxType.Error}
                         style={InfoBoxStyle.Elevated}
                     />
                 }
