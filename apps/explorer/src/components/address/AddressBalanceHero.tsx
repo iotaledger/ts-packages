@@ -24,7 +24,6 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
     const { data: balance, isPending, isError } = useBalance(address);
     const value = balance?.totalBalance ? BigInt(balance.totalBalance) : BigInt(0);
 
-    const [roundedAmount] = useFormatCoin({ balance: value });
     const [fullAmount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
 
@@ -63,11 +62,9 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                 </Tooltip>
             </div>
             <div className="flex flex-row items-center gap-x-xs">
-                <Tooltip openDelay={100} text={`${fullAmount} ${symbol}`}>
-                    <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                        {roundedAmount} {symbol}
-                    </span>
-                </Tooltip>
+                <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                    {fullAmount} {symbol}
+                </span>
                 <ButtonUnstyled onClick={handleCopyClick} aria-label="Copy to clipboard">
                     <Copy className="text-iota-neutral-60 dark:text-iota-neutral-40" />
                 </ButtonUnstyled>

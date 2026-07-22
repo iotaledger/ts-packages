@@ -1,66 +1,74 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetIotaNameRecord, useIotaNamesClient } from '@iota/core';
+import {
+    useGetAllOwnedObjects,
+    useGetDefaultIotaName,
+    useGetIotaNameRecord,
+    useIotaNamesClient,
+} from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { getNameRegistrationType, getSubnameRegistrationType } from '@iota/iota-names-sdk';
-import { useMemo } from 'react';
+import { getSubnameRegistrationType, isSubname, normalizeIotaName } from '@iota/iota-names-sdk';
 
 interface UseIotaNameAvatarResult {
+    name: string | null | undefined;
     imageUrl: string | undefined;
     isLoading: boolean;
 }
 
+function getSubnameType(iotaNamesClient: ReturnType<typeof useIotaNamesClient>['iotaNamesClient']) {
+    try {
+        const packageId = iotaNamesClient?.getPackage('packageId', 'v1');
+        return packageId ? getSubnameRegistrationType(packageId) : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 export function useIotaNameAvatar(
     address: string | undefined,
-    name: string | null | undefined,
+    enabled: boolean = true,
 ): UseIotaNameAvatarResult {
+    const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(
+        enabled ? address : undefined,
+    );
     const { data: record, isLoading: isLoadingNameRecord } = useGetIotaNameRecord(name);
+    const { iotaNamesClient } = useIotaNamesClient();
 
-    const avatarObjectId = record?.avatar;
+    const isNameSubname = !!name && isSubname(name);
+    const subnameType = isNameSubname ? getSubnameType(iotaNamesClient) : undefined;
 
-    const { data: avatarObjectResponse, isLoading: isLoadingAvatarObject } = useIotaClientQuery(
+    const { data: ownedSubnames, isLoading: isLoadingOwnedSubnames } = useGetAllOwnedObjects(
+        subnameType ? (address ?? '') : '',
+        subnameType ? { StructType: subnameType } : undefined,
+    );
+
+    const subnameNftId =
+        name && ownedSubnames
+            ? ownedSubnames.find((object) => {
+                  try {
+                      return normalizeIotaName(object.display?.data?.name ?? '') === name;
+                  } catch {
+                      return false;
+                  }
+              })?.objectId
+            : undefined;
+
+    const avatarObjectId = record?.avatar ?? (isNameSubname ? subnameNftId : record?.nftId);
+
+    const { data: avatarObject, isLoading: isLoadingAvatarObject } = useIotaClientQuery(
         'getObject',
         { id: avatarObjectId!, options: { showDisplay: true } },
         { enabled: !!avatarObjectId },
     );
 
-    const avatarImageUrl = avatarObjectResponse?.data?.display?.data?.image_url;
-
-    const { iotaNamesClient } = useIotaNamesClient();
-
-    const nameTypes = useMemo(() => {
-        try {
-            const packageId = iotaNamesClient?.getPackage('packageId', 'v1');
-            if (!packageId) return [];
-            return [getNameRegistrationType(packageId), getSubnameRegistrationType(packageId)];
-        } catch {
-            // IOTA Names packages are not available on all networks (e.g. localnet)
-            return [];
-        }
-    }, [iotaNamesClient]);
-
-    const { data: ownedNameNfts, isLoading: isLoadingOwnedNameNfts } = useIotaClientQuery(
-        'getOwnedObjects',
-        {
-            owner: address!,
-            filter: { MatchAny: nameTypes.map((type) => ({ StructType: type })) },
-            options: { showDisplay: true },
-        },
-        { enabled: !!address && nameTypes.length > 0 },
-    );
-
-    const ownedNameNftImageUrl = ownedNameNfts?.data?.find(
-        (object) => object.data?.display?.data?.image_url,
-    )?.data?.display?.data?.image_url;
-
-    const imageUrl = avatarImageUrl ?? ownedNameNftImageUrl;
-
     return {
-        imageUrl,
+        name,
+        imageUrl: avatarObject?.data?.display?.data?.image_url,
         isLoading:
+            isLoadingName ||
             isLoadingNameRecord ||
-            (!!avatarObjectId && isLoadingAvatarObject) ||
-            (!!address && nameTypes.length > 0 && isLoadingOwnedNameNfts),
+            (!!subnameType && isLoadingOwnedSubnames) ||
+            (!!avatarObjectId && isLoadingAvatarObject),
     };
 }

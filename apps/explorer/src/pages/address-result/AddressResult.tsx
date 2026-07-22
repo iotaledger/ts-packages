@@ -11,6 +11,7 @@ import {
     ValidatorAddressHeader,
 } from '~/components';
 import { PageHeader } from '~/components/ui';
+import { Skeleton } from '@iota/apps-ui-kit';
 import {
     AddressAlias,
     ImageIcon,
@@ -28,25 +29,31 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
     const { data: resolvedAddress } = useGetDefaultIotaName(isName ? addressOrName : undefined);
     const address = resolvedAddress ?? addressOrName;
 
-    const { data: name } = useGetDefaultIotaName(address);
     const validator = useValidatorByAddress(address);
-    const { imageUrl: nameAvatarImageUrl } = useIotaNameAvatar(address, validator ? null : name);
+    const {
+        name,
+        imageUrl: nameAvatarImageUrl,
+        isLoading: isLoadingNameAvatar,
+    } = useIotaNameAvatar(address, !validator);
 
     const identityLabel = validator ? validator.name : name;
     const identityImageUrl = validator ? validator.imageUrl : nameAvatarImageUrl;
 
-    const leading =
-        validator || name ? (
-            <div className="h-16 w-16 overflow-hidden rounded-full ring-1 ring-shader-neutral-light-8 sm:h-20 sm:w-20 dark:ring-shader-neutral-dark-8">
-                <ImageIcon
-                    src={identityImageUrl}
-                    label={identityLabel ?? ''}
-                    fallback={identityLabel ?? ''}
-                    size={ImageIconSize.Full}
-                    fallbackSize={ImageIconSize.Large}
-                />
-            </div>
-        ) : undefined;
+    const isResolvingAvatar = validator === undefined || (!validator && isLoadingNameAvatar);
+
+    const leading = isResolvingAvatar ? (
+        <Skeleton className="h-16 w-16 rounded-md sm:h-20 sm:w-20" />
+    ) : identityImageUrl ? (
+        <div className="h-16 w-16 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-20 sm:w-20 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
+            <ImageIcon
+                src={identityImageUrl}
+                label={identityLabel ?? ''}
+                fallback={identityLabel ?? ''}
+                size={ImageIconSize.Full}
+                fallbackSize={ImageIconSize.Large}
+            />
+        </div>
+    ) : undefined;
 
     return (
         <>
