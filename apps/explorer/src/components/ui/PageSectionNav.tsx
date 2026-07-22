@@ -3,7 +3,7 @@
 
 import { ButtonSegment } from '@iota/apps-ui-kit';
 import cx from 'clsx';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 const SCROLL_SPY_OFFSET = 160;
 
@@ -65,13 +65,17 @@ export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element |
     );
 }
 
-interface PageSectionProps {
+interface PageSectionAnchorProps {
     id: string;
     className?: string;
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
-export function PageSection({ id, className, children }: PageSectionProps): JSX.Element {
+export function PageSectionAnchor({
+    id,
+    className,
+    children,
+}: PageSectionAnchorProps): JSX.Element {
     return (
         <div id={id} className={cx(PAGE_SECTION_SCROLL_MARGIN, className)}>
             {children}
