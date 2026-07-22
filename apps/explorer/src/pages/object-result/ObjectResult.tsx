@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import { ErrorBoundary, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { usePackageUpgradePolicy } from '~/hooks';
+import { getHistoryUnavailableMessage, INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import { ObjectView } from '~/pages/object-result/views/ObjectView';
 import { translate, type DataType } from './ObjectResultType';
 import { PkgView, TokenView } from './views';
@@ -71,10 +72,18 @@ export function ObjectResult(): JSX.Element {
                             <ErrorBoundary>{data && <ObjectView data={data} />}</ErrorBoundary>
                         </div>
                     )}
-                    {isPageError || !data || !resp ? (
+                    {data?.isHistoryUnavailable ? (
+                        <InfoBox
+                            title="Object No Longer Available"
+                            supportingText={getHistoryUnavailableMessage('This object')}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    ) : isPageError || !data || !resp ? (
                         <InfoBox
                             title="Invalid Object ID"
-                            supportingText={`No object found matching ID: ${objID} on this network. Please verify the ID and try again.`}
+                            supportingText={`No object found matching ID: ${objID} on this network. Please verify the ID and try again. Note that objects deleted more than ${INDEXER_RETENTION_DAYS} days ago can no longer be found.`}
                             icon={<Warning />}
                             type={InfoBoxType.Error}
                             style={InfoBoxStyle.Elevated}
@@ -91,7 +100,7 @@ export function ObjectResult(): JSX.Element {
                                                 address={resp.id}
                                                 onCopy={() => copyToClipboard(resp.id)}
                                             />
-                                            {upgradePolicy && (
+                                            {upgradePolicy && !upgradePolicy.isIndeterminate && (
                                                 <span className="shrink-0">
                                                     <Badge
                                                         label={
