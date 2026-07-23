@@ -9,7 +9,8 @@ import {
 import { InputsCard } from '~/pages/transaction-result/programmable-transaction-view/InputsCard';
 import { TransactionsCard } from '~/pages/transaction-result/programmable-transaction-view/TransactionsCard';
 import { Events } from '~/pages/transaction-result/Events';
-import { PageSection } from './TransactionNav';
+import { PAGE_SECTION_SCROLL_MARGIN } from '~/components/ui';
+import { PageSection } from './pageSections';
 
 interface TransactionDataProps {
     transaction: IotaTransactionBlockResponse;
@@ -30,24 +31,21 @@ export function TransactionData({ transaction }: TransactionDataProps): JSX.Elem
                     <div
                         data-testid="inputs-card"
                         id={PageSection.Inputs}
-                        className="scroll-mt-[288px] sm:scroll-mt-[180px] md:scroll-mt-[148px]"
+                        className={PAGE_SECTION_SCROLL_MARGIN}
                     >
                         <InputsCard inputs={programmableTxn.inputs} />
                     </div>
                     <div
                         data-testid="transactions-card"
                         id={PageSection.Transactions}
-                        className="scroll-mt-[288px] sm:scroll-mt-[180px] md:scroll-mt-[148px]"
+                        className={PAGE_SECTION_SCROLL_MARGIN}
                     >
                         <TransactionsCard transactions={programmableTxn.transactions} />
                     </div>
                 </section>
             )}
             {hasEvents && (
-                <div
-                    id={PageSection.Events}
-                    className="scroll-mt-[288px] sm:scroll-mt-[180px] md:scroll-mt-[148px]"
-                >
+                <div id={PageSection.Events} className={PAGE_SECTION_SCROLL_MARGIN}>
                     <Events events={transaction.events!} />
                 </div>
             )}
