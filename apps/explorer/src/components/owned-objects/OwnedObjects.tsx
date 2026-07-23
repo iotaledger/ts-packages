@@ -25,10 +25,10 @@ import {
     InfoBoxType,
     Tooltip,
 } from '@iota/apps-ui-kit';
-import { ListViewLarge, ListViewMedium, ListViewSmall, Warning } from '@iota/apps-ui-icons';
+import { ListViewLarge, ListViewSmall, Warning } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
-import { ListView, NoObjectsOwnedMessage, SmallThumbnailsView, ThumbnailsView } from '~/components';
+import { ListView, NoObjectsOwnedMessage, ThumbnailsView } from '~/components';
 import { ObjectViewMode } from '~/lib/enums';
 import { Pagination } from '~/components/ui';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib/constants';
@@ -54,7 +54,6 @@ enum OwnedObjectsContainerHeight {
 
 const VIEW_MODES = [
     { icon: <ListViewSmall />, value: ObjectViewMode.List },
-    { icon: <ListViewMedium />, value: ObjectViewMode.SmallThumbnail },
     { icon: <ListViewLarge />, value: ObjectViewMode.Thumbnail },
 ];
 
@@ -259,10 +258,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                                     aria-label={
                                                         mode.value === ObjectViewMode.List
                                                             ? 'List view'
-                                                            : mode.value ===
-                                                                ObjectViewMode.SmallThumbnail
-                                                              ? 'Small thumbnail view'
-                                                              : 'Thumbnail view'
+                                                            : 'Thumbnail view'
                                                     }
                                                 />
                                             </div>
@@ -297,20 +293,13 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                         <div
                             className={clsx(
                                 'flex-2 flex w-full flex-col overflow-hidden py-md',
-                                ownedObjectsContainerHeight,
+                                effectiveViewMode === ObjectViewMode.Thumbnail &&
+                                    ownedObjectsContainerHeight,
                             )}
                         >
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.List && (
                                 <ListView loading={isPending} data={sortedDataByDisplayImages} />
                             )}
-                            {hasVisualAssets &&
-                                effectiveViewMode === ObjectViewMode.SmallThumbnail && (
-                                    <SmallThumbnailsView
-                                        loading={isPending}
-                                        data={sortedDataByDisplayImages}
-                                        limit={limit}
-                                    />
-                                )}
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.Thumbnail && (
                                 <ThumbnailsView
                                     loading={isPending}

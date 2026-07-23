@@ -40,6 +40,9 @@ export interface PageHeaderProps {
     showCopyButton?: boolean;
     isLoadingSubtitle?: boolean;
     leading?: React.ReactNode;
+    contentWidthClassName?: string;
+    afterWidthClassName?: string;
+    rowAlignClassName?: string;
 }
 
 const STATUS_CHIP_CONTENT: Record<
@@ -88,6 +91,9 @@ export function PageHeader({
     showCopyButton = true,
     isLoadingSubtitle,
     leading,
+    contentWidthClassName = 'md:w-3/4',
+    afterWidthClassName = 'md:w-1/4',
+    rowAlignClassName = 'md:items-center',
 }: PageHeaderProps): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
@@ -108,7 +114,7 @@ export function PageHeader({
             className={clsx(
                 'flex w-full flex-col',
                 subtitle ? 'gap-sm' : 'gap-xs',
-                !hasLeading && 'md:w-3/4',
+                !hasLeading && [contentWidthClassName, 'md:justify-center'],
             )}
         >
             {loading ? (
@@ -179,16 +185,26 @@ export function PageHeader({
     const panel = (
         <Panel>
             <div className="flex w-full items-center p-md--rs">
-                <div className="flex w-full flex-col items-start justify-between gap-sm md:flex-row md:items-center">
+                <div
+                    className={clsx(
+                        'flex w-full flex-col items-start justify-between gap-sm md:flex-row',
+                        rowAlignClassName,
+                    )}
+                >
                     {hasLeading ? (
-                        <div className="flex w-full min-w-0 flex-row items-center gap-lg md:w-3/4">
+                        <div
+                            className={clsx(
+                                'flex w-full min-w-0 flex-row items-center gap-lg',
+                                contentWidthClassName,
+                            )}
+                        >
                             <div className="shrink-0">{leading}</div>
                             {contentColumn}
                         </div>
                     ) : (
                         contentColumn
                     )}
-                    {after && <div className="w-full md:w-1/4">{after}</div>}
+                    {after && <div className={clsx('w-full', afterWidthClassName)}>{after}</div>}
                 </div>
             </div>
             {!loading && navigation}

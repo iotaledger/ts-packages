@@ -1,49 +1,59 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { CoinFiatValue, IOTA_COIN_METADATA, useCopyToClipboard, useFormatCoin } from '@iota/core';
 import {
-    CoinFiatValue,
-    IOTA_COIN_METADATA,
-    useBalance,
-    useCopyToClipboard,
-    useFormatCoin,
-} from '@iota/core';
-import { ButtonUnstyled, Skeleton, Tooltip } from '@iota/apps-ui-kit';
-import { Copy, Info } from '@iota/apps-ui-icons';
+    ButtonUnstyled,
+    Divider,
+    DividerType,
+    Skeleton,
+    Tooltip,
+    TooltipPosition,
+} from '@iota/apps-ui-kit';
+import { Copy, Info, IotaLogoMark, LockLocked, Wallet } from '@iota/apps-ui-icons';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
+import type { ReactNode } from 'react';
 import { onCopySuccess } from '~/lib';
+import { useAddressBalanceSummary } from '~/hooks';
 
-const BALANCE_TOOLTIP_TEXT =
-    'IOTA that can be used or transferred immediately. Staked and timelocked IOTA are shown in the Staking tab. Does not include unmigrated stardust funds.';
+const TOTAL_TOOLTIP_TEXT =
+    'Total IOTA balance, including available, staked, and timelocked funds. Does not include unmigrated stardust funds.';
 
 interface AddressBalanceHeroProps {
     address: string;
 }
 
 export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.JSX.Element {
-    const { data: balance, isPending, isError } = useBalance(address);
-    const value = balance?.totalBalance ? BigInt(balance.totalBalance) : BigInt(0);
+    const {
+        totalBalance,
+        isLoadingTotalBalance,
+        isTotalBalanceErrored,
+        availableBalance,
+        timelockedBalance,
+    } = useAddressBalanceSummary(address);
 
-    const [fullAmount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+    const [totalAmount, symbol] = useFormatCoin({ balance: totalBalance, format: CoinFormat.Full });
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
 
     async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
         event.stopPropagation();
-        await copyToClipboard(formatBalance(value, IOTA_COIN_METADATA.decimals, CoinFormat.Full));
+        await copyToClipboard(
+            formatBalance(totalBalance, IOTA_COIN_METADATA.decimals, CoinFormat.Full),
+        );
     }
 
-    if (isPending) {
+    if (isLoadingTotalBalance) {
         return (
-            <div className="flex flex-col gap-xs md:items-end">
+            <div className="flex w-full flex-col gap-sm md:items-end">
                 <Skeleton className="h-9 w-48" />
                 <Skeleton className="h-5 w-24" />
             </div>
         );
     }
 
-    if (isError) {
+    if (isTotalBalanceErrored) {
         return (
-            <div className="flex flex-col gap-xs md:items-end">
+            <div className="flex w-full flex-col md:items-end">
                 <span className="text-headline-md text-iota-neutral-10 dark:text-iota-neutral-92">
                     --
                 </span>
@@ -52,24 +62,76 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
     }
 
     return (
-        <div className="flex flex-col gap-xxs md:items-end">
-            <div className="flex flex-row items-center gap-x-xxs">
-                <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    IOTA Available Balance
-                </span>
-                <Tooltip text={BALANCE_TOOLTIP_TEXT}>
-                    <Info className="text-iota-neutral-40 dark:text-iota-neutral-60" />
-                </Tooltip>
+        <div className="flex w-full flex-row items-stretch gap-lg">
+            <div className="hidden shrink-0 md:block">
+                <Divider type={DividerType.Vertical} />
             </div>
-            <div className="flex flex-row items-center gap-x-xs">
-                <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                    {fullAmount} {symbol}
-                </span>
-                <ButtonUnstyled onClick={handleCopyClick} aria-label="Copy to clipboard">
-                    <Copy className="text-iota-neutral-60 dark:text-iota-neutral-40" />
-                </ButtonUnstyled>
+            <div className="flex w-full flex-col items-end gap-xs">
+                <div className="flex flex-row items-center gap-x-xxs">
+                    <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                        Total balance
+                    </span>
+                    <Tooltip text={TOTAL_TOOLTIP_TEXT} position={TooltipPosition.Bottom}>
+                        <Info className="text-iota-neutral-40 dark:text-iota-neutral-60" />
+                    </Tooltip>
+                </div>
+                <div className="flex flex-row items-center gap-x-xs">
+                    <IotaLogoMark className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />
+                    <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                        {totalAmount} {symbol}
+                    </span>
+                    <ButtonUnstyled onClick={handleCopyClick} aria-label="Copy to clipboard">
+                        <Copy className="text-iota-neutral-60 dark:text-iota-neutral-40" />
+                    </ButtonUnstyled>
+                </div>
+                <CoinFiatValue amount={totalBalance} withParentheses={false} />
+
+                <div className="my-xs w-full">
+                    <Divider />
+                </div>
+
+                <div className="flex flex-col items-end gap-sm">
+                    <BalanceRow
+                        icon={<Wallet className="h-3.5 w-3.5" />}
+                        label="Available"
+                        value={availableBalance}
+                    />
+                    {timelockedBalance > 0n && (
+                        <BalanceRow
+                            icon={<LockLocked className="h-3.5 w-3.5" />}
+                            label="Timelocked"
+                            value={timelockedBalance}
+                        />
+                    )}
+                </div>
             </div>
-            <CoinFiatValue amount={value} withParentheses={false} />
+        </div>
+    );
+}
+
+interface BalanceRowProps {
+    icon: ReactNode;
+    label: string;
+    value: bigint;
+}
+
+function BalanceRow({ icon, label, value }: BalanceRowProps): JSX.Element {
+    const [amount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+
+    return (
+        <div className="flex flex-row flex-wrap items-center justify-end gap-x-xs">
+            <span className="flex flex-row items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                {icon}
+                {label}
+            </span>
+            <span className="flex flex-row items-baseline gap-x-xs">
+                <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    {amount} {symbol}
+                </span>
+                <span className="[&>span]:!text-body-sm [&>span]:!text-iota-neutral-40 dark:[&>span]:!text-iota-neutral-60">
+                    <CoinFiatValue amount={value} withParentheses={false} />
+                </span>
+            </span>
         </div>
     );
 }

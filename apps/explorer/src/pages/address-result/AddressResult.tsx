@@ -42,9 +42,9 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
     const isResolvingAvatar = validator === undefined || (!validator && isLoadingNameAvatar);
 
     const leading = isResolvingAvatar ? (
-        <Skeleton className="h-16 w-16 rounded-md sm:h-20 sm:w-20" />
+        <Skeleton className="h-20 w-20 rounded-md sm:h-24 sm:w-24" />
     ) : identityImageUrl ? (
-        <div className="h-16 w-16 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-20 sm:w-20 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
+        <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
             <ImageIcon
                 src={identityImageUrl}
                 label={identityLabel ?? ''}
@@ -84,6 +84,9 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                 }
                 subtitle={null}
                 showCopyButton={false}
+                contentWidthClassName="md:w-1/2"
+                afterWidthClassName="md:w-1/2"
+                rowAlignClassName="md:items-stretch"
                 after={<AddressBalanceHero address={address} />}
             />
             <AddressPageContent address={address} />

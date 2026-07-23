@@ -20,7 +20,7 @@ function Asset({ object }: { object: IotaObjectResponse }) {
                 title={name}
                 subtitle={type}
                 src={displayMeta?.image_url || ''}
-                variant="xxs"
+                variant="xs"
                 disableVideoControls
                 disableAutoPlay
             />

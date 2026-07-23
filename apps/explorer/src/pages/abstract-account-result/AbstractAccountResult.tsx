@@ -159,6 +159,9 @@ export function AbstractAccountResultPage(): JSX.Element {
                         isLoadingSubtitle={isLoadingName}
                         subtitle={defaultName}
                         showCopyButton={false}
+                        contentWidthClassName="md:w-1/2"
+                        afterWidthClassName="md:w-1/2"
+                        rowAlignClassName="md:items-stretch"
                         after={
                             validAccountId ? (
                                 <AddressBalanceHero address={validAccountId} />
