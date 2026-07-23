@@ -44,6 +44,7 @@ export function NetworkDataGrid({
     showExtendedStats = true,
 }: NetworkDataGridProps): JSX.Element {
     const { data: networkMetrics } = useGetNetworkMetrics();
+    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
     const { data: totalTransactions } = useIotaClientQuery('getTotalTransactionBlocks');
     const { data: circulatingSupply } = useIotaClientQuery('getCirculatingSupply');
     const { data: totalSupply } = useIotaClientQuery('getTotalSupply', {
@@ -82,6 +83,10 @@ export function NetworkDataGrid({
         ? formatBalance(Math.floor(networkMetrics.tps30Days), 0, CoinFormat.Rounded)
         : FALLBACK;
 
+    const activeValidators = systemState?.activeValidators?.length
+        ? String(systemState.activeValidators.length)
+        : FALLBACK;
+
     const priceDisplay = isFiatEnabled && iotaPrice !== null ? formatBalanceToUSD(iotaPrice) : null;
 
     const marketCapDisplay =
@@ -104,6 +109,7 @@ export function NetworkDataGrid({
         { label: 'Total Addresses', value: totalAddresses },
         { label: 'Total Packages', value: totalPackages },
         { label: 'Total Objects', value: totalObjects },
+        ...(showExtendedStats ? [{ label: 'Active Validators', value: activeValidators }] : []),
         ...(showExtendedStats && isFiatEnabled && priceDisplay
             ? [{ label: 'Token Price', value: priceDisplay, supportingLabel: 'per IOTA' }]
             : []),

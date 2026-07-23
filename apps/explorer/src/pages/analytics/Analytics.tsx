@@ -6,9 +6,10 @@ import {
     GasFeesHistoryChart,
     GasPriceHistoryChart,
     NetworkDataGrid,
+    NewAccountsHistoryChart,
     PageLayout,
     StakingRewardsHistoryChart,
-    StorageFundHistoryChart,
+    StorageHistoryChart,
     SupplyHistoryChart,
     TokenEmissionChart,
     TotalStakeHistoryChart,
@@ -32,12 +33,15 @@ export function Analytics(): JSX.Element {
                         Analytics
                     </div>
 
+                    <NetworkDataGrid showAnalyticsLink={false} />
+
                     <div className="flex flex-col gap-md">
                         <SectionTitle>Historical Data</SectionTitle>
                         <div className="grid grid-cols-1 gap-md--rs md:grid-cols-2">
                             <SupplyHistoryChart />
                             <TransactionsCardGraph />
                             <AddressesCardGraph />
+                            <NewAccountsHistoryChart />
                         </div>
                     </div>
 
@@ -49,11 +53,9 @@ export function Analytics(): JSX.Element {
                             <GasPriceHistoryChart />
                             <GasFeesHistoryChart />
                             <StakingRewardsHistoryChart />
-                            <StorageFundHistoryChart />
+                            <StorageHistoryChart />
                         </div>
                     </div>
-
-                    <NetworkDataGrid showAnalyticsLink={false} />
                 </div>
             }
         />

@@ -6,8 +6,11 @@ import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
 import type { EpochMetrics } from '@iota/iota-sdk/client';
 
-export const EPOCH_METRICS_HISTORY_LIMIT = 100;
-export const EPOCH_METRICS_SAMPLE_INTERVAL = 10;
+export const EPOCH_METRICS_HISTORY_LIMIT = 60;
+export const EPOCH_METRICS_SAMPLE_INTERVAL = 5;
+
+// Epoch data changes roughly once per day, so treat it as fresh for a full day and refetch rarely.
+const EPOCH_METRICS_STALE_TIME = 24 * 60 * 60 * 1000;
 
 export type CompletedEpochMetrics = EpochMetrics & {
     endOfEpochInfo: NonNullable<EpochMetrics['endOfEpochInfo']>;
@@ -26,6 +29,8 @@ export function useEpochMetricsHistory(): UseQueryResult<CompletedEpochMetrics[]
                 limit: EPOCH_METRICS_HISTORY_LIMIT,
                 descendingOrder: true,
             }),
+        staleTime: EPOCH_METRICS_STALE_TIME,
+        gcTime: EPOCH_METRICS_STALE_TIME,
         select: (data) =>
             data.data
                 .filter((epoch): epoch is CompletedEpochMetrics => epoch.endOfEpochInfo != null)

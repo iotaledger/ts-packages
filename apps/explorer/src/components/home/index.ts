@@ -9,5 +9,6 @@ export * from './GasPriceHistoryChart';
 export * from './TotalStakeHistoryChart';
 export * from './TokenEmissionChart';
 export * from './StakingRewardsHistoryChart';
-export * from './StorageFundHistoryChart';
+export * from './StorageHistoryChart';
 export * from './GasFeesHistoryChart';
+export * from './NewAccountsHistoryChart';
