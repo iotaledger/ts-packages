@@ -99,7 +99,9 @@ describe('Transaction Reading API', () => {
         expect(txn.digest).toEqual(digest);
     });
 
-    it('Multi Get Pay Transactions', async () => {
+    // Skipped: node regression — the node fails to compute balance/object changes for
+    // plain pay transactions (ObjectNotFound on 0x6). See iotaledger/iota#12403.
+    it.skip('Multi Get Pay Transactions', async () => {
         const digests = transactions.map((t) => t.digest);
         const txns = await toolbox.client.multiGetTransactionBlocks({
             digests,
@@ -111,7 +113,9 @@ describe('Transaction Reading API', () => {
         });
     });
 
-    it('Query Transactions with opts', async () => {
+    // Skipped: node regression — queryTransactionBlocks and getTransactionBlock return
+    // divergent balance/object-change error text for the same tx. See iotaledger/iota#12403.
+    it.skip('Query Transactions with opts', async () => {
         const options = {
             showInput: true,
             showEffects: true,
