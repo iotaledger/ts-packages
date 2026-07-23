@@ -45,14 +45,12 @@ export function EpochDetail() {
     const { id } = useParams();
     const enhancedRpc = useEnhancedRpcClient();
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
-    const epochId = id ?? systemState?.epoch;
     const { data, isPending, isError } = useQuery({
-        queryKey: ['epoch', epochId],
-        enabled: !!epochId,
+        queryKey: ['epoch', id],
         queryFn: async () =>
             enhancedRpc.getEpochs({
                 // todo: endpoint returns no data for epoch 0
-                cursor: epochId === '0' ? undefined : (Number(epochId!) - 1).toString(),
+                cursor: id === '0' ? undefined : (Number(id!) - 1).toString(),
                 limit: 1,
             }),
     });
@@ -109,7 +107,7 @@ export function EpochDetail() {
                 content={
                     <InfoBox
                         title="Failed to load epoch data"
-                        supportingText={`There was an issue retrieving data for epoch ${epochId}`}
+                        supportingText={`There was an issue retrieving data for epoch ${id}`}
                         icon={<Warning />}
                         type={InfoBoxType.Error}
                         style={InfoBoxStyle.Elevated}
