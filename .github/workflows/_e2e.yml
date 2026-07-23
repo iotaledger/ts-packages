@@ -185,7 +185,10 @@ jobs:
       - name: Set environment variables
         run: |
           echo "VITE_IOTA_BIN=iota" >> $GITHUB_ENV
-          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql" >> $GITHUB_ENV
+          # Long epoch so object pruning doesn't run mid-suite: tests read balance/object
+          # changes of earlier transactions, which needs their (now superseded) input
+          # object versions to still be present.
+          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql --epoch-duration-ms 3600000" >> $GITHUB_ENV
 
       # ─── Test groups ─────────────────────────────────────────────────────────
       # All steps below use: if: (!cancelled() && !failure()) && <group-condition>
