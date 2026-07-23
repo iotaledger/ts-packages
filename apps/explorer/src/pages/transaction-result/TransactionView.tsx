@@ -5,7 +5,8 @@
 import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { TransactionData } from '~/pages/transaction-result/TransactionData';
 import { TransactionSummary } from '~/pages/transaction-result/transaction-summary';
-import { PageSection, TransactionNav } from './TransactionNav';
+import { PAGE_SECTION_SCROLL_MARGIN, PageSectionNav } from '~/components/ui';
+import { PAGE_SECTION_LABELS, PageSection } from './pageSections';
 import { TransactionOverview } from './TransactionOverview';
 import { TransactionStatusHero } from './TransactionStatusHero';
 import { useRecognizedPackages, useTransactionSummary } from '@iota/core';
@@ -22,12 +23,23 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
         recognizedPackagesList,
     });
 
+    const isProgrammableTransaction =
+        transaction.transaction?.data.transaction?.kind === 'ProgrammableTransaction';
+    const hasEvents = !!transaction.events?.length;
+
+    const pageSections = [
+        PageSection.Overview,
+        PageSection.Changes,
+        ...(isProgrammableTransaction ? [PageSection.Inputs, PageSection.Transactions] : []),
+        ...(hasEvents ? [PageSection.Events] : []),
+    ].map((section) => ({ id: section, label: PAGE_SECTION_LABELS[section] }));
+
     return (
         <div className="flex h-full flex-col gap-2xl">
-            <TransactionNav transaction={transaction} />
+            <PageSectionNav sections={pageSections} />
             <div
                 id={PageSection.Overview}
-                className="flex scroll-mt-[288px] flex-col gap-2xl sm:scroll-mt-[180px] md:scroll-mt-[148px]"
+                className={`flex flex-col gap-2xl ${PAGE_SECTION_SCROLL_MARGIN}`}
             >
                 <Panel>
                     <TransactionStatusHero transaction={transaction} />
@@ -37,10 +49,7 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
                 </Panel>
             </div>
             <div className="flex h-full flex-col gap-lg">
-                <div
-                    id={PageSection.Changes}
-                    className="scroll-mt-[288px] sm:scroll-mt-[180px] md:scroll-mt-[148px]"
-                >
+                <div id={PageSection.Changes} className={PAGE_SECTION_SCROLL_MARGIN}>
                     <TransactionSummary transaction={transaction} />
                 </div>
                 <Divider />
