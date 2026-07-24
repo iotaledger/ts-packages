@@ -4,6 +4,7 @@
 
 import { Select, SelectSize, Title } from '@iota/apps-ui-kit';
 import { type IotaObjectChangeTypes, type ObjectChangeSummary } from '@iota/core';
+import { type DisplayFieldsResponse } from '@iota/iota-sdk/client';
 import { useMemo } from 'react';
 import { TableCard } from '~/components/ui';
 import { useLocalTablePagination } from '~/hooks';
@@ -30,6 +31,10 @@ export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Elemen
                             objectType: 'objectType' in change ? change.objectType : undefined,
                             status: status as IotaObjectChangeTypes,
                             version: change.version,
+                            display:
+                                'display' in change
+                                    ? (change.display as DisplayFieldsResponse | undefined)
+                                    : undefined,
                         };
                     }),
             ),
