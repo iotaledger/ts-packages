@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetCategorizedOwnedObjects, OwnedObjectCategory, useLocalStorage } from '@iota/core';
+import { useGetCategorizedOwnedObjects, OwnedObjectCategory } from '@iota/core';
 import {
     Badge,
     BadgeType,
@@ -34,8 +34,6 @@ import { Pagination } from '~/components/ui';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib/constants';
 
 const SHOW_PAGINATION_MAX_ITEMS = 9;
-const OWNED_OBJECTS_LOCAL_STORAGE_VIEW_MODE = 'owned-objects/viewMode';
-const OWNED_OBJECTS_LOCAL_STORAGE_FILTER = 'owned-objects/filter';
 const CATEGORY_LABELS: Record<OwnedObjectCategory, string> = {
     [OwnedObjectCategory.Nft]: 'NFT',
     [OwnedObjectCategory.Name]: 'NAME',
@@ -48,7 +46,7 @@ interface ItemsRangeFromCurrentPage {
 }
 
 enum OwnedObjectsContainerHeight {
-    Small = 'h-[400px]',
+    Small = 'h-[400px] md:h-[500px]',
     Default = 'h-[400px] md:h-[570px]',
 }
 
@@ -91,15 +89,8 @@ interface OwnedObjectsProps {
 
 export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
     const [limit, setLimit] = useState(50);
-    const [filter, setFilter] = useLocalStorage<string | undefined>(
-        OWNED_OBJECTS_LOCAL_STORAGE_FILTER,
-        undefined,
-    );
-
-    const [viewMode, setViewMode] = useLocalStorage(
-        OWNED_OBJECTS_LOCAL_STORAGE_VIEW_MODE,
-        ObjectViewMode.Thumbnail,
-    );
+    const [filter, setFilter] = useState<string | undefined>(undefined);
+    const [viewMode, setViewMode] = useState<ObjectViewMode>(ObjectViewMode.Thumbnail);
 
     const ownedObjects = useGetCategorizedOwnedObjects(id, limit);
 
@@ -298,7 +289,11 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                             )}
                         >
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.List && (
-                                <ListView loading={isPending} data={sortedDataByDisplayImages} />
+                                <ListView
+                                    loading={isPending}
+                                    data={sortedDataByDisplayImages}
+                                    hideAssetColumn={filter === OwnedObjectCategory.Other}
+                                />
                             )}
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.Thumbnail && (
                                 <ThumbnailsView

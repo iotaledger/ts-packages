@@ -11,7 +11,6 @@ import {
     ValidatorAddressHeader,
 } from '~/components';
 import { PageHeader } from '~/components/ui';
-import { Skeleton } from '@iota/apps-ui-kit';
 import {
     AddressAlias,
     ImageIcon,
@@ -30,20 +29,12 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
     const address = resolvedAddress ?? addressOrName;
 
     const validator = useValidatorByAddress(address);
-    const {
-        name,
-        imageUrl: nameAvatarImageUrl,
-        isLoading: isLoadingNameAvatar,
-    } = useIotaNameAvatar(address, !validator);
+    const { name, imageUrl: nameAvatarImageUrl } = useIotaNameAvatar(address, !validator);
 
     const identityLabel = validator ? validator.name : name;
     const identityImageUrl = validator ? validator.imageUrl : nameAvatarImageUrl;
 
-    const isResolvingAvatar = validator === undefined || (!validator && isLoadingNameAvatar);
-
-    const leading = isResolvingAvatar ? (
-        <Skeleton className="h-20 w-20 rounded-md sm:h-24 sm:w-24" />
-    ) : identityImageUrl ? (
+    const leading = identityImageUrl ? (
         <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
             <ImageIcon
                 src={identityImageUrl}
@@ -84,9 +75,10 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                 }
                 subtitle={null}
                 showCopyButton={false}
-                contentWidthClassName="md:w-1/2"
-                afterWidthClassName="md:w-1/2"
+                contentWidthClassName="md:w-3/5"
+                afterWidthClassName="md:w-2/5"
                 rowAlignClassName="md:items-stretch"
+                rowGapClassName="gap-lg md:gap-sm"
                 after={<AddressBalanceHero address={address} />}
             />
             <AddressPageContent address={address} />

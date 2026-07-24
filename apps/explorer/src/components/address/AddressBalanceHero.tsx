@@ -66,7 +66,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
             <div className="hidden shrink-0 md:block">
                 <Divider type={DividerType.Vertical} />
             </div>
-            <div className="flex w-full flex-col items-end gap-xs">
+            <div className="flex w-full flex-col items-start gap-xs md:items-end">
                 <div className="flex flex-row items-center gap-x-xxs">
                     <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                         Total balance
@@ -77,7 +77,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                 </div>
                 <div className="flex flex-row items-center gap-x-xs">
                     <IotaLogoMark className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />
-                    <span className="text-title-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <span className="text-title-md text-iota-neutral-10 sm:text-title-lg dark:text-iota-neutral-92">
                         {totalAmount} {symbol}
                     </span>
                     <ButtonUnstyled onClick={handleCopyClick} aria-label="Copy to clipboard">
@@ -90,7 +90,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                     <Divider />
                 </div>
 
-                <div className="flex flex-col items-end gap-xxxs">
+                <div className="flex flex-col items-start gap-xxxs md:items-end">
                     <BalanceRow
                         icon={<Wallet className="h-3.5 w-3.5" />}
                         label="Available"
@@ -119,7 +119,7 @@ function BalanceRow({ icon, label, value }: BalanceRowProps): JSX.Element {
     const [amount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
 
     return (
-        <div className="flex flex-row flex-wrap items-center justify-end gap-x-xs">
+        <div className="flex flex-row flex-wrap items-center justify-start gap-x-xs md:justify-end">
             <span className="flex flex-row items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                 {icon}
                 {label}

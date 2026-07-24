@@ -43,6 +43,7 @@ export interface PageHeaderProps {
     contentWidthClassName?: string;
     afterWidthClassName?: string;
     rowAlignClassName?: string;
+    rowGapClassName?: string;
 }
 
 const STATUS_CHIP_CONTENT: Record<
@@ -94,6 +95,7 @@ export function PageHeader({
     contentWidthClassName = 'md:w-3/4',
     afterWidthClassName = 'md:w-1/4',
     rowAlignClassName = 'md:items-center',
+    rowGapClassName = 'gap-sm',
 }: PageHeaderProps): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
@@ -187,7 +189,8 @@ export function PageHeader({
             <div className="flex w-full items-center p-md--rs">
                 <div
                     className={clsx(
-                        'flex w-full flex-col items-start justify-between gap-sm md:flex-row',
+                        'flex w-full flex-col items-start justify-between md:flex-row',
+                        rowGapClassName,
                         rowAlignClassName,
                     )}
                 >

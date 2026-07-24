@@ -31,8 +31,10 @@ function Asset({ object }: { object: IotaObjectResponse }) {
     );
 }
 
-export function generateObjectListColumns(): ColumnDef<IotaObjectResponse>[] {
-    return [
+export function generateObjectListColumns({
+    hideAssetColumn = false,
+}: { hideAssetColumn?: boolean } = {}): ColumnDef<IotaObjectResponse>[] {
+    const columns: ColumnDef<IotaObjectResponse>[] = [
         {
             header: 'ASSETS',
             id: 'assets',
@@ -88,4 +90,6 @@ export function generateObjectListColumns(): ColumnDef<IotaObjectResponse>[] {
             },
         },
     ];
+
+    return hideAssetColumn ? columns.filter((column) => column.id !== 'assets') : columns;
 }
