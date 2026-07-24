@@ -57,12 +57,15 @@ export function AddressAlias({
                 </div>
             )}
 
-            <div className="flex flex-row items-center gap-xxs">
+            <div>
                 {renderAddress?.(addressToDisplay) ?? addressToDisplay}
 
                 {onCopy && (
-                    <ButtonUnstyled onClick={onCopy}>
-                        <Copy className="h-full aspect-square hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
+                    <ButtonUnstyled
+                        onClick={onCopy}
+                        className="ms-xxs inline-flex h-4 w-4 align-middle"
+                    >
+                        <Copy className="h-full w-full hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
                     </ButtonUnstyled>
                 )}
             </div>

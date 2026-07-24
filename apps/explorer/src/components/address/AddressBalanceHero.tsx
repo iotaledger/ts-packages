@@ -90,7 +90,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                     <Divider />
                 </div>
 
-                <div className="flex flex-col items-end gap-sm">
+                <div className="flex flex-col items-end gap-xxxs">
                     <BalanceRow
                         icon={<Wallet className="h-3.5 w-3.5" />}
                         label="Available"
