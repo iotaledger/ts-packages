@@ -3,11 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
-import { ImageIcon, ImageIconSize, useAddressAliasLookup } from '@iota/core';
+import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
-import { ProgrammableTxnBlockCard, AddressLink, ObjectLink, CollapsibleCard } from '~/components';
+import {
+    ProgrammableTxnBlockCard,
+    AddressLink,
+    ObjectLink,
+    ObjectVideoImage,
+    CollapsibleCard,
+} from '~/components';
 import { useBreakpoint } from '~/hooks';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
@@ -29,30 +35,80 @@ function getInputAddress(input: IotaCallArg): string | undefined {
     return undefined;
 }
 
-function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element | null {
-    const getAddressAlias = useAddressAliasLookup();
-    const address = getInputAddress(input);
-    const addressAlias = address ? getAddressAlias(address) : null;
+function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.Element {
+    const { data } = useGetObject(objectId);
+    const display = data?.data?.display?.data;
 
-    if (!addressAlias) {
-        return null;
+    return (
+        <div
+            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            onClick={(event) => event.stopPropagation()}
+        >
+            {display?.name ? (
+                <>
+                    {display.image_url && (
+                        <ObjectVideoImage
+                            variant="xxs"
+                            rounded="md"
+                            title={display.name}
+                            subtitle=""
+                            src={display.image_url}
+                            disablePreview
+                        />
+                    )}
+                    <span>{display.name}</span>
+                </>
+            ) : (
+                <ObjectLink objectId={objectId} copyText={objectId} />
+            )}
+        </div>
+    );
+}
+
+function AddressInputSupportingElement({ address }: { address: string }): JSX.Element {
+    const getAddressAlias = useAddressAliasLookup();
+    const addressAlias = getAddressAlias(address);
+
+    if (addressAlias) {
+        return (
+            <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+                {addressAlias.imageUrl ? (
+                    <ImageIcon
+                        src={addressAlias.imageUrl}
+                        label={addressAlias.alias}
+                        fallback={addressAlias.alias}
+                        size={ImageIconSize.Small}
+                        rounded
+                    />
+                ) : (
+                    <IotaLogoMark className="aspect-square h-full shrink-0" />
+                )}
+                <span>{addressAlias.alias}</span>
+            </div>
+        );
     }
 
     return (
-        <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
-            {addressAlias.imageUrl ? (
-                <ImageIcon
-                    src={addressAlias.imageUrl}
-                    label={addressAlias.alias}
-                    fallback={addressAlias.alias}
-                    size={ImageIconSize.Small}
-                    rounded
-                />
-            ) : (
-                <IotaLogoMark className="aspect-square h-full shrink-0" />
-            )}
-            <span>{addressAlias.alias}</span>
+        <div
+            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            onClick={(event) => event.stopPropagation()}
+        >
+            <AddressLink address={address} copyText={address} />
         </div>
+    );
+}
+
+function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element | null {
+    const address = getInputAddress(input);
+
+    if (!address) {
+        return null;
+    }
+
+    return input.type === 'object' ? (
+        <ObjectInputSupportingElement objectId={address} />
+    ) : (
+        <AddressInputSupportingElement address={address} />
     );
 }
 

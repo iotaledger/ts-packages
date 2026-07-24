@@ -4,8 +4,9 @@
 import { Badge, BadgeType, ButtonUnstyled, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
 import { Copy } from '@iota/apps-ui-icons';
 import { ObjectChangeLabels, useCopyToClipboard, type IotaObjectChangeTypes } from '@iota/core';
+import { type DisplayFieldsResponse } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AddressLink, ObjectLink } from '~/components/ui';
+import { AddressLink, ObjectLink, ObjectVideoImage } from '~/components/ui';
 
 export interface ObjectChangeTableRow {
     objectId: string;
@@ -14,6 +15,7 @@ export interface ObjectChangeTableRow {
     objectType?: string;
     status: IotaObjectChangeTypes;
     version?: string;
+    display?: DisplayFieldsResponse;
 }
 
 const STATUS_BADGE_TYPE: Record<IotaObjectChangeTypes, BadgeType> = {
@@ -89,11 +91,32 @@ export function generateObjectChangesTableColumns(): ColumnDef<ObjectChangeTable
         {
             header: 'Object ID',
             id: 'objectId',
-            cell: ({ row }) => (
-                <TableCellBase>
-                    <ObjectLink objectId={row.original.objectId} copyText={row.original.objectId} />
-                </TableCellBase>
-            ),
+            cell: ({ row }) => {
+                const { name, image_url: imageUrl } = row.original.display?.data ?? {};
+                return (
+                    <TableCellBase>
+                        <div className="flex flex-row items-center gap-sm py-xs">
+                            {row.original.display?.data && (
+                                <ObjectVideoImage
+                                    variant="xxs"
+                                    rounded="md"
+                                    title={name ?? 'NFT'}
+                                    subtitle=""
+                                    src={imageUrl ?? ''}
+                                    disablePreview
+                                />
+                            )}
+                            <div className="flex flex-col gap-xs">
+                                {name && <TableCellText>{name}</TableCellText>}
+                                <ObjectLink
+                                    objectId={row.original.objectId}
+                                    copyText={row.original.objectId}
+                                />
+                            </div>
+                        </div>
+                    </TableCellBase>
+                );
+            },
         },
         {
             header: 'Current Owner',
