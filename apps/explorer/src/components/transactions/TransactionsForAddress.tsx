@@ -59,8 +59,8 @@ enum TransactionDirection {
 
 const DIRECTION_OPTIONS: { label: string; value: TransactionDirection }[] = [
     { label: 'All', value: TransactionDirection.All },
-    { label: 'Received', value: TransactionDirection.Received },
-    { label: 'Sent', value: TransactionDirection.Sent },
+    { label: 'Receive', value: TransactionDirection.Received },
+    { label: 'Send', value: TransactionDirection.Sent },
 ];
 
 function getTransactionFilterForDirection(

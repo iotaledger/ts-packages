@@ -3,17 +3,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    formatBalanceToUSD,
     getTotalGasUsed,
     getTransactionAction,
+    useBalanceInUSD,
     TransactionIcon,
     TransactionIconSize,
     ACTION_LABELS,
 } from '@iota/core';
+import { useIotaClientContext } from '@iota/dapp-kit';
 import type {
     BalanceChange,
     IotaTransactionBlockKind,
     IotaTransactionBlockResponse,
     IotaTransactionKind,
+    Network,
 } from '@iota/iota-sdk/client';
 
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
@@ -27,6 +31,29 @@ import {
     NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
 import { DateDisplay } from '~/components';
+
+/**
+ * Fiat value of a signed IOTA balance change, shown below the amount (not in parentheses) for
+ * both gains and losses alike. Hides amounts under half a cent to avoid a meaningless "$0.00".
+ */
+export function BalanceChangeFiatValue({
+    amount,
+}: {
+    amount: bigint | string | number;
+}): JSX.Element | null {
+    const { network } = useIotaClientContext();
+    const value = useBalanceInUSD(IOTA_TYPE_ARG, amount, network as Network);
+
+    if (value === null || value === undefined || Math.abs(value) < 0.005) {
+        return null;
+    }
+
+    return (
+        <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+            {formatBalanceToUSD(Math.abs(value))}
+        </span>
+    );
+}
 
 /**
  * Humanized labels for non-programmable (system) transaction kinds, shown instead of the
@@ -185,17 +212,14 @@ export function generateTransactionsTableColumns(
                 const sign = isPositive ? '+' : '-';
                 return (
                     <TableCellBase>
-                        <TableCellText supportingLabel="IOTA">
-                            <span
-                                className={
-                                    isPositive
-                                        ? 'text-iota-primary-30 dark:text-iota-primary-80'
-                                        : 'text-iota-error-30 dark:text-iota-error-80'
-                                }
-                            >
-                                {sign + formatted}
-                            </span>
-                        </TableCellText>
+                        <div className="flex flex-col">
+                            <TableCellText supportingLabel="IOTA">
+                                <span className={getBalanceChangeColorClass(isPositive)}>
+                                    {sign + formatted}
+                                </span>
+                            </TableCellText>
+                            <BalanceChangeFiatValue amount={amount} />
+                        </div>
                     </TableCellBase>
                 );
             },

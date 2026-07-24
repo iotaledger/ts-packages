@@ -22,6 +22,8 @@ import {
 } from '@iota/iota-sdk/utils';
 import { DateDisplay } from '~/components';
 import {
+    BalanceChangeFiatValue,
+    getBalanceChangeColorClass,
     getIotaBalanceChangeForAddress,
     getTransactionTypeLabel,
 } from './generateTransactionsTableColumns';
@@ -137,6 +139,7 @@ export function generateActivityTableColumns(
                             >
                                 {sign + formatted} IOTA
                             </span>
+                            <BalanceChangeFiatValue amount={amount} />
                             {otherCoinChangesCount > 0 && (
                                 <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                                     +{otherCoinChangesCount} other coin
@@ -151,6 +154,9 @@ export function generateActivityTableColumns(
         {
             header: 'With',
             accessorKey: 'with',
+            meta: {
+                tooltip: 'Who this address sent to, or received from.',
+            },
             cell: ({ row }) => {
                 const counterparty = getCounterpartyAddress(row.original, address);
                 if (!counterparty) {
