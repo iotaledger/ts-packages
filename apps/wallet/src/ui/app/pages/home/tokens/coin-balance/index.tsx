@@ -54,7 +54,7 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
 
     const balanceNode = (
         <div
-            className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+            className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92"
             data-testid="coin-balance"
         >
             {isBalanceVisible ? formatted : BALANCE_MASK}
@@ -63,7 +63,7 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
 
     return (
         <>
-            <div className="flex items-baseline gap-0.5">
+            <div className="flex items-baseline gap-xs">
                 {shouldShowTooltip && isBalanceVisible ? (
                     <Tooltip
                         text={formatBalance(

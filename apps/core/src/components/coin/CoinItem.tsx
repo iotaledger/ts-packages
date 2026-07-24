@@ -15,6 +15,7 @@ import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { type ReactNode } from 'react';
 import { useFormatCoin } from '../../hooks';
 import { BALANCE_MASK, useBalanceVisible } from '../../contexts/BalanceVisibilityContext';
+import { formatBalanceToUSD } from '../../utils';
 
 interface CoinItemProps {
     coinType: string;
@@ -23,6 +24,7 @@ interface CoinItemProps {
     icon?: ReactNode;
     clickableAction?: ReactNode;
     usd?: number;
+    pricePerCoin?: number;
     format?: CoinFormat;
     hideMask?: boolean;
 }
@@ -34,12 +36,23 @@ export function CoinItem({
     icon,
     clickableAction,
     usd,
+    pricePerCoin,
     format,
     hideMask,
 }: CoinItemProps): React.JSX.Element {
     const [formatted, symbol, { data: coinMeta }] = useFormatCoin({ balance, coinType, format });
     const isBalanceVisible = useBalanceVisible() || hideMask;
     const isIota = coinType === IOTA_TYPE_ARG;
+
+    const coinName = isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol;
+    const coinPriceDisplayOrSymbol =
+        pricePerCoin !== undefined ? formatBalanceToUSD(pricePerCoin) : symbol;
+    const usdBalance =
+        usd !== undefined
+            ? isBalanceVisible
+                ? `~${formatBalanceToUSD(usd)} USD`
+                : `${BALANCE_MASK} USD`
+            : undefined;
 
     return (
         <Card type={CardType.Default} onClick={onClick}>
@@ -49,15 +62,15 @@ export function CoinItem({
                 </div>
             </CardImage>
             <CardBody
-                title={isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol}
-                subtitle={symbol}
+                title={coinName}
+                subtitle={coinPriceDisplayOrSymbol}
                 clickableAction={clickableAction}
                 icon={icon}
             />
             <CardAction
                 type={CardActionType.SupportingText}
                 title={`${isBalanceVisible ? formatted : BALANCE_MASK} ${symbol}`}
-                subtitle={isBalanceVisible ? usd?.toLocaleString('en-US') : undefined}
+                subtitle={isBalanceVisible ? usdBalance : undefined}
             />
         </Card>
     );

@@ -72,6 +72,7 @@ export function SupplyIncreaseVestingOverview({
         balance: supplyIncreaseVestingSchedule.availableStaking,
     });
     const isBalanceVisible = useBalanceVisible();
+
     function handleOnSuccess(digest: string): void {
         iotaClient
             .waitForTransaction({
