@@ -9,7 +9,7 @@ import { isMigrationTransaction, isUnlockTimelockedObjectTransaction } from '..'
 
 export const ACTION_LABELS: Record<TransactionAction, string> = {
     [TransactionAction.Send]: 'Send',
-    [TransactionAction.Receive]: 'Received',
+    [TransactionAction.Receive]: 'Receive',
     [TransactionAction.Transaction]: 'Transaction',
     [TransactionAction.Staked]: 'Stake',
     [TransactionAction.Unstaked]: 'Unstake',
