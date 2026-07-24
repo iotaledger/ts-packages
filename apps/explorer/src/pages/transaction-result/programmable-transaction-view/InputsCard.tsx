@@ -59,7 +59,9 @@ function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.E
                     <span>{display.name}</span>
                 </>
             ) : (
-                <ObjectLink objectId={objectId} copyText={objectId} />
+                <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
+                    <ObjectLink objectId={objectId} copyText={objectId} />
+                </div>
             )}
         </div>
     );
