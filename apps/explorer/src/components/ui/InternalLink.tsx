@@ -71,7 +71,7 @@ function createInternalLink<T extends string>(
                     onCopy={copyText ? handleCopyClick : undefined}
                     noTruncate={noTruncate}
                     truncateUnknown={!noTruncate}
-                    renderAddress={(address) => (
+                    renderAddress={(address, copyButton) => (
                         <NamedAddressTooltip name={iotaName} address={address}>
                             <Link
                                 className={clsx(
@@ -84,6 +84,7 @@ function createInternalLink<T extends string>(
                             >
                                 {iotaName || label || address}
                             </Link>
+                            {copyButton}
                         </NamedAddressTooltip>
                     )}
                     renderAlias={renderAddressAlias}

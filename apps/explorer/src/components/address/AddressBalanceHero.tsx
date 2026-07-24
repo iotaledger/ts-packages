@@ -13,7 +13,6 @@ import {
 import { Copy, Info, IotaLogoMark, LockLocked, Wallet } from '@iota/apps-ui-icons';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import type { ReactNode } from 'react';
-import { onCopySuccess } from '~/lib';
 import { useAddressBalanceSummary } from '~/hooks';
 
 const TOTAL_TOOLTIP_TEXT =
@@ -33,7 +32,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
     } = useAddressBalanceSummary(address);
 
     const [totalAmount, symbol] = useFormatCoin({ balance: totalBalance, format: CoinFormat.Full });
-    const copyToClipboard = useCopyToClipboard(onCopySuccess);
+    const copyToClipboard = useCopyToClipboard();
 
     async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
         event.stopPropagation();

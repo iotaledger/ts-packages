@@ -62,12 +62,19 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                             address={address}
                             onCopy={() => copyToClipboard(address)}
                             hideAlias={!!validator || !!name}
-                            renderAddress={(addressToDisplay) => (
+                            renderAddress={(addressToDisplay, copyButton) => (
                                 <>
-                                    <span className="sm:hidden">
+                                    <span className="whitespace-nowrap sm:hidden">
                                         {trimOrFormatAddress(addressToDisplay)}
+                                        {copyButton}
                                     </span>
-                                    <span className="hidden sm:inline">{addressToDisplay}</span>
+                                    <span className="hidden sm:inline">
+                                        {addressToDisplay.slice(0, -4)}
+                                        <span className="whitespace-nowrap">
+                                            {addressToDisplay.slice(-4)}
+                                            {copyButton}
+                                        </span>
+                                    </span>
                                 </>
                             )}
                         />

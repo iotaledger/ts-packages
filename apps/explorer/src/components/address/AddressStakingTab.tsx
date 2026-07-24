@@ -3,12 +3,14 @@
 
 import { useMemo, useState } from 'react';
 import {
+    CoinFiatValue,
     formatDelegatedStake,
     formatDelegatedTimelockedStake,
     ImageIcon,
     ImageIconSize,
     mapTimelockObjects,
     TIMELOCK_IOTA_TYPE,
+    useFormatCoin,
     useGetAllOwnedObjects,
     useGetDelegatedStake,
     useGetTimelockedStakedObjects,
@@ -17,6 +19,7 @@ import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
     ButtonSegment,
     ButtonSegmentType,
+    DisplayStats,
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
@@ -26,10 +29,16 @@ import {
     TableCellBase,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
-import { formatAddress } from '@iota/iota-sdk/utils';
+import { CoinFormat, formatAddress } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { StakeColumn } from '../top-validators-card/StakeColumn';
 import { TableCard, ValidatorLink } from '../ui';
+
+const STAKED_TOOLTIP_TEXT = 'IOTA staked with validators. Cannot be used until unstaked.';
+const TIMELOCKED_STAKED_TOOLTIP_TEXT =
+    'Timelocked IOTA that is currently staked. Cannot be used until unstaked and the timelock expires.';
+const REWARDS_TOOLTIP_TEXT =
+    'Estimated rewards accrued across all delegations. Rewards are not part of the staked principal.';
 
 enum StakingView {
     Staked = 'staked',
@@ -61,6 +70,10 @@ function groupStakesByValidator(stakes: StakeLike[]): DelegationRow[] {
         rowsByValidator.set(stake.validatorAddress, row);
     }
     return [...rowsByValidator.values()].sort((a, b) => (b.principal > a.principal ? 1 : -1));
+}
+
+function sumRows(rows: DelegationRow[], key: 'principal' | 'estimatedReward'): bigint {
+    return rows.reduce((acc, row) => acc + row[key], BigInt(0));
 }
 
 interface AddressStakingTabProps {
@@ -125,6 +138,12 @@ export function AddressStakingTab({ address }: AddressStakingTabProps): React.JS
         );
     }
 
+    const stakedBalance = sumRows(stakedRows, 'principal');
+    const stakedRewards = sumRows(stakedRows, 'estimatedReward');
+    const timelockedStakedBalance = sumRows(timelockedStakedRows, 'principal');
+    const timelockedStakedRewards = sumRows(timelockedStakedRows, 'estimatedReward');
+    const totalRewards = stakedRewards + timelockedStakedRewards;
+
     const hasStaked = stakedRows.length > 0;
     const hasTimelockedStaked = timelockedStakedRows.length > 0;
 
@@ -148,6 +167,29 @@ export function AddressStakingTab({ address }: AddressStakingTabProps): React.JS
 
     return (
         <div className="flex flex-col gap-lg">
+            <div className="grid grid-cols-1 gap-sm sm:grid-cols-2 lg:grid-cols-3">
+                {hasStaked && (
+                    <StakingStat
+                        label="Staked"
+                        tooltipText={STAKED_TOOLTIP_TEXT}
+                        value={stakedBalance}
+                    />
+                )}
+                {hasTimelockedStaked && (
+                    <StakingStat
+                        label="Timelocked Staked"
+                        tooltipText={TIMELOCKED_STAKED_TOOLTIP_TEXT}
+                        value={timelockedStakedBalance}
+                    />
+                )}
+                {totalRewards > 0n && (
+                    <StakingStat
+                        label="Estimated Rewards"
+                        tooltipText={REWARDS_TOOLTIP_TEXT}
+                        value={totalRewards}
+                    />
+                )}
+            </div>
             {hasStaked || hasTimelockedStaked ? (
                 <div className="flex flex-col gap-sm">
                     {hasStaked && hasTimelockedStaked && (
@@ -178,6 +220,31 @@ export function AddressStakingTab({ address }: AddressStakingTabProps): React.JS
                 </div>
             )}
         </div>
+    );
+}
+
+interface StakingStatProps {
+    label: string;
+    tooltipText: string;
+    value: bigint;
+}
+
+function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX.Element {
+    const [amount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+    return (
+        <DisplayStats
+            label={label}
+            tooltipText={tooltipText}
+            value={
+                <div className="flex flex-col gap-xxs">
+                    <div className="flex flex-row items-baseline gap-xxs">
+                        <span>{amount}</span>
+                        <span className="text-label-md opacity-40">{symbol}</span>
+                    </div>
+                    <CoinFiatValue amount={value} withParentheses={false} />
+                </div>
+            }
+        />
     );
 }
 

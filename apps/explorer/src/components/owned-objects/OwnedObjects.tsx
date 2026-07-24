@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetCategorizedOwnedObjects, OwnedObjectCategory } from '@iota/core';
+import { useGetCategorizedOwnedObjects, OwnedObjectCategory, useLocalStorage } from '@iota/core';
 import {
     Badge,
     BadgeType,
@@ -89,8 +89,14 @@ interface OwnedObjectsProps {
 
 export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
     const [limit, setLimit] = useState(50);
-    const [filter, setFilter] = useState<string | undefined>(undefined);
-    const [viewMode, setViewMode] = useState<ObjectViewMode>(ObjectViewMode.Thumbnail);
+    const [filter, setFilter] = useLocalStorage<string | undefined>(
+        'owned-objects-category-filter',
+        undefined,
+    );
+    const [viewMode, setViewMode] = useLocalStorage<ObjectViewMode>(
+        'owned-objects-view-mode',
+        ObjectViewMode.Thumbnail,
+    );
 
     const ownedObjects = useGetCategorizedOwnedObjects(id, limit);
 
