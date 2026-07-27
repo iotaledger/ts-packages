@@ -108,6 +108,7 @@ export function TransactionOverview({
     const { userSignatures, sponsorSignature } = useDeserializedSignatures(transaction);
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
+    const isProgrammableTransaction = transactionKindName === 'ProgrammableTransaction';
     const sender = transaction.transaction?.data.sender;
     const signatures = transaction.transaction?.txSignatures;
     const action = getTransactionAction(transaction, sender);
@@ -213,33 +214,35 @@ export function TransactionOverview({
                     fullwidth={!isMediumOrAbove}
                 />
             )}
-            {totalGas && (
-                <KeyValueInfo
-                    keyText="Total Gas Fee"
-                    value={`${formattedTotalGas} ${totalGasSymbol}`}
-                    supportingLabel={
-                        <div className="flex flex-row items-baseline gap-xs">
-                            <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
-                            {gasUsed && (
-                                <ButtonUnstyled
-                                    className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                    onClick={() => setShowGasFeeBreakdown(!showGasFeeBreakdown)}
-                                >
-                                    {showGasFeeBreakdown ? 'Show Less' : 'Show More'}
-                                    <ArrowDown
-                                        className={clsx(
-                                            'h-4 w-4 transition-transform ease-linear',
-                                            showGasFeeBreakdown && 'rotate-180',
-                                        )}
-                                    />
-                                </ButtonUnstyled>
-                            )}
-                        </div>
-                    }
-                    fullwidth={!isMediumOrAbove}
-                />
+            {isProgrammableTransaction && totalGas && (
+                <div data-testid="gas-breakdown">
+                    <KeyValueInfo
+                        keyText="Total Gas Fee"
+                        value={`${formattedTotalGas} ${totalGasSymbol}`}
+                        supportingLabel={
+                            <div className="flex flex-row items-baseline gap-xs">
+                                <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
+                                {gasUsed && (
+                                    <ButtonUnstyled
+                                        className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                        onClick={() => setShowGasFeeBreakdown(!showGasFeeBreakdown)}
+                                    >
+                                        {showGasFeeBreakdown ? 'Show Less' : 'Show More'}
+                                        <ArrowDown
+                                            className={clsx(
+                                                'h-4 w-4 transition-transform ease-linear',
+                                                showGasFeeBreakdown && 'rotate-180',
+                                            )}
+                                        />
+                                    </ButtonUnstyled>
+                                )}
+                            </div>
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                </div>
             )}
-            {showGasFeeBreakdown && gasUsed && (
+            {isProgrammableTransaction && showGasFeeBreakdown && gasUsed && (
                 <div className="ml-xs flex flex-col gap-xs border-l border-iota-neutral-92 py-xxs pl-sm--rs dark:border-iota-neutral-12">
                     {gasPrice && (
                         <KeyValueInfo
@@ -276,14 +279,14 @@ export function TransactionOverview({
                     )}
                 </div>
             )}
-            {gasBudget && (
+            {isProgrammableTransaction && gasBudget && (
                 <KeyValueInfo
                     keyText="Gas Budget"
                     value={`${formattedBudget} ${budgetSymbol}`}
                     fullwidth={!isMediumOrAbove}
                 />
             )}
-            {!!gasPayment?.length && (
+            {isProgrammableTransaction && !!gasPayment?.length && (
                 <KeyValueInfo
                     keyText="Gas Payment Objects"
                     value={
@@ -313,7 +316,7 @@ export function TransactionOverview({
                     fullwidth={!isMediumOrAbove}
                 />
             )}
-            {gasOwner && (
+            {isProgrammableTransaction && gasOwner && (
                 <KeyValueInfo
                     keyText="Gas Object Owner"
                     value={<AddressLink address={gasOwner} />}
