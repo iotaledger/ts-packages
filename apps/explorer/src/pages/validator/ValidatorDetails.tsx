@@ -276,11 +276,7 @@ function ValidatorDetails(): JSX.Element {
                         />
                     )}
                     <ValidatorStatusLegend />
-                    <ValidatorStakingHistory
-                        validatorAddress={id}
-                        validatorName={activeValidatorData.name}
-                        validatorImageUrl={activeValidatorData.imageUrl}
-                    />
+                    <ValidatorStakingHistory validatorAddress={id} />
                 </div>
             }
         />

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { CoinFiatValue, ImageIcon, ImageIconSize, STAKING_REQUEST_EVENT } from '@iota/core';
+import { CoinFiatValue, STAKING_REQUEST_EVENT } from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
@@ -9,12 +9,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import type { StakeEventJson, UnstakeEventJson } from '@iota/core';
 import { DateDisplay } from '~/components';
 import { AddressLink, EpochLink, TransactionLink } from '~/components/ui';
-
-interface GenerateStakingHistoryTableColumnsOptions {
-    validatorAddress: string;
-    validatorName?: string;
-    validatorImageUrl?: string | null;
-}
 
 function formatIota(amount: string | number | undefined): string {
     return formatBalance(amount ?? 0, IOTA_DECIMALS, CoinFormat.Full);
@@ -41,11 +35,7 @@ function AmountCell({
 /**
  * Generate table columns renderers for a validator's staking history (stake/withdraw events).
  */
-export function generateStakingHistoryTableColumns({
-    validatorAddress,
-    validatorName,
-    validatorImageUrl,
-}: GenerateStakingHistoryTableColumnsOptions): ColumnDef<IotaEvent>[] {
+export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
     return [
         {
             header: 'Address',
@@ -53,38 +43,12 @@ export function generateStakingHistoryTableColumns({
             cell: ({ row: { original: event } }) => {
                 const parsedJson = event.parsedJson as StakeEventJson | UnstakeEventJson;
                 const address = parsedJson?.staker_address;
-                if (!address) {
-                    return (
-                        <TableCellBase>
-                            <TableCellText>--</TableCellText>
-                        </TableCellBase>
-                    );
-                }
-
-                const isValidatorSelf = address === validatorAddress;
-
                 return (
                     <TableCellBase>
-                        {isValidatorSelf ? (
-                            <div className="flex flex-col gap-xxs">
-                                <div className="flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    <ImageIcon
-                                        src={validatorImageUrl}
-                                        label={validatorName ?? address}
-                                        fallback={validatorName ?? address}
-                                        size={ImageIconSize.Small}
-                                        rounded
-                                    />
-                                    <span className="text-body-md">{validatorName}</span>
-                                </div>
-                                <AddressLink
-                                    address={address}
-                                    copyText={address}
-                                    showAddressAlias={false}
-                                />
-                            </div>
-                        ) : (
+                        {address ? (
                             <AddressLink address={address} copyText={address} />
+                        ) : (
+                            <TableCellText>--</TableCellText>
                         )}
                     </TableCellBase>
                 );

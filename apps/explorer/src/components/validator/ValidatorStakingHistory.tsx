@@ -22,14 +22,10 @@ const STAKING_HISTORY_COLUMN_HEADINGS = [
 
 interface ValidatorStakingHistoryProps {
     validatorAddress: string;
-    validatorName?: string;
-    validatorImageUrl?: string | null;
 }
 
 export function ValidatorStakingHistory({
     validatorAddress,
-    validatorName,
-    validatorImageUrl,
 }: ValidatorStakingHistoryProps): JSX.Element {
     const stakingEventsQuery = useGetValidatorStakingEvents({
         validatorAddress,
@@ -39,11 +35,7 @@ export function ValidatorStakingHistory({
     const { data, isFetching, pagination, isPending, isError } =
         useCursorPagination(stakingEventsQuery);
 
-    const tableColumns = generateStakingHistoryTableColumns({
-        validatorAddress,
-        validatorName,
-        validatorImageUrl,
-    });
+    const tableColumns = generateStakingHistoryTableColumns();
 
     return (
         <Panel>

@@ -22,3 +22,5 @@ export * from './useEndOfEpochTransactionFromCheckpoint';
 export * from './useFormattedDate';
 export * from './useAbstractAccountData';
 export * from './useGetValidatorStakingEvents';
+export * from './useLocalTablePagination';
+export * from './useDeserializedSignatures';
