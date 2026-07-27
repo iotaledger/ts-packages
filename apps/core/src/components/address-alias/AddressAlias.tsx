@@ -6,6 +6,7 @@ import cx from 'clsx';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { useAddressAliasLookup } from '../../hooks';
 import { trimOrFormatAddress } from '@iota/iota-sdk/utils';
+import { ImageIcon, ImageIconSize } from '../icon';
 
 interface AddressAliasProps {
     address: string;
@@ -26,21 +27,31 @@ export function AddressAlias({
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
 
-    const alias = getAddressAlias(address);
+    const addressAlias = getAddressAlias(address);
 
     const addressToDisplay =
         noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
 
     return (
-        <>
-            {alias && (
+        <div className="flex flex-col gap-xxs">
+            {addressAlias && (
                 <div
                     className={cx(
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
-                    <IotaLogoMark className="h-full aspect-square shrink-0" />
-                    {renderAlias?.(alias) ?? alias}
+                    {addressAlias.imageUrl ? (
+                        <ImageIcon
+                            src={addressAlias.imageUrl}
+                            label={addressAlias.alias}
+                            fallback={addressAlias.alias}
+                            size={ImageIconSize.Small}
+                            rounded
+                        />
+                    ) : (
+                        <IotaLogoMark className="h-full aspect-square shrink-0" />
+                    )}
+                    {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
                 </div>
             )}
 
@@ -53,6 +64,6 @@ export function AddressAlias({
                     </ButtonUnstyled>
                 )}
             </div>
-        </>
+        </div>
     );
 }
