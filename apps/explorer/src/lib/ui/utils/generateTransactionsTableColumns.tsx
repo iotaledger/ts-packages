@@ -17,6 +17,7 @@ import type {
     IotaTransactionBlockKind,
     IotaTransactionBlockResponse,
     IotaTransactionKind,
+    MoveCallIotaTransaction,
     Network,
 } from '@iota/iota-sdk/client';
 
@@ -93,6 +94,32 @@ export function getTransactionTypeLabel(
 }
 
 /**
+ * Name of the last Move function called in a programmable transaction block, if any (e.g.
+ * `request_add_stake`). Transactions with no Move call (plain transfers) have none.
+ */
+export function getTransactionFunctionName(txn: IotaTransactionBlockResponse): string | undefined {
+    const transaction = txn.transaction?.data.transaction;
+    if (transaction?.kind !== 'ProgrammableTransaction') {
+        return undefined;
+    }
+    const moveCalls = transaction.transactions
+        .filter(
+            (command): command is { MoveCall: MoveCallIotaTransaction } => 'MoveCall' in command,
+        )
+        .map((command) => command.MoveCall);
+    return moveCalls.at(-1)?.function;
+}
+
+/**
+ * Text color classes for a signed balance/amount: positive (received) vs. negative (sent).
+ */
+export function getBalanceChangeColorClass(isPositive: boolean): string {
+    return isPositive
+        ? 'text-iota-tertiary-40 dark:text-iota-tertiary-90'
+        : 'text-iota-error-30 dark:text-iota-error-80';
+}
+
+/**
  * Find the IOTA balance change for a given address in a transaction, if any.
  */
 export function getIotaBalanceChangeForAddress(
@@ -127,6 +154,7 @@ export function generateTransactionsTableColumns(
                 const isSuccess = txn.effects?.status.status === 'success';
                 const action = getTransactionAction(txn, actionAddress);
                 const typeLabel = getTransactionTypeLabel(txn, action, isSuccess);
+                const functionName = getTransactionFunctionName(txn);
                 return (
                     <TableCellBase>
                         <TransactionLink
@@ -144,7 +172,7 @@ export function generateTransactionsTableColumns(
                                             {typeLabel}
                                         </span>
                                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
-                                            {formatDigest(digest)}
+                                            {functionName ?? formatDigest(digest)}
                                         </span>
                                     </div>
                                 </div>

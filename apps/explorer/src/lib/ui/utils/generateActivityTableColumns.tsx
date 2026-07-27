@@ -25,6 +25,7 @@ import {
     BalanceChangeFiatValue,
     getBalanceChangeColorClass,
     getIotaBalanceChangeForAddress,
+    getTransactionFunctionName,
     getTransactionTypeLabel,
 } from './generateTransactionsTableColumns';
 
@@ -66,6 +67,7 @@ export function generateActivityTableColumns(
                 const isSuccess = txn.effects?.status.status === 'success';
                 const action = getTransactionAction(txn, address);
                 const typeLabel = getTransactionTypeLabel(txn, action, isSuccess);
+                const functionName = getTransactionFunctionName(txn);
                 return (
                     <TableCellBase>
                         <TransactionLink
@@ -83,7 +85,7 @@ export function generateActivityTableColumns(
                                             {typeLabel}
                                         </span>
                                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
-                                            {formatDigest(digest)}
+                                            {functionName ?? formatDigest(digest)}
                                         </span>
                                     </div>
                                 </div>

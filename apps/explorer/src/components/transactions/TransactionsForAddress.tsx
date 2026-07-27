@@ -14,42 +14,19 @@ import {
     SegmentedButtonType,
     Select,
     SelectSize,
-    Toggle,
     type TablePaginationOptions,
 } from '@iota/apps-ui-kit';
 import { useIotaClient } from '@iota/dapp-kit';
-import {
-    type IotaClient,
-    type IotaTransactionBlockResponse,
-    type TransactionFilter,
-} from '@iota/iota-sdk/client';
-import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { type IotaClient, type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { Warning } from '@iota/apps-ui-icons';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
-import {
-    generateActivityTableColumns,
-    generateTransactionsTableColumns,
-    isProgrammableTransaction,
-} from '~/lib/ui';
-import { useState } from 'react';
+import { generateActivityTableColumns, generateTransactionsTableColumns } from '~/lib/ui';
+import { useEffect, useState } from 'react';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib';
 import { useCursorPagination } from '@iota/core';
 
 const PAGE_RANGE = PAGE_SIZES_RANGE_10_50;
-
-// The node's maximum page size for `queryTransactionBlocks` (QUERY_MAX_RESULT_LIMIT). Fetching
-// at this size while filtering out system transactions client-side minimizes RPC round-trips.
-const QUERY_MAX_RESULT_LIMIT = 50;
-
-// Cap on the number of RPC calls `queryFilteredTransactionPage` will make while filtering out
-// system transactions client-side. Prevents scanning the entire chain for busy system addresses
-// such as `0x0` (worst case ~100 scanned transactions per display page); a partial page with
-// `hasNextPage: true` is acceptable, "Next" simply continues from the returned cursor.
-const MAX_FETCH_ITERATIONS = 2;
-
-// All system transactions are signed by the zero address.
-const ZERO_ADDRESS = normalizeIotaAddress('0x0');
 
 enum TransactionDirection {
     All = 'all',
@@ -63,109 +40,92 @@ const DIRECTION_OPTIONS: { label: string; value: TransactionDirection }[] = [
     { label: 'Send', value: TransactionDirection.Sent },
 ];
 
-function getTransactionFilterForDirection(
+/**
+ * Whether `txn` matches `direction` from `address`'s perspective. The node's `FromAddress` and
+ * `ToAddress` filters aren't reliably supported by every RPC/indexer (they can silently return
+ * no results), so direction is determined client-side from the already-fetched transaction data
+ * instead of being pushed down as a query filter.
+ */
+function matchesDirection(
+    txn: IotaTransactionBlockResponse,
     direction: TransactionDirection,
     address: string,
-): TransactionFilter {
-    switch (direction) {
-        case TransactionDirection.Received:
-            return { ToAddress: address };
-        case TransactionDirection.Sent:
-            return { FromAddress: address };
-        case TransactionDirection.All:
-        default:
-            return { FromOrToAddress: { addr: address } };
+): boolean {
+    if (direction === TransactionDirection.All) {
+        return true;
     }
+    const isSender = txn.transaction?.data.sender === address;
+    return direction === TransactionDirection.Sent ? isSender : !isSender;
 }
 
-/**
- * Whether a query with `filter` can return system transactions at all. System transactions are
- * signed by the zero address, so a `FromAddress` filter on any other address cannot match them.
- */
-function canFilterMatchSystemTransactions(filter: TransactionFilter): boolean {
-    return !('FromAddress' in filter && normalizeIotaAddress(filter.FromAddress) !== ZERO_ADDRESS);
-}
-
-interface QueryFilteredTransactionPageResult {
+interface QueryTransactionPageResult {
     data: IotaTransactionBlockResponse[];
     nextCursor: string | null;
     hasNextPage: boolean;
 }
 
-/**
- * Query a page of transaction blocks for `filter`, optionally filtering out system transactions
- * (`hideSystemTxs`). The RPC has no server-side way to combine a kind filter with an address
- * filter, so when `hideSystemTxs` is true (and `filter` can actually match system transactions)
- * this fetches (and discards non-programmable transactions from) successive
- * `QUERY_MAX_RESULT_LIMIT`-sized pages until either `limit` programmable transactions have been
- * collected or `MAX_FETCH_ITERATIONS` RPC calls have been made.
- */
-async function queryFilteredTransactionPage(
+async function queryTransactionPage(
     client: IotaClient,
-    filter: TransactionFilter,
+    address: string,
+    direction: TransactionDirection,
     cursor: string | null,
     limit: number,
-    hideSystemTxs: boolean,
-): Promise<QueryFilteredTransactionPageResult> {
-    const options = {
-        showEffects: true,
-        showInput: true,
-        showBalanceChanges: true,
-        showEvents: true,
-    };
-
-    if (!hideSystemTxs || !canFilterMatchSystemTransactions(filter)) {
-        const page = await client.queryTransactionBlocks({
-            filter,
-            order: 'descending',
-            options,
-            cursor,
-            limit,
-        });
-        return {
-            data: page.data,
-            nextCursor: page.nextCursor ?? null,
-            hasNextPage: page.hasNextPage,
-        };
-    }
-
-    const data: IotaTransactionBlockResponse[] = [];
-    let nextCursor = cursor;
-    let hasNextPage = true;
-
-    for (
-        let iteration = 0;
-        iteration < MAX_FETCH_ITERATIONS && data.length < limit && hasNextPage;
-        iteration++
-    ) {
-        const page = await client.queryTransactionBlocks({
-            filter,
-            order: 'descending',
-            options,
-            cursor: nextCursor,
-            limit: QUERY_MAX_RESULT_LIMIT,
-        });
-        data.push(...page.data.filter(isProgrammableTransaction));
-        nextCursor = page.nextCursor ?? null;
-        hasNextPage = page.hasNextPage;
-    }
-
-    if (data.length > limit) {
-        // The last RPC page overshot the display page. The RPC cursor is a transaction digest,
-        // so continue from the last transaction actually included in the page to avoid skipping
-        // the filtered transactions cut off by the slice.
-        return {
-            data: data.slice(0, limit),
-            nextCursor: data[limit - 1].digest,
-            hasNextPage: true,
-        };
-    }
-
+): Promise<QueryTransactionPageResult> {
+    const page = await client.queryTransactionBlocks({
+        filter: { FromOrToAddress: { addr: address } },
+        order: 'descending',
+        options: {
+            showEffects: true,
+            showInput: true,
+            showBalanceChanges: true,
+            showEvents: true,
+        },
+        cursor,
+        limit,
+    });
     return {
-        data,
-        nextCursor,
-        hasNextPage,
+        data: page.data.filter((txn) => matchesDirection(txn, direction, address)),
+        nextCursor: page.nextCursor ?? null,
+        hasNextPage: page.hasNextPage,
     };
+}
+
+interface DirectionAvailability {
+    hasSent: boolean;
+    hasReceived: boolean;
+}
+
+// How many of `address`'s most recent transactions to sample when checking whether it has ever
+// sent/received, since the node has no cheap way to check this (see `matchesDirection`).
+const DIRECTION_AVAILABILITY_SAMPLE_SIZE = 50;
+
+/**
+ * Determines whether `address` has sent and/or received a transaction among its most recent
+ * `DIRECTION_AVAILABILITY_SAMPLE_SIZE` transactions.
+ */
+async function getDirectionAvailability(
+    client: IotaClient,
+    address: string,
+): Promise<DirectionAvailability> {
+    const page = await client.queryTransactionBlocks({
+        filter: { FromOrToAddress: { addr: address } },
+        order: 'descending',
+        options: { showInput: true },
+        limit: DIRECTION_AVAILABILITY_SAMPLE_SIZE,
+    });
+    let hasSent = false;
+    let hasReceived = false;
+    for (const txn of page.data) {
+        if (matchesDirection(txn, TransactionDirection.Sent, address)) {
+            hasSent = true;
+        } else {
+            hasReceived = true;
+        }
+        if (hasSent && hasReceived) {
+            break;
+        }
+    }
+    return { hasSent, hasReceived };
 }
 
 type TransactionsForAddressView = 'activity' | 'transaction-blocks';
@@ -186,12 +146,11 @@ interface TransactionsForAddressTableProps {
     pagination: TablePaginationOptions;
     direction: TransactionDirection;
     setDirection: (direction: TransactionDirection) => void;
-    hideSystemTxs: boolean;
-    setHideSystemTxs: (hideSystemTxs: boolean) => void;
+    directionOptions: { label: string; value: TransactionDirection }[];
 }
 
 const PLACEHOLDER_COL_HEADINGS: Record<TransactionsForAddressView, string[]> = {
-    activity: ['Type', 'Balance Change', 'With', 'Gas Fee', 'Time'],
+    activity: ['Type', 'Sender', 'Txns', 'Balance Change', 'With', 'Gas Fee', 'Time'],
     'transaction-blocks': ['Type', 'Sender', 'Txns', 'Balance Change', 'Gas', 'Time'],
 };
 
@@ -206,13 +165,12 @@ export function TransactionsForAddressTable({
     pagination,
     direction,
     setDirection,
-    hideSystemTxs,
-    setHideSystemTxs,
+    directionOptions,
 }: TransactionsForAddressTableProps): JSX.Element {
     const controls = (
-        <div className="flex flex-row flex-wrap items-center gap-md">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-md">
             <SegmentedButton type={SegmentedButtonType.Outlined} shape={ButtonSegmentType.Rounded}>
-                {DIRECTION_OPTIONS.map((option) => (
+                {directionOptions.map((option) => (
                     <ButtonSegment
                         key={option.value}
                         type={ButtonSegmentType.Rounded}
@@ -222,12 +180,6 @@ export function TransactionsForAddressTable({
                     />
                 ))}
             </SegmentedButton>
-            <Toggle
-                label="Hide system transactions"
-                isToggled={hideSystemTxs}
-                onChange={(isToggled) => setHideSystemTxs(isToggled)}
-                name="hide-system-transactions"
-            />
         </div>
     );
 
@@ -268,8 +220,7 @@ export function TransactionsForAddressTable({
 
     if (!hasTxns) {
         // Even with no rows to show, the user may be on an empty filtered page in the middle of
-        // the history (e.g. a page of only system transactions with "Hide system transactions"
-        // checked), so keep the pagination controls visible when other pages exist.
+        // the history, so keep the pagination controls visible when other pages exist.
         const hasOtherPages = Boolean(
             pagination.hasNext || pagination.hasPrev || pagination.hasFirst,
         );
@@ -330,19 +281,36 @@ export function TransactionsForAddress({
 }: TransactionsForAddressProps): JSX.Element {
     const [limit, setLimit] = useState(PAGE_RANGE[0]);
     const [direction, setDirection] = useState<TransactionDirection>(TransactionDirection.All);
-    const [hideSystemTxs, setHideSystemTxs] = useState(view === 'activity');
     const client = useIotaClient();
 
+    const directionAvailability = useQuery({
+        queryKey: ['transactions-for-address-direction-availability', address, client],
+        queryFn: () => getDirectionAvailability(client, address),
+    });
+
+    // Optimistically show a direction until we know for sure it has no transactions, to avoid
+    // the button flashing in and out while the availability query is still in flight.
+    const directionOptions = DIRECTION_OPTIONS.filter((option) => {
+        if (option.value === TransactionDirection.Received) {
+            return directionAvailability.data?.hasReceived ?? true;
+        }
+        if (option.value === TransactionDirection.Sent) {
+            return directionAvailability.data?.hasSent ?? true;
+        }
+        return true;
+    });
+
+    useEffect(() => {
+        if (!directionOptions.some((option) => option.value === direction)) {
+            setDirection(TransactionDirection.All);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [directionOptions]);
+
     const transactions = useInfiniteQuery({
-        queryKey: ['transactions-for-address', address, limit, direction, hideSystemTxs, client],
+        queryKey: ['transactions-for-address', address, limit, direction, client],
         queryFn: ({ pageParam: cursor }) =>
-            queryFilteredTransactionPage(
-                client,
-                getTransactionFilterForDirection(direction, address),
-                cursor,
-                limit,
-                hideSystemTxs,
-            ),
+            queryTransactionPage(client, address, direction, cursor, limit),
         initialPageParam: null as string | null,
         getNextPageParam: (lastPage) =>
             lastPage.hasNextPage ? (lastPage.nextCursor ?? null) : null,
@@ -365,11 +333,7 @@ export function TransactionsForAddress({
                 setDirection(newDirection);
                 pagination.onFirst?.();
             }}
-            hideSystemTxs={hideSystemTxs}
-            setHideSystemTxs={(newHideSystemTxs) => {
-                setHideSystemTxs(newHideSystemTxs);
-                pagination.onFirst?.();
-            }}
+            directionOptions={directionOptions}
         />
     );
 }
