@@ -21,7 +21,7 @@ import type {
     Network,
 } from '@iota/iota-sdk/client';
 
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, TransactionLink } from '../../../components/ui';
 import {
@@ -70,13 +70,6 @@ const SYSTEM_TRANSACTION_KIND_LABELS: Record<
     Genesis: 'Genesis',
     RandomnessStateUpdate: 'Randomness Update',
 };
-
-/**
- * Whether a transaction's kind is `ProgrammableTransaction` (i.e. not a system transaction).
- */
-export function isProgrammableTransaction(txn: IotaTransactionBlockResponse): boolean {
-    return txn.transaction?.data.transaction.kind === 'ProgrammableTransaction';
-}
 
 export function getTransactionTypeLabel(
     txn: IotaTransactionBlockResponse,
@@ -185,6 +178,7 @@ export function generateTransactionsTableColumns(
         {
             header: 'Sender',
             accessorKey: 'transaction.data.sender',
+            meta: { tooltip: 'The address that signed and submitted this transaction.' },
             cell: ({ getValue }) => {
                 const address = getValue<string>();
                 return (
@@ -194,6 +188,7 @@ export function generateTransactionsTableColumns(
                             copyText={address}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
                             display="block"
+                            showValidatorImage
                         />
                     </TableCellBase>
                 );
@@ -265,14 +260,27 @@ export function generateTransactionsTableColumns(
                     ? formatBalance(
                           Number(totalGasUsed) / Number(NANOS_PER_IOTA),
                           0,
-                          CoinFormat.Rounded,
+                          CoinFormat.Full,
                       )
                     : '--';
                 return (
                     <TableCellBase>
-                        <TableCellText supportingLabel={totalGasUsed ? 'IOTA' : undefined}>
-                            {totalGasUsedFormatted}
-                        </TableCellText>
+                        <div className="flex flex-row items-center gap-1">
+                            {totalGasUsed ? (
+                                <Tooltip text={`${totalGasUsedFormatted} IOTA`}>
+                                    <span className="block max-w-[120px] truncate">
+                                        {totalGasUsedFormatted}
+                                    </span>
+                                </Tooltip>
+                            ) : (
+                                <span>{totalGasUsedFormatted}</span>
+                            )}
+                            {totalGasUsed && (
+                                <span className="table-cell-supporting-label-color text-body-sm">
+                                    IOTA
+                                </span>
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },

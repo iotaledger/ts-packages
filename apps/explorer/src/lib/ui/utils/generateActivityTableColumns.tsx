@@ -8,9 +8,9 @@ import {
     TransactionIcon,
     TransactionIconSize,
 } from '@iota/core';
-import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
+import type { IotaTransactionBlockKind, IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, TransactionLink } from '../../../components/ui';
 import {
@@ -96,6 +96,41 @@ export function generateActivityTableColumns(
             },
         },
         {
+            header: 'Sender',
+            accessorKey: 'transaction.data.sender',
+            meta: { tooltip: 'The address that signed and submitted this transaction.' },
+            cell: ({ getValue }) => {
+                const sender = getValue<string>();
+                return (
+                    <TableCellBase>
+                        <AddressLink
+                            address={sender}
+                            copyText={sender}
+                            className="[&>div]:max-w-[200px] [&>div]:truncate"
+                            display="block"
+                            showValidatorImage
+                        />
+                    </TableCellBase>
+                );
+            },
+        },
+        {
+            header: 'Txns',
+            accessorKey: 'transaction.data.transaction',
+            cell: ({ getValue }) => {
+                const transaction = getValue<IotaTransactionBlockKind>();
+                const txns =
+                    transaction.kind === 'ProgrammableTransaction'
+                        ? transaction.transactions.length.toString()
+                        : '--';
+                return (
+                    <TableCellBase>
+                        <TableCellText>{txns}</TableCellText>
+                    </TableCellBase>
+                );
+            },
+        },
+        {
             header: 'Balance Change',
             accessorKey: 'balanceChanges',
             cell: ({ row }) => {
@@ -132,12 +167,7 @@ export function generateActivityTableColumns(
                     <TableCellBase>
                         <div className="flex flex-col">
                             <span
-                                className={
-                                    'text-label-lg ' +
-                                    (isPositive
-                                        ? 'text-iota-primary-30 dark:text-iota-primary-80'
-                                        : 'text-iota-error-30 dark:text-iota-error-80')
-                                }
+                                className={`text-label-lg ${getBalanceChangeColorClass(isPositive)}`}
                             >
                                 {sign + formatted} IOTA
                             </span>
@@ -191,14 +221,27 @@ export function generateActivityTableColumns(
                     ? formatBalance(
                           Number(totalGasUsed) / Number(NANOS_PER_IOTA),
                           0,
-                          CoinFormat.Rounded,
+                          CoinFormat.Full,
                       )
                     : '--';
                 return (
                     <TableCellBase>
-                        <TableCellText supportingLabel={totalGasUsed ? 'IOTA' : undefined}>
-                            {totalGasUsedFormatted}
-                        </TableCellText>
+                        <div className="flex flex-row items-center gap-1">
+                            {totalGasUsed ? (
+                                <Tooltip text={`${totalGasUsedFormatted} IOTA`}>
+                                    <span className="block max-w-[120px] truncate">
+                                        {totalGasUsedFormatted}
+                                    </span>
+                                </Tooltip>
+                            ) : (
+                                <span>{totalGasUsedFormatted}</span>
+                            )}
+                            {totalGasUsed && (
+                                <span className="table-cell-supporting-label-color text-body-sm">
+                                    IOTA
+                                </span>
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },

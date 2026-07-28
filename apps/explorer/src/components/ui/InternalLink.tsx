@@ -22,6 +22,7 @@ import { Link, type LinkProps } from '~/components/ui';
 
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
+    hideAlias?: boolean;
     showValidatorImage?: boolean;
     noTruncate?: boolean;
     label?: string | ReactNode;
@@ -68,6 +69,7 @@ function createInternalLink<T extends string>(
         onCopyError,
         renderAddressAlias,
         showAddressAlias = ['address', 'object', 'validator'].includes(base),
+        hideAlias = false,
         showValidatorImage = false,
         className,
         ...props
@@ -106,6 +108,7 @@ function createInternalLink<T extends string>(
                     onCopy={copyText ? handleCopyClick : undefined}
                     noTruncate={noTruncate}
                     truncateUnknown={!noTruncate}
+                    hideAlias={hideAlias}
                     renderAddress={(address, copyButton) => (
                         <NamedAddressTooltip name={iotaName} address={address}>
                             <div className="flex flex-row items-center gap-x-xxs">

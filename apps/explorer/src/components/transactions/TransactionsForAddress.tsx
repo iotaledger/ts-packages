@@ -21,7 +21,11 @@ import { type IotaClient, type IotaTransactionBlockResponse } from '@iota/iota-s
 import { Warning } from '@iota/apps-ui-icons';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
-import { generateActivityTableColumns, generateTransactionsTableColumns } from '~/lib/ui';
+import {
+    generateActivityTableColumns,
+    generateTransactionsTableColumns,
+    getIotaBalanceChangeForAddress,
+} from '~/lib/ui';
 import { useEffect, useState } from 'react';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib';
 import { useCursorPagination } from '@iota/core';
@@ -54,8 +58,13 @@ function matchesDirection(
     if (direction === TransactionDirection.All) {
         return true;
     }
-    const isSender = txn.transaction?.data.sender === address;
-    return direction === TransactionDirection.Sent ? isSender : !isSender;
+    const balanceChange = getIotaBalanceChangeForAddress(txn, address);
+    const isReceived =
+        balanceChange && balanceChange.amount !== '0'
+            ? Number(balanceChange.amount) > 0
+            : txn.transaction?.data.sender !== address;
+
+    return direction === TransactionDirection.Sent ? !isReceived : isReceived;
 }
 
 interface QueryTransactionPageResult {
@@ -150,8 +159,8 @@ interface TransactionsForAddressTableProps {
 }
 
 const PLACEHOLDER_COL_HEADINGS: Record<TransactionsForAddressView, string[]> = {
-    activity: ['Type', 'Sender', 'Txns', 'Balance Change', 'With', 'Gas Fee', 'Time'],
-    'transaction-blocks': ['Type', 'Sender', 'Txns', 'Balance Change', 'Gas', 'Time'],
+    activity: ['Type', 'Sender', 'Txns', 'Balance Change', 'With', 'Gas Fee', 'Time', 'Function'],
+    'transaction-blocks': ['Type', 'Sender', 'Txns', 'Balance Change', 'Gas', 'Time', 'Function'],
 };
 
 export function TransactionsForAddressTable({
