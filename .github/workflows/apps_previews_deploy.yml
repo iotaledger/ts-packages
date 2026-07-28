@@ -14,7 +14,8 @@ jobs:
   detect:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.affected.outputs.matrix }}
+      apps: ${{ steps.affected.outputs.apps }}
+      project_id_secrets: ${{ steps.affected.outputs.project_id_secrets }}
       has_affected: ${{ steps.affected.outputs.has_affected }}
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
@@ -50,14 +51,16 @@ jobs:
 
           echo "Affected packages: $AFFECTED"
 
-          INCLUDE="$(echo "$APPS" | jq -c --argjson affected "$AFFECTED" \
-            '[.[] | select(.package as $p | $affected | index($p))]')"
+          AFFECTED_APPS="$(echo "$APPS" | jq -c --argjson affected "$AFFECTED" \
+            '[.[] | select(.package as $p | $affected | index($p)) | .name]')"
 
-          echo "matrix={\"include\":$INCLUDE}" >> "$GITHUB_OUTPUT"
-          echo "has_affected=$([ "$(echo "$INCLUDE" | jq 'length')" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "Deploying previews for: $AFFECTED_APPS"
+
+          echo "apps=$AFFECTED_APPS" >> "$GITHUB_OUTPUT"
+          echo "project_id_secrets=$(echo "$APPS" | jq -c 'map({(.name): .project_id_secret}) | add')" >> "$GITHUB_OUTPUT"
+          echo "has_affected=$([ "$(echo "$AFFECTED_APPS" | jq 'length')" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   deploy:
-    name: deploy preview - ${{ matrix.name }}
     needs: detect
     if: needs.detect.outputs.has_affected == 'true'
     runs-on: ubuntu-latest
@@ -67,7 +70,8 @@ jobs:
       pull-requests: write
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+      matrix:
+        app: ${{ fromJSON(needs.detect.outputs.apps) }}
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
       - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
@@ -77,14 +81,14 @@ jobs:
           node-version: "24"
       - name: Install Vercel CLI
         run: pnpm add --global vercel@canary
-      - name: Deploy ${{ matrix.name }} preview
+      - name: Deploy ${{ matrix.app }} preview
         uses: iotaledger/deploy-to-vercel-action@41c4a8a4d8b6020b6f9eb87420402b4f285b07f5
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets[matrix.project_id_secret] }}
+          VERCEL_PROJECT_ID: ${{ secrets[fromJSON(needs.detect.outputs.project_id_secrets)[matrix.app]] }}
           VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
-          COMMENT_IDENTIFIER: ${{ matrix.name }}
-          GITHUB_DEPLOYMENT_ENV: Preview – ${{ matrix.name }}
+          COMMENT_IDENTIFIER: ${{ matrix.app }}
+          GITHUB_DEPLOYMENT_ENV: Preview – ${{ matrix.app }}
           LOGS: true
