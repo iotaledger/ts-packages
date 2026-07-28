@@ -3,18 +3,55 @@
 
 import {
     CoinFiatValue,
+    ImageIcon,
+    ImageIconSize,
     STAKING_REQUEST_EVENT,
     TransactionAction,
     TransactionIcon,
     TransactionIconSize,
+    useAddressAliasLookup,
 } from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { StakeEventJson, UnstakeEventJson } from '@iota/core';
 import { DateDisplay } from '~/components';
 import { AddressLink, EpochLink, TransactionLink } from '~/components/ui';
+
+function StakerAddressLink({ address }: { address: string }) {
+    const getAddressAlias = useAddressAliasLookup();
+    const addressAlias = getAddressAlias(address);
+
+    if (!addressAlias) {
+        return <AddressLink address={address} copyText={address} className="text-body-sm" />;
+    }
+
+    return (
+        <Tooltip text={address}>
+            <AddressLink
+                address={address}
+                copyText={address}
+                showAddressAlias={false}
+                className="text-body-sm"
+                label={
+                    <span className="flex items-center gap-xxs">
+                        <div className="h-3.5 w-3.5 shrink-0">
+                            <ImageIcon
+                                src={addressAlias.imageUrl}
+                                label={addressAlias.alias}
+                                fallback={addressAlias.alias}
+                                size={ImageIconSize.Full}
+                                rounded
+                            />
+                        </div>
+                        {addressAlias.alias}
+                    </span>
+                }
+            />
+        </Tooltip>
+    );
+}
 
 function formatIota(amount: string | number | undefined): string {
     return formatBalance(amount ?? 0, IOTA_DECIMALS, CoinFormat.Full);
@@ -63,16 +100,12 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                                     size={TransactionIconSize.Small}
                                 />
                             </div>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col gap-xxxs">
                                 <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
                                     {isStake ? 'Stake' : 'Withdraw'}
                                 </span>
                                 {address ? (
-                                    <AddressLink
-                                        address={address}
-                                        copyText={address}
-                                        className="text-body-sm"
-                                    />
+                                    <StakerAddressLink address={address} />
                                 ) : (
                                     <TableCellText>--</TableCellText>
                                 )}
