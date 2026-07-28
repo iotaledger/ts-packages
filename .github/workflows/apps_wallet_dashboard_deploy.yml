@@ -1,6 +1,9 @@
 name: Deploy Wallet Dashboard
 
 on:
+  push:
+    branches:
+      - develop
   workflow_dispatch:
     inputs:
       deploy_type:
@@ -19,11 +22,13 @@ jobs:
       deploy_type: ${{ steps.resolve.outputs.deploy_type }}
       environment: ${{ steps.resolve.outputs.environment }}
       apps_backend_secret: ${{ steps.resolve.outputs.apps_backend_secret }}
+      affected: ${{ github.event_name != 'push' || steps.affected.outputs.affected == 'true' }}
     steps:
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
       - name: Resolve deploy type
         id: resolve
         run: |
-          case "${{ inputs.deploy_type }}" in
+          case "${{ inputs.deploy_type || 'staging' }}" in
             staging)
               echo "deploy_type=staging" >> $GITHUB_OUTPUT
               echo "environment=Staging – wallet-dashboard" >> $GITHUB_OUTPUT
@@ -41,8 +46,16 @@ jobs:
               ;;
           esac
 
+      - name: Check whether wallet-dashboard changed
+        id: affected
+        if: github.event_name == 'push'
+        uses: ./.github/actions/affected-package
+        with:
+          package: wallet-dashboard
+
   deploy:
     needs: resolve-deploy-type
+    if: needs.resolve-deploy-type.outputs.affected == 'true'
     runs-on: ubuntu-latest
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
     permissions:

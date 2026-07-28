@@ -3,7 +3,19 @@ import react from '@vitejs/plugin-react-swc';
 import { execSync } from 'child_process';
 import { defineConfig, loadEnv } from 'vite';
 
-const COMMIT_REV = execSync('git rev-parse HEAD').toString().trim().toString();
+function resolveCommitRev(): string {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) {
+        return process.env.VERCEL_GIT_COMMIT_SHA;
+    }
+
+    try {
+        return execSync('git rev-parse HEAD').toString().trim();
+    } catch {
+        return 'unknown';
+    }
+}
+
+const COMMIT_REV = resolveCommitRev();
 
 process.env.VITE_VERCEL_ENV = process.env.VERCEL_ENV || 'development';
 
