@@ -11,17 +11,6 @@ on:
           - staging
           - rc
           - production
-  push:
-    branches: [develop]
-    paths:
-      - "dapp/**"
-      - "sdk/**"
-      - "scripts/**"
-      - "pnpm-workspace.yaml"
-      - "pnpm-lock.yaml"
-      - "package.json"
-      - "turbo.json"
-      - ".github/workflows/iota_names_deploy.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.deploy_type || 'staging' }}-${{ github.ref }}

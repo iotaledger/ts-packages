@@ -1,9 +1,6 @@
 name: Deploy IOTA EVM Bridge
 
 on:
-  push:
-    branches:
-      - develop
   workflow_dispatch:
     inputs:
       deploy_type:
