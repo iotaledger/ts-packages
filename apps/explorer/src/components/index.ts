@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './activity';
+export * from './home';
 export * from './checkpoints';
 export * from './error-boundary';
 export * from './footer';
@@ -9,11 +10,11 @@ export * from './header';
 export * from './home-metrics';
 export * from './layout';
 export * from './module';
-export * from './network';
 export * from './object';
 export * from './owned-coins';
 export * from './owned-objects';
 export * from './search';
+export * from './settings';
 export * from './syntax-highlighter';
 export * from './top-packages';
 export * from './top-validators-card';
@@ -25,6 +26,7 @@ export * from './validator';
 export * from './OwnedObjectsPanel';
 export * from './AddressesCardGraph';
 export * from './AreaGraph';
+export * from './Sparkline';
 export * from './DateDisplay';
 export * from './GraphTooltipContent';
 export * from './IotaTokenCard';
