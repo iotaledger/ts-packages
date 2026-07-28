@@ -13,15 +13,6 @@ on:
           - production
   push:
     branches: [develop]
-    paths:
-      - "dapp/**"
-      - "sdk/**"
-      - "scripts/**"
-      - "pnpm-workspace.yaml"
-      - "pnpm-lock.yaml"
-      - "package.json"
-      - "turbo.json"
-      - ".github/workflows/iota_names_deploy.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.deploy_type || 'staging' }}-${{ github.ref }}
@@ -34,6 +25,7 @@ jobs:
       deploy_type: ${{ steps.resolve.outputs.deploy_type }}
       environment: ${{ steps.resolve.outputs.environment }}
       apps_backend_secret: ${{ steps.resolve.outputs.apps_backend_secret }}
+      affected: ${{ github.event_name != 'push' || steps.affected.outputs.affected == 'true' }}
       mainnet_url: ${{ steps.resolve.outputs.mainnet_url }}
       testnet_url: ${{ steps.resolve.outputs.testnet_url }}
     steps:
@@ -67,8 +59,16 @@ jobs:
             echo "testnet_url=https://testnet-iota-names-${DEPLOY_TYPE}-iota1.vercel.app" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check whether names-dapp changed
+        id: affected
+        if: github.event_name == 'push'
+        uses: ./.github/actions/affected-package
+        with:
+          package: names-dapp
+
   deploy:
     needs: resolve-deploy-type
+    if: needs.resolve-deploy-type.outputs.affected == 'true'
     runs-on: ubuntu-latest
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
 
