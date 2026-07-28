@@ -12,7 +12,6 @@ const STAKING_HISTORY_PAGE_SIZE = 10;
 
 const STAKING_HISTORY_COLUMN_HEADINGS = [
     'Address',
-    'Operation',
     'Amount',
     'Reward',
     'Active Epoch',

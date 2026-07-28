@@ -1,7 +1,13 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { CoinFiatValue, STAKING_REQUEST_EVENT } from '@iota/core';
+import {
+    CoinFiatValue,
+    STAKING_REQUEST_EVENT,
+    TransactionAction,
+    TransactionIcon,
+    TransactionIconSize,
+} from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
@@ -41,27 +47,37 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
             header: 'Address',
             id: 'address',
             cell: ({ row: { original: event } }) => {
+                const isStake = event.type === STAKING_REQUEST_EVENT;
                 const parsedJson = event.parsedJson as StakeEventJson | UnstakeEventJson;
                 const address = parsedJson?.staker_address;
                 return (
                     <TableCellBase>
-                        {address ? (
-                            <AddressLink address={address} copyText={address} />
-                        ) : (
-                            <TableCellText>--</TableCellText>
-                        )}
-                    </TableCellBase>
-                );
-            },
-        },
-        {
-            header: 'Operation',
-            id: 'operation',
-            cell: ({ row: { original: event } }) => {
-                const isStake = event.type === STAKING_REQUEST_EVENT;
-                return (
-                    <TableCellBase>
-                        <TableCellText>{isStake ? 'Stake' : 'Withdraw'}</TableCellText>
+                        <div className="flex items-center gap-xs">
+                            <div className="scale-75">
+                                <TransactionIcon
+                                    variant={
+                                        isStake
+                                            ? TransactionAction.Staked
+                                            : TransactionAction.Unstaked
+                                    }
+                                    size={TransactionIconSize.Small}
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    {isStake ? 'Stake' : 'Withdraw'}
+                                </span>
+                                {address ? (
+                                    <AddressLink
+                                        address={address}
+                                        copyText={address}
+                                        className="text-body-sm"
+                                    />
+                                ) : (
+                                    <TableCellText>--</TableCellText>
+                                )}
+                            </div>
+                        </div>
                     </TableCellBase>
                 );
             },
@@ -103,13 +119,13 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                 const isStake = event.type === STAKING_REQUEST_EVENT;
                 const parsedJson = event.parsedJson as StakeEventJson | UnstakeEventJson;
                 const epoch = isStake
-                    ? (parsedJson as StakeEventJson).epoch
+                    ? String(Number((parsedJson as StakeEventJson).epoch) + 1)
                     : (parsedJson as UnstakeEventJson).unstaking_epoch;
                 return (
                     <TableCellBase>
                         <TableCellText>
                             {epoch !== undefined ? (
-                                <EpochLink epoch={epoch}>{`Epoch ${epoch}`}</EpochLink>
+                                <EpochLink epoch={epoch}>{epoch}</EpochLink>
                             ) : (
                                 '--'
                             )}
