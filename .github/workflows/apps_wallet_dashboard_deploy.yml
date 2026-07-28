@@ -104,8 +104,8 @@ jobs:
             vercel alias "$DEPLOY_URL" wallet-dashboard-rc-iota1.vercel.app $VERCEL_FLAGS
             echo "url=https://wallet-dashboard-rc-iota1.vercel.app" >> "$GITHUB_OUTPUT"
           else
-            vercel build $VERCEL_FLAGS
-            echo "url=$(vercel deploy --prebuilt $VERCEL_FLAGS)" >> "$GITHUB_OUTPUT"
+            vercel build --target=staging $VERCEL_FLAGS
+            echo "url=$(vercel deploy --prebuilt --target=staging $VERCEL_FLAGS)" >> "$GITHUB_OUTPUT"
           fi
 
   notify:
