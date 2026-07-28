@@ -73,18 +73,20 @@ function createInternalLink<T extends string>(
                     truncateUnknown={!noTruncate}
                     renderAddress={(address, copyButton) => (
                         <NamedAddressTooltip name={iotaName} address={address}>
-                            <Link
-                                className={clsx(
-                                    'text-iota-primary-30 dark:text-iota-primary-80',
-                                    className,
-                                )}
-                                variant="mono"
-                                to={to}
-                                {...props}
-                            >
-                                {iotaName || label || address}
-                            </Link>
-                            {copyButton}
+                            <div className="flex flex-row items-center gap-x-xxs">
+                                <Link
+                                    className={clsx(
+                                        'text-iota-primary-30 dark:text-iota-primary-80',
+                                        className,
+                                    )}
+                                    variant="mono"
+                                    to={to}
+                                    {...props}
+                                >
+                                    {iotaName || label || address}
+                                </Link>
+                                {copyButton}
+                            </div>
                         </NamedAddressTooltip>
                     )}
                     renderAlias={renderAddressAlias}
