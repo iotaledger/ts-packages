@@ -39,6 +39,11 @@ export interface PageHeaderProps {
     loading?: boolean;
     showCopyButton?: boolean;
     isLoadingSubtitle?: boolean;
+    leading?: React.ReactNode;
+    contentWidthClassName?: string;
+    afterWidthClassName?: string;
+    rowAlignClassName?: string;
+    rowGapClassName?: string;
 }
 
 const STATUS_CHIP_CONTENT: Record<
@@ -86,6 +91,11 @@ export function PageHeader({
     status,
     showCopyButton = true,
     isLoadingSubtitle,
+    leading,
+    contentWidthClassName = 'md:w-3/4',
+    afterWidthClassName = 'md:w-1/4',
+    rowAlignClassName = 'md:items-center',
+    rowGapClassName = 'gap-sm',
 }: PageHeaderProps): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
@@ -99,83 +109,123 @@ export function PageHeader({
         }
     }
 
-    return (
+    const hasLeading = Boolean(leading) && !loading;
+
+    const contentColumn = (
+        <div
+            className={clsx(
+                'flex w-full flex-col',
+                subtitle ? 'gap-sm' : 'gap-xs',
+                !hasLeading && [contentWidthClassName, 'md:justify-center'],
+            )}
+        >
+            {loading ? (
+                <div className="flex w-full flex-col gap-xs">
+                    {new Array(2).fill(0).map((_, index) => (
+                        <Placeholder key={index} width={index === 0 ? 'w-1/2' : 'w-2/3'} />
+                    ))}
+                </div>
+            ) : (
+                <>
+                    {type && !hasLeading && (
+                        <div className="flex flex-row items-center gap-xs">
+                            <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                {type}
+                            </span>
+                            {typeBadge}
+                            {status && <StatusChip status={status} />}
+                        </div>
+                    )}
+                    {title && (
+                        <div className="flex items-center gap-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
+                            <span
+                                className={clsx(
+                                    'break-all',
+                                    hasLeading ? 'text-body-md' : 'text-body-ds-lg',
+                                )}
+                                data-testid="heading-object-id"
+                            >
+                                {title}
+                            </span>
+                            {showCopyButton && (
+                                <ButtonUnstyled
+                                    onClick={handleCopyClick}
+                                    aria-label="Copy to clipboard"
+                                >
+                                    <Copy className="shrink-0 cursor-pointer" />
+                                </ButtonUnstyled>
+                            )}
+                        </div>
+                    )}
+
+                    {isLoadingSubtitle ? (
+                        <Placeholder width="w-48" />
+                    ) : subtitle ? (
+                        <span className="truncate text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                            {subtitle}
+                        </span>
+                    ) : null}
+
+                    {summary && <div className="mt-xs">{summary}</div>}
+
+                    {metaItems && <PageHeaderMeta items={metaItems} />}
+                    {error && (
+                        <div className="mt-xs--rs flex">
+                            <InfoBox
+                                title={error}
+                                icon={<Warning />}
+                                type={InfoBoxType.Error}
+                                style={InfoBoxStyle.Elevated}
+                            />
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+
+    const panel = (
         <Panel>
             <div className="flex w-full items-center p-md--rs">
-                <div className="flex w-full flex-col items-start justify-between gap-sm md:flex-row md:items-center">
-                    <div
-                        className={clsx(
-                            'flex w-full flex-col md:w-3/4',
-                            subtitle ? 'gap-sm' : 'gap-xs',
-                        )}
-                    >
-                        {loading ? (
-                            <div className="flex w-full flex-col gap-xs">
-                                {new Array(2).fill(0).map((_, index) => (
-                                    <Placeholder
-                                        key={index}
-                                        width={index === 0 ? 'w-1/2' : 'w-2/3'}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <>
-                                {type && (
-                                    <div className="flex flex-row items-center gap-xs">
-                                        <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                                            {type}
-                                        </span>
-                                        {typeBadge}
-                                        {status && <StatusChip status={status} />}
-                                    </div>
-                                )}
-                                {title && (
-                                    <div className="flex items-center gap-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
-                                        <span
-                                            className="break-all text-body-ds-lg"
-                                            data-testid="heading-object-id"
-                                        >
-                                            {title}
-                                        </span>
-                                        {showCopyButton && (
-                                            <ButtonUnstyled
-                                                onClick={handleCopyClick}
-                                                aria-label="Copy to clipboard"
-                                            >
-                                                <Copy className="shrink-0 cursor-pointer" />
-                                            </ButtonUnstyled>
-                                        )}
-                                    </div>
-                                )}
-
-                                {isLoadingSubtitle ? (
-                                    <Placeholder width="w-48" />
-                                ) : subtitle ? (
-                                    <span className="truncate text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                        {subtitle}
-                                    </span>
-                                ) : null}
-
-                                {summary && <div className="mt-xs">{summary}</div>}
-
-                                {metaItems && <PageHeaderMeta items={metaItems} />}
-                                {error && (
-                                    <div className="mt-xs--rs flex">
-                                        <InfoBox
-                                            title={error}
-                                            icon={<Warning />}
-                                            type={InfoBoxType.Error}
-                                            style={InfoBoxStyle.Elevated}
-                                        />
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                    {after && <div className="w-full md:w-1/4">{after}</div>}
+                <div
+                    className={clsx(
+                        'flex w-full flex-col items-start justify-between md:flex-row',
+                        rowGapClassName,
+                        rowAlignClassName,
+                    )}
+                >
+                    {hasLeading ? (
+                        <div
+                            className={clsx(
+                                'flex w-full min-w-0 flex-row items-center gap-lg',
+                                contentWidthClassName,
+                            )}
+                        >
+                            <div className="shrink-0">{leading}</div>
+                            {contentColumn}
+                        </div>
+                    ) : (
+                        contentColumn
+                    )}
+                    {after && <div className={clsx('w-full', afterWidthClassName)}>{after}</div>}
                 </div>
             </div>
             {!loading && navigation}
         </Panel>
+    );
+
+    if (!hasLeading) {
+        return panel;
+    }
+
+    return (
+        <div className="flex w-full flex-col gap-xs">
+            {type && (
+                <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                    {type}
+                </span>
+            )}
+            {panel}
+        </div>
     );
 }

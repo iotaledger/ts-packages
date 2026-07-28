@@ -39,7 +39,7 @@ export function CardBody({
                 })}
             >
                 <div
-                    className={cx('card-body-title-color font-inter text-title-md', {
+                    className={cx('card-body-title-color text-start font-inter text-title-md', {
                         truncate: isTextTruncated,
                     })}
                 >
@@ -61,7 +61,7 @@ export function CardBody({
             </div>
             {subtitle && (
                 <div
-                    className={cx('card-body-subtitle-color font-inter text-body-md', {
+                    className={cx('card-body-subtitle-color text-start font-inter text-body-md', {
                         truncate: isTextTruncated,
                     })}
                 >
