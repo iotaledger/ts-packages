@@ -43,8 +43,8 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
     const showStakingSection = isLoadingStakingData || isStakingDataErrored || hasStakingData;
 
     const sections = [
-        { id: AddressPageSection.Activity, label: 'Activity' },
         { id: AddressPageSection.Portfolio, label: 'Portfolio' },
+        { id: AddressPageSection.Activity, label: 'Activity' },
         ...(showStakingSection ? [{ id: AddressPageSection.Staking, label: 'Staking' }] : []),
         { id: AddressPageSection.TransactionBlocks, label: 'Transaction Blocks' },
     ];
@@ -54,6 +54,17 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
             <PageSectionNav sections={sections} />
             <ErrorBoundary>
                 <div className="flex flex-col gap-lg">
+                    <PageSectionAnchor id={AddressPageSection.Portfolio}>
+                        <Panel>
+                            <div className="py-sm">
+                                <Title title="Portfolio" />
+                            </div>
+                            <div className="flex flex-col gap-2xl px-md--rs py-md md:py-sm">
+                                <OwnedCoins id={address} />
+                                <OwnedObjects id={address} />
+                            </div>
+                        </Panel>
+                    </PageSectionAnchor>
                     <PageSectionAnchor id={AddressPageSection.Activity}>
                         <Panel>
                             <div className="py-sm">
@@ -64,17 +75,6 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                                 className="relative h-full min-h-14 overflow-auto px-md--rs py-md md:py-sm"
                             >
                                 <TransactionsForAddress address={address} view="activity" />
-                            </div>
-                        </Panel>
-                    </PageSectionAnchor>
-                    <PageSectionAnchor id={AddressPageSection.Portfolio}>
-                        <Panel>
-                            <div className="py-sm">
-                                <Title title="Portfolio" />
-                            </div>
-                            <div className="flex flex-col gap-2xl px-md--rs py-md md:py-sm">
-                                <OwnedCoins id={address} />
-                                <OwnedObjects id={address} />
                             </div>
                         </Panel>
                     </PageSectionAnchor>
