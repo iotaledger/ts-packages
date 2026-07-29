@@ -32,7 +32,11 @@ import {
 } from './addressTransactionFilters';
 
 const PAGE_RANGE = PAGE_SIZES_RANGE_10_50;
-const INITIAL_PAGE_PARAM: AddressTransactionPageParam = { cursor: null, buffered: [] };
+const INITIAL_PAGE_PARAM: AddressTransactionPageParam = {
+    cursor: null,
+    buffered: [],
+    rawHistoryExhausted: false,
+};
 
 const DIRECTION_OPTIONS: { label: string; value: TransactionDirection }[] = [
     { label: 'All', value: TransactionDirection.All },
@@ -201,6 +205,7 @@ function useAddressTransactionsQuery(
     address: string,
     direction: TransactionDirection,
     limit: number,
+    enabled: boolean,
 ) {
     return useInfiniteQuery({
         queryKey: ['transactions-for-address', address, direction, limit, client],
@@ -208,7 +213,18 @@ function useAddressTransactionsQuery(
             queryAddressTransactionsPage(client, address, direction, pageParam, limit),
         initialPageParam: INITIAL_PAGE_PARAM,
         getNextPageParam: (lastPage) => lastPage.nextPageParam,
+        enabled,
     });
+}
+
+type AddressTransactionsQuery = ReturnType<typeof useAddressTransactionsQuery>;
+
+function isDirectionProvenEmpty(query: AddressTransactionsQuery): boolean {
+    return (
+        query.isSuccess &&
+        !query.hasNextPage &&
+        (query.data?.pages ?? []).every((page) => page.data.length === 0)
+    );
 }
 
 function TransactionsForAddressContent({
@@ -220,24 +236,28 @@ function TransactionsForAddressContent({
     const client = useIotaClient();
 
     // FromAddress and ToAddress retain only a limited SQL history. Every filter is built from the
-    // full-history FromOrToAddress query instead.
+    // full-history FromOrToAddress query instead. Only the selected direction fetches; the other
+    // two stay idle so an address page costs a single query chain until a filter is used.
     const allTransactions = useAddressTransactionsQuery(
         client,
         address,
         TransactionDirection.All,
         limit,
+        direction === TransactionDirection.All,
     );
     const receivedTransactions = useAddressTransactionsQuery(
         client,
         address,
         TransactionDirection.Received,
         limit,
+        direction === TransactionDirection.Received,
     );
     const sentTransactions = useAddressTransactionsQuery(
         client,
         address,
         TransactionDirection.Sent,
         limit,
+        direction === TransactionDirection.Sent,
     );
 
     const allPagination = useCursorPagination(allTransactions);
@@ -254,16 +274,11 @@ function TransactionsForAddressContent({
         [TransactionDirection.Sent]: sentTransactions,
     };
     const selectedTransactions = transactionsByDirection[direction];
-    const selectedQuery = queriesByDirection[direction];
-    const isSelectedDirectionUnavailable =
-        selectedQuery.isSuccess && (selectedQuery.data?.pages[0]?.data.length ?? 0) === 0;
-    const directionOptions = DIRECTION_OPTIONS.map((option) => {
-        const query = queriesByDirection[option.value];
-        return {
-            ...option,
-            disabled: query.isSuccess && (query.data?.pages[0]?.data.length ?? 0) === 0,
-        };
-    });
+    const isSelectedDirectionUnavailable = isDirectionProvenEmpty(queriesByDirection[direction]);
+    const directionOptions = DIRECTION_OPTIONS.map((option) => ({
+        ...option,
+        disabled: isDirectionProvenEmpty(queriesByDirection[option.value]),
+    }));
 
     useEffect(() => {
         if (isSelectedDirectionUnavailable && direction !== TransactionDirection.All) {

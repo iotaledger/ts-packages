@@ -19,7 +19,11 @@ interface PaginatedAddressTransactions {
 export interface AddressTransactionPageParam {
     cursor: string | null;
     buffered: IotaTransactionBlockResponse[];
+    rawHistoryExhausted: boolean;
 }
+
+export const RAW_PAGE_SIZE = 50;
+export const MAX_RAW_PAGES_PER_REQUEST = 10;
 
 const TRANSACTION_QUERY_OPTIONS = {
     showEffects: true,
@@ -62,8 +66,15 @@ function fetchAddressTransactionPage(
 
 /**
  * Builds a full page for one direction from the only full-history address query supported by the
- * indexer. A raw page can contain no rows for the selected direction, so keep advancing its
- * cursor until this page is full or the address history is exhausted.
+ * indexer. A raw page can contain no rows for the selected direction, so the raw cursor advances
+ * in fixed-size chunks until this page holds `limit` matches plus one extra proving a next page
+ * exists, the history is exhausted, or the per-request budget of `MAX_RAW_PAGES_PER_REQUEST`
+ * RPC calls is spent. Matches beyond `limit` are carried in `buffered` so advancing the raw
+ * cursor never skips or duplicates a row.
+ *
+ * When the budget runs out before a next match is proven, the page is returned as-is (possibly
+ * short or empty) with `hasNextPage: true`; requesting the next page resumes the scan with a
+ * fresh budget, keeping the per-interaction node load bounded.
  */
 export async function queryAddressTransactionsPage(
     client: Pick<IotaClient, 'queryTransactionBlocks'>,
@@ -72,61 +83,39 @@ export async function queryAddressTransactionsPage(
     pageParam: AddressTransactionPageParam,
     limit: number,
 ): Promise<PaginatedAddressTransactions> {
-    const data = [...pageParam.buffered];
+    const matches = [...pageParam.buffered];
     let nextCursor = pageParam.cursor;
-    let hasNextPage = true;
+    let rawHistoryExhausted = pageParam.rawHistoryExhausted;
+    let rawPagesFetched = 0;
 
-    while (data.length < limit && hasNextPage) {
-        const page = await fetchAddressTransactionPage(
-            client,
-            address,
-            nextCursor,
-            // Never consume more raw rows than this filtered page can hold. Otherwise matching
-            // rows beyond the requested page size would be skipped when the raw cursor advances.
-            limit - data.length,
-        );
+    while (
+        matches.length <= limit &&
+        !rawHistoryExhausted &&
+        rawPagesFetched < MAX_RAW_PAGES_PER_REQUEST
+    ) {
+        const page = await fetchAddressTransactionPage(client, address, nextCursor, RAW_PAGE_SIZE);
+        rawPagesFetched += 1;
 
-        data.push(
+        matches.push(
             ...page.data.filter((transaction) =>
                 matchesTransactionDirection(transaction, direction, address),
             ),
         );
 
         nextCursor = page.nextCursor ?? null;
-        hasNextPage = page.hasNextPage && nextCursor !== null;
+        rawHistoryExhausted = !page.hasNextPage || nextCursor === null;
     }
 
-    if (!hasNextPage) {
+    const data = matches.slice(0, limit);
+    const buffered = matches.slice(limit);
+
+    if (rawHistoryExhausted && buffered.length === 0) {
         return { data, nextPageParam: null, hasNextPage: false };
     }
 
-    if (direction === TransactionDirection.All) {
-        return {
-            data,
-            nextPageParam: { cursor: nextCursor, buffered: [] },
-            hasNextPage: true,
-        };
-    }
-
-    // A raw next page does not necessarily contain a matching row. Probe until the next match is
-    // found, then carry it into the next filtered page so the UI never advances to an empty page.
-    while (hasNextPage) {
-        const page = await fetchAddressTransactionPage(client, address, nextCursor, 1);
-
-        nextCursor = page.nextCursor ?? null;
-        hasNextPage = page.hasNextPage && nextCursor !== null;
-        const nextMatch = page.data.find((transaction) =>
-            matchesTransactionDirection(transaction, direction, address),
-        );
-
-        if (nextMatch) {
-            return {
-                data,
-                nextPageParam: { cursor: nextCursor, buffered: [nextMatch] },
-                hasNextPage: true,
-            };
-        }
-    }
-
-    return { data, nextPageParam: null, hasNextPage: false };
+    return {
+        data,
+        nextPageParam: { cursor: nextCursor, buffered, rawHistoryExhausted },
+        hasNextPage: true,
+    };
 }
