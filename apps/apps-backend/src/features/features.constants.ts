@@ -12,9 +12,11 @@ export interface KnownAddress {
     logo?: string;
 }
 
+export type KnownAddresses = Record<string, KnownAddress>;
+
 const KNOWN_LOGOS_BASE_URL = 'https://files.iota.org/media/tooling/logos';
 
-export const ADDRESSES_ALIASES: Record<string, KnownAddress> = {
+const SYSTEM_ADDRESSES_ALIASES: KnownAddresses = {
     '0x0': { name: 'IOTA System Account' },
     '0x1': { name: 'Move stdlib Package' },
     '0x2': { name: 'IOTA Framework Package' },
@@ -27,6 +29,9 @@ export const ADDRESSES_ALIASES: Record<string, KnownAddress> = {
     '0x107a': { name: 'Stardust Package' },
     '0xb': { name: 'Bridge Package' },
     '0x403': { name: 'IOTA Denylist Object' },
+};
+
+const MAINNET_ADDRESSES_ALIASES: KnownAddresses = {
     '0x7b4a34f6a011794f0ecbe5e5beb96102d3eef6122eb929b9f50a8d757bfbdd67': { name: 'IOTA EVM' },
     '0xbeb1ba753fd0bbc0f5470b3948345da6dc870c0421d809cfc3abe95b70f625a7': {
         name: 'Legacy Migrator',
@@ -63,9 +68,6 @@ export const ADDRESSES_ALIASES: Record<string, KnownAddress> = {
         name: 'OKX',
         logo: `${KNOWN_LOGOS_BASE_URL}/okx.jpg`,
     },
-    '0x32bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2': {
-        name: 'IOTA Testnet Faucet',
-    },
     '0x7d307e5537bf0ebd7417f0aa2b09562e5be2a3b1bc0df39ecba8df606c6002b9': {
         name: 'Staketab x Iotascan',
     },
@@ -75,12 +77,32 @@ export const ADDRESSES_ALIASES: Record<string, KnownAddress> = {
     },
 };
 
+const TESTNET_ADDRESSES_ALIASES: KnownAddresses = {
+    '0x32bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2': {
+        name: 'IOTA Testnet Faucet',
+    },
+};
+
+export const ADDRESSES_ALIASES: Record<Network, KnownAddresses> = {
+    [Network.Mainnet]: { ...SYSTEM_ADDRESSES_ALIASES, ...MAINNET_ADDRESSES_ALIASES },
+    [Network.Testnet]: { ...SYSTEM_ADDRESSES_ALIASES, ...TESTNET_ADDRESSES_ALIASES },
+    [Network.Devnet]: SYSTEM_ADDRESSES_ALIASES,
+    [Network.Localnet]: SYSTEM_ADDRESSES_ALIASES,
+    [Network.Custom]: SYSTEM_ADDRESSES_ALIASES,
+};
+
+function normalizeAddressKeys(addresses: KnownAddresses): KnownAddresses {
+    return Object.fromEntries(
+        Object.entries(addresses).map(([address, alias]) => [normalizeIotaAddress(address), alias]),
+    );
+}
+
 export const KNOWN_ADDRESSES_ALIASES = Object.fromEntries(
-    Object.entries(ADDRESSES_ALIASES).map(([address, alias]) => [
-        normalizeIotaAddress(address),
-        alias,
+    Object.entries(ADDRESSES_ALIASES).map(([network, addresses]) => [
+        network,
+        normalizeAddressKeys(addresses),
     ]),
-);
+) as Record<Network, KnownAddresses>;
 
 export const NAME_ADDRESS_RESOLUTION_FEATURE: FeatureEnabledByNetwork = {
     [Network.Mainnet]: true,
