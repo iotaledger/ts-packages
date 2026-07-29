@@ -19,123 +19,26 @@ import {
 import { useIotaClient } from '@iota/dapp-kit';
 import { type IotaClient, type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { Warning } from '@iota/apps-ui-icons';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
-import {
-    generateActivityTableColumns,
-    generateTransactionsTableColumns,
-    getIotaBalanceChangeForAddress,
-} from '~/lib/ui';
+import { generateActivityTableColumns, generateTransactionsTableColumns } from '~/lib/ui';
 import { useEffect, useState } from 'react';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib';
 import { useCursorPagination } from '@iota/core';
+import {
+    queryAddressTransactionsPage,
+    TransactionDirection,
+    type AddressTransactionPageParam,
+} from './addressTransactionFilters';
 
 const PAGE_RANGE = PAGE_SIZES_RANGE_10_50;
-
-enum TransactionDirection {
-    All = 'all',
-    Received = 'received',
-    Sent = 'sent',
-}
+const INITIAL_PAGE_PARAM: AddressTransactionPageParam = { cursor: null, buffered: [] };
 
 const DIRECTION_OPTIONS: { label: string; value: TransactionDirection }[] = [
     { label: 'All', value: TransactionDirection.All },
     { label: 'Receive', value: TransactionDirection.Received },
     { label: 'Send', value: TransactionDirection.Sent },
 ];
-
-/**
- * Whether `txn` matches `direction` from `address`'s perspective. The node's `FromAddress` and
- * `ToAddress` filters aren't reliably supported by every RPC/indexer (they can silently return
- * no results), so direction is determined client-side from the already-fetched transaction data
- * instead of being pushed down as a query filter.
- */
-function matchesDirection(
-    txn: IotaTransactionBlockResponse,
-    direction: TransactionDirection,
-    address: string,
-): boolean {
-    if (direction === TransactionDirection.All) {
-        return true;
-    }
-    const balanceChange = getIotaBalanceChangeForAddress(txn, address);
-    const isReceived =
-        balanceChange && balanceChange.amount !== '0'
-            ? Number(balanceChange.amount) > 0
-            : txn.transaction?.data.sender !== address;
-
-    return direction === TransactionDirection.Sent ? !isReceived : isReceived;
-}
-
-interface QueryTransactionPageResult {
-    data: IotaTransactionBlockResponse[];
-    nextCursor: string | null;
-    hasNextPage: boolean;
-}
-
-async function queryTransactionPage(
-    client: IotaClient,
-    address: string,
-    direction: TransactionDirection,
-    cursor: string | null,
-    limit: number,
-): Promise<QueryTransactionPageResult> {
-    const page = await client.queryTransactionBlocks({
-        filter: { FromOrToAddress: { addr: address } },
-        order: 'descending',
-        options: {
-            showEffects: true,
-            showInput: true,
-            showBalanceChanges: true,
-            showEvents: true,
-        },
-        cursor,
-        limit,
-    });
-    return {
-        data: page.data.filter((txn) => matchesDirection(txn, direction, address)),
-        nextCursor: page.nextCursor ?? null,
-        hasNextPage: page.hasNextPage,
-    };
-}
-
-interface DirectionAvailability {
-    hasSent: boolean;
-    hasReceived: boolean;
-}
-
-// How many of `address`'s most recent transactions to sample when checking whether it has ever
-// sent/received, since the node has no cheap way to check this (see `matchesDirection`).
-const DIRECTION_AVAILABILITY_SAMPLE_SIZE = 50;
-
-/**
- * Determines whether `address` has sent and/or received a transaction among its most recent
- * `DIRECTION_AVAILABILITY_SAMPLE_SIZE` transactions.
- */
-async function getDirectionAvailability(
-    client: IotaClient,
-    address: string,
-): Promise<DirectionAvailability> {
-    const page = await client.queryTransactionBlocks({
-        filter: { FromOrToAddress: { addr: address } },
-        order: 'descending',
-        options: { showInput: true },
-        limit: DIRECTION_AVAILABILITY_SAMPLE_SIZE,
-    });
-    let hasSent = false;
-    let hasReceived = false;
-    for (const txn of page.data) {
-        if (matchesDirection(txn, TransactionDirection.Sent, address)) {
-            hasSent = true;
-        } else {
-            hasReceived = true;
-        }
-        if (hasSent && hasReceived) {
-            break;
-        }
-    }
-    return { hasSent, hasReceived };
-}
 
 type TransactionsForAddressView = 'activity' | 'transaction-blocks';
 
@@ -155,7 +58,7 @@ interface TransactionsForAddressTableProps {
     pagination: TablePaginationOptions;
     direction: TransactionDirection;
     setDirection: (direction: TransactionDirection) => void;
-    directionOptions: { label: string; value: TransactionDirection }[];
+    directionOptions: { label: string; value: TransactionDirection; disabled: boolean }[];
 }
 
 const PLACEHOLDER_COL_HEADINGS: Record<TransactionsForAddressView, string[]> = {
@@ -163,7 +66,7 @@ const PLACEHOLDER_COL_HEADINGS: Record<TransactionsForAddressView, string[]> = {
     'transaction-blocks': ['Type', 'Sender', 'Txns', 'Balance Change', 'Gas', 'Time', 'Function'],
 };
 
-export function TransactionsForAddressTable({
+function TransactionsForAddressTable({
     data,
     isLoading,
     isError,
@@ -185,6 +88,7 @@ export function TransactionsForAddressTable({
                         type={ButtonSegmentType.Rounded}
                         label={option.label}
                         selected={option.value === direction}
+                        disabled={option.disabled}
                         onClick={() => setDirection(option.value)}
                     />
                 ))}
@@ -275,7 +179,6 @@ export function TransactionsForAddressTable({
                         dropdownPosition={DropdownPosition.Top}
                         onValueChange={(e) => {
                             setLimit(Number(e));
-                            pagination.onFirst?.();
                         }}
                     />
                 }
@@ -288,60 +191,105 @@ export function TransactionsForAddress({
     address,
     view,
 }: TransactionsForAddressProps): JSX.Element {
+    // The cursor page number is local hook state. Re-mount it for a new address so a page from
+    // the previous address cannot point past the new query's first page.
+    return <TransactionsForAddressContent key={address} address={address} view={view} />;
+}
+
+function useAddressTransactionsQuery(
+    client: IotaClient,
+    address: string,
+    direction: TransactionDirection,
+    limit: number,
+) {
+    return useInfiniteQuery({
+        queryKey: ['transactions-for-address', address, direction, limit, client],
+        queryFn: ({ pageParam }) =>
+            queryAddressTransactionsPage(client, address, direction, pageParam, limit),
+        initialPageParam: INITIAL_PAGE_PARAM,
+        getNextPageParam: (lastPage) => lastPage.nextPageParam,
+    });
+}
+
+function TransactionsForAddressContent({
+    address,
+    view,
+}: TransactionsForAddressProps): JSX.Element {
     const [limit, setLimit] = useState(PAGE_RANGE[0]);
     const [direction, setDirection] = useState<TransactionDirection>(TransactionDirection.All);
     const client = useIotaClient();
 
-    const directionAvailability = useQuery({
-        queryKey: ['transactions-for-address-direction-availability', address, client],
-        queryFn: () => getDirectionAvailability(client, address),
-    });
+    // FromAddress and ToAddress retain only a limited SQL history. Every filter is built from the
+    // full-history FromOrToAddress query instead.
+    const allTransactions = useAddressTransactionsQuery(
+        client,
+        address,
+        TransactionDirection.All,
+        limit,
+    );
+    const receivedTransactions = useAddressTransactionsQuery(
+        client,
+        address,
+        TransactionDirection.Received,
+        limit,
+    );
+    const sentTransactions = useAddressTransactionsQuery(
+        client,
+        address,
+        TransactionDirection.Sent,
+        limit,
+    );
 
-    // Optimistically show a direction until we know for sure it has no transactions, to avoid
-    // the button flashing in and out while the availability query is still in flight.
-    const directionOptions = DIRECTION_OPTIONS.filter((option) => {
-        if (option.value === TransactionDirection.Received) {
-            return directionAvailability.data?.hasReceived ?? true;
-        }
-        if (option.value === TransactionDirection.Sent) {
-            return directionAvailability.data?.hasSent ?? true;
-        }
-        return true;
+    const allPagination = useCursorPagination(allTransactions);
+    const receivedPagination = useCursorPagination(receivedTransactions);
+    const sentPagination = useCursorPagination(sentTransactions);
+    const transactionsByDirection = {
+        [TransactionDirection.All]: allPagination,
+        [TransactionDirection.Received]: receivedPagination,
+        [TransactionDirection.Sent]: sentPagination,
+    };
+    const queriesByDirection = {
+        [TransactionDirection.All]: allTransactions,
+        [TransactionDirection.Received]: receivedTransactions,
+        [TransactionDirection.Sent]: sentTransactions,
+    };
+    const selectedTransactions = transactionsByDirection[direction];
+    const selectedQuery = queriesByDirection[direction];
+    const isSelectedDirectionUnavailable =
+        selectedQuery.isSuccess && (selectedQuery.data?.pages[0]?.data.length ?? 0) === 0;
+    const directionOptions = DIRECTION_OPTIONS.map((option) => {
+        const query = queriesByDirection[option.value];
+        return {
+            ...option,
+            disabled: query.isSuccess && (query.data?.pages[0]?.data.length ?? 0) === 0,
+        };
     });
 
     useEffect(() => {
-        if (!directionOptions.some((option) => option.value === direction)) {
+        if (isSelectedDirectionUnavailable && direction !== TransactionDirection.All) {
             setDirection(TransactionDirection.All);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [directionOptions]);
+    }, [direction, isSelectedDirectionUnavailable]);
 
-    const transactions = useInfiniteQuery({
-        queryKey: ['transactions-for-address', address, limit, direction, client],
-        queryFn: ({ pageParam: cursor }) =>
-            queryTransactionPage(client, address, direction, cursor, limit),
-        initialPageParam: null as string | null,
-        getNextPageParam: (lastPage) =>
-            lastPage.hasNextPage ? (lastPage.nextCursor ?? null) : null,
-    });
-
-    const { data, isFetching, isError, pagination } = useCursorPagination(transactions);
+    const setPageSize = (newLimit: number) => {
+        allPagination.pagination.onFirst();
+        receivedPagination.pagination.onFirst();
+        sentPagination.pagination.onFirst();
+        setLimit(newLimit);
+    };
 
     return (
         <TransactionsForAddressTable
-            data={data?.data ?? []}
-            isLoading={isFetching}
-            isError={isError}
+            data={selectedTransactions.data?.data ?? []}
+            isLoading={selectedTransactions.isFetching}
+            isError={selectedTransactions.isError}
             address={address}
             view={view}
             limit={limit}
-            setLimit={setLimit}
-            pagination={pagination}
+            setLimit={setPageSize}
+            pagination={selectedTransactions.pagination}
             direction={direction}
-            setDirection={(newDirection) => {
-                setDirection(newDirection);
-                pagination.onFirst?.();
-            }}
+            setDirection={setDirection}
             directionOptions={directionOptions}
         />
     );
