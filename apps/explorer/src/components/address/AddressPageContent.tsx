@@ -11,9 +11,8 @@ import { OwnedObjects } from '../owned-objects';
 import { TransactionsForAddress } from '../transactions';
 
 enum AddressPageSection {
-    Activity = 'activity-section',
     Portfolio = 'portfolio-section',
-    TransactionBlocks = 'transaction-blocks-section',
+    Activity = 'activity-section',
     Staking = 'staking-section',
 }
 
@@ -44,9 +43,8 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
 
     const sections = [
         { id: AddressPageSection.Portfolio, label: 'Portfolio' },
-        { id: AddressPageSection.Activity, label: 'Activity' },
         ...(showStakingSection ? [{ id: AddressPageSection.Staking, label: 'Staking' }] : []),
-        { id: AddressPageSection.TransactionBlocks, label: 'Transaction Blocks' },
+        { id: AddressPageSection.Activity, label: 'Activity' },
     ];
 
     return (
@@ -65,19 +63,6 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                             </div>
                         </Panel>
                     </PageSectionAnchor>
-                    <PageSectionAnchor id={AddressPageSection.Activity}>
-                        <Panel>
-                            <div className="py-sm">
-                                <Title title="Activity" />
-                            </div>
-                            <div
-                                data-testid="tx"
-                                className="relative h-full min-h-14 overflow-auto px-md--rs py-md md:py-sm"
-                            >
-                                <TransactionsForAddress address={address} view="activity" />
-                            </div>
-                        </Panel>
-                    </PageSectionAnchor>
                     {showStakingSection && (
                         <PageSectionAnchor id={AddressPageSection.Staking}>
                             <Panel>
@@ -90,19 +75,16 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                             </Panel>
                         </PageSectionAnchor>
                     )}
-                    <PageSectionAnchor id={AddressPageSection.TransactionBlocks}>
+                    <PageSectionAnchor id={AddressPageSection.Activity}>
                         <Panel>
                             <div className="py-sm">
-                                <Title title="Transaction Blocks" />
+                                <Title title="Activity" />
                             </div>
                             <div
                                 data-testid="tx"
                                 className="relative h-full min-h-14 overflow-auto px-md--rs py-md md:py-sm"
                             >
-                                <TransactionsForAddress
-                                    address={address}
-                                    view="transaction-blocks"
-                                />
+                                <TransactionsForAddress address={address} view="activity" />
                             </div>
                         </Panel>
                     </PageSectionAnchor>
