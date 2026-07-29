@@ -1,20 +1,23 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
 import { Copy, IotaLogoMark } from '@iota/apps-ui-icons';
 import cx from 'clsx';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { useAddressAliasLookup } from '../../hooks';
 import { trimOrFormatAddress } from '@iota/iota-sdk/utils';
+import { ImageIcon, ImageIconSize } from '../icon';
+
+const COPY_BUTTON_GLUE_LENGTH = 4;
 
 interface AddressAliasProps {
     address: string;
     noTruncate?: boolean;
     truncateUnknown?: boolean;
     onCopy?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    renderAddress?: (addressToDisplay: string) => React.ReactNode;
+    renderAddress?: (addressToDisplay: string, copyButton: React.ReactNode) => React.ReactNode;
     renderAlias?: (addressAlias: string) => React.ReactNode;
+    hideAlias?: boolean;
 }
 
 export function AddressAlias({
@@ -24,46 +27,60 @@ export function AddressAlias({
     onCopy,
     renderAddress,
     renderAlias,
+    hideAlias = false,
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
-    const [logoFailedToLoad, setLogoFailedToLoad] = useState(false);
 
-    const knownAddress = getAddressAlias(address);
+    const addressAlias = getAddressAlias(address);
 
     const addressToDisplay =
         noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
 
+    const copyButton = onCopy && (
+        <ButtonUnstyled onClick={onCopy} className="ms-xxs inline-flex h-4 w-4 align-middle">
+            <Copy className="h-full w-full hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
+        </ButtonUnstyled>
+    );
+
+    const addressHead = addressToDisplay.slice(0, -COPY_BUTTON_GLUE_LENGTH);
+    const addressTail = addressToDisplay.slice(-COPY_BUTTON_GLUE_LENGTH);
+
     return (
-        <>
-            {knownAddress && (
+        <div className="flex flex-col gap-xxs">
+            {!hideAlias && addressAlias && (
                 <div
                     className={cx(
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
-                    {knownAddress.logo && !logoFailedToLoad ? (
-                        <img
-                            src={knownAddress.logo}
-                            alt={knownAddress.name}
-                            className="h-full aspect-square shrink-0 rounded-full object-cover"
-                            onError={() => setLogoFailedToLoad(true)}
+                    {addressAlias.imageUrl ? (
+                        <ImageIcon
+                            src={addressAlias.imageUrl}
+                            label={addressAlias.alias}
+                            fallback={addressAlias.alias}
+                            size={ImageIconSize.Small}
+                            rounded
                         />
                     ) : (
                         <IotaLogoMark className="h-full aspect-square shrink-0" />
                     )}
-                    {renderAlias?.(knownAddress.name) ?? knownAddress.name}
+                    {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
                 </div>
             )}
 
-            <div className="flex flex-row items-center gap-xxs">
-                {renderAddress?.(addressToDisplay) ?? addressToDisplay}
-
-                {onCopy && (
-                    <ButtonUnstyled onClick={onCopy}>
-                        <Copy className="h-full aspect-square hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
-                    </ButtonUnstyled>
+            <div className="break-all">
+                {renderAddress ? (
+                    renderAddress(addressToDisplay, copyButton)
+                ) : (
+                    <>
+                        {addressHead}
+                        <span className="whitespace-nowrap">
+                            {addressTail}
+                            {copyButton}
+                        </span>
+                    </>
                 )}
             </div>
-        </>
+        </div>
     );
 }
