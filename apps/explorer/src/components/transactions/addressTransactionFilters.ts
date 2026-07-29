@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type IotaClient, type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
+import { getTransactionRecipients } from '~/lib/utils';
 
 export enum TransactionDirection {
     All = 'all',
@@ -25,6 +26,7 @@ const TRANSACTION_QUERY_OPTIONS = {
     showInput: true,
     showBalanceChanges: true,
     showEvents: true,
+    showObjectChanges: true,
 };
 
 export function matchesTransactionDirection(
@@ -36,12 +38,11 @@ export function matchesTransactionDirection(
         return true;
     }
 
-    // `FromOrToAddress` returns every transaction which affected this address. Direction is
-    // determined by who submitted it, not by its net IOTA balance change: a programmable
-    // transaction can receive IOTA or only pay gas while still being sent by this address.
-    const isReceived = txn.transaction?.data.sender !== address;
+    const sender = txn.transaction?.data.sender;
+    const isSent = sender === address;
+    const isReceived = getTransactionRecipients(txn, sender).has(address);
 
-    return direction === TransactionDirection.Received ? isReceived : !isReceived;
+    return direction === TransactionDirection.Received ? isReceived : isSent;
 }
 
 function fetchAddressTransactionPage(
