@@ -6,12 +6,17 @@ import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { useFeatureValue } from '@iota/apps-backend-client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 
+export interface KnownAddress {
+    name: string;
+    logo?: string;
+}
+
 const ADDRESSES_ALIAS_FALLBACK: KnownAddressAliasesFeature = {
     enabled: false,
     addresses: {},
 };
 
-type AddressAliases = Record<string, string>;
+type AddressAliases = Record<string, KnownAddress>;
 
 type KnownAddressAliasesFeature = {
     enabled: boolean;
@@ -26,9 +31,11 @@ export function useAddressAliasLookup() {
 
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
 
-    const validatorsAddresses = Object.fromEntries(
-        systemState?.activeValidators.map((validator) => [validator.iotaAddress, validator.name]) ??
-            [],
+    const validatorsAddresses: AddressAliases = Object.fromEntries(
+        systemState?.activeValidators.map((validator) => [
+            validator.iotaAddress,
+            { name: validator.name },
+        ]) ?? [],
     );
 
     const addressAliasMap = {
@@ -36,7 +43,7 @@ export function useAddressAliasLookup() {
         ...knownAddresses.addresses,
     };
 
-    return (address: string): string | null => {
+    return (address: string): KnownAddress | null => {
         if (!knownAddresses || !knownAddresses.enabled) {
             return null;
         }
@@ -44,6 +51,6 @@ export function useAddressAliasLookup() {
         const normalized = normalizeIotaAddress(address);
         const addressAlias = addressAliasMap[normalized];
 
-        return addressAlias;
+        return addressAlias ?? null;
     };
 }

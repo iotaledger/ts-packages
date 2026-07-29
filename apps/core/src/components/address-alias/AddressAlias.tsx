@@ -1,6 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { useState } from 'react';
 import { Copy, IotaLogoMark } from '@iota/apps-ui-icons';
 import cx from 'clsx';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
@@ -25,22 +26,32 @@ export function AddressAlias({
     renderAlias,
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
+    const [logoFailedToLoad, setLogoFailedToLoad] = useState(false);
 
-    const alias = getAddressAlias(address);
+    const knownAddress = getAddressAlias(address);
 
     const addressToDisplay =
         noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
 
     return (
         <>
-            {alias && (
+            {knownAddress && (
                 <div
                     className={cx(
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
-                    <IotaLogoMark className="h-full aspect-square shrink-0" />
-                    {renderAlias?.(alias) ?? alias}
+                    {knownAddress.logo && !logoFailedToLoad ? (
+                        <img
+                            src={knownAddress.logo}
+                            alt={knownAddress.name}
+                            className="h-full aspect-square shrink-0 rounded-full object-cover"
+                            onError={() => setLogoFailedToLoad(true)}
+                        />
+                    ) : (
+                        <IotaLogoMark className="h-full aspect-square shrink-0" />
+                    )}
+                    {renderAlias?.(knownAddress.name) ?? knownAddress.name}
                 </div>
             )}
 
