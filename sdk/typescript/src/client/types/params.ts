@@ -210,11 +210,11 @@ export interface TryMultiGetPastObjectsParams {
     options?: RpcTypes.IotaObjectDataOptions | null | undefined;
     signal?: AbortSignal;
 }
-/** Calls a Move view function. The function must be declared with the `#[view]` attribute. */
+/** Calls a move view function. */
 export interface ViewParams {
     /**
-     * The fully qualified function name `<package_id>::<module_name>::<function_name>`, where the function
-     * is declared with the `#[view]` attribute. E.g. `0x1234::counter::value`.
+     * The fully qualified function name `<package_id>::<module_name>::<function_name>`. E.g.
+     * `0x3::iota_system::get_total_iota_supply`.
      */
     functionName: string;
     typeArgs?: string[] | null | undefined;
