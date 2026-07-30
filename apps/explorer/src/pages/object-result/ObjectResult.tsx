@@ -95,28 +95,32 @@ export function ObjectResult(): JSX.Element {
                                     type="Package"
                                     showCopyButton={false}
                                     title={
-                                        <div className="flex items-center gap-xs">
-                                            <AddressAlias
-                                                address={resp.id}
-                                                onCopy={() => copyToClipboard(resp.id)}
-                                            />
-                                            {upgradePolicy && !upgradePolicy.isIndeterminate && (
-                                                <span className="shrink-0">
-                                                    <Badge
-                                                        label={
-                                                            upgradePolicy.isImmutable
-                                                                ? 'Immutable'
-                                                                : 'Upgradeable'
-                                                        }
-                                                        type={
-                                                            upgradePolicy.isImmutable
-                                                                ? BadgeType.Neutral
-                                                                : BadgeType.PrimarySoft
-                                                        }
-                                                    />
-                                                </span>
+                                        <AddressAlias
+                                            address={resp.id}
+                                            onCopy={() => copyToClipboard(resp.id)}
+                                            renderAlias={(alias) => (
+                                                <div className="flex items-center gap-xs">
+                                                    <span>{alias}</span>
+                                                    {upgradePolicy &&
+                                                        !upgradePolicy.isIndeterminate && (
+                                                            <span className="shrink-0">
+                                                                <Badge
+                                                                    label={
+                                                                        upgradePolicy.isImmutable
+                                                                            ? 'Immutable'
+                                                                            : 'Upgradeable'
+                                                                    }
+                                                                    type={
+                                                                        upgradePolicy.isImmutable
+                                                                            ? BadgeType.Neutral
+                                                                            : BadgeType.PrimarySoft
+                                                                    }
+                                                                />
+                                                            </span>
+                                                        )}
+                                                </div>
                                             )}
-                                        </div>
+                                        />
                                     }
                                 />
                             )}
