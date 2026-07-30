@@ -3,9 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
+import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
-import { ProgrammableTxnBlockCard, AddressLink, ObjectLink, CollapsibleCard } from '~/components';
+import {
+    ProgrammableTxnBlockCard,
+    AddressLink,
+    ObjectLink,
+    ObjectVideoImage,
+    CollapsibleCard,
+} from '~/components';
 import { useBreakpoint } from '~/hooks';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
@@ -13,6 +21,97 @@ const REGEX_NUMBER = /^\d+$/;
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
+}
+
+function getInputAddress(input: IotaCallArg): string | undefined {
+    if (input.type === 'object' && 'objectId' in input) {
+        return input.objectId;
+    }
+
+    if (input.type === 'pure' && 'valueType' in input && input.valueType === 'address') {
+        return String(input.value);
+    }
+
+    return undefined;
+}
+
+function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.Element {
+    const { data } = useGetObject(objectId);
+    const display = data?.data?.display?.data;
+
+    return (
+        <div
+            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            onClick={(event) => event.stopPropagation()}
+        >
+            {display?.name ? (
+                <>
+                    {display.image_url && (
+                        <ObjectVideoImage
+                            variant="xxs"
+                            rounded="md"
+                            title={display.name}
+                            subtitle=""
+                            src={display.image_url}
+                            disablePreview
+                        />
+                    )}
+                    <span>{display.name}</span>
+                </>
+            ) : (
+                <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
+                    <ObjectLink objectId={objectId} copyText={objectId} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function AddressInputSupportingElement({ address }: { address: string }): JSX.Element {
+    const getAddressAlias = useAddressAliasLookup();
+    const addressAlias = getAddressAlias(address);
+
+    if (addressAlias) {
+        return (
+            <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+                {addressAlias.imageUrl ? (
+                    <ImageIcon
+                        src={addressAlias.imageUrl}
+                        label={addressAlias.alias}
+                        fallback={addressAlias.alias}
+                        size={ImageIconSize.Small}
+                        rounded
+                    />
+                ) : (
+                    <IotaLogoMark className="aspect-square h-full shrink-0" />
+                )}
+                <span>{addressAlias.alias}</span>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            onClick={(event) => event.stopPropagation()}
+        >
+            <AddressLink address={address} copyText={address} />
+        </div>
+    );
+}
+
+function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element | null {
+    const address = getInputAddress(input);
+
+    if (!address) {
+        return null;
+    }
+
+    return input.type === 'object' ? (
+        <ObjectInputSupportingElement objectId={address} />
+    ) : (
+        <AddressInputSupportingElement address={address} />
+    );
 }
 
 export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
@@ -25,12 +124,14 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
         <CollapsibleCard
             key={index}
             title={`Input ${index}`}
+            supportingTitleElement={<InputSupportingElement input={input} />}
             collapsible
+            initialClose
             titleSize={TitleSize.Small}
         >
             <div
                 data-testid="inputs-card-content"
-                className="flex flex-col gap-2 px-md pb-lg pt-xs"
+                className="flex flex-col gap-2 px-md pb-lg pt-xs md:max-w-4xl"
             >
                 {Object.entries(input).map(([key, value]) => {
                     let renderValue;
@@ -110,10 +211,10 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
 
     return (
         <ProgrammableTxnBlockCard
-            initialClose
             items={expandableItems}
-            itemsLabel={inputs.length > 1 ? 'Inputs' : 'Input'}
-            count={inputs.length}
+            itemsLabel="Inputs"
+            rawData={inputs}
+            defaultItemsToShow={4}
         />
     );
 }

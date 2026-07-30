@@ -15,7 +15,11 @@ import { numberSuffix } from '~/lib/utils';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
-import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import {
+    PAGE_SIZES_RANGE_20_60,
+    RETENTION_BANNER_TEXT,
+    RETENTION_BANNER_TITLE,
+} from '~/lib/constants';
 import { type IotaTransactionBlockResponse, type IotaTransactionKind } from '@iota/iota-sdk/client';
 import { EVM_ANCHOR_ADDRESSES } from '~/lib/constants/evm.constants';
 
@@ -83,29 +87,46 @@ export function TransactionsActivityTable({
                             colHeadings={['Type', 'Sender', 'Txns', 'Gas', 'Time']}
                         />
                     ) : (
-                        <TableCard
-                            data={displayData!.data}
-                            columns={tableColumns}
-                            totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
-                            viewAll={disablePagination ? '/recent' : undefined}
-                            paginationOptions={!disablePagination ? pagination : undefined}
-                            pageSizeSelector={
-                                !disablePagination && (
-                                    <Select
-                                        value={limit.toString()}
-                                        options={PAGE_SIZES_RANGE_20_60.map((size) => ({
-                                            label: `${size} / page`,
-                                            id: size.toString(),
-                                        }))}
-                                        onValueChange={(e) => {
-                                            setLimit(Number(e));
-                                            pagination.onFirst();
-                                        }}
-                                        size={SelectSize.Small}
-                                    />
-                                )
-                            }
-                        />
+                        <>
+                            {transactionKindFilter && !disablePagination && (
+                                <InfoBox
+                                    title={RETENTION_BANNER_TITLE}
+                                    supportingText={RETENTION_BANNER_TEXT}
+                                    icon={<Warning />}
+                                    type={InfoBoxType.Warning}
+                                    style={InfoBoxStyle.Elevated}
+                                />
+                            )}
+                            {(disablePagination ||
+                                !transactionKindFilter ||
+                                displayData.data.length > 0) && (
+                                <TableCard
+                                    data={displayData!.data}
+                                    columns={tableColumns}
+                                    totalLabel={
+                                        count ? `${numberSuffix(Number(count))} Total` : '-'
+                                    }
+                                    viewAll={disablePagination ? '/recent' : undefined}
+                                    paginationOptions={!disablePagination ? pagination : undefined}
+                                    pageSizeSelector={
+                                        !disablePagination && (
+                                            <Select
+                                                value={limit.toString()}
+                                                options={PAGE_SIZES_RANGE_20_60.map((size) => ({
+                                                    label: `${size} / page`,
+                                                    id: size.toString(),
+                                                }))}
+                                                onValueChange={(e) => {
+                                                    setLimit(Number(e));
+                                                    pagination.onFirst();
+                                                }}
+                                                size={SelectSize.Small}
+                                            />
+                                        )
+                                    }
+                                />
+                            )}
+                        </>
                     )}
                 </div>
             )}

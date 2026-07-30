@@ -113,16 +113,14 @@ export function Table({
                         <div className="flex gap-2">
                             {paginationOptions && (
                                 <>
-                                    {paginationOptions.onFirst && (
-                                        <Button
-                                            type={ButtonType.Secondary}
-                                            size={ButtonSize.Small}
-                                            icon={<DoubleArrowLeft />}
-                                            disabled={!paginationOptions.hasFirst}
-                                            onClick={paginationOptions.onFirst}
-                                            aria-label="First page"
-                                        />
-                                    )}
+                                    <Button
+                                        type={ButtonType.Secondary}
+                                        size={ButtonSize.Small}
+                                        icon={<DoubleArrowLeft />}
+                                        disabled={!paginationOptions.hasFirst}
+                                        onClick={paginationOptions.onFirst}
+                                        aria-label="First page"
+                                    />
                                     <Button
                                         type={ButtonType.Secondary}
                                         size={ButtonSize.Small}
@@ -139,16 +137,14 @@ export function Table({
                                         onClick={paginationOptions.onNext}
                                         aria-label="Next page"
                                     />
-                                    {paginationOptions.onLast && (
-                                        <Button
-                                            type={ButtonType.Secondary}
-                                            size={ButtonSize.Small}
-                                            icon={<DoubleArrowRight />}
-                                            disabled={!paginationOptions.hasLast}
-                                            onClick={paginationOptions.onLast}
-                                            aria-label="Last page"
-                                        />
-                                    )}
+                                    <Button
+                                        type={ButtonType.Secondary}
+                                        size={ButtonSize.Small}
+                                        icon={<DoubleArrowRight />}
+                                        disabled={!paginationOptions.hasLast}
+                                        onClick={paginationOptions.onLast}
+                                        aria-label="Last page"
+                                    />
                                 </>
                             )}
                             {action && action}

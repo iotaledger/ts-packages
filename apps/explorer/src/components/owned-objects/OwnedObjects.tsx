@@ -4,6 +4,8 @@
 
 import { useGetCategorizedOwnedObjects, OwnedObjectCategory, useLocalStorage } from '@iota/core';
 import {
+    Badge,
+    BadgeType,
     Button,
     ButtonSize,
     Divider,
@@ -21,18 +23,17 @@ import {
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
+    Tooltip,
 } from '@iota/apps-ui-kit';
-import { ListViewLarge, ListViewMedium, ListViewSmall, Warning } from '@iota/apps-ui-icons';
+import { ListViewLarge, ListViewSmall, Warning } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
-import { ListView, NoObjectsOwnedMessage, SmallThumbnailsView, ThumbnailsView } from '~/components';
+import { ListView, NoObjectsOwnedMessage, ThumbnailsView } from '~/components';
 import { ObjectViewMode } from '~/lib/enums';
 import { Pagination } from '~/components/ui';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib/constants';
 
 const SHOW_PAGINATION_MAX_ITEMS = 9;
-const OWNED_OBJECTS_LOCAL_STORAGE_VIEW_MODE = 'owned-objects/viewMode';
-const OWNED_OBJECTS_LOCAL_STORAGE_FILTER = 'owned-objects/filter';
 const CATEGORY_LABELS: Record<OwnedObjectCategory, string> = {
     [OwnedObjectCategory.Nft]: 'NFT',
     [OwnedObjectCategory.Name]: 'NAME',
@@ -45,13 +46,12 @@ interface ItemsRangeFromCurrentPage {
 }
 
 enum OwnedObjectsContainerHeight {
-    Small = 'h-[400px]',
+    Small = 'h-[400px] md:h-[500px]',
     Default = 'h-[400px] md:h-[570px]',
 }
 
 const VIEW_MODES = [
     { icon: <ListViewSmall />, value: ObjectViewMode.List },
-    { icon: <ListViewMedium />, value: ObjectViewMode.SmallThumbnail },
     { icon: <ListViewLarge />, value: ObjectViewMode.Thumbnail },
 ];
 
@@ -90,12 +90,11 @@ interface OwnedObjectsProps {
 export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
     const [limit, setLimit] = useState(50);
     const [filter, setFilter] = useLocalStorage<string | undefined>(
-        OWNED_OBJECTS_LOCAL_STORAGE_FILTER,
+        'owned-objects-category-filter',
         undefined,
     );
-
-    const [viewMode, setViewMode] = useLocalStorage(
-        OWNED_OBJECTS_LOCAL_STORAGE_VIEW_MODE,
+    const [viewMode, setViewMode] = useLocalStorage<ObjectViewMode>(
+        'owned-objects-view-mode',
         ObjectViewMode.Thumbnail,
     );
 
@@ -194,7 +193,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
 
     if (ownedObjects.isAnyError) {
         return (
-            <div className="p-sm--rs">
+            <div className="py-sm--rs">
                 <InfoBox
                     title="Error"
                     supportingText="Failed to load Assets"
@@ -215,9 +214,22 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                     })}
                 >
                     <div className="flex w-full flex-col flex-wrap items-start justify-between gap-xs sm:min-h-[72px] sm:flex-row sm:items-center md:gap-0">
-                        <Title size={TitleSize.Medium} title="Assets" />
+                        <div className="-mx-md--rs">
+                            <Title
+                                size={TitleSize.Medium}
+                                title="Assets"
+                                supportingElement={
+                                    <Tooltip text="Total assets owned">
+                                        <Badge
+                                            type={BadgeType.Neutral}
+                                            label={String(sortedDataByDisplayImages.length)}
+                                        />
+                                    </Tooltip>
+                                }
+                            />
+                        </div>
                         {hasVisualAssets && availableCategories.length > 0 && (
-                            <div className="flex flex-col gap-sm px-md--rs sm:flex-row sm:gap-0">
+                            <div className="flex flex-col gap-sm sm:flex-row sm:gap-0">
                                 <div className="flex items-center gap-sm">
                                     {availableViewModes.map((mode) => {
                                         const selected = mode.value === viewMode;
@@ -243,10 +255,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                                     aria-label={
                                                         mode.value === ObjectViewMode.List
                                                             ? 'List view'
-                                                            : mode.value ===
-                                                                ObjectViewMode.SmallThumbnail
-                                                              ? 'Small thumbnail view'
-                                                              : 'Thumbnail view'
+                                                            : 'Thumbnail view'
                                                     }
                                                 />
                                             </div>
@@ -280,21 +289,18 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                     ) : (
                         <div
                             className={clsx(
-                                'flex-2 flex w-full flex-col overflow-hidden p-md',
-                                ownedObjectsContainerHeight,
+                                'flex-2 flex w-full flex-col overflow-hidden py-md',
+                                effectiveViewMode === ObjectViewMode.Thumbnail &&
+                                    ownedObjectsContainerHeight,
                             )}
                         >
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.List && (
-                                <ListView loading={isPending} data={sortedDataByDisplayImages} />
+                                <ListView
+                                    loading={isPending}
+                                    data={sortedDataByDisplayImages}
+                                    hideAssetColumn={filter === OwnedObjectCategory.Other}
+                                />
                             )}
-                            {hasVisualAssets &&
-                                effectiveViewMode === ObjectViewMode.SmallThumbnail && (
-                                    <SmallThumbnailsView
-                                        loading={isPending}
-                                        data={sortedDataByDisplayImages}
-                                        limit={limit}
-                                    />
-                                )}
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.Thumbnail && (
                                 <ThumbnailsView
                                     loading={isPending}
@@ -305,7 +311,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                         </div>
                     )}
 
-                    <div className="flex flex-col items-center justify-between gap-sm px-sm--rs py-sm--rs md:flex-row">
+                    <div className="flex flex-col items-center justify-between gap-sm py-sm--rs md:flex-row">
                         {showPagination && hasVisualAssets && activeCategoryData && (
                             <Pagination {...activeCategoryData.pagination} />
                         )}

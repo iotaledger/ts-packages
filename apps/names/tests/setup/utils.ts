@@ -26,6 +26,7 @@ const NETWORK_CONFIG = getNetwork(DEFAULT_NETWORK);
 const iotaClientGraphQl = new IotaClient({
     transport: new IotaClientGraphQLTransport({
         url: NETWORK_CONFIG.graphql!,
+        fallbackTransportUrl: NETWORK_CONFIG.url,
     }),
 });
 

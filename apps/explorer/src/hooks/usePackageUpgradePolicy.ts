@@ -5,7 +5,7 @@ import { useGetTransaction } from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { useMemo } from 'react';
-import { UPGRADE_POLICIES, type UpgradePolicyInfo } from '~/lib';
+import { INDEXER_RETENTION_DAYS, UPGRADE_POLICIES, type UpgradePolicyInfo } from '~/lib';
 
 const UPGRADE_CAP_TYPE = '0x2::package::UpgradeCap';
 
@@ -20,6 +20,13 @@ const CUSTOM_POLICY: UpgradePolicyInfo = {
     description:
         'The UpgradeCap is wrapped inside a custom policy object. The package may still be upgradeable under custom conditions.',
     isImmutable: false,
+};
+
+const INDETERMINATE_POLICY: UpgradePolicyInfo = {
+    label: 'Undetermined',
+    description: `The upgrade policy cannot be determined: the UpgradeCap was destroyed or wrapped more than ${INDEXER_RETENTION_DAYS} days ago, and data older than that is no longer available.`,
+    isImmutable: false,
+    isIndeterminate: true,
 };
 
 const MAKE_IMMUTABLE_FUNCTION = {
@@ -121,7 +128,15 @@ export function usePackageUpgradePolicy(txDigest: string | null | undefined): {
             return wasMadeImmutable ? IMMUTABLE_POLICY : CUSTOM_POLICY;
         }
 
-        return null;
+        if (!lastCapTxData) return null;
+
+        // Last tx is unavailable or unreadable; a `deleted` error alone confirms
+        // the cap was destroyed, which is only possible via `make_immutable`.
+        if (upgradeCapData?.error?.code === 'deleted') {
+            return IMMUTABLE_POLICY;
+        }
+
+        return INDETERMINATE_POLICY;
     }, [
         txDigest,
         upgradeCapObjectId,
