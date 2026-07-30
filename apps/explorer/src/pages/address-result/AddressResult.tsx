@@ -11,10 +11,12 @@ import {
     ValidatorAddressHeader,
 } from '~/components';
 import { PageHeader } from '~/components/ui';
+import { IotaLogoMark } from '@iota/apps-ui-icons';
 import {
     AddressAlias,
     ImageIcon,
     ImageIconSize,
+    useAddressAliasLookup,
     useCopyToClipboard,
     useGetDefaultIotaName,
 } from '@iota/core';
@@ -30,9 +32,13 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
 
     const validator = useValidatorByAddress(address);
     const { name, imageUrl: nameAvatarImageUrl } = useIotaNameAvatar(address, !validator);
+    const getAddressAlias = useAddressAliasLookup();
+    const knownAddress = !validator && !name ? getAddressAlias(address) : null;
 
-    const identityLabel = validator ? validator.name : name;
-    const identityImageUrl = validator ? validator.imageUrl : nameAvatarImageUrl;
+    const identityLabel = validator ? validator.name : (name ?? knownAddress?.alias);
+    const identityImageUrl = validator
+        ? validator.imageUrl
+        : (nameAvatarImageUrl ?? knownAddress?.imageUrl);
 
     const leading = identityImageUrl ? (
         <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
@@ -43,6 +49,10 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                 size={ImageIconSize.Full}
                 fallbackSize={ImageIconSize.Large}
             />
+        </div>
+    ) : knownAddress ? (
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+            <IotaLogoMark className="h-1/2 w-1/2 text-iota-neutral-10 dark:text-iota-neutral-92" />
         </div>
     ) : undefined;
 
@@ -57,11 +67,15 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                             <ValidatorAddressHeader validator={validator} />
                         ) : name ? (
                             <IotaNameAddressHeader name={name} />
+                        ) : knownAddress ? (
+                            <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                {knownAddress.alias}
+                            </span>
                         ) : null}
                         <AddressAlias
                             address={address}
                             onCopy={() => copyToClipboard(address)}
-                            hideAlias={!!validator || !!name}
+                            hideAlias={!!validator || !!name || !!knownAddress}
                             renderAddress={(addressToDisplay, copyButton) => (
                                 <>
                                     <span className="whitespace-nowrap sm:hidden">
