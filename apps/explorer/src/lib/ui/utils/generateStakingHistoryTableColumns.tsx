@@ -12,7 +12,7 @@ import {
     useAddressAliasLookup,
 } from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
-import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { CoinFormat, formatBalance, formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { StakeEventJson, UnstakeEventJson } from '@iota/core';
@@ -24,7 +24,7 @@ function StakerAddressLink({ address }: { address: string }) {
     const addressAlias = getAddressAlias(address);
 
     if (!addressAlias) {
-        return <AddressLink address={address} copyText={address} className="text-body-sm" />;
+        return <AddressLink address={address} copyText={address} />;
     }
 
     return (
@@ -33,7 +33,6 @@ function StakerAddressLink({ address }: { address: string }) {
                 address={address}
                 copyText={address}
                 showAddressAlias={false}
-                className="text-body-sm"
                 label={
                     <span className="flex items-center gap-xxs">
                         <div className="h-3.5 w-3.5 shrink-0">
@@ -81,36 +80,54 @@ function AmountCell({
 export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
     return [
         {
+            header: 'Type',
+            id: 'type',
+            cell: ({ row: { original: event } }) => {
+                const isStake = event.type === STAKING_REQUEST_EVENT;
+                const digest = event.id.txDigest;
+                return (
+                    <TableCellBase>
+                        <TransactionLink
+                            digest={digest}
+                            copyText={digest}
+                            label={
+                                <div className="flex items-center gap-xs">
+                                    <TransactionIcon
+                                        variant={
+                                            isStake
+                                                ? TransactionAction.Staked
+                                                : TransactionAction.Unstaked
+                                        }
+                                        size={TransactionIconSize.Small}
+                                    />
+                                    <div className="flex flex-col">
+                                        <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                            {isStake ? 'Stake' : 'Withdraw'}
+                                        </span>
+                                        <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
+                                            {formatDigest(digest)}
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        />
+                    </TableCellBase>
+                );
+            },
+        },
+        {
             header: 'Address',
             id: 'address',
             cell: ({ row: { original: event } }) => {
-                const isStake = event.type === STAKING_REQUEST_EVENT;
                 const parsedJson = event.parsedJson as StakeEventJson | UnstakeEventJson;
                 const address = parsedJson?.staker_address;
                 return (
                     <TableCellBase>
-                        <div className="flex items-center gap-xs">
-                            <div className="scale-75">
-                                <TransactionIcon
-                                    variant={
-                                        isStake
-                                            ? TransactionAction.Staked
-                                            : TransactionAction.Unstaked
-                                    }
-                                    size={TransactionIconSize.Small}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-xxxs">
-                                <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    {isStake ? 'Stake' : 'Withdraw'}
-                                </span>
-                                {address ? (
-                                    <StakerAddressLink address={address} />
-                                ) : (
-                                    <TableCellText>--</TableCellText>
-                                )}
-                            </div>
-                        </div>
+                        {address ? (
+                            <StakerAddressLink address={address} />
+                        ) : (
+                            <TableCellText>--</TableCellText>
+                        )}
                     </TableCellBase>
                 );
             },
@@ -163,18 +180,6 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                                 '--'
                             )}
                         </TableCellText>
-                    </TableCellBase>
-                );
-            },
-        },
-        {
-            header: 'Digest',
-            id: 'digest',
-            cell: ({ row: { original: event } }) => {
-                const digest = event.id.txDigest;
-                return (
-                    <TableCellBase>
-                        <TransactionLink digest={digest} copyText={digest} />
                     </TableCellBase>
                 );
             },
