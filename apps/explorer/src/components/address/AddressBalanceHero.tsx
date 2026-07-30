@@ -66,6 +66,10 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                 <Divider type={DividerType.Vertical} />
             </div>
             <div className="flex w-full flex-col items-start gap-xs md:items-end">
+                <div className="my-xs w-full md:hidden">
+                    <Divider />
+                </div>
+
                 <div className="flex flex-row items-center gap-x-xxs">
                     <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                         Total balance
@@ -85,7 +89,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                 </div>
                 <CoinFiatValue amount={totalBalance} withParentheses={false} />
 
-                <div className="my-xs w-full">
+                <div className="my-xs hidden w-full md:block">
                     <Divider />
                 </div>
 

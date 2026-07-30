@@ -97,6 +97,8 @@ export function generateBalanceChangesTableColumns(): ColumnDef<BalanceChangeTab
                     <AddressLink
                         address={row.original.ownerAddress}
                         copyText={row.original.ownerAddress}
+                        className="[&>div]:max-w-[200px] [&>div]:truncate"
+                        hideAlias
                     />
                 </TableCellBase>
             ),
