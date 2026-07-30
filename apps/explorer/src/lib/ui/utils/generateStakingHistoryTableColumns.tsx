@@ -153,7 +153,7 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                 const parsedJson = event.parsedJson as StakeEventJson | UnstakeEventJson;
                 const epoch = isStake
                     ? String(Number((parsedJson as StakeEventJson).epoch) + 1)
-                    : (parsedJson as UnstakeEventJson).unstaking_epoch;
+                    : (parsedJson as UnstakeEventJson).stake_activation_epoch;
                 return (
                     <TableCellBase>
                         <TableCellText>

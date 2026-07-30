@@ -276,7 +276,7 @@ function ValidatorDetails(): JSX.Element {
                         />
                     )}
                     <ValidatorStatusLegend />
-                    <ValidatorStakingHistory validatorAddress={id} />
+                    <ValidatorStakingHistory validatorAddress={activeValidatorData.iotaAddress} />
                 </div>
             }
         />

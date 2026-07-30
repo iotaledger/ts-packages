@@ -11,7 +11,8 @@ const ADDRESSES_ALIAS_FALLBACK: KnownAddressAliasesFeature = {
     addresses: {},
 };
 
-type AddressAliases = Record<string, string>;
+type AddressAliasValue = string | { name: string; imageUrl?: string };
+type AddressAliases = Record<string, AddressAliasValue>;
 
 type KnownAddressAliasesFeature = {
     enabled: boolean;
@@ -39,7 +40,12 @@ export function useAddressAliasLookup() {
     );
 
     const knownAddressAliases: Record<string, ResolvedAddressAlias> = Object.fromEntries(
-        Object.entries(knownAddresses.addresses).map(([address, alias]) => [address, { alias }]),
+        Object.entries(knownAddresses.addresses).map(([address, aliasValue]) => [
+            address,
+            typeof aliasValue === 'string'
+                ? { alias: aliasValue }
+                : { alias: aliasValue.name, imageUrl: aliasValue.imageUrl },
+        ]),
     );
 
     const addressAliasMap: Record<string, ResolvedAddressAlias> = {
