@@ -24,6 +24,6 @@ test('transactions table is displayed', async ({ page }) => {
     const address = await faucet();
     await split_coin(address);
     await page.goto(`/address/${address}`);
-    await page.getByRole('button', { name: 'Transaction Blocks' }).click();
+    await page.getByRole('button', { name: 'Activity' }).click();
     await page.getByTestId('tx').locator('td').first().waitFor();
 });

@@ -219,12 +219,14 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                 size={TitleSize.Medium}
                                 title="Assets"
                                 supportingElement={
-                                    <Tooltip text="Total assets owned">
-                                        <Badge
-                                            type={BadgeType.Neutral}
-                                            label={String(sortedDataByDisplayImages.length)}
-                                        />
-                                    </Tooltip>
+                                    <span className="ml-sm">
+                                        <Tooltip text="Total assets owned">
+                                            <Badge
+                                                type={BadgeType.Neutral}
+                                                label={String(sortedDataByDisplayImages.length)}
+                                            />
+                                        </Tooltip>
+                                    </span>
                                 }
                             />
                         </div>

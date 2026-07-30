@@ -12,7 +12,7 @@ import type { IotaTransactionBlockKind, IotaTransactionBlockResponse } from '@io
 
 import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AddressLink, TransactionLink } from '../../../components/ui';
+import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
 import {
     CoinFormat,
     formatBalance,
@@ -25,7 +25,7 @@ import {
     BalanceChangeFiatValue,
     getBalanceChangeColorClass,
     getIotaBalanceChangeForAddress,
-    getTransactionFunctionName,
+    getLastMoveCall,
     getTransactionTypeLabel,
 } from './generateTransactionsTableColumns';
 
@@ -67,7 +67,6 @@ export function generateActivityTableColumns(
                 const isSuccess = txn.effects?.status.status === 'success';
                 const action = getTransactionAction(txn, address);
                 const typeLabel = getTransactionTypeLabel(txn, action, isSuccess);
-                const functionName = getTransactionFunctionName(txn);
                 return (
                     <TableCellBase>
                         <TransactionLink
@@ -85,12 +84,39 @@ export function generateActivityTableColumns(
                                             {typeLabel}
                                         </span>
                                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
-                                            {functionName ?? formatDigest(digest)}
+                                            {formatDigest(digest)}
                                         </span>
                                     </div>
                                 </div>
                             }
                         />
+                    </TableCellBase>
+                );
+            },
+        },
+        {
+            header: 'Function',
+            accessorKey: 'function',
+            cell: ({ row }) => {
+                const kind = row.original.transaction?.data.transaction.kind;
+                const kindLabel = kind === 'ProgrammableTransaction' ? 'Programmable Tx' : '--';
+                const moveCall = getLastMoveCall(row.original);
+                return (
+                    <TableCellBase>
+                        <div className="flex flex-col">
+                            <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                {kindLabel}
+                            </span>
+                            {moveCall && (
+                                <ObjectLink
+                                    objectId={`${moveCall.package}?module=${moveCall.module}`}
+                                    copyText={moveCall.package}
+                                    showAddressAlias={false}
+                                    label={moveCall.function}
+                                    className="text-body-sm"
+                                />
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },
@@ -107,7 +133,7 @@ export function generateActivityTableColumns(
                             address={sender}
                             copyText={sender}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            display="block"
+                            hideAlias
                             showValidatorImage
                         />
                     </TableCellBase>
@@ -115,17 +141,29 @@ export function generateActivityTableColumns(
             },
         },
         {
-            header: 'Txns',
-            accessorKey: 'transaction.data.transaction',
-            cell: ({ getValue }) => {
-                const transaction = getValue<IotaTransactionBlockKind>();
-                const txns =
-                    transaction.kind === 'ProgrammableTransaction'
-                        ? transaction.transactions.length.toString()
-                        : '--';
+            header: 'With',
+            accessorKey: 'with',
+            meta: {
+                tooltip: 'Who this address sent to, or received from.',
+            },
+            cell: ({ row }) => {
+                const counterparty = getCounterpartyAddress(row.original, address);
+                if (!counterparty) {
+                    return (
+                        <TableCellBase>
+                            <TableCellText>--</TableCellText>
+                        </TableCellBase>
+                    );
+                }
                 return (
                     <TableCellBase>
-                        <TableCellText>{txns}</TableCellText>
+                        <AddressLink
+                            address={counterparty}
+                            copyText={counterparty}
+                            className="[&>div]:max-w-[200px] [&>div]:truncate"
+                            hideAlias
+                            showValidatorImage
+                        />
                     </TableCellBase>
                 );
             },
@@ -184,34 +222,6 @@ export function generateActivityTableColumns(
             },
         },
         {
-            header: 'With',
-            accessorKey: 'with',
-            meta: {
-                tooltip: 'Who this address sent to, or received from.',
-            },
-            cell: ({ row }) => {
-                const counterparty = getCounterpartyAddress(row.original, address);
-                if (!counterparty) {
-                    return (
-                        <TableCellBase>
-                            <TableCellText>--</TableCellText>
-                        </TableCellBase>
-                    );
-                }
-                return (
-                    <TableCellBase>
-                        <AddressLink
-                            address={counterparty}
-                            copyText={counterparty}
-                            className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            display="block"
-                            showValidatorImage
-                        />
-                    </TableCellBase>
-                );
-            },
-        },
-        {
             header: 'Gas Fee',
             accessorKey: 'effects',
             cell: ({ getValue }) => {
@@ -242,6 +252,22 @@ export function generateActivityTableColumns(
                                 </span>
                             )}
                         </div>
+                    </TableCellBase>
+                );
+            },
+        },
+        {
+            header: 'Txns',
+            accessorKey: 'transaction.data.transaction',
+            cell: ({ getValue }) => {
+                const transaction = getValue<IotaTransactionBlockKind>();
+                const txns =
+                    transaction.kind === 'ProgrammableTransaction'
+                        ? transaction.transactions.length.toString()
+                        : '--';
+                return (
+                    <TableCellBase>
+                        <TableCellText>{txns}</TableCellText>
                     </TableCellBase>
                 );
             },

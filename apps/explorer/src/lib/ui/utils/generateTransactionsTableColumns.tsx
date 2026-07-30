@@ -23,7 +23,7 @@ import type {
 
 import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
-import { AddressLink, TransactionLink } from '../../../components/ui';
+import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
 import {
     CoinFormat,
     formatBalance,
@@ -87,10 +87,12 @@ export function getTransactionTypeLabel(
 }
 
 /**
- * Name of the last Move function called in a programmable transaction block, if any (e.g.
- * `request_add_stake`). Transactions with no Move call (plain transfers) have none.
+ * The last Move call in a programmable transaction block, if any (e.g. `request_add_stake` on
+ * the staking package). Transactions with no Move call (plain transfers) have none.
  */
-export function getTransactionFunctionName(txn: IotaTransactionBlockResponse): string | undefined {
+export function getLastMoveCall(
+    txn: IotaTransactionBlockResponse,
+): MoveCallIotaTransaction | undefined {
     const transaction = txn.transaction?.data.transaction;
     if (transaction?.kind !== 'ProgrammableTransaction') {
         return undefined;
@@ -100,7 +102,7 @@ export function getTransactionFunctionName(txn: IotaTransactionBlockResponse): s
             (command): command is { MoveCall: MoveCallIotaTransaction } => 'MoveCall' in command,
         )
         .map((command) => command.MoveCall);
-    return moveCalls.at(-1)?.function;
+    return moveCalls.at(-1);
 }
 
 /**
@@ -147,7 +149,6 @@ export function generateTransactionsTableColumns(
                 const isSuccess = txn.effects?.status.status === 'success';
                 const action = getTransactionAction(txn, actionAddress);
                 const typeLabel = getTransactionTypeLabel(txn, action, isSuccess);
-                const functionName = getTransactionFunctionName(txn);
                 return (
                     <TableCellBase>
                         <TransactionLink
@@ -165,7 +166,7 @@ export function generateTransactionsTableColumns(
                                             {typeLabel}
                                         </span>
                                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
-                                            {functionName ?? formatDigest(digest)}
+                                            {formatDigest(digest)}
                                         </span>
                                     </div>
                                 </div>
@@ -187,7 +188,7 @@ export function generateTransactionsTableColumns(
                             address={address}
                             copyText={address}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            display="block"
+                            hideAlias
                             showValidatorImage
                         />
                     </TableCellBase>
@@ -299,6 +300,33 @@ export function generateTransactionsTableColumns(
                                 '--'
                             )}
                         </TableCellText>
+                    </TableCellBase>
+                );
+            },
+        },
+        {
+            header: 'Function',
+            accessorKey: 'function',
+            cell: ({ row }) => {
+                const kind = row.original.transaction?.data.transaction.kind;
+                const kindLabel = kind === 'ProgrammableTransaction' ? 'Programmable Tx' : '--';
+                const moveCall = getLastMoveCall(row.original);
+                return (
+                    <TableCellBase>
+                        <div className="flex flex-col">
+                            <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                {kindLabel}
+                            </span>
+                            {moveCall && (
+                                <ObjectLink
+                                    objectId={`${moveCall.package}?module=${moveCall.module}`}
+                                    copyText={moveCall.package}
+                                    showAddressAlias={false}
+                                    label={moveCall.function}
+                                    className="text-body-sm"
+                                />
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },
