@@ -27,7 +27,7 @@ import {
     ObjectLink,
     TransactionLink,
 } from '~/components';
-import { INDEXER_RETENTION_DAYS, RETENTION_BANNER_TITLE } from '~/lib/constants';
+import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import {
     useGetNotarizationOwnerHistory,
     type OwnerEntry,
@@ -47,7 +47,9 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
         useGetNotarizationOwnerHistory(objectId);
 
     const owners = data?.owners;
-    const isHistoryIncomplete = !hasNextPage && !data?.hasCreationEntry;
+    // Show the retention notice whenever we can't prove the full history is
+    // available: no data yet, or the fetched pages never reached the creation tx.
+    const showRetentionNotice = !hasNextPage && !(owners?.length && data?.hasCreationEntry);
 
     return (
         <ErrorBoundary>
@@ -72,19 +74,10 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                             style={InfoBoxStyle.Elevated}
                         />
                     )}
-                    {owners && !owners.length && !hasNextPage && (
-                        <InfoBox
-                            title="No ownership history available"
-                            supportingText={`This object has had no ownership changes in the last ${INDEXER_RETENTION_DAYS} days. Older changes are no longer available.`}
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
-                    {!!owners?.length && isHistoryIncomplete && (
+                    {owners && showRetentionNotice && (
                         <InfoBox
                             title={RETENTION_BANNER_TITLE}
-                            supportingText="Older ownership changes are no longer available, so this history may be incomplete."
+                            supportingText={RETENTION_BANNER_TEXT}
                             icon={<Warning />}
                             type={InfoBoxType.Warning}
                             style={InfoBoxStyle.Elevated}
