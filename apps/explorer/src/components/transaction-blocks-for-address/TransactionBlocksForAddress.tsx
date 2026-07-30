@@ -5,7 +5,7 @@
 import { type TransactionFilter } from '@iota/iota-sdk/client';
 import { type Dispatch, type SetStateAction, useReducer, useState } from 'react';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
-import { INDEXER_RETENTION_DAYS, RETENTION_BANNER_TITLE } from '~/lib/constants';
+import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
@@ -136,24 +136,21 @@ export function TransactionBlocksForAddress({
                             rowHeight="16px"
                             colHeadings={['Type', 'Sender', 'Txns', 'Gas', 'Time']}
                         />
-                    ) : !data.pages[currentPage].data.length ? (
-                        <InfoBox
-                            title="No recent activity"
-                            supportingText={`This object has had no activity in the last ${INDEXER_RETENTION_DAYS} days. Older transactions are no longer available.`}
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
                     ) : (
                         <>
                             <InfoBox
                                 title={RETENTION_BANNER_TITLE}
-                                supportingText={`Transactions older than ${INDEXER_RETENTION_DAYS} days are not displayed.`}
+                                supportingText={RETENTION_BANNER_TEXT}
                                 icon={<Warning />}
                                 type={InfoBoxType.Warning}
                                 style={InfoBoxStyle.Elevated}
                             />
-                            <TableCard data={data.pages[currentPage].data} columns={tableColumns} />
+                            {!!data.pages[currentPage].data.length && (
+                                <TableCard
+                                    data={data.pages[currentPage].data}
+                                    columns={tableColumns}
+                                />
+                            )}
                         </>
                     )}
 
