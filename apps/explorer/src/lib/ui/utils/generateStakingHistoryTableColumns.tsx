@@ -24,7 +24,14 @@ function StakerAddressLink({ address }: { address: string }) {
     const addressAlias = getAddressAlias(address);
 
     if (!addressAlias) {
-        return <AddressLink address={address} copyText={address} />;
+        return (
+            <AddressLink
+                address={address}
+                copyText={address}
+                className="[&>div]:max-w-[200px] [&>div]:truncate"
+                display="block"
+            />
+        );
     }
 
     return (
@@ -33,6 +40,8 @@ function StakerAddressLink({ address }: { address: string }) {
                 address={address}
                 copyText={address}
                 showAddressAlias={false}
+                className="[&>div]:max-w-[200px] [&>div]:truncate"
+                display="block"
                 label={
                     <span className="flex items-center gap-xxs">
                         <div className="h-3.5 w-3.5 shrink-0">
@@ -44,7 +53,7 @@ function StakerAddressLink({ address }: { address: string }) {
                                 rounded
                             />
                         </div>
-                        {addressAlias.alias}
+                        <span className="truncate">{addressAlias.alias}</span>
                     </span>
                 }
             />

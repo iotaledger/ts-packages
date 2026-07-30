@@ -3,20 +3,25 @@
 
 import { Feature } from '../enums';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { type Network } from '@iota/iota-sdk/client';
 import { useFeatureValue } from '@iota/apps-backend-client';
-import { useIotaClientQuery } from '@iota/dapp-kit';
+import { useIotaClientContext, useIotaClientQuery } from '@iota/dapp-kit';
+
+export interface KnownAddress {
+    name: string;
+    logo?: string;
+}
 
 const ADDRESSES_ALIAS_FALLBACK: KnownAddressAliasesFeature = {
     enabled: false,
     addresses: {},
 };
 
-type AddressAliasValue = string | { name: string; imageUrl?: string };
-type AddressAliases = Record<string, AddressAliasValue>;
+type AddressAliases = Record<string, KnownAddress>;
 
 type KnownAddressAliasesFeature = {
     enabled: boolean;
-    addresses: AddressAliases;
+    addresses: Partial<Record<Network, AddressAliases>>;
 };
 
 export interface ResolvedAddressAlias {
@@ -30,6 +35,8 @@ export function useAddressAliasLookup() {
         ADDRESSES_ALIAS_FALLBACK,
     );
 
+    const { network } = useIotaClientContext();
+
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
 
     const validatorsAddresses: Record<string, ResolvedAddressAlias> = Object.fromEntries(
@@ -39,18 +46,18 @@ export function useAddressAliasLookup() {
         ]) ?? [],
     );
 
+    const networkAddresses = knownAddresses.addresses[network as Network] ?? {};
+
     const knownAddressAliases: Record<string, ResolvedAddressAlias> = Object.fromEntries(
-        Object.entries(knownAddresses.addresses).map(([address, aliasValue]) => [
+        Object.entries(networkAddresses).map(([address, knownAddress]) => [
             address,
-            typeof aliasValue === 'string'
-                ? { alias: aliasValue }
-                : { alias: aliasValue.name, imageUrl: aliasValue.imageUrl },
+            { alias: knownAddress.name, imageUrl: knownAddress.logo },
         ]),
     );
 
     const addressAliasMap: Record<string, ResolvedAddressAlias> = {
-        ...validatorsAddresses,
         ...knownAddressAliases,
+        ...validatorsAddresses,
     };
 
     return (address: string): ResolvedAddressAlias | null => {
