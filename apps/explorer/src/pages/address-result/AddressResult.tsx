@@ -40,21 +40,19 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
         ? validator.imageUrl
         : (nameAvatarImageUrl ?? knownAddress?.imageUrl);
 
-    const leading = identityLabel ? (
+    const leading = identityImageUrl ? (
         <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
-            {identityImageUrl ? (
-                <ImageIcon
-                    src={identityImageUrl}
-                    label={identityLabel}
-                    fallback={identityLabel}
-                    size={ImageIconSize.Full}
-                    fallbackSize={ImageIconSize.Large}
-                />
-            ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                    <IotaLogoMark className="h-1/2 w-1/2 text-iota-neutral-10 dark:text-iota-neutral-92" />
-                </div>
-            )}
+            <ImageIcon
+                src={identityImageUrl}
+                label={identityLabel ?? ''}
+                fallback={identityLabel ?? ''}
+                size={ImageIconSize.Full}
+                fallbackSize={ImageIconSize.Large}
+            />
+        </div>
+    ) : knownAddress ? (
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+            <IotaLogoMark className="h-1/2 w-1/2 text-iota-neutral-10 dark:text-iota-neutral-92" />
         </div>
     ) : undefined;
 
