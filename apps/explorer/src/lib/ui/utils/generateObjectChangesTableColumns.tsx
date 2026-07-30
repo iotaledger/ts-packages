@@ -76,10 +76,19 @@ function CurrentOwnerCell({
     return (
         <TableCellBase>
             {ownerType === 'AddressOwner' && (
-                <AddressLink address={ownerAddress} copyText={ownerAddress} />
+                <AddressLink
+                    address={ownerAddress}
+                    copyText={ownerAddress}
+                    className="[&>div]:max-w-[200px] [&>div]:truncate"
+                    hideAlias
+                />
             )}
             {ownerType === 'ObjectOwner' && (
-                <ObjectLink objectId={ownerAddress} copyText={ownerAddress} />
+                <ObjectLink
+                    objectId={ownerAddress}
+                    copyText={ownerAddress}
+                    className="[&>div]:max-w-[200px] [&>div]:truncate"
+                />
             )}
             {ownerType === 'Shared' && <Badge type={BadgeType.Neutral} label="Shared" />}
         </TableCellBase>
@@ -111,6 +120,7 @@ export function generateObjectChangesTableColumns(): ColumnDef<ObjectChangeTable
                                 <ObjectLink
                                     objectId={row.original.objectId}
                                     copyText={row.original.objectId}
+                                    className="[&>div]:max-w-[200px] [&>div]:truncate"
                                 />
                             </div>
                         </div>
