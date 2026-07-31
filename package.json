@@ -96,7 +96,7 @@
 		]
 	},
 	"devDependencies": {
-		"@changesets/cli": "^2.27.5",
+		"@changesets/cli": "^2.31.1",
 		"@ianvs/prettier-plugin-sort-imports": "^4.4.2",
 		"@manypkg/cli": "^0.21.4",
 		"@tanstack/eslint-plugin-query": "^5.35.6",
