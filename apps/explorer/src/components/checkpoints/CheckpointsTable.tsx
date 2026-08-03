@@ -71,7 +71,7 @@ export function CheckpointsTable({
                     data={data.data}
                     columns={tableColumns}
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
-                    viewAll={!disablePagination ? '/recent?tab=checkpoints' : undefined}
+                    viewAll={disablePagination ? '/recent?tab=checkpoints' : undefined}
                     paginationOptions={
                         !disablePagination
                             ? {

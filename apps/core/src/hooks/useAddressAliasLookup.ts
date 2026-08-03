@@ -3,20 +3,31 @@
 
 import { Feature } from '../enums';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { type Network } from '@iota/iota-sdk/client';
 import { useFeatureValue } from '@iota/apps-backend-client';
-import { useIotaClientQuery } from '@iota/dapp-kit';
+import { useIotaClientContext, useIotaClientQuery } from '@iota/dapp-kit';
+
+export interface KnownAddress {
+    name: string;
+    logo?: string;
+}
 
 const ADDRESSES_ALIAS_FALLBACK: KnownAddressAliasesFeature = {
     enabled: false,
     addresses: {},
 };
 
-type AddressAliases = Record<string, string>;
+type AddressAliases = Record<string, KnownAddress>;
 
 type KnownAddressAliasesFeature = {
     enabled: boolean;
-    addresses: AddressAliases;
+    addresses: Partial<Record<Network, AddressAliases>>;
 };
+
+export interface ResolvedAddressAlias {
+    alias: string;
+    imageUrl?: string;
+}
 
 export function useAddressAliasLookup() {
     const knownAddresses = useFeatureValue<KnownAddressAliasesFeature>(
@@ -24,26 +35,38 @@ export function useAddressAliasLookup() {
         ADDRESSES_ALIAS_FALLBACK,
     );
 
+    const { network } = useIotaClientContext();
+
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
 
-    const validatorsAddresses = Object.fromEntries(
-        systemState?.activeValidators.map((validator) => [validator.iotaAddress, validator.name]) ??
-            [],
+    const validatorsAddresses: Record<string, ResolvedAddressAlias> = Object.fromEntries(
+        systemState?.activeValidators.map((validator) => [
+            validator.iotaAddress,
+            { alias: validator.name, imageUrl: validator.imageUrl },
+        ]) ?? [],
     );
 
-    const addressAliasMap = {
+    const networkAddresses = knownAddresses.addresses[network as Network] ?? {};
+
+    const knownAddressAliases: Record<string, ResolvedAddressAlias> = Object.fromEntries(
+        Object.entries(networkAddresses).map(([address, knownAddress]) => [
+            address,
+            { alias: knownAddress.name, imageUrl: knownAddress.logo },
+        ]),
+    );
+
+    const addressAliasMap: Record<string, ResolvedAddressAlias> = {
+        ...knownAddressAliases,
         ...validatorsAddresses,
-        ...knownAddresses.addresses,
     };
 
-    return (address: string): string | null => {
+    return (address: string): ResolvedAddressAlias | null => {
         if (!knownAddresses || !knownAddresses.enabled) {
             return null;
         }
 
         const normalized = normalizeIotaAddress(address);
-        const addressAlias = addressAliasMap[normalized];
 
-        return addressAlias;
+        return addressAliasMap[normalized] ?? null;
     };
 }
