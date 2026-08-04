@@ -3,9 +3,8 @@
 
 import { Feature } from '../enums';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
-import { type Network } from '@iota/iota-sdk/client';
 import { useFeatureValue } from '@iota/apps-backend-client';
-import { useIotaClientContext, useIotaClientQuery } from '@iota/dapp-kit';
+import { useIotaClientQuery } from '@iota/dapp-kit';
 
 export interface KnownAddress {
     name: string;
@@ -21,7 +20,7 @@ type AddressAliases = Record<string, KnownAddress>;
 
 type KnownAddressAliasesFeature = {
     enabled: boolean;
-    addresses: Partial<Record<Network, AddressAliases>>;
+    addresses: AddressAliases;
 };
 
 export interface ResolvedAddressAlias {
@@ -35,8 +34,6 @@ export function useAddressAliasLookup() {
         ADDRESSES_ALIAS_FALLBACK,
     );
 
-    const { network } = useIotaClientContext();
-
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
 
     const validatorsAddresses: Record<string, ResolvedAddressAlias> = Object.fromEntries(
@@ -46,10 +43,8 @@ export function useAddressAliasLookup() {
         ]) ?? [],
     );
 
-    const networkAddresses = knownAddresses.addresses[network as Network] ?? {};
-
     const knownAddressAliases: Record<string, ResolvedAddressAlias> = Object.fromEntries(
-        Object.entries(networkAddresses).map(([address, knownAddress]) => [
+        Object.entries(knownAddresses.addresses).map(([address, knownAddress]) => [
             address,
             { alias: knownAddress.name, imageUrl: knownAddress.logo },
         ]),

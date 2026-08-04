@@ -80,7 +80,6 @@ function CurrentOwnerCell({
                     address={ownerAddress}
                     copyText={ownerAddress}
                     className="[&>div]:max-w-[200px] [&>div]:truncate"
-                    hideAlias
                 />
             )}
             {ownerType === 'ObjectOwner' && (
