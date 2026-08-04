@@ -41,8 +41,8 @@ export function AddressAlias({
         noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
 
     const copyButton = onCopy && (
-        <ButtonUnstyled onClick={onCopy} className="ms-xxs inline-flex h-4 w-4 align-middle">
-            <Copy className="h-full w-full hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
+        <ButtonUnstyled onClick={onCopy} className="ms-xxs inline-flex align-middle text-body-md">
+            <Copy className="hover:text-opacity-80 transition-colors cursor-pointer text-iota-neutral-60 dark:text-iota-neutral-40" />
         </ButtonUnstyled>
     );
 
