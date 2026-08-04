@@ -133,7 +133,6 @@ export function generateActivityTableColumns(
                             address={sender}
                             copyText={sender}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            hideAlias
                             showValidatorImage
                         />
                     </TableCellBase>
@@ -161,7 +160,6 @@ export function generateActivityTableColumns(
                             address={counterparty}
                             copyText={counterparty}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            hideAlias
                             showValidatorImage
                         />
                     </TableCellBase>
