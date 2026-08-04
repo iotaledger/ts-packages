@@ -15,7 +15,11 @@ interface AddressAliasProps {
     noTruncate?: boolean;
     truncateUnknown?: boolean;
     onCopy?: (e: React.MouseEvent<HTMLButtonElement>) => void;
-    renderAddress?: (addressToDisplay: string, copyButton: React.ReactNode) => React.ReactNode;
+    renderAddress?: (
+        addressToDisplay: string,
+        copyButton: React.ReactNode,
+        hasAlias: boolean,
+    ) => React.ReactNode;
     renderAlias?: (addressAlias: string) => React.ReactNode;
     hideAlias?: boolean;
 }
@@ -50,27 +54,31 @@ export function AddressAlias({
             {!hideAlias && addressAlias && (
                 <div
                     className={cx(
-                        'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
+                        'flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
-                    {addressAlias.imageUrl ? (
-                        <ImageIcon
-                            src={addressAlias.imageUrl}
-                            label={addressAlias.alias}
-                            fallback={addressAlias.alias}
-                            size={ImageIconSize.Small}
-                            rounded
-                        />
-                    ) : (
-                        <IotaLogoMark className="h-full aspect-square shrink-0" />
-                    )}
-                    {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
+                    <div className="h-5 w-5 shrink-0">
+                        {addressAlias.imageUrl ? (
+                            <ImageIcon
+                                src={addressAlias.imageUrl}
+                                label={addressAlias.alias}
+                                fallback={addressAlias.alias}
+                                size={ImageIconSize.Small}
+                                rounded
+                            />
+                        ) : (
+                            <IotaLogoMark className="h-full w-full" />
+                        )}
+                    </div>
+                    <span className="min-w-0 flex-1 truncate">
+                        {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
+                    </span>
                 </div>
             )}
 
-            <div className="break-all">
+            <div className={cx('break-all', { 'text-body-sm': !!addressAlias })}>
                 {renderAddress ? (
-                    renderAddress(addressToDisplay, copyButton)
+                    renderAddress(addressToDisplay, copyButton, !!addressAlias)
                 ) : (
                     <>
                         {addressHead}
