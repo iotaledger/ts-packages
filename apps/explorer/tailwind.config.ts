@@ -9,20 +9,14 @@ import plugin from 'tailwindcss/plugin';
 import uiKitResponsivePreset from '../../apps/ui-kit/src/lib/tailwind/responsive.presets';
 import { pxToRem } from '../../apps/ui-kit/src/lib/tailwind/helpers';
 
-/** Explorer-only, so that the ui-kit breakpoints keep serving the other apps unchanged. */
 const CONTAINER_BREAKPOINTS = {
     tablet: 1024,
     desktop: 1280,
     ultrawide: 1920,
 };
 
-const CONTAINER_MAX_WIDTH = 2160;
+const CONTAINER_MAX_WIDTH = 1600;
 
-/**
- * Replaces the container of the ui-kit preset, which caps the page well below the width of a common
- * monitor and leaves the data tables cramped. It wins over the `.container` of the ui-kit
- * stylesheet, imported ahead of the components layer in `index.css`.
- */
 const fluidContainer = {
     width: '100%',
     maxWidth: pxToRem(CONTAINER_MAX_WIDTH),
