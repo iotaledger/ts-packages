@@ -121,6 +121,8 @@ export function ValidatorsCard() {
                             amount={totalDelegatedStake}
                             formatted={totalDelegatedStakeFormatted}
                             symbol={symbol}
+                            direction="column"
+                            showApproxSymbol={false}
                         />
                     }
                 />
@@ -131,6 +133,8 @@ export function ValidatorsCard() {
                             amount={totalDelegatedRewards}
                             formatted={totalDelegatedRewardsFormatted}
                             symbol={symbol}
+                            direction="column"
+                            showApproxSymbol={false}
                         />
                     }
                 />

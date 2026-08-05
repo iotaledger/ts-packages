@@ -67,7 +67,7 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
     );
 
     return (
-        <>
+        <div className="flex flex-col gap-xxs">
             <div className="flex items-baseline gap-0.5">
                 {shouldShowTooltip && isBalanceVisible ? (
                     <Tooltip
@@ -102,6 +102,6 @@ export function CoinBalance({ amount: walletBalance, type }: CoinProps) {
                 </div>
             </div>
             <WalletBalanceUsd amount={walletBalance} coinType={type} isVisible={isBalanceVisible} />
-        </>
+        </div>
     );
 }

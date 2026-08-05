@@ -39,7 +39,7 @@ export function StakedCard({
     const { principal, stakeRequestEpoch, estimatedReward, validatorAddress } = extendedStake;
     const { data } = useIotaClientQuery('getLatestIotaSystemState');
 
-    const { title, subtitle } = useStakeRewardStatus({
+    const { title, subtitle, rewards, isRewardAmount } = useStakeRewardStatus({
         stakeRequestEpoch,
         currentEpoch,
         estimatedReward,
@@ -49,6 +49,9 @@ export function StakedCard({
 
     const [principalStaked, symbol] = useFormatCoin({
         balance: principal,
+    });
+    const [rewardsFormatted, rewardsSymbol] = useFormatCoin({
+        balance: rewards,
     });
 
     const validatorMeta = useMemo(() => {
@@ -92,7 +95,24 @@ export function StakedCard({
                 }
                 tooltipPosition={TooltipPosition.Bottom}
             />
-            <CardAction title={title} subtitle={subtitle} type={CardActionType.SupportingText} />
+            <CardAction
+                title={
+                    isRewardAmount ? (
+                        <AmountWithFiat
+                            amount={rewards}
+                            formatted={rewardsFormatted}
+                            symbol={rewardsSymbol}
+                            direction="column"
+                            showApproxSymbol={false}
+                            align="end"
+                        />
+                    ) : (
+                        title
+                    )
+                }
+                subtitle={subtitle}
+                type={CardActionType.SupportingText}
+            />
         </Card>
     );
 }
