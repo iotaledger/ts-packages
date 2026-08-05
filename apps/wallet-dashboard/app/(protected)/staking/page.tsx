@@ -173,6 +173,7 @@ function StakingDashboardPage(): React.JSX.Element {
                                             amount={totalDelegatedStake}
                                             formatted={totalDelegatedStakeFormatted}
                                             symbol={symbol}
+                                            showApproxSymbol={false}
                                         />
                                     }
                                 />
@@ -183,6 +184,7 @@ function StakingDashboardPage(): React.JSX.Element {
                                             amount={totalDelegatedRewards}
                                             formatted={totalDelegatedRewardsFormatted}
                                             symbol={symbol}
+                                            showApproxSymbol={false}
                                         />
                                     }
                                 />

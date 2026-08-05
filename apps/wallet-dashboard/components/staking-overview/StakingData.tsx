@@ -44,7 +44,6 @@ export function StakingData({ stakingData }: StakingDataProps) {
                                     amount={totalDelegatedStake}
                                     formatted={formattedDelegatedStake}
                                     symbol={stakeSymbol}
-                                    direction="column"
                                     showApproxSymbol={false}
                                 />
                             ) : (
@@ -65,7 +64,6 @@ export function StakingData({ stakingData }: StakingDataProps) {
                                     amount={totalDelegatedRewards}
                                     formatted={formattedDelegatedRewards}
                                     symbol={rewardsSymbol}
-                                    direction="column"
                                     showApproxSymbol={false}
                                 />
                             ) : (
