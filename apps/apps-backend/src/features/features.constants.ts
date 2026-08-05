@@ -16,7 +16,7 @@ export type KnownAddresses = Record<string, KnownAddress>;
 
 const KNOWN_LOGOS_BASE_URL = 'https://files.iota.org/media/tooling/logos';
 
-const SYSTEM_ADDRESSES_ALIASES: KnownAddresses = {
+export const ADDRESSES_ALIASES: KnownAddresses = {
     '0x0': { name: 'IOTA System Account' },
     '0x1': { name: 'Move stdlib Package' },
     '0x2': { name: 'IOTA Framework Package' },
@@ -29,9 +29,6 @@ const SYSTEM_ADDRESSES_ALIASES: KnownAddresses = {
     '0x107a': { name: 'Stardust Package' },
     '0xb': { name: 'Bridge Package' },
     '0x403': { name: 'IOTA Denylist Object' },
-};
-
-const MAINNET_ADDRESSES_ALIASES: KnownAddresses = {
     '0x7b4a34f6a011794f0ecbe5e5beb96102d3eef6122eb929b9f50a8d757bfbdd67': { name: 'IOTA EVM' },
     '0xbeb1ba753fd0bbc0f5470b3948345da6dc870c0421d809cfc3abe95b70f625a7': {
         name: 'Legacy Migrator',
@@ -41,6 +38,22 @@ const MAINNET_ADDRESSES_ALIASES: KnownAddresses = {
         logo: `${KNOWN_LOGOS_BASE_URL}/apedao.jpg`,
     },
     '0x5b8bc6d08c969775fea5bb15a712cbfad696cda1c6fb1354f4262f356dc40d7a': {
+        name: 'Binance',
+        logo: `${KNOWN_LOGOS_BASE_URL}/binance.jpg`,
+    },
+    '0x51c55f985d6d42947778c854a650d376735c220465b4b6abe9d638b0ccc9e8eb': {
+        name: 'Binance',
+        logo: `${KNOWN_LOGOS_BASE_URL}/binance.jpg`,
+    },
+    '0x8fdb3e3f572db83587ce7b8448b8da75f38298fe8a750849600daed29936e01e': {
+        name: 'Binance',
+        logo: `${KNOWN_LOGOS_BASE_URL}/binance.jpg`,
+    },
+    '0x36149c837c7d35bb731b15a5a58ebc53984fffe90ddbc9e71dff0fb629342bae': {
+        name: 'Binance',
+        logo: `${KNOWN_LOGOS_BASE_URL}/binance.jpg`,
+    },
+    '0x8faecad6b6ee729b1a6759bde4a15dd0361f28af73da5f384d31061920ca3a16': {
         name: 'Binance',
         logo: `${KNOWN_LOGOS_BASE_URL}/binance.jpg`,
     },
@@ -75,34 +88,17 @@ const MAINNET_ADDRESSES_ALIASES: KnownAddresses = {
         name: 'TWIN Gas Station',
         logo: `${KNOWN_LOGOS_BASE_URL}/twin.png`,
     },
-};
-
-const TESTNET_ADDRESSES_ALIASES: KnownAddresses = {
     '0x32bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2': {
         name: 'IOTA Testnet Faucet',
     },
 };
 
-export const ADDRESSES_ALIASES: Record<Network, KnownAddresses> = {
-    [Network.Mainnet]: { ...SYSTEM_ADDRESSES_ALIASES, ...MAINNET_ADDRESSES_ALIASES },
-    [Network.Testnet]: { ...SYSTEM_ADDRESSES_ALIASES, ...TESTNET_ADDRESSES_ALIASES },
-    [Network.Devnet]: SYSTEM_ADDRESSES_ALIASES,
-    [Network.Localnet]: SYSTEM_ADDRESSES_ALIASES,
-    [Network.Custom]: SYSTEM_ADDRESSES_ALIASES,
-};
-
-function normalizeAddressKeys(addresses: KnownAddresses): KnownAddresses {
-    return Object.fromEntries(
-        Object.entries(addresses).map(([address, alias]) => [normalizeIotaAddress(address), alias]),
-    );
-}
-
-export const KNOWN_ADDRESSES_ALIASES = Object.fromEntries(
-    Object.entries(ADDRESSES_ALIASES).map(([network, addresses]) => [
-        network,
-        normalizeAddressKeys(addresses),
+export const KNOWN_ADDRESSES_ALIASES: KnownAddresses = Object.fromEntries(
+    Object.entries(ADDRESSES_ALIASES).map(([address, alias]) => [
+        normalizeIotaAddress(address),
+        alias,
     ]),
-) as Record<Network, KnownAddresses>;
+);
 
 export const NAME_ADDRESS_RESOLUTION_FEATURE: FeatureEnabledByNetwork = {
     [Network.Mainnet]: true,
