@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import cx from 'classnames';
 import { Copy, Info } from '@iota/apps-ui-icons';
-import { ValueSize } from './keyValue.enums';
+import { KeyColumnWidth, ValueSize } from './keyValue.enums';
 import type { TooltipPosition } from '../tooltip';
 import { Tooltip } from '../tooltip';
 import { ButtonUnstyled } from '../button';
@@ -66,6 +66,10 @@ interface KeyValueProps {
      * Text shown on value hover.
      */
     valueHoverTitle?: string;
+    /**
+     * The width of the key column, relative to the value column (optional).
+     */
+    keyColumnWidth?: KeyColumnWidth;
 }
 
 export function KeyValueInfo({
@@ -83,6 +87,7 @@ export function KeyValueInfo({
     fullwidth,
     isReverse = false,
     valueHoverTitle,
+    keyColumnWidth = KeyColumnWidth.Default,
 }: KeyValueProps): React.JSX.Element {
     const flexDirectionClass = isReverse ? 'flex-row-reverse' : 'flex-row';
     async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
@@ -104,7 +109,7 @@ export function KeyValueInfo({
     return (
         <div
             className={cx(
-                'flex w-full items-baseline gap-xs py-xxs font-inter',
+                'flex w-full items-baseline gap-sm py-xxs font-inter',
                 flexDirectionClass,
                 {
                     'flex-wrap justify-between': fullwidth,
@@ -112,12 +117,13 @@ export function KeyValueInfo({
             )}
         >
             <div
-                className={cx('flex shrink-0 flex-row items-center gap-x-0.5', {
-                    'w-1/4': !fullwidth,
+                className={cx('flex min-w-0 shrink-0 flex-row items-center gap-x-0.5', {
+                    'w-1/4': !fullwidth && keyColumnWidth === KeyColumnWidth.Default,
+                    'w-2/5': !fullwidth && keyColumnWidth === KeyColumnWidth.Wide,
                 })}
             >
                 {keyIcon}
-                <span className="key-value-key-text-color break-normal text-body-md">
+                <span className="key-value-key-text-color min-w-0 break-normal break-words text-body-md">
                     {keyText}
                 </span>
                 {tooltipText && (
@@ -128,7 +134,8 @@ export function KeyValueInfo({
             </div>
             <div
                 className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
-                    'w-3/4': !fullwidth,
+                    'w-3/4': !fullwidth && keyColumnWidth === KeyColumnWidth.Default,
+                    'w-3/5': !fullwidth && keyColumnWidth === KeyColumnWidth.Wide,
                     'flex-wrap': fullwidth,
                     truncate: isTruncated,
                 })}
