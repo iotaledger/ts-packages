@@ -16,7 +16,7 @@ import { beforeAll, expect, test } from 'vitest';
 import { CONFIG } from './config';
 import { Wallet } from 'ethers';
 import { bcs } from '@iota/iota-sdk/bcs';
-import { checkL2BalanceWithRetries, requestFunds } from './utils';
+import { checkL2BalanceWithRetries, requestFunds, waitForCoins } from './utils';
 
 const { L1 } = CONFIG;
 
@@ -36,6 +36,8 @@ test('Send IOTA', async () => {
         host: L1.faucetUrl!,
         recipient: address,
     });
+
+    await waitForCoins(client, address);
 
     const wallet = Wallet.createRandom();
 

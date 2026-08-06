@@ -9,8 +9,32 @@ import type { AssetsResponse } from '../src/index.js';
 import { EvmRpcClient } from '../src/index.js';
 import { CONFIG } from './config.js';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
+import { retry } from 'ts-retry-promise';
 
 const { L2 } = CONFIG;
+
+const COIN_VISIBILITY_TIMEOUT_MS = 60_000;
+
+/**
+ * Wait in case indexer lags but faucet request returns successful.
+ */
+export async function waitForCoins(client: IotaClient, address: string) {
+    try {
+        await retry(() => client.getCoins({ owner: address }), {
+            until: ({ data }) => data.length > 0,
+            retries: 'INFINITELY',
+            timeout: COIN_VISIBILITY_TIMEOUT_MS,
+            delay: 500,
+            backoff: 'EXPONENTIAL',
+            maxBackOff: 8_000,
+            logger: (msg) => console.warn(`Retrying getting coins for ${address}: ${msg}`),
+        });
+    } catch {
+        throw new Error(
+            `No coins visible for ${address} within ${COIN_VISIBILITY_TIMEOUT_MS} ms of a successful faucet request.`,
+        );
+    }
+}
 
 export async function requestFunds(
     client: IotaClient,
@@ -24,6 +48,8 @@ export async function requestFunds(
         host: faucetUrl,
         recipient: address,
     });
+
+    await waitForCoins(client, address);
 
     const transaction = new Transaction();
     const [coin] = transaction.splitCoins(transaction.gas, [1n * NANOS_PER_IOTA]);
@@ -41,32 +67,39 @@ export async function requestFunds(
 export async function checkL2BalanceWithRetries(
     address: string,
     coinType?: string,
-    maxRetries = 10,
+    timeout = 60_000,
     delay = 2500,
 ): Promise<AssetsResponse | null> {
     const evmClient = new EvmRpcClient(L2.evmRpcUrl);
     let evmBalance: AssetsResponse | null = null;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            evmBalance = await evmClient.getBalanceBaseToken(address);
-        } catch (error) {
-            console.error('Error checking balance:', error);
-        } finally {
-            const nativeToken = evmBalance?.nativeTokens?.find((t) => t.coinType === coinType);
-            const nativeTokenBalance = nativeToken ? nativeToken.balance : '0';
+    function hasExpectedBalances(balance: AssetsResponse) {
+        const nativeToken = balance.nativeTokens?.find((t) => t.coinType === coinType);
+        const nativeTokenBalance = nativeToken ? nativeToken.balance : '0';
+        return (
+            !balance.baseTokens.startsWith('0') &&
+            (!coinType || !nativeTokenBalance.startsWith('0'))
+        );
+    }
 
-            if (
-                (evmBalance?.baseTokens.startsWith('0') ||
-                    (coinType && nativeTokenBalance.startsWith('0'))) &&
-                attempt < maxRetries
-            ) {
-                console.log(
-                    `Fetching EVM balance attempt ${attempt + 1} out of ${maxRetries} in ${delay} ms`,
-                );
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-        }
+    try {
+        await retry(
+            async () => {
+                evmBalance = await evmClient.getBalanceBaseToken(address);
+                return evmBalance;
+            },
+            {
+                until: hasExpectedBalances,
+                retries: 'INFINITELY',
+                timeout,
+                delay,
+                backoff: 'EXPONENTIAL',
+                maxBackOff: 10_000,
+                logger: (msg) => console.log(`Retrying fetching EVM balance: ${msg}`),
+            },
+        );
+    } catch (error) {
+        console.error('EVM balance did not reach the expected amounts:', error);
     }
 
     return evmBalance;
