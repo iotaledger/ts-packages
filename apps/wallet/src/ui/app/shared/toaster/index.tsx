@@ -4,6 +4,7 @@
 
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useMenuIsOpen } from '_components';
 import { Portal } from '../Portal';
 import { Toaster as ToasterCore, toast, useToasterStore } from '@iota/core';
 
@@ -18,8 +19,23 @@ const ROUTES_WITH_BOTTOM_CONTENT = [
 
 const LIMIT_MAX_TOASTS = 5;
 
+function getBottomSpace(pathname: string, isMenuVisible: boolean, hasBottomNavSpace: boolean) {
+    if (isMenuVisible) {
+        return ' !bottom-28';
+    }
+
+    const hasBottomContent = ROUTES_WITH_BOTTOM_CONTENT.some((path) => pathname.startsWith(path));
+
+    if (hasBottomNavSpace || hasBottomContent) {
+        return ' !bottom-20';
+    }
+
+    return '';
+}
+
 export function Toaster({ bottomNavEnabled = false }: { bottomNavEnabled?: boolean }) {
     const { pathname } = useLocation();
+    const menuVisible = useMenuIsOpen();
     const { toasts } = useToasterStore();
 
     useEffect(() => {
@@ -29,11 +45,12 @@ export function Toaster({ bottomNavEnabled = false }: { bottomNavEnabled?: boole
             .forEach((t) => toast.dismiss(t.id));
     }, [toasts]);
 
-    const hasBottomContent = ROUTES_WITH_BOTTOM_CONTENT.some((path) => pathname.startsWith(path));
+    const bottomSpace = getBottomSpace(pathname, menuVisible, bottomNavEnabled);
+
     return (
         <Portal containerId="toaster-portal-container">
             <ToasterCore
-                containerClassName={`!absolute transition-all${bottomNavEnabled || hasBottomContent ? ' !bottom-20' : ''}`}
+                containerClassName={`!absolute transition-all${bottomSpace}`}
                 snackbarWrapClassName="w-full break-words"
             />
         </Portal>
