@@ -15,6 +15,10 @@ interface KeyValueProps {
      */
     keyText: string;
     /**
+     * An icon shown next to the key text (optional).
+     */
+    keyIcon?: ReactNode;
+    /**
      * The value of the KeyValue.
      */
     value: ReactNode;
@@ -29,7 +33,7 @@ interface KeyValueProps {
     /**
      * The supporting label of the KeyValue (optional).
      */
-    supportingLabel?: string;
+    supportingLabel?: string | ReactNode;
     /**
      * The size of the value (optional).
      */
@@ -66,6 +70,7 @@ interface KeyValueProps {
 
 export function KeyValueInfo({
     keyText,
+    keyIcon,
     value,
     tooltipPosition,
     tooltipText,
@@ -102,7 +107,7 @@ export function KeyValueInfo({
                 'flex w-full items-baseline gap-xs py-xxs font-inter',
                 flexDirectionClass,
                 {
-                    'justify-between': fullwidth,
+                    'flex-wrap justify-between': fullwidth,
                 },
             )}
         >
@@ -111,7 +116,10 @@ export function KeyValueInfo({
                     'w-1/4': !fullwidth,
                 })}
             >
-                <span className="key-value-key-text-color text-body-md">{keyText}</span>
+                {keyIcon}
+                <span className="key-value-key-text-color break-normal text-body-md">
+                    {keyText}
+                </span>
                 {tooltipText && (
                     <Tooltip text={tooltipText} position={tooltipPosition}>
                         <Info className="key-supporting-text-color" />
@@ -119,15 +127,16 @@ export function KeyValueInfo({
                 )}
             </div>
             <div
-                className={cx('flex flex-row items-baseline gap-1 break-all', {
+                className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
                     'w-3/4': !fullwidth,
+                    'flex-wrap': fullwidth,
                     truncate: isTruncated,
                 })}
             >
                 <span
                     title={valueHoverTitle}
                     className={cx(
-                        'key-value-hover-text-color',
+                        'key-value-hover-text-color min-w-0',
                         size === ValueSize.Medium ? 'text-body-lg' : 'text-body-md',
                         { truncate: isTruncated },
                     )}

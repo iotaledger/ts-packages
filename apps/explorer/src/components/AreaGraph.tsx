@@ -62,7 +62,6 @@ export function AreaGraph<D>({
     const graphLeft = 0;
     const graphRight = Math.max(0, width - 0);
     const [fillGradientID] = useState(() => getID('areaGraph_fillGradient'));
-    const [lineGradientID] = useState(() => getID('areaGraph_lineGradient'));
     const [patternID] = useState(() => getID('areaGraph_pattern'));
     const { TooltipInPortal, containerRef } = useTooltipInPortal({
         scroll: true,
@@ -81,9 +80,11 @@ export function AreaGraph<D>({
         [data, graphRight, graphLeft, getX],
     );
     const yScale = useMemo(() => {
-        const [min, max] = extent(data, getY) as [number, number];
+        const [min = 0, max = 0] = extent(data, getY) as [number, number];
+        const span = max - min;
+        const padding = Math.max(span * 0.1, Math.abs(max) * 0.05) || 1;
         return scaleLinear<number>({
-            domain: [min - min * 0.3, max],
+            domain: [min - padding, max + padding],
             range: [graphBottom, graphTop],
             nice: true,
         });
@@ -151,12 +152,6 @@ export function AreaGraph<D>({
                             className="text-shader-primary-light-0 dark:text-shader-primary-dark-0"
                         />
                     </linearGradient>
-                    <linearGradient id={lineGradientID}>
-                        <stop
-                            stopColor="currentColor"
-                            className="text-iota-primary-30 dark:text-iota-primary-80"
-                        />
-                    </linearGradient>
                 </defs>
                 <AreaClosed<D>
                     curve={curve}
@@ -181,7 +176,8 @@ export function AreaGraph<D>({
                     data={data}
                     x={(d) => xScale(getX(d))}
                     y={(d) => yScale(getY(d))}
-                    stroke={`url(#${lineGradientID})`}
+                    className="text-iota-primary-30 dark:text-iota-primary-80"
+                    stroke="currentColor"
                     strokeWidth="2"
                 />
                 <AxisBottom
