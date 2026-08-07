@@ -7,10 +7,12 @@ import {
     type IotaArgument,
     type IotaMovePackage,
 } from '@iota/iota-sdk/client';
+import { KeyValueInfo } from '@iota/apps-ui-kit';
 import { flattenIotaArguments } from './utils';
 import { ErrorBoundary } from '~/components';
 import { ObjectLink } from '~/components/ui';
-import { trimOrFormatAddress } from '@iota/iota-sdk/utils';
+import { useBreakpoint } from '~/hooks';
+import { formatAddress } from '@iota/iota-sdk/utils';
 
 interface TransactionProps<T> {
     type: string;
@@ -39,34 +41,48 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
         arguments: args,
         type_arguments: typeArgs,
     } = data;
+    const isMediumOrAbove = useBreakpoint('md');
 
     return (
-        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            package:{' '}
-            <span className="inline-flex">
-                <ObjectLink
-                    objectId={movePackage}
-                    label={trimOrFormatAddress(movePackage)}
-                    showAddressAlias={false}
-                />
-            </span>
-            , module:{' '}
-            <span className="inline-flex">
-                <ObjectLink
-                    objectId={`${movePackage}?module=${module}`}
-                    label={`'${module}'`}
-                    showAddressAlias={false}
-                />
-            </span>
-            , function:{' '}
-            <span className="break-all text-iota-primary-30 dark:text-iota-primary-80">{func}</span>
+        <div className="flex flex-col gap-xs">
+            <KeyValueInfo
+                keyText="Package"
+                value={
+                    <ObjectLink
+                        objectId={movePackage}
+                        label={formatAddress(movePackage)}
+                        copyText={movePackage}
+                    />
+                }
+                fullwidth={!isMediumOrAbove}
+            />
+            <KeyValueInfo
+                keyText="Module"
+                value={
+                    <ObjectLink
+                        objectId={`${movePackage}?module=${module}`}
+                        label={module}
+                        showAddressAlias={false}
+                    />
+                }
+                fullwidth={!isMediumOrAbove}
+            />
+            <KeyValueInfo keyText="Function" value={func} fullwidth={!isMediumOrAbove} />
             {args && (
-                <span className="break-all">, arguments: [{flattenIotaArguments(args!)}]</span>
+                <KeyValueInfo
+                    keyText="Arguments"
+                    value={`[${flattenIotaArguments(args)}]`}
+                    fullwidth={!isMediumOrAbove}
+                />
             )}
             {typeArgs && (
-                <span className="break-all">, type_arguments: [{typeArgs.join(', ')}]</span>
+                <KeyValueInfo
+                    keyText="Type Arguments"
+                    value={typeArgs.join(', ')}
+                    fullwidth={!isMediumOrAbove}
+                />
             )}
-        </span>
+        </div>
     );
 }
 

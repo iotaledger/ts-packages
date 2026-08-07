@@ -1,6 +1,6 @@
 {
     "name": "@iota/apps-ui-kit",
-    "version": "0.10.1",
+    "version": "0.11.0",
     "sideEffects": false,
     "repository": "https://github.com/iotaledger/ts-packages",
     "license": "Apache-2.0",
