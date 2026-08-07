@@ -7,7 +7,7 @@ import { NAVBAR_ITEM_PATHS } from './navigation';
 
 export const HOME_PATH = NAVBAR_ITEM_PATHS.home;
 
-const TAB_BAR_PATHS = new Set<string>(
+export const TAB_BAR_PATHS = new Set<string>(
     Object.values(NAVBAR_ITEM_PATHS).filter((p) => p !== HOME_PATH),
 );
 

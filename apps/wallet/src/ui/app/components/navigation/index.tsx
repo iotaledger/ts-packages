@@ -33,7 +33,7 @@ export function Navigation() {
     function handleItemClick(id: string) {
         const item = NAVBAR_ITEMS.find((item) => item.id === id);
         if (item && !item.isDisabled) {
-            navigate(item.path);
+            navigate(item.path, { replace: true });
         }
     }
 

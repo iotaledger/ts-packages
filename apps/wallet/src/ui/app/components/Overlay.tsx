@@ -58,7 +58,7 @@ export function Overlay({
                         <Header
                             onBack={depth >= 1 ? handleBack : undefined}
                             title={title}
-                            onClose={!hideCloseIcon && depth >= 2 ? closeModal : undefined}
+                            onClose={!hideCloseIcon ? closeModal : undefined}
                             titleCentered={titleCentered}
                             testId="overlay-title"
                         />
