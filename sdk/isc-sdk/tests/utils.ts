@@ -68,7 +68,7 @@ export async function requestFunds(
     transaction,
   });
 
-  await client.waitForTransaction({ digest });
+  await client.waitForTransaction({ digest, waitMode: "indexed-on-node" });
 }
 
 export async function checkL2BalanceWithRetries(
