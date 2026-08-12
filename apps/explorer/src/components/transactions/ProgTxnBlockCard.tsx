@@ -15,27 +15,24 @@ interface ProgrammableTxnBlockCardProps {
     itemsLabel: string;
     defaultItemsToShow?: number;
     noExpandableList?: boolean;
-    count?: number;
-    initialClose?: boolean;
+    rawData?: unknown;
 }
 
 export function ProgrammableTxnBlockCard({
     items,
     itemsLabel,
     noExpandableList,
-    count,
-    initialClose,
     defaultItemsToShow,
+    rawData,
 }: ProgrammableTxnBlockCardProps): JSX.Element | null {
     if (!items?.length) {
         return null;
     }
 
-    const cardTitle = count ? `${count} ${itemsLabel}` : itemsLabel;
     const itemsToShow = defaultItemsToShow || items.length;
 
     return (
-        <CollapsibleCard collapsible initialClose={initialClose} title={cardTitle} hideBorder>
+        <CollapsibleCard title={itemsLabel} hideBorder rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
                 <div className="flex flex-col gap-xs overflow-y-auto p-md--rs pt-xs--rs">
                     {noExpandableList ? <>{items}</> : <ExpandableListItems />}

@@ -2,11 +2,10 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { KeyValueInfo } from '@iota/apps-ui-kit';
 import { useFormatCoin } from '@iota/core';
 import { type CoinStruct } from '@iota/iota-sdk/client';
-import { CoinFormat, formatAddress } from '@iota/iota-sdk/utils';
-import { ObjectLink } from '../ui';
+import { CoinFormat, formatAddress, formatDigest } from '@iota/iota-sdk/utils';
+import { ObjectLink, TransactionLink } from '../ui';
 
 interface CoinItemProps {
     coin: CoinStruct;
@@ -18,18 +17,59 @@ export function CoinItem({ coin }: CoinItemProps): JSX.Element {
         coinType: coin.coinType,
         format: CoinFormat.Full,
     });
-    return (
-        <KeyValueInfo
-            keyText={`${formattedBalance} ${symbol}`}
-            isReverse
-            value={
-                <ObjectLink
-                    objectId={coin.coinObjectId}
-                    label={formatAddress(coin.coinObjectId)}
-                    copyText={coin.coinObjectId}
-                />
-            }
-            fullwidth
+
+    const objectLink = (
+        <ObjectLink
+            objectId={coin.coinObjectId}
+            label={formatAddress(coin.coinObjectId)}
+            copyText={coin.coinObjectId}
         />
+    );
+    const transactionLink = (
+        <TransactionLink
+            digest={coin.previousTransaction}
+            label={formatDigest(coin.previousTransaction)}
+            copyText={coin.previousTransaction}
+        />
+    );
+    const amount = (
+        <div className="flex min-w-0 flex-row items-baseline gap-x-xxs">
+            <span className="truncate text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                {formattedBalance}
+            </span>
+            <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                {symbol}
+            </span>
+        </div>
+    );
+
+    return (
+        <div>
+            <div className="flex flex-col gap-xxs rounded-lg bg-iota-neutral-96 p-sm sm:hidden dark:bg-iota-neutral-10">
+                <div className="flex flex-col items-start justify-between gap-y-xxs whitespace-nowrap text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <span className="flex flex-row gap-x-xs">Object ID: {objectLink}</span>
+                    <span className="flex flex-row gap-x-xs">Amount: {amount}</span>
+                </div>
+                <div className="flex flex-col items-start justify-between gap-y-xxs">
+                    <span className="min-w-0 truncate text-body-sm tabular-nums text-iota-neutral-40 dark:text-iota-neutral-60">
+                        Version: {coin.version}
+                    </span>
+                    <div className="flex shrink-0 flex-row items-baseline gap-x-xs">
+                        <span className="whitespace-nowrap text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                            Last Tx
+                        </span>
+                        {transactionLink}
+                    </div>
+                </div>
+            </div>
+            <div className="hidden items-center gap-x-sm sm:grid sm:grid-cols-4">
+                {objectLink}
+                {amount}
+                <span className="text-body-md tabular-nums text-iota-neutral-40 dark:text-iota-neutral-60">
+                    {coin.version}
+                </span>
+                {transactionLink}
+            </div>
+        </div>
     );
 }
