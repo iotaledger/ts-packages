@@ -61,6 +61,7 @@
         "dotenv": "^16.4.5",
         "ethers": "^6.13.5",
         "tailwindcss": "^3.3.3",
+        "ts-retry-promise": "^0.8.1",
         "typescript": "^5.5.3",
         "vite": "^8.0.1",
         "vite-node": "^6.0.0"

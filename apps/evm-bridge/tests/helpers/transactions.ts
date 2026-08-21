@@ -8,6 +8,7 @@ import { TOOL_COIN_OBJECT_ID, TOOL_COIN_TYPE } from '../utils/constants';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { bcs } from '@iota/iota-sdk/bcs';
 import { Page } from '@playwright/test';
+import { waitForL1Coins } from '../utils/utils';
 
 export async function fundL1AddressWithNativeTokens(
     senderAddress: string,
@@ -125,6 +126,9 @@ export async function requestFundsFromFaucet(addressL1: string) {
         });
 
         console.log(`✅ Faucet request successful for ${addressL1}`);
+
+        const client = new IotaClient({ url: L1.rpcUrl });
+        await waitForL1Coins(client, addressL1);
     } catch (error) {
         console.error(`❌ Faucet request failed for ${addressL1}:`, error);
     }
