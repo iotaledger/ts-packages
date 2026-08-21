@@ -2,7 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { type ComponentProps } from 'react';
+import { KeyValueInfo as BaseKeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
@@ -18,6 +19,10 @@ import { useBreakpoint } from '~/hooks';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
 const REGEX_NUMBER = /^\d+$/;
+
+function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
+    return <BaseKeyValueInfo {...props} layout="receipt" />;
+}
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
@@ -126,12 +131,13 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
             title={`Input ${index}`}
             supportingTitleElement={<InputSupportingElement input={input} />}
             collapsible
+            compactHeader
             initialClose
             titleSize={TitleSize.Small}
         >
             <div
                 data-testid="inputs-card-content"
-                className="flex flex-col gap-2 px-md pb-lg pt-xs md:max-w-4xl"
+                className="mx-auto flex w-full max-w-5xl flex-col gap-xxs px-md pb-lg pt-xs"
             >
                 {Object.entries(input).map(([key, value]) => {
                     let renderValue;

@@ -1,8 +1,14 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
-import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
+import { type ComponentProps, useState } from 'react';
+import {
+    Badge,
+    BadgeType,
+    ButtonUnstyled,
+    Divider,
+    KeyValueInfo as BaseKeyValueInfo,
+} from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
     TransactionAction,
@@ -24,6 +30,10 @@ import {
 import { useBreakpoint, useDeserializedSignatures, type SignaturePubkeyPair } from '~/hooks';
 import { getSendRecipientAddress, onCopySuccess } from '~/lib/utils';
 
+function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
+    return <BaseKeyValueInfo {...props} layout="receipt" />;
+}
+
 function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPair }): JSX.Element {
     const { signature, signatureScheme } = data;
     return (
@@ -44,7 +54,6 @@ function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPai
                     value={data.publicKey.toIotaPublicKey()}
                     copyText={data.publicKey.toIotaPublicKey()}
                     onCopySuccess={onCopySuccess}
-                    isTruncated
                 />
             ) : null}
             <KeyValueInfo
@@ -52,7 +61,6 @@ function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPai
                 copyText={toBase64(signature)}
                 onCopySuccess={onCopySuccess}
                 value={toBase64(signature)}
-                isTruncated
             />
         </div>
     );
@@ -133,7 +141,7 @@ export function TransactionOverview({
     });
 
     return (
-        <div className="flex flex-col gap-sm p-md--rs md:max-w-4xl">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm p-md--rs">
             {transactionKindName && (
                 <KeyValueInfo
                     keyText="Transaction Type"
@@ -326,10 +334,10 @@ export function TransactionOverview({
                 />
             )}
             {!!signatures?.length && (
-                <KeyValueInfo
-                    keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
-                    value={
-                        <div className="flex flex-col items-start gap-xs">
+                <>
+                    <KeyValueInfo
+                        keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
+                        value={
                             <ButtonUnstyled
                                 className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
                                 onClick={() => setShowFullSignatures(!showFullSignatures)}
@@ -342,23 +350,23 @@ export function TransactionOverview({
                                     )}
                                 />
                             </ButtonUnstyled>
-                            {showFullSignatures && (
-                                <div className="flex w-full flex-col gap-md">
-                                    {[
-                                        ...userSignatures,
-                                        ...(sponsorSignature ? [sponsorSignature] : []),
-                                    ].map((signature, index) => (
-                                        <div key={index} className="flex w-full flex-col gap-md">
-                                            {index > 0 && <Divider />}
-                                            <SignatureBreakdown signature={signature} />
-                                        </div>
-                                    ))}
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showFullSignatures && (
+                        <div className="ml-xs flex flex-col gap-md border-l border-iota-neutral-92 py-xxs pl-sm--rs dark:border-iota-neutral-12">
+                            {[
+                                ...userSignatures,
+                                ...(sponsorSignature ? [sponsorSignature] : []),
+                            ].map((signature, index) => (
+                                <div key={index} className="flex w-full flex-col gap-md">
+                                    {index > 0 && <Divider />}
+                                    <SignatureBreakdown signature={signature} />
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    }
-                    fullwidth={!isMediumOrAbove}
-                />
+                    )}
+                </>
             )}
         </div>
     );

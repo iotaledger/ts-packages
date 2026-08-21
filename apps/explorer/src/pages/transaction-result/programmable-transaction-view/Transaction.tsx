@@ -7,7 +7,8 @@ import {
     type IotaArgument,
     type IotaMovePackage,
 } from '@iota/iota-sdk/client';
-import { KeyValueInfo } from '@iota/apps-ui-kit';
+import { type ComponentProps } from 'react';
+import { KeyValueInfo as BaseKeyValueInfo } from '@iota/apps-ui-kit';
 import { flattenIotaArguments } from './utils';
 import { ErrorBoundary } from '~/components';
 import { ObjectLink } from '~/components/ui';
@@ -19,17 +20,45 @@ interface TransactionProps<T> {
     data: T;
 }
 
+function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
+    return <BaseKeyValueInfo {...props} layout="receipt" />;
+}
+
+const TRANSACTION_ARGUMENT_LABELS: Record<string, string[]> = {
+    SplitCoins: ['Coin', 'Amounts'],
+    TransferObjects: ['Objects', 'Recipient'],
+    MergeCoins: ['Destination Coin', 'Coins to Merge'],
+    MakeMoveVec: ['Type', 'Elements'],
+    Upgrade: ['Modules', 'Package', 'Ticket'],
+};
+
+type DisplayArgument = IotaArgument | DisplayArgument[];
+
+function formatArgument(value: DisplayArgument): string {
+    return Array.isArray(value)
+        ? `[${value.map((item) => formatArgument(item)).join(', ')}]`
+        : flattenIotaArguments([value]);
+}
+
 function ArrayArgument({
+    type,
     data,
 }: TransactionProps<(IotaArgument | IotaArgument[])[] | undefined>): JSX.Element {
+    const values = type === 'Publish' && data ? [data] : data;
+    const labels = type === 'Publish' ? ['Modules'] : TRANSACTION_ARGUMENT_LABELS[type];
+    const isMediumOrAbove = useBreakpoint('md');
+
     return (
-        <>
-            {data && (
-                <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    ({flattenIotaArguments(data)})
-                </span>
-            )}
-        </>
+        <div className="flex flex-col gap-xs">
+            {values?.map((value, index) => (
+                <KeyValueInfo
+                    key={index}
+                    keyText={labels?.[index] ?? `Argument ${index + 1}`}
+                    value={formatArgument(value)}
+                    fullwidth={!isMediumOrAbove}
+                />
+            ))}
+        </div>
     );
 }
 

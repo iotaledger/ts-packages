@@ -40,11 +40,12 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
                 supportingTitleElement={getTransactionSupportingElement(type, data)}
                 titleSize={TitleSize.Small}
                 collapsible
+                compactHeader
                 initialClose
             >
                 <div data-testid="transactions-card-content">
-                    <div className="px-md pb-lg pt-xs">
-                        <Transaction key={index} type={type} data={data} />
+                    <div className="mx-auto w-full max-w-5xl px-md pb-lg pt-xs">
+                        <Transaction type={type} data={data} />
                     </div>
                 </div>
             </CollapsibleCard>

@@ -12,6 +12,7 @@ import {
     Title,
     TitleSize,
 } from '@iota/apps-ui-kit';
+import { ArrowDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
 import { SyntaxHighlighter } from '../../syntax-highlighter';
@@ -29,6 +30,7 @@ export interface CollapsibleCardProps {
     supportingTitleElement?: ReactNode;
     isTransparentPanel?: boolean;
     rawData?: unknown;
+    compactHeader?: boolean;
 }
 
 interface RawJsonToggleProps {
@@ -77,6 +79,7 @@ export function CollapsibleCard({
     supportingTitleElement,
     isTransparentPanel,
     rawData,
+    compactHeader,
 }: CollapsibleCardProps) {
     const [open, setOpen] = useState(!initialClose);
     const [showRaw, setShowRaw] = useState(false);
@@ -95,12 +98,17 @@ export function CollapsibleCard({
         <div className="relative w-full">
             <Accordion hideBorder={hideBorder}>
                 <AccordionHeader
-                    hideArrow={hideArrow}
+                    hideArrow={hideArrow || compactHeader}
                     isExpanded={open}
                     onToggle={() => setOpen(!open)}
                 >
-                    <div className="flex w-full items-center">
-                        <div className="flex-1">
+                    <div
+                        className={clsx(
+                            'flex w-full items-center',
+                            compactHeader && 'mx-auto max-w-5xl gap-md',
+                        )}
+                    >
+                        <div className={clsx('min-w-0 flex-1')}>
                             {render ? (
                                 render({ isOpen: open })
                             ) : (
@@ -112,6 +120,19 @@ export function CollapsibleCard({
                             )}
                         </div>
                         {rawToggle}
+                        {compactHeader && !hideArrow && (
+                            <div
+                                aria-hidden="true"
+                                className="state-layer flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-iota-neutral-80 bg-iota-neutral-98 dark:border-iota-neutral-30 dark:bg-iota-neutral-10"
+                            >
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-5 w-5 text-iota-neutral-40 transition-transform ease-linear dark:text-iota-neutral-60',
+                                        open && 'rotate-180',
+                                    )}
+                                />
+                            </div>
+                        )}
                     </div>
                 </AccordionHeader>
                 <AccordionContent isExpanded={open}>{content}</AccordionContent>
