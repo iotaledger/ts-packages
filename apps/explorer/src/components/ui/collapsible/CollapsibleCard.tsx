@@ -31,6 +31,7 @@ export interface CollapsibleCardProps {
     isTransparentPanel?: boolean;
     rawData?: unknown;
     compactHeader?: boolean;
+    isTransparent?: boolean;
 }
 
 interface RawJsonToggleProps {
@@ -83,6 +84,26 @@ export function CollapsibleCard({
 }: CollapsibleCardProps) {
     const [open, setOpen] = useState(!initialClose);
     const [showRaw, setShowRaw] = useState(false);
+    const [isSupportingElementActive, setIsSupportingElementActive] = useState(false);
+
+    const interactiveSupportingTitleElement = supportingTitleElement ? (
+        <div
+            className="contents"
+            onClick={(event) => event.stopPropagation()}
+            onMouseEnter={() => setIsSupportingElementActive(true)}
+            onMouseLeave={() => setIsSupportingElementActive(false)}
+            onFocus={() => setIsSupportingElementActive(true)}
+            onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    setIsSupportingElementActive(false);
+                }
+            }}
+        >
+            {supportingTitleElement}
+        </div>
+    ) : (
+        supportingTitleElement
+    );
     const content =
         showRaw && rawData !== undefined ? <RawJsonContent rawData={rawData} /> : children;
     const rawToggle = rawData !== undefined && (
@@ -101,11 +122,12 @@ export function CollapsibleCard({
                     hideArrow={hideArrow || compactHeader}
                     isExpanded={open}
                     onToggle={() => setOpen(!open)}
+                    disableStateLayer={isSupportingElementActive}
                 >
                     <div
                         className={clsx(
                             'flex w-full items-center',
-                            compactHeader && 'mx-auto max-w-5xl gap-md',
+                            compactHeader && 'mx-auto max-w-5xl gap-md pr-md',
                         )}
                     >
                         <div className={clsx('min-w-0 flex-1')}>
@@ -115,22 +137,24 @@ export function CollapsibleCard({
                                 <Title
                                     size={titleSize}
                                     title={title ?? ''}
-                                    supportingElement={supportingTitleElement}
+                                    supportingElement={interactiveSupportingTitleElement}
                                 />
                             )}
                         </div>
                         {rawToggle}
                         {compactHeader && !hideArrow && (
-                            <div
-                                aria-hidden="true"
-                                className="state-layer flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-iota-neutral-80 bg-iota-neutral-98 dark:border-iota-neutral-30 dark:bg-iota-neutral-10"
-                            >
-                                <ArrowDown
-                                    className={clsx(
-                                        'h-5 w-5 text-iota-neutral-40 transition-transform ease-linear dark:text-iota-neutral-60',
-                                        open && 'rotate-180',
-                                    )}
-                                />
+                            <div className="relative h-8 w-8 shrink-0">
+                                <div
+                                    aria-hidden="true"
+                                    className="state-layer flex h-full w-full items-center justify-center rounded-full border border-iota-neutral-80 bg-iota-neutral-98 dark:border-iota-neutral-30 dark:bg-iota-neutral-10"
+                                >
+                                    <ArrowDown
+                                        className={clsx(
+                                            'h-5 w-5 text-iota-neutral-40 transition-transform ease-linear dark:text-iota-neutral-60',
+                                            open && 'rotate-180',
+                                        )}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>

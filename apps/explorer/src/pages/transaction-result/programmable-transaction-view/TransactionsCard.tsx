@@ -42,9 +42,10 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
                 collapsible
                 compactHeader
                 initialClose
+                isTransparent
             >
                 <div data-testid="transactions-card-content">
-                    <div className="mx-auto w-full max-w-5xl px-md pb-lg pt-xs">
+                    <div className="mx-auto w-full max-w-5xl px-lg pb-lg pt-xs">
                         <Transaction type={type} data={data} />
                     </div>
                 </div>
