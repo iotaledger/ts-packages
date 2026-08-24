@@ -9,7 +9,7 @@ import type { AssetsResponse } from '../src/index.js';
 import { EvmRpcClient } from '../src/index.js';
 import { CONFIG } from './config.js';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
-import { retry } from 'ts-retry-promise';
+import { retryUntil } from './retry.js';
 
 const { L2 } = CONFIG;
 
@@ -18,14 +18,12 @@ const AMOUNT_TO_TRANSFER = 1n * NANOS_PER_IOTA;
 
 async function waitForBalance(client: IotaClient, address: string, minimumBalance: bigint) {
     try {
-        await retry(() => client.getBalance({ owner: address }), {
+        await retryUntil(() => client.getBalance({ owner: address }), {
             until: ({ totalBalance }) => BigInt(totalBalance) >= minimumBalance,
-            retries: 'INFINITELY',
-            timeout: BALANCE_VISIBILITY_TIMEOUT_MS,
-            delay: 500,
-            backoff: 'LINEAR',
-            maxBackOff: 8_000,
-            logger: (msg) => console.warn(`Retrying getting balance for ${address}: ${msg}`),
+            timeoutMs: BALANCE_VISIBILITY_TIMEOUT_MS,
+            delayMs: 500,
+            maxDelayMs: 8_000,
+            onRetry: (msg) => console.warn(`Retrying getting balance for ${address}: ${msg}`),
         });
     } catch (error) {
         throw new Error(`${address} balance didn't reach ${minimumBalance}.`, { cause: error });
@@ -86,14 +84,12 @@ export async function checkL2BalanceWithRetries(
     }
 
     try {
-        return await retry(() => evmClient.getBalanceBaseToken(address), {
+        return await retryUntil(() => evmClient.getBalanceBaseToken(address), {
             until: hasExpectedBalances,
-            retries: 'INFINITELY',
-            timeout,
-            delay,
-            backoff: 'LINEAR',
-            maxBackOff: 10_000,
-            logger: (msg) => console.log(`Retrying fetching EVM balance: ${msg}`),
+            timeoutMs: timeout,
+            delayMs: delay,
+            maxDelayMs: 10_000,
+            onRetry: (msg) => console.log(`Retrying fetching EVM balance: ${msg}`),
         });
     } catch (error) {
         throw new Error(

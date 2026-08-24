@@ -4,7 +4,7 @@
 import { ethers, HDNodeWallet, Wallet } from 'ethers';
 import type { IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
-import { retry } from 'ts-retry-promise';
+import { retryUntil } from './retry';
 
 export type TestWalletData = {
     addressL1: string;
@@ -33,19 +33,17 @@ export async function checkBalanceWithRetries(
     let balance: string | null = null;
 
     try {
-        await retry(
+        await retryUntil(
             async () => {
                 balance = await fetchBalance();
                 return balance;
             },
             {
                 until: (result) => !!result && !result.startsWith('0'),
-                retries: 'INFINITELY',
-                timeout,
-                delay,
-                backoff: 'LINEAR',
-                maxBackOff: 10_000,
-                logger: (msg) => console.log(`Retrying fetching ${layer} balance: ${msg}`),
+                timeoutMs: timeout,
+                delayMs: delay,
+                maxDelayMs: 10_000,
+                onRetry: (msg) => console.log(`Retrying fetching ${layer} balance: ${msg}`),
             },
         );
     } catch (error) {
@@ -55,23 +53,19 @@ export async function checkBalanceWithRetries(
     return balance;
 }
 
-/**
- * Wait in case indexer lags but faucet request returns successful.
- */
 export async function waitForL1Coins(client: IotaClient, address: string, timeout = 60_000) {
     try {
-        await retry(() => client.getCoins({ owner: address }), {
+        await retryUntil(() => client.getCoins({ owner: address }), {
             until: ({ data }) => data.length > 0,
-            retries: 'INFINITELY',
-            timeout,
-            delay: 500,
-            backoff: 'LINEAR',
-            maxBackOff: 8_000,
-            logger: (msg) => console.warn(`Retrying getting L1 coins for ${address}: ${msg}`),
+            timeoutMs: timeout,
+            delayMs: 500,
+            maxDelayMs: 8_000,
+            onRetry: (msg) => console.warn(`Retrying getting L1 coins for ${address}: ${msg}`),
         });
-    } catch {
+    } catch (error) {
         throw new Error(
             `No coins visible for ${address} within ${timeout} ms of a successful faucet request.`,
+            { cause: error },
         );
     }
 }
