@@ -75,7 +75,10 @@ function createInternalLink<T extends string>(
                     truncateUnknown={!noTruncate}
                     hideAlias={hideAlias}
                     renderAddress={(address, copyButton, hasAlias) => (
-                        <NamedAddressTooltip name={iotaName} address={address}>
+                        <NamedAddressTooltip
+                            name={hasAlias ? undefined : iotaName}
+                            address={address}
+                        >
                             <span className="inline-flex max-w-full items-center whitespace-nowrap">
                                 <Link
                                     className={clsx(

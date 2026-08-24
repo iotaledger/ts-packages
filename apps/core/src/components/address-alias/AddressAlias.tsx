@@ -52,11 +52,7 @@ export function AddressAlias({
     return (
         <div className="flex flex-col gap-xxs">
             {!hideAlias && addressAlias && (
-                <div
-                    className={cx(
-                        'flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
-                    )}
-                >
+                <div className="flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
                     <div className="h-5 w-5 shrink-0">
                         {addressAlias.imageUrl ? (
                             <ImageIcon
