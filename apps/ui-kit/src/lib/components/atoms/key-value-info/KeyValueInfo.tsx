@@ -117,13 +117,13 @@ export function KeyValueInfo({
             )}
         >
             <div
-                className={cx('flex min-w-0 shrink-0 flex-row items-center gap-x-0.5', {
+                className={cx('flex shrink-0 flex-row items-center gap-x-0.5', {
                     'w-1/4': !fullwidth && keyColumnWidth === KeyColumnWidth.Default,
                     'w-2/5': !fullwidth && keyColumnWidth === KeyColumnWidth.Wide,
                 })}
             >
                 {keyIcon}
-                <span className="key-value-key-text-color min-w-0 break-normal break-words text-body-md">
+                <span className="key-value-key-text-color min-w-0 break-words text-body-md">
                     {keyText}
                 </span>
                 {tooltipText && (
