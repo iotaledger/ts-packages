@@ -63,6 +63,7 @@ start_initial_network() {
 
     iota-indexer \
         --db-url "$DB_URL" \
+        --metrics-address "0.0.0.0:9187" \
         indexer \
         --data-ingestion-path "$INGESTION_DIR" \
         --reset-db > indexer-writer.log 2>&1 &
@@ -202,6 +203,7 @@ restart_with_configs() {
 
     iota-indexer \
         --db-url "$DB_URL" \
+        --metrics-address "0.0.0.0:9187" \
         indexer \
         --data-ingestion-path "$INGESTION_DIR" >> indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
