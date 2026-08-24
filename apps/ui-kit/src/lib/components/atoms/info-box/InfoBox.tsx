@@ -41,7 +41,9 @@ export function InfoBox({
     return (
         <div
             className={cx('flex flex-row items-start gap-4 py-xs pr-lg', backgroundClass, {
-                'rounded-lg pl-xs': style === InfoBoxStyle.Elevated,
+                'rounded-lg': style === InfoBoxStyle.Elevated,
+                'pl-xs': style === InfoBoxStyle.Elevated && !!icon,
+                'pl-lg': style === InfoBoxStyle.Elevated && !icon,
             })}
         >
             {icon && (

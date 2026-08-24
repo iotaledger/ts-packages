@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import path from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { IotaMoveViewCallResults, MoveValue } from '../../src/client/types/generated';
@@ -21,11 +22,13 @@ describe('Move view consistency across transports', () => {
     });
 
     let toolbox: TestToolbox;
+    let packageId: string;
     let coinId: string;
     let coinBalance: bigint;
 
     beforeAll(async () => {
         toolbox = await setup();
+        packageId = await toolbox.getPackage(path.resolve(__dirname, './data/view_test'));
 
         const coins = await toolbox.client.getCoins({
             owner: toolbox.address(),
@@ -38,9 +41,9 @@ describe('Move view consistency across transports', () => {
         coinBalance = BigInt(coins.data[0].balance);
     });
 
-    it('calls a non-annotated public function via JSON-RPC view', async () => {
+    it('calls a #[view]-annotated function via JSON-RPC view', async () => {
         const result = await toolbox.client.view({
-            functionName: '0x2::coin::value',
+            functionName: `${packageId}::view_test::coin_value`,
             typeArgs: [IOTA_TYPE_ARG],
             arguments: [coinId],
         });
@@ -74,7 +77,7 @@ describe('Move view consistency across transports', () => {
                 }
             `),
             variables: {
-                functionName: '0x2::coin::value',
+                functionName: `${packageId}::view_test::coin_value`,
                 typeArgs: [IOTA_TYPE_ARG],
                 arguments: [coinId],
             },
@@ -86,5 +89,15 @@ describe('Move view consistency across transports', () => {
         const result0 = response.data!.moveViewCall.results![0] as unknown;
         const value = BigInt(typeof result0 === 'number' ? result0 : String(result0));
         expect(value).toEqual(coinBalance);
+    });
+
+    it('rejects a function not annotated with #[view]', async () => {
+        await expect(
+            toolbox.client.view({
+                functionName: '0x2::coin::value',
+                typeArgs: [IOTA_TYPE_ARG],
+                arguments: [coinId],
+            }),
+        ).rejects.toThrow(/#\[view\]/);
     });
 });

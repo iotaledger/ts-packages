@@ -6,6 +6,7 @@ import {
     Accordion,
     AccordionContent,
     AccordionHeader,
+    ButtonUnstyled,
     Divider,
     Panel,
     Title,
@@ -13,6 +14,7 @@ import {
 } from '@iota/apps-ui-kit';
 import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
+import { SyntaxHighlighter } from '../../syntax-highlighter';
 
 export interface CollapsibleCardProps {
     children: ReactNode;
@@ -26,6 +28,40 @@ export interface CollapsibleCardProps {
     render?: ({ isOpen }: { isOpen: boolean }) => ReactNode;
     supportingTitleElement?: ReactNode;
     isTransparentPanel?: boolean;
+    rawData?: unknown;
+}
+
+interface RawJsonToggleProps {
+    isActive: boolean;
+    onToggle: () => void;
+}
+
+function RawJsonToggle({ isActive, onToggle }: RawJsonToggleProps): JSX.Element {
+    return (
+        <ButtonUnstyled
+            aria-label="Toggle raw JSON"
+            onClick={(event) => {
+                event.stopPropagation();
+                onToggle();
+            }}
+            className={clsx(
+                'shrink-0 rounded-full border px-xs py-xxs text-label-sm',
+                isActive
+                    ? 'badge-bg-color-primary-soft badge-border-color-soft badge-text-color-primary-soft'
+                    : 'badge-border-color-neutral badge-text-color-neutral bg-transparent',
+            )}
+        >
+            RAW
+        </ButtonUnstyled>
+    );
+}
+
+function RawJsonContent({ rawData }: { rawData: unknown }): JSX.Element {
+    return (
+        <div className="p-md--rs">
+            <SyntaxHighlighter code={JSON.stringify(rawData, null, 2)} language="json" />
+        </div>
+    );
 }
 
 export function CollapsibleCard({
@@ -40,8 +76,21 @@ export function CollapsibleCard({
     render,
     supportingTitleElement,
     isTransparentPanel,
+    rawData,
 }: CollapsibleCardProps) {
     const [open, setOpen] = useState(!initialClose);
+    const [showRaw, setShowRaw] = useState(false);
+    const content =
+        showRaw && rawData !== undefined ? <RawJsonContent rawData={rawData} /> : children;
+    const rawToggle = rawData !== undefined && (
+        <RawJsonToggle
+            isActive={showRaw}
+            onToggle={() => {
+                setShowRaw(!showRaw);
+                setOpen(true);
+            }}
+        />
+    );
     return collapsible ? (
         <div className="relative w-full">
             <Accordion hideBorder={hideBorder}>
@@ -50,17 +99,22 @@ export function CollapsibleCard({
                     isExpanded={open}
                     onToggle={() => setOpen(!open)}
                 >
-                    {render ? (
-                        render({ isOpen: open })
-                    ) : (
-                        <Title
-                            size={titleSize}
-                            title={title ?? ''}
-                            supportingElement={supportingTitleElement}
-                        />
-                    )}
+                    <div className="flex w-full items-center">
+                        <div className="flex-1">
+                            {render ? (
+                                render({ isOpen: open })
+                            ) : (
+                                <Title
+                                    size={titleSize}
+                                    title={title ?? ''}
+                                    supportingElement={supportingTitleElement}
+                                />
+                            )}
+                        </div>
+                        {rawToggle}
+                    </div>
                 </AccordionHeader>
-                <AccordionContent isExpanded={open}>{children}</AccordionContent>
+                <AccordionContent isExpanded={open}>{content}</AccordionContent>
                 {footer && (
                     <>
                         <Divider />
@@ -71,8 +125,13 @@ export function CollapsibleCard({
         </div>
     ) : (
         <Panel hasBorder={!hideBorder} bgColor={isTransparentPanel ? 'bg-transparent' : undefined}>
-            <Title size={titleSize} title={title ?? ''} />
-            <div>{children}</div>
+            <div className="flex w-full items-center py-sm--rs">
+                <div className="flex-1">
+                    <Title size={titleSize} title={title ?? ''} />
+                </div>
+                {rawToggle && <div className="pr-md--rs">{rawToggle}</div>}
+            </div>
+            <div>{content}</div>
             {footer && (
                 <>
                     <Divider />

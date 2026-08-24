@@ -20,11 +20,11 @@ import {
 } from '@iota/core';
 import { formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useParams } from 'react-router-dom';
-import { OwnedObjectsPanel, PageLayout, TransactionBlocksPanel } from '~/components';
+import { AddressBalanceHero, AddressPageContent, PageLayout } from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
+import { getHistoryUnavailableMessage } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
-import { AddressBalanceBreakdown } from '../address-result/AddressBalanceBreakdown';
 
 export function AbstractAccountResultPage(): JSX.Element {
     const { id } = useParams();
@@ -58,7 +58,17 @@ export function AbstractAccountResultPage(): JSX.Element {
 
     let detailsContent: JSX.Element | null = null;
 
-    if (isNotFound) {
+    if (accountObjectData?.isHistoryUnavailable) {
+        detailsContent = (
+            <InfoBox
+                title="Account No Longer Available"
+                supportingText={getHistoryUnavailableMessage('This account')}
+                icon={<Warning />}
+                type={InfoBoxType.Warning}
+                style={InfoBoxStyle.Elevated}
+            />
+        );
+    } else if (isNotFound) {
         detailsContent = (
             <InfoBox
                 title="Invalid Account"
@@ -127,10 +137,7 @@ export function AbstractAccountResultPage(): JSX.Element {
                     </div>
                 </Panel>
 
-                <AddressBalanceBreakdown address={validAccountId ?? accountId} />
-
-                <OwnedObjectsPanel address={validAccountId ?? accountId} />
-                <TransactionBlocksPanel address={validAccountId ?? accountId} />
+                <AddressPageContent address={validAccountId ?? accountId} />
             </>
         );
     }
@@ -152,6 +159,14 @@ export function AbstractAccountResultPage(): JSX.Element {
                         isLoadingSubtitle={isLoadingName}
                         subtitle={defaultName}
                         showCopyButton={false}
+                        contentWidthClassName="md:w-1/2"
+                        afterWidthClassName="md:w-1/2"
+                        rowAlignClassName="md:items-stretch"
+                        after={
+                            validAccountId ? (
+                                <AddressBalanceHero address={validAccountId} />
+                            ) : undefined
+                        }
                     />
 
                     {detailsContent}

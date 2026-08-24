@@ -1,5 +1,12 @@
 # @iota/iota-sdk
 
+## 1.15.1
+
+### Patch Changes
+
+-   34b915b: Update ViewParams JSDoc
+-   2903277: Sync generated client types with upstream OpenRPC spec
+
 ## 1.15.0
 
 ### Minor Changes
