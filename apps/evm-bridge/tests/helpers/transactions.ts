@@ -43,12 +43,10 @@ export async function fundL1AddressWithNativeTokens(
             digest,
         });
         console.log(`✅ fundL1AddressWithNativeTokens transaction digest: ${digest}`);
-        return true;
     } catch (error) {
-        console.error(
-            `❌ fundL1AddressWithNativeTokens: Failed to send ${amount} TOOL from ${senderAddress} to ${addressL1}`,
-            error,
-        );
+        throw new Error(`Failed to send ${amount} TOOL from ${senderAddress} to ${addressL1}.`, {
+            cause: error,
+        });
     }
 }
 
@@ -106,13 +104,11 @@ export async function fundL2AddressWithIscClient(
             digest,
         });
         console.log(`✅ fundL2AddressWithIscClient transaction digest: ${digest}`);
-        return true;
     } catch (error) {
-        console.error(
-            `❌ fundL2AddressWithIscClient: Failed to send ${amount} ${coinType} from ${senderAddress} to ${addressL2}`,
-            error,
+        throw new Error(
+            `Failed to send ${amount} ${coinType} from ${senderAddress} to ${addressL2}.`,
+            { cause: error },
         );
-        return false;
     }
 }
 
@@ -126,12 +122,12 @@ export async function requestFundsFromFaucet(addressL1: string) {
         });
 
         console.log(`✅ Faucet request successful for ${addressL1}`);
-
-        const client = new IotaClient({ url: L1.rpcUrl });
-        await waitForL1Coins(client, addressL1);
     } catch (error) {
         console.error(`❌ Faucet request failed for ${addressL1}:`, error);
     }
+
+    const client = new IotaClient({ url: L1.rpcUrl });
+    await waitForL1Coins(client, addressL1);
 }
 
 export async function addL1FundsThroughBridgeUI(page: Page) {
@@ -226,9 +222,9 @@ export async function sendIotaToAddress(
 
         console.log(`✅ sendIotaToAddress transaction digest: ${digest}`);
     } catch (error) {
-        console.error(
-            `❌ sendIotaToAddress: Failed to send ${amount} IOTA from ${senderAddress} to ${receiverAddress}`,
-            error,
+        throw new Error(
+            `Failed to send ${amount} IOTA from ${senderAddress} to ${receiverAddress}.`,
+            { cause: error },
         );
     }
 }
