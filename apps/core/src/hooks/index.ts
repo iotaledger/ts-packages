@@ -4,6 +4,7 @@
 export * from './useFormatCoin';
 export * from './useTimeAgo';
 export * from './useGetValidatorsEvents';
+export * from './useGetValidatorStakingHistory';
 export * from './useGetValidatorsApy';
 export * from './useGetTransferAmount';
 export * from './useGetObject';
