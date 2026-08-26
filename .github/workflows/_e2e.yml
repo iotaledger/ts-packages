@@ -183,9 +183,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Set environment variables
+        # The localnet fullnode binds 9184-9186 for metrics, admin and p2p, so GraphQL runs as its
+        # own process on a free Prometheus port instead of through --with-graphql, which panics.
         run: |
           echo "VITE_IOTA_BIN=iota" >> $GITHUB_ENV
-          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-graphql" >> $GITHUB_ENV
+          echo "E2E_RUN_LOCAL_NET_CMD=iota-localnet start --with-faucet --force-regenesis --with-indexer --with-grpc" >> $GITHUB_ENV
+          echo "E2E_RUN_GRAPHQL_CMD=bash -c 'until (echo > /dev/tcp/127.0.0.1/9124) 2>/dev/null; do sleep 1; done; exec iota-graphql-rpc start-server --host 0.0.0.0 --port 9125 --prom-port 9187 --db-url postgres://postgres:postgrespw@localhost:5432/iota_indexer --node-rpc-url http://127.0.0.1:50051'" >> $GITHUB_ENV
 
       # ─── Test groups ─────────────────────────────────────────────────────────
       # All steps below use: if: (!cancelled() && !failure()) && <group-condition>
@@ -221,7 +224,7 @@ jobs:
         id: run-ts-sdk
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runTsSdk == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
+        run: pnpm dlx concurrently --kill-others --success command-2 "$E2E_RUN_LOCAL_NET_CMD" "$E2E_RUN_GRAPHQL_CMD" 'pnpm --filter @iota/iota-sdk test:e2e'
 
       # ─── Playwright browsers (shared) ────────────────────────────────────────
 
@@ -245,7 +248,7 @@ jobs:
         id: run-graphql
         if: (!cancelled() && !failure()) && steps.conditions.outputs.runGraphql == 'true'
         continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter @iota/graphql-transport test:e2e'
+        run: pnpm dlx concurrently --kill-others --success command-2 "$E2E_RUN_LOCAL_NET_CMD" "$E2E_RUN_GRAPHQL_CMD" 'pnpm --filter @iota/graphql-transport test:e2e'
 
       # ─── Apps Backend ────────────────────────────────────────────────────────
 
