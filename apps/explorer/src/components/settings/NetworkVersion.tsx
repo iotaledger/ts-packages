@@ -19,7 +19,7 @@ export function NetworkVersion(): JSX.Element | null {
     }
 
     return (
-        <div className="flex flex-col gap-1 px-md py-sm">
+        <div className="flex flex-col gap-1 px-md py-sm text-left md:items-center md:px-0 md:py-0 md:text-center">
             <div className="text-body-sm font-medium text-iota-neutral-40">
                 IOTA {selectedNetwork?.name ?? 'Custom RPC'}
             </div>

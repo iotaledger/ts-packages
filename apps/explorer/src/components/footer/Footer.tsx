@@ -7,6 +7,7 @@ import { LegalLinks, LegalText } from './Legal';
 import { Link } from '~/components/ui';
 import { FOOTER_LINKS } from '~/lib/constants';
 import { ThemedIotaLogo } from '../ThemedIotaLogo';
+import { NetworkVersion } from '../settings';
 
 function FooterLinks(): JSX.Element {
     return (
@@ -47,9 +48,14 @@ export function Footer(): JSX.Element {
                     <div className="flex justify-center md:hidden md:self-start">
                         <ThemedIotaLogo />
                     </div>
-                    <p className="w-full text-center text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                        {EXPLORER_REV}
-                    </p>
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="hidden md:flex md:justify-center">
+                            <NetworkVersion />
+                        </div>
+                        <p className="w-full text-center text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                            {EXPLORER_REV}
+                        </p>
+                    </div>
                 </div>
             </nav>
         </footer>
