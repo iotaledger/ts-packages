@@ -1,14 +1,8 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ComponentProps, type ReactNode, useId, useState } from 'react';
-import {
-    Badge,
-    BadgeType,
-    ButtonUnstyled,
-    Divider,
-    KeyValueInfo as BaseKeyValueInfo,
-} from '@iota/apps-ui-kit';
+import { type ReactNode, useId, useState } from 'react';
+import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
     TransactionAction,
@@ -35,10 +29,6 @@ import {
     type MultiSigSignature,
 } from '~/hooks';
 import { getSendRecipientAddress, onCopySuccess } from '~/lib/utils';
-
-function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
-    return <BaseKeyValueInfo {...props} layout="receipt" />;
-}
 
 interface ExpandableDetailsProps {
     id?: string;
@@ -76,6 +66,7 @@ function MultiSigParticipantRow({
                 Participant {index + 1}
             </div>
             <KeyValueInfo
+                layout="receipt"
                 keyText="Status"
                 value={
                     <span className="flex items-center gap-xs">
@@ -93,12 +84,14 @@ function MultiSigParticipantRow({
                 }
             />
             <KeyValueInfo
+                layout="receipt"
                 keyText="Address"
                 value={<AddressLink address={participant.address} copyText={participant.address} />}
             />
-            <KeyValueInfo keyText="Scheme" value={participant.signatureScheme} />
-            <KeyValueInfo keyText="Weight" value={participant.weight.toString()} />
+            <KeyValueInfo layout="receipt" keyText="Scheme" value={participant.signatureScheme} />
+            <KeyValueInfo layout="receipt" keyText="Weight" value={participant.weight.toString()} />
             <KeyValueInfo
+                layout="receipt"
                 keyText="Public Key"
                 value={publicKey}
                 copyText={publicKey}
@@ -108,6 +101,7 @@ function MultiSigParticipantRow({
             {partialSignature && (
                 <>
                     <KeyValueInfo
+                        layout="receipt"
                         keyText="Partial Signature"
                         value={
                             <ButtonUnstyled
@@ -123,6 +117,7 @@ function MultiSigParticipantRow({
                     />
                     {showPartialSignature && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Signature"
                             value={partialSignature}
                             copyText={partialSignature}
@@ -140,10 +135,19 @@ function MultiSigBreakdown({ signature: data }: { signature: MultiSigSignature }
 
     return (
         <div className="flex flex-col gap-sm">
-            <KeyValueInfo keyText="Scheme" value="MultiSig" />
-            <KeyValueInfo keyText="Participants" value={`${multisig.participants.length} total`} />
-            <KeyValueInfo keyText="Threshold" value={`${multisig.threshold} weight`} />
+            <KeyValueInfo layout="receipt" keyText="Scheme" value="MultiSig" />
             <KeyValueInfo
+                layout="receipt"
+                keyText="Participants"
+                value={`${multisig.participants.length} total`}
+            />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Threshold"
+                value={`${multisig.threshold} weight`}
+            />
+            <KeyValueInfo
+                layout="receipt"
                 keyText="Address"
                 value={<AddressLink address={multisig.address} copyText={multisig.address} />}
             />
@@ -172,8 +176,9 @@ function SignatureBreakdown({
     const { signature, signatureScheme } = data;
     return (
         <div className="flex flex-col gap-sm">
-            <KeyValueInfo keyText="Scheme" value={signatureScheme} />
+            <KeyValueInfo layout="receipt" keyText="Scheme" value={signatureScheme} />
             <KeyValueInfo
+                layout="receipt"
                 keyText="Address"
                 value={
                     <AddressLink
@@ -184,6 +189,7 @@ function SignatureBreakdown({
             />
             {'publicKey' in data ? (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="IOTA Public Key"
                     value={data.publicKey.toIotaPublicKey()}
                     copyText={data.publicKey.toIotaPublicKey()}
@@ -191,6 +197,7 @@ function SignatureBreakdown({
                 />
             ) : null}
             <KeyValueInfo
+                layout="receipt"
                 keyText="Signature"
                 copyText={toBase64(signature)}
                 onCopySuccess={onCopySuccess}
@@ -372,6 +379,7 @@ export function TransactionOverview({
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm p-md--rs">
             {transactionKindName && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Transaction Type"
                     value={
                         <div className="whitespace-nowrap">
@@ -382,6 +390,7 @@ export function TransactionOverview({
                 />
             )}
             <KeyValueInfo
+                layout="receipt"
                 keyText="Digest"
                 value={transaction.digest}
                 copyText={transaction.digest}
@@ -391,6 +400,7 @@ export function TransactionOverview({
             />
             {transaction.checkpoint && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Checkpoint"
                     value={
                         <CheckpointSequenceLink sequence={transaction.checkpoint}>
@@ -404,6 +414,7 @@ export function TransactionOverview({
             )}
             {transaction.effects?.executedEpoch && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Epoch"
                     value={
                         <EpochLink epoch={transaction.effects.executedEpoch}>
@@ -415,6 +426,7 @@ export function TransactionOverview({
             )}
             {transaction.timestampMs && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Timestamp"
                     value={
                         <DateDisplay
@@ -428,6 +440,7 @@ export function TransactionOverview({
             )}
             {sender && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Sender"
                     keyIcon={
                         <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
@@ -440,6 +453,7 @@ export function TransactionOverview({
             )}
             {recipient && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Recipient"
                     keyIcon={
                         <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
@@ -453,6 +467,7 @@ export function TransactionOverview({
             {isProgrammableTransaction && totalGas && (
                 <div data-testid="gas-breakdown">
                     <KeyValueInfo
+                        layout="receipt"
                         keyText="Total Gas Fee"
                         value={`${formattedTotalGas} ${totalGasSymbol}`}
                         supportingLabel={
@@ -482,6 +497,7 @@ export function TransactionOverview({
                 <ExpandableDetails ariaLabel="Gas fee details">
                     {gasPrice && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Gas Price"
                             value={<GasFeeAmount amount={gasPrice} />}
                             fullwidth={!isMediumOrAbove}
@@ -489,6 +505,7 @@ export function TransactionOverview({
                     )}
                     {gasUsed.computationCost && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Computation Fee"
                             value={
                                 <GasFeeAmount
@@ -501,6 +518,7 @@ export function TransactionOverview({
                     )}
                     {gasUsed.storageCost && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Storage Fee"
                             value={<GasFeeAmount amount={gasUsed.storageCost} />}
                             fullwidth={!isMediumOrAbove}
@@ -508,6 +526,7 @@ export function TransactionOverview({
                     )}
                     {gasUsed.storageRebate && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Storage Rebate"
                             value={<GasFeeAmount amount={-Number(gasUsed.storageRebate)} />}
                             fullwidth={!isMediumOrAbove}
@@ -517,6 +536,7 @@ export function TransactionOverview({
             )}
             {isProgrammableTransaction && gasBudget && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Gas Budget"
                     value={`${formattedBudget} ${budgetSymbol}`}
                     fullwidth={!isMediumOrAbove}
@@ -525,6 +545,7 @@ export function TransactionOverview({
             {isProgrammableTransaction && !!gasPayment?.length && (
                 <>
                     <KeyValueInfo
+                        layout="receipt"
                         keyText="Gas Payment Objects"
                         value={
                             <GasPaymentObjectsSummary
@@ -546,6 +567,7 @@ export function TransactionOverview({
             )}
             {isProgrammableTransaction && gasOwner && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Gas Object Owner"
                     value={<AddressLink address={gasOwner} />}
                     copyText={gasOwner}
@@ -556,6 +578,7 @@ export function TransactionOverview({
             {!!signatures?.length && (
                 <>
                     <KeyValueInfo
+                        layout="receipt"
                         keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
                         value={
                             <ButtonUnstyled

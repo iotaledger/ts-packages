@@ -2,8 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ComponentProps, useState } from 'react';
-import { ButtonUnstyled, KeyValueInfo as BaseKeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { useState } from 'react';
+import { ButtonUnstyled, KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
@@ -21,10 +21,6 @@ import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
 const REGEX_NUMBER = /^\d+$/;
 const INPUT_VALUE_PREVIEW_LENGTH = 160;
-
-function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
-    return <BaseKeyValueInfo {...props} layout="receipt" />;
-}
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
@@ -246,6 +242,7 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
 
                     return (
                         <KeyValueInfo
+                            layout="receipt"
                             key={key}
                             keyText={key}
                             value={displayedValue}

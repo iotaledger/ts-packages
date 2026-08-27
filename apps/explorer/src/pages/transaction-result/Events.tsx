@@ -2,12 +2,12 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ComponentProps, useState } from 'react';
+import { useState } from 'react';
 import {
     Accordion,
     AccordionHeader,
     AccordionContent,
-    KeyValueInfo as BaseKeyValueInfo,
+    KeyValueInfo,
     TitleSize,
 } from '@iota/apps-ui-kit';
 import { type IotaEvent } from '@iota/iota-sdk/client';
@@ -19,10 +19,6 @@ import { CollapsibleCard, ObjectLink } from '~/components/ui';
 import { useBreakpoint } from '~/hooks';
 import { onCopySuccess } from '~/lib';
 
-function KeyValueInfo(props: ComponentProps<typeof BaseKeyValueInfo>): JSX.Element {
-    return <BaseKeyValueInfo {...props} layout="receipt" />;
-}
-
 function EventContent({ event }: { event: IotaEvent }): JSX.Element {
     const [open, setOpen] = useState(false);
     const isMediumOrAbove = useBreakpoint('md');
@@ -32,6 +28,7 @@ function EventContent({ event }: { event: IotaEvent }): JSX.Element {
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-md--rs">
             <KeyValueInfo
+                layout="receipt"
                 keyText="Type"
                 value={objectLinkLabel}
                 copyText={[address, module, name].join('::')}
@@ -41,6 +38,7 @@ function EventContent({ event }: { event: IotaEvent }): JSX.Element {
             />
 
             <KeyValueInfo
+                layout="receipt"
                 keyText="Event Emitter"
                 value={
                     <ObjectLink
