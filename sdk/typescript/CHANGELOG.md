@@ -1,5 +1,44 @@
 # @iota/iota-sdk
 
+## 1.15.1
+
+### Patch Changes
+
+-   34b915b: Update ViewParams JSDoc
+-   2903277: Sync generated client types with upstream OpenRPC spec
+
+## 1.15.0
+
+### Minor Changes
+
+-   2520592: Deprecate `WRAPPED_OR_DELETED`
+-   c41898c: Add `getRpcUrl` and deprecate `getFullnodeUrl`. The network `url` is the JSON-RPC
+    endpoint, so the new name better reflects its meaning. `getFullnodeUrl` still works as an alias.
+-   e92cc33: Add an optional `faucetWebsite` field to `NetworkConfiguration` and a
+    `getFaucetWebsiteUrl` helper for networks whose faucet is a website instead of an API endpoint.
+    `getFaucetHost` now throws a clearer error when the network exposes a `faucetWebsite` rather
+    than a programmatic `faucet`.
+
+### Patch Changes
+
+-   55acfff: Deprecate ObjectKind.WrappedOrDeleted
+-   55acfff: Remove deprecated signAddress and SIGN signer filters from GraphQL schema, replaced by
+    sentAddress and SENT
+-   0615535: Update comment in ObjectOwner type.
+
+## 1.14.0
+
+### Minor Changes
+
+-   76ab06f: Remove experimental notations in several MoveAuthenticator APIs.
+-   3b04d23: Fix generated types from IOTA.
+-   3b178c6: Add `normalizePasskeyPublicKey` utility and update `PasskeyPublicKey` to accept DER
+    SPKI (91-byte), uncompressed (65-byte), and raw XY (64-byte) passkey public key formats in
+    addition to the standard compressed (33-byte) format.
+-   2223521: Subscriptions recovery types generation.
+-   8043617: Add request inspector support for the GraphQLClient
+-   c4e159b: Remove ZkLogin.
+
 ## 1.13.0
 
 ### Minor Changes

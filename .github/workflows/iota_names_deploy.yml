@@ -13,15 +13,6 @@ on:
           - production
   push:
     branches: [develop]
-    paths:
-      - "dapp/**"
-      - "sdk/**"
-      - "scripts/**"
-      - "pnpm-workspace.yaml"
-      - "pnpm-lock.yaml"
-      - "package.json"
-      - "turbo.json"
-      - ".github/workflows/iota_names_deploy.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.deploy_type || 'staging' }}-${{ github.ref }}
@@ -34,7 +25,11 @@ jobs:
       deploy_type: ${{ steps.resolve.outputs.deploy_type }}
       environment: ${{ steps.resolve.outputs.environment }}
       apps_backend_secret: ${{ steps.resolve.outputs.apps_backend_secret }}
+      affected: ${{ github.event_name != 'push' || steps.affected.outputs.affected == 'true' }}
+      mainnet_url: ${{ steps.resolve.outputs.mainnet_url }}
+      testnet_url: ${{ steps.resolve.outputs.testnet_url }}
     steps:
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
       - name: Resolve deploy type
         id: resolve
         run: |
@@ -57,8 +52,24 @@ jobs:
               ;;
           esac
 
+          if [ "$DEPLOY_TYPE" = "production" ]; then
+            echo "mainnet_url=https://iotanames.com" >> "$GITHUB_OUTPUT"
+            echo "testnet_url=https://testnet.iotanames.com" >> "$GITHUB_OUTPUT"
+          else
+            echo "mainnet_url=https://iota-names-${DEPLOY_TYPE}-iota1.vercel.app" >> "$GITHUB_OUTPUT"
+            echo "testnet_url=https://testnet-iota-names-${DEPLOY_TYPE}-iota1.vercel.app" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check whether names-dapp changed
+        id: affected
+        if: github.event_name == 'push'
+        uses: ./.github/actions/affected-package
+        with:
+          package: names-dapp
+
   deploy:
     needs: resolve-deploy-type
+    if: needs.resolve-deploy-type.outputs.affected == 'true'
     runs-on: ubuntu-latest
     environment: ${{ needs.resolve-deploy-type.outputs.environment }}
 
@@ -135,3 +146,18 @@ jobs:
 
             vercel alias set "$URL" "${ALIAS_PREFIX}iota-names-${DEPLOY_TYPE}-iota1.vercel.app" $VERCEL_FLAGS
           fi
+
+  notify:
+    needs: [resolve-deploy-type, deploy]
+    if: always() && needs.deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Names dApp ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.deploy.result }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Mainnet URL: ${{ needs.resolve-deploy-type.outputs.mainnet_url }}
+        Testnet URL: ${{ needs.resolve-deploy-type.outputs.testnet_url }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

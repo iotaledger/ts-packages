@@ -2,130 +2,128 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 import {
-    ErrorBoundary,
-    OwnedCoins,
-    OwnedObjects,
+    AddressBalanceHero,
+    AddressPageContent,
+    IotaNameAddressHeader,
     PageLayout,
-    TransactionsForAddress,
+    ValidatorAddressHeader,
 } from '~/components';
-import { PageHeader, SplitPanes } from '~/components/ui';
-import { useBreakpoint } from '~/hooks/useBreakpoint';
-import { LocalStorageSplitPaneKey } from '~/lib/enums';
-import { Panel, Title, Divider } from '@iota/apps-ui-kit';
-import { AddressAlias, useCopyToClipboard, useGetDefaultIotaName } from '@iota/core';
-import { AddressBalanceBreakdown } from './AddressBalanceBreakdown';
+import { PageHeader } from '~/components/ui';
+import { IotaLogoMark } from '@iota/apps-ui-icons';
+import {
+    AddressAlias,
+    ImageIcon,
+    ImageIconSize,
+    useAddressAliasLookup,
+    useCopyToClipboard,
+    useGetDefaultIotaName,
+} from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
-
-const LEFT_RIGHT_PANEL_MIN_SIZE = 30;
-
-interface AddressResultPageHeaderProps {
-    address: string;
-}
-
-function AddressResultPageHeader({ address }: AddressResultPageHeaderProps): React.JSX.Element {
-    const copyToClipboard = useCopyToClipboard();
-    const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(address);
-
-    return (
-        <PageHeader
-            type="Address"
-            title={
-                <div className="flex flex-col gap-xs">
-                    <AddressAlias address={address} onCopy={() => copyToClipboard(address)} />
-                </div>
-            }
-            isLoadingSubtitle={isLoadingName}
-            subtitle={name}
-            showCopyButton={false}
-        />
-    );
-}
+import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
+import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
 
 function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
+    const copyToClipboard = useCopyToClipboard();
     const isName = isValidIotaName(addressOrName);
-    const { data } = useGetDefaultIotaName(isName ? addressOrName : undefined);
+    const { data: resolvedAddress } = useGetDefaultIotaName(isName ? addressOrName : undefined);
+    const address = resolvedAddress ?? addressOrName;
+
+    const validator = useValidatorByAddress(address);
+    const { name, imageUrl: nameAvatarImageUrl } = useIotaNameAvatar(address, !validator);
+    const getAddressAlias = useAddressAliasLookup();
+    const knownAddress = !validator && !name ? getAddressAlias(address) : null;
+
+    const identityLabel = validator ? validator.name : (name ?? knownAddress?.alias);
+    const identityImageUrl = validator
+        ? validator.imageUrl
+        : (nameAvatarImageUrl ?? knownAddress?.imageUrl);
+
+    const leading = identityImageUrl ? (
+        <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
+            <ImageIcon
+                src={identityImageUrl}
+                label={identityLabel ?? ''}
+                fallback={identityLabel ?? ''}
+                size={ImageIconSize.Full}
+                fallbackSize={ImageIconSize.Large}
+            />
+        </div>
+    ) : knownAddress ? (
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+            <IotaLogoMark className="h-1/2 w-1/2 text-iota-neutral-10 dark:text-iota-neutral-92" />
+        </div>
+    ) : undefined;
 
     return (
         <>
-            <Panel>
-                <Title title="Owned Objects" />
-                <Divider />
-                <div className="flex flex-col gap-2xl">
-                    <OwnedObjectsPanel address={data ?? addressOrName} />
-                </div>
-            </Panel>
-
-            <Panel>
-                <Title title="Transaction Blocks" />
-                <div className="flex flex-col gap-2xl p-md--rs">
-                    <TransactionBlocksPanel address={data ?? addressOrName} />
-                </div>
-            </Panel>
+            <PageHeader
+                type="Address"
+                leading={leading}
+                title={
+                    <div className="flex flex-col gap-xs">
+                        {validator ? (
+                            <ValidatorAddressHeader validator={validator} />
+                        ) : name ? (
+                            <IotaNameAddressHeader name={name} />
+                        ) : knownAddress ? (
+                            <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                {knownAddress.alias}
+                            </span>
+                        ) : null}
+                        <AddressAlias
+                            address={address}
+                            onCopy={() => copyToClipboard(address)}
+                            hideAlias={!!validator || !!name || !!knownAddress}
+                            renderAddress={(addressToDisplay, copyButton) => (
+                                <>
+                                    <span className="whitespace-nowrap sm:hidden">
+                                        {trimOrFormatAddress(addressToDisplay)}
+                                        {copyButton}
+                                    </span>
+                                    <span className="hidden sm:inline">
+                                        {addressToDisplay.slice(0, -4)}
+                                        <span className="whitespace-nowrap">
+                                            {addressToDisplay.slice(-4)}
+                                            {copyButton}
+                                        </span>
+                                    </span>
+                                </>
+                            )}
+                        />
+                    </div>
+                }
+                subtitle={null}
+                showCopyButton={false}
+                contentWidthClassName="md:w-3/5"
+                afterWidthClassName="md:w-2/5"
+                rowAlignClassName="md:items-stretch"
+                rowGapClassName="gap-lg md:gap-sm"
+                after={<AddressBalanceHero address={address} />}
+            />
+            <AddressPageContent address={address} />
         </>
     );
 }
 
 export function AddressResultPage(): JSX.Element {
     const { id } = useParams();
+    const { search } = useLocation();
+    const isAddressInput = isValidIotaAddress(id || '');
+    const { isAbstractAccount, isPending } = useAbstractAccountData(isAddressInput ? id : null);
+
+    if (isAddressInput && !isPending && isAbstractAccount) {
+        return <Navigate to={`/account/${id}${search}`} replace />;
+    }
 
     return (
         <PageLayout
             content={
                 <div className="flex flex-col gap-2xl">
-                    <AddressResultPageHeader address={id!} />
-                    <AddressBalanceBreakdown address={id!} />
                     <AddressOrNameResult addressOrName={id!} />
                 </div>
             }
         />
-    );
-}
-
-function OwnedObjectsPanel({ address }: { address: string }) {
-    const isMediumOrAbove = useBreakpoint('md');
-    const leftPane = {
-        panel: <OwnedCoins id={address} />,
-        minSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-        defaultSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-    };
-
-    const rightPane = {
-        panel: <OwnedObjects id={address} />,
-        minSize: LEFT_RIGHT_PANEL_MIN_SIZE,
-    };
-
-    return (
-        <div className="flex flex-col justify-between">
-            <ErrorBoundary>
-                {isMediumOrAbove ? (
-                    <SplitPanes
-                        autoSaveId={LocalStorageSplitPaneKey.AddressViewHorizontal}
-                        dividerSize="none"
-                        splitPanels={[leftPane, rightPane]}
-                        direction="horizontal"
-                    />
-                ) : (
-                    <>
-                        {leftPane.panel}
-                        <div className="my-8">
-                            <Divider />
-                        </div>
-                        {rightPane.panel}
-                    </>
-                )}
-            </ErrorBoundary>
-        </div>
-    );
-}
-
-function TransactionBlocksPanel({ address }: { address: string }) {
-    return (
-        <ErrorBoundary>
-            <div data-testid="tx" className="relative mt-4 h-full min-h-14 overflow-auto">
-                <TransactionsForAddress address={address} />
-            </div>
-        </ErrorBoundary>
     );
 }

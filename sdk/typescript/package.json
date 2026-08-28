@@ -4,7 +4,7 @@
     "description": "IOTA TypeScript API",
     "repository": "https://github.com/iotaledger/ts-packages",
     "homepage": "https://docs.iota.org/developer/ts-sdk/typescript/",
-    "version": "1.13.0",
+    "version": "1.15.1",
     "license": "Apache-2.0",
     "sideEffects": false,
     "files": [
@@ -137,8 +137,8 @@
         "tmp": "^0.2.3",
         "ts-node": "^10.9.2",
         "typescript": "^5.5.3",
-        "vite": "^5.4.12",
-        "vitest": "^3.2.4",
+        "vite": "^8.0.1",
+        "vitest": "^4.1.0",
         "wait-on": "^8.0.1",
         "ws": "^8.18.0"
     },

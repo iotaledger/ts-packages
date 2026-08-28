@@ -9,6 +9,7 @@ set -euo pipefail
 
 EPOCH_DURATION_MS="${EPOCH_DURATION_MS:-10000}"
 CONFIG_DIR="${CONFIG_DIR:-$(pwd)/persisted-localnet}"
+INGESTION_DIR="${INGESTION_DIR:-$(pwd)/checkpoints-ingestion}"
 GRAPHQL_CONFIG="${GRAPHQL_CONFIG:-$(pwd)/graphql-config.toml}"
 DB_URL="${DB_URL:-postgres://postgres:postgrespw@localhost:5432/iota_indexer}"
 ADMIN_MNEMONIC="${ADMIN_MNEMONIC:?ADMIN_MNEMONIC environment variable is required}"
@@ -46,19 +47,14 @@ start_initial_network() {
     pkill -f "iota start" || true
     sleep 2
 
-    # Generate network config first
-    mkdir -p "$CONFIG_DIR"
-    iota-localnet genesis \
-        --working-dir "$CONFIG_DIR" \
-        --epoch-duration-ms "$EPOCH_DURATION_MS"
-
-    # Enable gRPC API so the indexer can sync checkpoints from the node.
-    # Will be enabled by default in future: https://github.com/iotaledger/iota/issues/10777
-    sed -i 's/enable-grpc-api: false/enable-grpc-api: true/' "$CONFIG_DIR/fullnode.yaml"
+    rm -rf "$INGESTION_DIR"
+    mkdir -p "$INGESTION_DIR"
 
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
+        --with-grpc \
+        --data-ingestion-dir "$INGESTION_DIR" \
         --faucet-amount 100000000000000 > iota-node.log 2>&1 &
     PID_IOTA=$!
 
@@ -68,7 +64,7 @@ start_initial_network() {
     iota-indexer \
         --db-url "$DB_URL" \
         indexer \
-        --remote-store-url "http://127.0.0.1:50051" \
+        --data-ingestion-path "$INGESTION_DIR" \
         --reset-db > indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
@@ -132,7 +128,7 @@ stop_and_inject_configs() {
     echo "=== Phase 3: Stopping and injecting iota-names config ==="
 
     for pid in $PID_IOTA $PID_INDEXER_WRITER $PID_INDEXER_READER $PID_GRAPHQL; do
-        kill "$pid" 2>/dev/null || true
+        kill -9 "$pid" 2>/dev/null || true
         wait "$pid" 2>/dev/null || true
     done
 
@@ -197,6 +193,8 @@ restart_with_configs() {
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
+        --with-grpc \
+        --data-ingestion-dir "$INGESTION_DIR" \
         --faucet-amount 100000000000000 >> iota-node.log 2>&1 &
     PID_IOTA=$!
 
@@ -205,8 +203,7 @@ restart_with_configs() {
     iota-indexer \
         --db-url "$DB_URL" \
         indexer \
-        --remote-store-url "http://127.0.0.1:50051" \
-        --reset-db >> indexer-writer.log 2>&1 &
+        --data-ingestion-path "$INGESTION_DIR" >> indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
     sleep 30

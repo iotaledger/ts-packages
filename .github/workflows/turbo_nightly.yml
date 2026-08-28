@@ -42,12 +42,12 @@ jobs:
       - name: Node Sync
         run: |
           pnpm codegen
-          if [ -z "$(git status --porcelain)" ]; then
+          if [ -z "$(git status --porcelain --ignore-submodules=all)" ]; then
             echo "No sync needed"
           else
             echo "Upstream drift detected. Bump submodules and run 'pnpm codegen' in the root."
-            git status
-            git diff
+            git status --ignore-submodules=all
+            git diff --ignore-submodules=all
             exit 1
           fi
 
@@ -70,7 +70,7 @@ jobs:
       isNamesSDK: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
-      EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG }}
+      EVM_BRIDGE_CONFIG_TESTS: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
 
   check-sri-integrity-webassets:
     uses: ./.github/workflows/check_sri.yml

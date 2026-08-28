@@ -1,0 +1,88 @@
+// Copyright (c) 2026 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+import { useEffect, useRef, useState } from 'react';
+import { GLOBAL_DATE_TYPE, type DateFormat, type DateType } from '~/contexts/dateFormatContext';
+import { useFormattedDate } from '~/hooks/useFormattedDate';
+
+const TOOLTIP_DURATION_MS = 1_000;
+
+const FORMAT_LABEL: Record<DateFormat, string> = {
+    default: 'Relative time',
+    local: 'Local time',
+    utc: 'UTC',
+};
+
+interface DateDisplayProps {
+    timestamp: number | string;
+    type?: DateType;
+    showTimeAgo?: boolean;
+    showTooltip?: boolean;
+    showHoverStyle?: boolean;
+}
+
+export function DateDisplay({
+    timestamp,
+    type,
+    showTimeAgo = false,
+    showTooltip = true,
+    showHoverStyle = true,
+}: DateDisplayProps): JSX.Element {
+    const effectiveType = type ?? GLOBAL_DATE_TYPE;
+    const timestampMs = Number(timestamp);
+    const { displayed, format, cycle } = useFormattedDate(effectiveType, timestampMs, showTimeAgo);
+
+    const [showMessage, setShowMessage] = useState(false);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+    useEffect(() => () => clearTimeout(timeoutRef.current), []);
+
+    function handleClick() {
+        cycle();
+        clearTimeout(timeoutRef.current);
+
+        if (showTooltip) {
+            setShowMessage(true);
+            timeoutRef.current = setTimeout(() => setShowMessage(false), TOOLTIP_DURATION_MS);
+        }
+    }
+
+    function handleKeyDown(e: React.KeyboardEvent) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+        }
+    }
+
+    const timeElement = (
+        <time
+            dateTime={new Date(timestampMs).toISOString()}
+            role="button"
+            tabIndex={0}
+            onClick={handleClick}
+            onKeyDown={handleKeyDown}
+            className={
+                showHoverStyle
+                    ? 'cursor-pointer select-none text-nowrap rounded-md p-1 hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12'
+                    : 'cursor-pointer select-none'
+            }
+        >
+            {displayed}
+        </time>
+    );
+
+    if (!showTooltip) {
+        return timeElement;
+    }
+
+    return (
+        <span className="relative inline-block">
+            {showMessage && (
+                <span className="tooltip-bg tooltip-text-color absolute bottom-full left-1/2 mb-1 -translate-x-1/2 transform whitespace-nowrap rounded p-xs text-label-sm">
+                    {FORMAT_LABEL[format]}
+                </span>
+            )}
+            {timeElement}
+        </span>
+    );
+}

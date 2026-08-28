@@ -25,6 +25,11 @@ const VALIDATOR_ROLES = [
         description: 'Candidate for future epochs',
     },
     {
+        type: BadgeType.Outlined,
+        label: 'Inactive',
+        description: 'Not eligible for the committee',
+    },
+    {
         type: BadgeType.Error,
         label: 'At Risk',
         description: 'At risk of being slashed or penalized',
@@ -40,7 +45,7 @@ export function ValidatorStatusLegend(): JSX.Element {
                     title="Status Legend"
                     tooltipText="Each validator is assigned a role reflecting their current standing in the network."
                 />
-                <div className="grid grid-cols-2 gap-xl px-md md:grid-cols-3 lg:grid-cols-5">
+                <div className="grid grid-cols-2 gap-xl px-md md:grid-cols-3 lg:grid-cols-6">
                     {VALIDATOR_ROLES.map(({ type, label, description }) => (
                         <div key={label} className="flex flex-col items-start gap-xs">
                             <Badge type={type} label={label} size={BadgeSize.Small} />

@@ -4,11 +4,8 @@
 
 import {
     TimeUnit,
-    useFormatCoin,
     useGetTimeBeforeEpochNumber,
     useTimeAgo,
-    GAS_SYMBOL,
-    useNewUnstakeTransaction,
     useGetDelegatedStake,
     DELEGATED_STAKES_QUERY_STALE_TIME,
     DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
@@ -17,8 +14,10 @@ import {
     Validator,
     toast,
     GAS_BUDGET_ERROR_MESSAGES,
-    NOT_ENOUGH_BALANCE_ID,
     GAS_BALANCE_TOO_LOW_ID,
+    useUnstakeForm,
+    UnstakeBreakdown,
+    MIN_PARTIAL_UNSTAKE_MESSAGE,
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
@@ -33,14 +32,17 @@ import {
     InfoBoxType,
     KeyValueInfo,
     Panel,
+    Input,
+    InputType,
 } from '@iota/apps-ui-kit';
+import { Field, type FieldProps, FormikProvider } from 'formik';
 import { useMutation } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '../../helpers';
 import { Info, Loader } from '@iota/apps-ui-icons';
 import { type IotaTransactionBlockResponse, type StakeObject } from '@iota/iota-sdk/client';
-import { CoinFormat } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { ValidatorFormDetail } from './ValidatorFormDetail';
 
 export interface StakeFromProps {
@@ -78,32 +80,34 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
 
     const iotaEarned =
         (stakeData as Extract<StakeObject, { estimatedReward: string }>)?.estimatedReward || '0';
-    const [rewards, rewardSymbol] = useFormatCoin({ balance: iotaEarned });
-    const [totalIota] = useFormatCoin({ balance: BigInt(iotaEarned || 0) + totalTokenBalance });
-    const [tokenBalanceFormatted] = useFormatCoin({ balance: totalTokenBalance });
-    const [tokenBalanceFormattedPlain] = useFormatCoin({
-        balance: totalTokenBalance,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
-    const [rewardsFormattedPlain] = useFormatCoin({
-        balance: iotaEarned,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
+
+    // Calculate principal and reward amounts
+    const principalAmount = totalTokenBalance;
+    const rewardAmount = BigInt(iotaEarned);
 
     const {
-        data: unstakeData,
-        isLoading: isUnstakeTokenTransactionLoading,
-        isError,
-        error,
-    } = useNewUnstakeTransaction(activeAddress, stakedIotaId);
-    const transaction = unstakeData?.transaction;
-
-    const [formattedGas, gasSymbol] = useFormatCoin({
-        balance: unstakeData?.gasSummary?.totalGas,
-        format: CoinFormat.Full,
+        formik,
+        values,
+        isPartialUnstake,
+        switchToFullUnstake,
+        switchToPartialUnstake,
+        unstakeAmounts,
+        unstakeAmountFormattedPlain,
+        rewardsFormattedPlain,
+        transaction,
+        activeIsError,
+        activeIsLoading,
+        gasFormatted,
+        gasSymbol,
+        isInvalidPartialAmount,
+        isNotEnoughGas,
+    } = useUnstakeForm({
+        activeAddress,
+        stakedIotaId,
+        principalAmount,
+        rewardAmount,
     });
+
     const { data: currentEpochEndTime } = useGetTimeBeforeEpochNumber(epoch + 1 || 0);
     const currentEpochEndTimeAgo = useTimeAgo({
         timeFrom: currentEpochEndTime,
@@ -149,7 +153,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
             },
             onSuccess: () => {
                 ampli.unstakedIota({
-                    stakedAmount: Number(tokenBalanceFormattedPlain),
+                    stakedAmount: Number(unstakeAmountFormattedPlain),
                     validatorAddress: validatorAddress!,
                     rewards: Number(rewardsFormattedPlain),
                     validatorName,
@@ -172,18 +176,53 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
         }
     };
 
-    const isLoading =
-        isPending || isUnstakeTokenTransactionPending || isUnstakeTokenTransactionLoading;
+    const isLoading = isPending || isUnstakeTokenTransactionPending || activeIsLoading;
 
-    const isNotEnoughGas =
-        error &&
-        (error.message.includes(NOT_ENOUGH_BALANCE_ID) ||
-            error.message.includes(GAS_BALANCE_TOO_LOW_ID));
     return (
-        <>
+        <FormikProvider value={formik}>
             <div className="flex flex-1 flex-col flex-nowrap gap-y-md overflow-auto">
                 <Validator address={validatorAddress} type={CardType.Filled} />
                 <ValidatorFormDetail validatorAddress={validatorAddress} unstake={true} />
+                <Panel hasBorder>
+                    <div className="flex flex-col gap-y-sm p-md">
+                        <div className="flex gap-2">
+                            <Button
+                                type={isPartialUnstake ? ButtonType.Outlined : ButtonType.Secondary}
+                                text="Unstake All"
+                                onClick={switchToFullUnstake}
+                            />
+                            <Button
+                                type={isPartialUnstake ? ButtonType.Secondary : ButtonType.Outlined}
+                                text="Partial Unstake"
+                                onClick={switchToPartialUnstake}
+                            />
+                        </div>
+                        {isPartialUnstake && (
+                            <>
+                                <Field name="amount">
+                                    {({ field: { onChange, ...field }, meta }: FieldProps) => (
+                                        <Input
+                                            {...field}
+                                            type={InputType.NumericFormat}
+                                            decimalScale={IOTA_DECIMALS}
+                                            onValueChange={(vals) =>
+                                                formik.setFieldValue('amount', vals.value, true)
+                                            }
+                                            placeholder="Enter amount to unstake"
+                                            suffix=" IOTA"
+                                            errorMessage={
+                                                values.amount && meta.error ? meta.error : undefined
+                                            }
+                                        />
+                                    )}
+                                </Field>
+                                <div className="key-value-key-text-color text-body-sm">
+                                    {MIN_PARTIAL_UNSTAKE_MESSAGE}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </Panel>
                 <Panel hasBorder>
                     <div className="flex flex-col gap-y-sm p-md">
                         <KeyValueInfo
@@ -192,24 +231,9 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                             fullwidth
                         />
                         <Divider />
-                        <KeyValueInfo
-                            keyText="Your Stake"
-                            value={tokenBalanceFormatted}
-                            supportingLabel={GAS_SYMBOL}
-                            fullwidth
-                        />
-                        <KeyValueInfo
-                            keyText="Rewards Earned"
-                            value={rewards}
-                            supportingLabel={rewardSymbol}
-                            fullwidth
-                        />
-                        <Divider />
-                        <KeyValueInfo
-                            keyText="Total unstaked IOTA"
-                            value={totalIota}
-                            supportingLabel={GAS_SYMBOL}
-                            fullwidth
+                        <UnstakeBreakdown
+                            isPartialUnstake={isPartialUnstake}
+                            unstakeAmounts={unstakeAmounts}
                         />
                     </div>
                 </Panel>
@@ -217,7 +241,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                     <div className="flex flex-col gap-y-sm p-md">
                         <KeyValueInfo
                             keyText="Gas Fees"
-                            value={formattedGas || '-'}
+                            value={gasFormatted || '-'}
                             supportingLabel={gasSymbol}
                             fullwidth
                         />
@@ -249,16 +273,21 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                     type={ButtonType.Primary}
                     fullWidth
                     onClick={handleSubmit}
-                    disabled={isError || isLoading}
+                    disabled={
+                        activeIsError ||
+                        isLoading ||
+                        isInvalidPartialAmount ||
+                        Boolean(isNotEnoughGas)
+                    }
                     text="Unstake"
                     icon={
-                        isLoading && !isError ? (
+                        isLoading && !activeIsError ? (
                             <Loader className="animate-spin" data-testid="loading-indicator" />
                         ) : null
                     }
                     iconAfterText
                 />
             </div>
-        </>
+        </FormikProvider>
     );
 }

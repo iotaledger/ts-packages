@@ -6,10 +6,19 @@ import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iot
 import { useParams } from 'react-router-dom';
 import { ErrorBoundary, PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
+import { usePackageUpgradePolicy } from '~/hooks';
+import { getHistoryUnavailableMessage, INDEXER_RETENTION_DAYS } from '~/lib/constants';
 import { ObjectView } from '~/pages/object-result/views/ObjectView';
 import { translate, type DataType } from './ObjectResultType';
 import { PkgView, TokenView } from './views';
-import { InfoBox, InfoBoxStyle, InfoBoxType, LoadingIndicator } from '@iota/apps-ui-kit';
+import {
+    Badge,
+    BadgeType,
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
+    LoadingIndicator,
+} from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 
 const PACKAGE_TYPE_NAME = 'Move Package';
@@ -18,6 +27,12 @@ export function ObjectResult(): JSX.Element {
     const { id: objID } = useParams();
     const { data, isPending, isError, isFetched } = useGetObjectOrPastObject(objID);
     const copyToClipboard = useCopyToClipboard();
+
+    const isPageError = !isPending && (isError || data?.error || (isFetched && !data));
+    const resp = data && !isPageError ? translate(data) : null;
+    const isPackage = resp ? resp.objType === PACKAGE_TYPE_NAME : false;
+    const txDigest = isPackage ? resp?.data.tx_digest : undefined;
+    const { upgradePolicy } = usePackageUpgradePolicy(txDigest);
 
     if (isPending) {
         return (
@@ -30,11 +45,6 @@ export function ObjectResult(): JSX.Element {
             />
         );
     }
-
-    const isPageError = isError || data?.error || (isFetched && !data);
-
-    const resp = data && !isPageError ? translate(data) : null;
-    const isPackage = resp ? resp.objType === PACKAGE_TYPE_NAME : false;
 
     return (
         <PageLayout
@@ -62,10 +72,18 @@ export function ObjectResult(): JSX.Element {
                             <ErrorBoundary>{data && <ObjectView data={data} />}</ErrorBoundary>
                         </div>
                     )}
-                    {isPageError || !data || !resp ? (
+                    {data?.isHistoryUnavailable ? (
+                        <InfoBox
+                            title="Object No Longer Available"
+                            supportingText={getHistoryUnavailableMessage('This object')}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    ) : isPageError || !data || !resp ? (
                         <InfoBox
                             title="Invalid Object ID"
-                            supportingText={`No object found matching ID: ${objID} on this network. Please verify the ID and try again.`}
+                            supportingText={`No object found matching ID: ${objID} on this network. Please verify the ID and try again. Note that objects deleted more than ${INDEXER_RETENTION_DAYS} days ago can no longer be found.`}
                             icon={<Warning />}
                             type={InfoBoxType.Error}
                             style={InfoBoxStyle.Elevated}
@@ -77,12 +95,32 @@ export function ObjectResult(): JSX.Element {
                                     type="Package"
                                     showCopyButton={false}
                                     title={
-                                        <div className="flex flex-col gap-xs">
-                                            <AddressAlias
-                                                address={resp.id}
-                                                onCopy={() => copyToClipboard(resp.id)}
-                                            />
-                                        </div>
+                                        <AddressAlias
+                                            address={resp.id}
+                                            onCopy={() => copyToClipboard(resp.id)}
+                                            renderAlias={(alias) => (
+                                                <div className="flex items-center gap-xs">
+                                                    <span>{alias}</span>
+                                                    {upgradePolicy &&
+                                                        !upgradePolicy.isIndeterminate && (
+                                                            <span className="shrink-0">
+                                                                <Badge
+                                                                    label={
+                                                                        upgradePolicy.isImmutable
+                                                                            ? 'Immutable'
+                                                                            : 'Upgradeable'
+                                                                    }
+                                                                    type={
+                                                                        upgradePolicy.isImmutable
+                                                                            ? BadgeType.Neutral
+                                                                            : BadgeType.PrimarySoft
+                                                                    }
+                                                                />
+                                                            </span>
+                                                        )}
+                                                </div>
+                                            )}
+                                        />
                                     }
                                 />
                             )}

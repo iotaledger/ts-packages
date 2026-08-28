@@ -18,13 +18,16 @@ import './index.css';
 import { Disclaimer, handleConsentAccepted } from '@iota/core';
 import { LEGAL_LINKS } from './lib';
 import { Link } from './components';
-import { initIdentityWasmWeb } from './lib/utils/trust-framework/identity';
+import { initIdentityWasmWeb, initNotarizationWasmWeb } from './lib/utils/trust-framework/client';
 
 // Load Amplitude as early as we can:
 initAmplitude();
 
 // Load Identity WASM module as early as we can:
 initIdentityWasmWeb();
+
+// Load Notarization WASM module as early as we can:
+initNotarizationWasmWeb();
 
 // Start loading features as early as we can:
 appsBackendClient.refreshFeatures();
@@ -39,7 +42,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         handleConsentAccepted();
                     }}
                 >
-                    <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <div className="text-center text-body-md text-iota-neutral-10 max-sm:max-w-sm lg:text-left dark:text-iota-neutral-92">
                         By using this website, you agree with our{' '}
                         {LEGAL_LINKS.map(({ title, href }, index) => (
                             <React.Fragment key={title}>

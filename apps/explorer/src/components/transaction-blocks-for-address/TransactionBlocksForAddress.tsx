@@ -5,6 +5,8 @@
 import { type TransactionFilter } from '@iota/iota-sdk/client';
 import { type Dispatch, type SetStateAction, useReducer, useState } from 'react';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
+import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
+import { Warning } from '@iota/apps-ui-icons';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
     useGetTransactionBlocks,
@@ -13,6 +15,9 @@ import { ObjectFilterValue } from '~/lib/enums';
 import {
     ButtonSegment,
     ButtonSegmentType,
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
     Panel,
     SegmentedButton,
     SegmentedButtonType,
@@ -132,9 +137,21 @@ export function TransactionBlocksForAddress({
                             colHeadings={['Type', 'Sender', 'Txns', 'Gas', 'Time']}
                         />
                     ) : (
-                        <div>
-                            <TableCard data={data.pages[currentPage].data} columns={tableColumns} />
-                        </div>
+                        <>
+                            <InfoBox
+                                title={RETENTION_BANNER_TITLE}
+                                supportingText={RETENTION_BANNER_TEXT}
+                                icon={<Warning />}
+                                type={InfoBoxType.Warning}
+                                style={InfoBoxStyle.Elevated}
+                            />
+                            {!!data.pages[currentPage].data.length && (
+                                <TableCard
+                                    data={data.pages[currentPage].data}
+                                    columns={tableColumns}
+                                />
+                            )}
+                        </>
                     )}
 
                     {(hasNextPage || (data && data?.pages.length > 1)) && (

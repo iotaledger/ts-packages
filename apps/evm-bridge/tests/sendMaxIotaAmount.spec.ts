@@ -1,3 +1,6 @@
+// Copyright (c) 2026 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { expect } from '@playwright/test';
 import { checkL2IotaBalanceWithRetries, checkL1IotaBalanceWithRetries } from './helpers/balances';
 import { THREE_MINUTES } from './utils/constants';

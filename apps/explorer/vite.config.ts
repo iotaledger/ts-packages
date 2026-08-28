@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-/// <reference types="vitest" />
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
@@ -11,7 +10,20 @@ import svgr from 'vite-plugin-svgr';
 import { configDefaults } from 'vitest/config';
 
 process.env.VITE_VERCEL_ENV = process.env.VERCEL_ENV || 'development';
-const EXPLORER_REV = execSync('git rev-parse HEAD').toString().trim().toString();
+
+function resolveExplorerRev(): string {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) {
+        return process.env.VERCEL_GIT_COMMIT_SHA;
+    }
+
+    try {
+        return execSync('git rev-parse HEAD').toString().trim();
+    } catch {
+        return 'unknown';
+    }
+}
+
+const EXPLORER_REV = resolveExplorerRev();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {

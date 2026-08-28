@@ -26,6 +26,14 @@
         border-color: var(--badge-border-color-soft);
     }
 
+    .badge-border-color-outlined {
+        border-color: theme('colors.iota-neutral.40');
+    }
+
+    .badge-ring-outlined {
+        box-shadow: inset 0 0 0 1px theme('colors.iota-neutral.40');
+    }
+
     .badge-text-color-neutral {
         color: var(--badge-text-color-neutral);
     }

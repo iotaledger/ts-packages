@@ -26,7 +26,7 @@ export function Disclaimer({ onClose, children }: DisclaimerProps) {
     return (
         <>
             {amplitudeConsentStatus === 'pending' && (
-                <div className=" fixed bottom-0 dark:border-iota-neutral-12 dark:bg-iota-neutral-20 border-iota-neutral-80 bg-iota-neutral-100 right-0 z-[99999] w-full max-w-none flex flex-col py-6 px-8 rounded-none max-lg:px-0 lg:flex-row lg:py-4 lg:px-6 lg:pr-10 lg:bottom-6 lg:right-6 lg:rounded-md lg:max-w-[32rem] border">
+                <div className=" fixed bottom-0 dark:border-iota-neutral-12 dark:bg-iota-neutral-20 border-iota-neutral-80 bg-iota-neutral-100 right-0 z-[99999] w-full max-w-none flex flex-col py-6 px-8 rounded-none max-md:px-0 md:flex-row md:py-4 md:px-6 md:pr-10 md:bottom-6 md:right-6 md:rounded-md md:max-w-[32rem] border">
                     <div
                         onClick={() => {
                             setAmplitudeConsentStatus('accepted');
@@ -36,7 +36,7 @@ export function Disclaimer({ onClose, children }: DisclaimerProps) {
                     >
                         <Close className="h-5 w-5" aria-label="Close" />
                     </div>
-                    <div className="flex flex-col items-center justify-center lg:items-start m-0 text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <div className="flex flex-col items-center justify-center md:items-start m-0 text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
                         {children}
                     </div>
                 </div>
