@@ -129,7 +129,7 @@ export function TransactionTile({ transaction, hideBalance }: TransactionTilePro
                             `${BALANCE_MASK} ${symbol}`
                         ) : (
                             <AmountWithFiat
-                                amount={balance}
+                                amount={balance ?? 0}
                                 formatted={formatAmount}
                                 symbol={symbol}
                                 coinType={coinType}
