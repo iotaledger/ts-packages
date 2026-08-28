@@ -5,8 +5,3 @@ export enum ValueSize {
     Small = 'small',
     Medium = 'medium',
 }
-
-export enum KeyColumnWidth {
-    Default = 'default',
-    Wide = 'wide',
-}

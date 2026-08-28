@@ -32,9 +32,9 @@ export function ProgrammableTxnBlockCard({
     const itemsToShow = defaultItemsToShow || items.length;
 
     return (
-        <CollapsibleCard title={itemsLabel} hideBorder rawData={rawData}>
+        <CollapsibleCard title={itemsLabel} rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
-                <div className="flex flex-col gap-xs overflow-y-auto p-md--rs pt-xs--rs">
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-y-xxs p-md--rs pt-xs--rs">
                     {noExpandableList ? <>{items}</> : <ExpandableListItems />}
                 </div>
 

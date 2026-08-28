@@ -1,15 +1,8 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
-import {
-    Badge,
-    BadgeType,
-    ButtonUnstyled,
-    Divider,
-    KeyColumnWidth,
-    KeyValueInfo,
-} from '@iota/apps-ui-kit';
+import { type ReactNode, useId, useState } from 'react';
+import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
     TransactionAction,
@@ -28,37 +21,164 @@ import {
     EpochLink,
     ObjectLink,
 } from '~/components';
-import { useDeserializedSignatures, type SignaturePubkeyPair } from '~/hooks';
+import {
+    useBreakpoint,
+    useDeserializedSignatures,
+    type DeserializedSignature,
+    type MultiSigParticipant,
+    type MultiSigSignature,
+} from '~/hooks';
 import { getSendRecipientAddress, onCopySuccess } from '~/lib/utils';
 
-// A fixed-width, invisible spacer passed as `KeyValueInfo`'s `keyIcon` to indent the key
-// text without changing the row's width (which would misalign the value column).
-const INDENT_SPACER = <span aria-hidden className="inline-block w-sm--rs" />;
+interface ExpandableDetailsProps {
+    id?: string;
+    ariaLabel: string;
+    children: ReactNode;
+}
 
-// Draws a single continuous vertical rule alongside indented rows, instead of each
-// row drawing its own border (which leaves visible gaps between rows).
-function IndentGuide({ children }: { children: React.ReactNode }): JSX.Element {
+function ExpandableDetails({ id, ariaLabel, children }: ExpandableDetailsProps): JSX.Element {
     return (
-        <div className="relative flex flex-col gap-xs">
-            <div className="pointer-events-none absolute inset-y-0 left-0 border-l border-iota-neutral-92 dark:border-iota-neutral-12" />
+        <div
+            id={id}
+            role="region"
+            aria-label={ariaLabel}
+            className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
+        >
             {children}
         </div>
     );
 }
 
-function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPair }): JSX.Element {
-    const { signature, signatureScheme } = data;
+function MultiSigParticipantRow({
+    participant,
+    index,
+}: {
+    participant: MultiSigParticipant;
+    index: number;
+}): JSX.Element {
+    const [showPartialSignature, setShowPartialSignature] = useState(false);
+    const publicKey = participant.publicKey.toIotaPublicKey();
+    const partialSignature = participant.signature ? toBase64(participant.signature) : undefined;
+
     return (
-        <IndentGuide>
+        <div className="flex flex-col gap-xs">
+            <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
+                Participant {index + 1}
+            </div>
             <KeyValueInfo
-                keyColumnWidth={KeyColumnWidth.Wide}
-                keyIcon={INDENT_SPACER}
-                keyText="Scheme"
-                value={signatureScheme}
+                layout="receipt"
+                keyText="Status"
+                value={
+                    <span className="flex items-center gap-xs">
+                        <span
+                            aria-hidden="true"
+                            className={clsx(
+                                'h-2 w-2 shrink-0 rounded-full',
+                                participant.signed
+                                    ? 'bg-iota-primary-50 dark:bg-iota-primary-80'
+                                    : 'bg-iota-neutral-70 dark:bg-iota-neutral-30',
+                            )}
+                        />
+                        <span>{participant.signed ? 'Signed' : 'Not signed'}</span>
+                    </span>
+                }
             />
             <KeyValueInfo
-                keyColumnWidth={KeyColumnWidth.Wide}
-                keyIcon={INDENT_SPACER}
+                layout="receipt"
+                keyText="Address"
+                value={<AddressLink address={participant.address} copyText={participant.address} />}
+            />
+            <KeyValueInfo layout="receipt" keyText="Scheme" value={participant.signatureScheme} />
+            <KeyValueInfo layout="receipt" keyText="Weight" value={participant.weight.toString()} />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Public Key"
+                value={publicKey}
+                copyText={publicKey}
+                onCopySuccess={onCopySuccess}
+                isTruncated
+            />
+            {partialSignature && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Partial Signature"
+                        value={
+                            <ButtonUnstyled
+                                className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-expanded={showPartialSignature}
+                                onClick={() => setShowPartialSignature(!showPartialSignature)}
+                            >
+                                {showPartialSignature
+                                    ? 'Hide Partial Signature'
+                                    : 'Show Partial Signature'}
+                            </ButtonUnstyled>
+                        }
+                    />
+                    {showPartialSignature && (
+                        <KeyValueInfo
+                            layout="receipt"
+                            keyText="Signature"
+                            value={partialSignature}
+                            copyText={partialSignature}
+                            onCopySuccess={onCopySuccess}
+                        />
+                    )}
+                </>
+            )}
+        </div>
+    );
+}
+
+function MultiSigBreakdown({ signature: data }: { signature: MultiSigSignature }): JSX.Element {
+    const { multisig } = data;
+
+    return (
+        <div className="flex flex-col gap-sm">
+            <KeyValueInfo layout="receipt" keyText="Scheme" value="MultiSig" />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Participants"
+                value={`${multisig.participants.length} total`}
+            />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Threshold"
+                value={`${multisig.threshold} weight`}
+            />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Address"
+                value={<AddressLink address={multisig.address} copyText={multisig.address} />}
+            />
+            <div className="flex flex-col gap-lg pt-sm">
+                {multisig.participants.map((participant, index) => (
+                    <MultiSigParticipantRow
+                        key={participant.address}
+                        participant={participant}
+                        index={index}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function SignatureBreakdown({
+    signature: data,
+}: {
+    signature: DeserializedSignature;
+}): JSX.Element {
+    if (data.signatureScheme === 'MultiSig') {
+        return <MultiSigBreakdown signature={data} />;
+    }
+
+    const { signature, signatureScheme } = data;
+    return (
+        <div className="flex flex-col gap-sm">
+            <KeyValueInfo layout="receipt" keyText="Scheme" value={signatureScheme} />
+            <KeyValueInfo
+                layout="receipt"
                 keyText="Address"
                 value={
                     <AddressLink
@@ -69,25 +189,21 @@ function SignatureBreakdown({ signature: data }: { signature: SignaturePubkeyPai
             />
             {'publicKey' in data ? (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
-                    keyIcon={INDENT_SPACER}
+                    layout="receipt"
                     keyText="IOTA Public Key"
                     value={data.publicKey.toIotaPublicKey()}
                     copyText={data.publicKey.toIotaPublicKey()}
                     onCopySuccess={onCopySuccess}
-                    isTruncated
                 />
             ) : null}
             <KeyValueInfo
-                keyColumnWidth={KeyColumnWidth.Wide}
-                keyIcon={INDENT_SPACER}
+                layout="receipt"
                 keyText="Signature"
                 copyText={toBase64(signature)}
                 onCopySuccess={onCopySuccess}
                 value={toBase64(signature)}
-                isTruncated
             />
-        </IndentGuide>
+        </div>
     );
 }
 
@@ -125,6 +241,99 @@ function GasFeeAmount({ amount, burnedAmount }: GasFeeAmountProps): JSX.Element 
     );
 }
 
+interface GasPaymentObjectsSummaryProps {
+    payments: Array<{ objectId: string }>;
+    showAll: boolean;
+    onToggle: () => void;
+    detailsId: string;
+}
+
+function GasPaymentObjectsSummary({
+    payments,
+    showAll,
+    onToggle,
+    detailsId,
+}: GasPaymentObjectsSummaryProps): JSX.Element {
+    const hasMorePayments = payments.length > 2;
+
+    return (
+        <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-x-sm gap-y-xxs">
+            {!showAll &&
+                payments
+                    .slice(0, 2)
+                    .map((payment) => (
+                        <ObjectLink
+                            key={payment.objectId}
+                            objectId={payment.objectId}
+                            label={formatAddress(payment.objectId)}
+                            copyText={payment.objectId}
+                            className="text-label-md"
+                        />
+                    ))}
+            {hasMorePayments && (
+                <ButtonUnstyled
+                    className="inline-flex items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                    aria-controls={detailsId}
+                    aria-expanded={showAll}
+                    onClick={onToggle}
+                >
+                    {showAll ? 'Show Less' : `Show ${payments.length - 2} More`}
+                    <ArrowDown
+                        className={clsx(
+                            'h-4 w-4 transition-transform ease-linear',
+                            showAll && 'rotate-180',
+                        )}
+                    />
+                </ButtonUnstyled>
+            )}
+        </div>
+    );
+}
+
+interface GasPaymentObjectsDetailsProps {
+    payments: Array<{ objectId: string }>;
+    detailsId: string;
+}
+
+function GasPaymentObjectsDetails({
+    payments,
+    detailsId,
+}: GasPaymentObjectsDetailsProps): JSX.Element {
+    return (
+        <ExpandableDetails id={detailsId} ariaLabel="Gas payment object details">
+            <div className="flex items-center justify-between gap-sm text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                <span className="shrink-0">Objects</span>
+                <span className="shrink-0">
+                    {payments.length} Gas Object{payments.length === 1 ? '' : 's'}
+                </span>
+            </div>
+            <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
+                {payments.map((payment, index) => (
+                    <div
+                        key={payment.objectId}
+                        className={clsx(
+                            'min-w-0 py-xs',
+                            index > 0 &&
+                                'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
+                        )}
+                    >
+                        <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
+                            <div className="min-w-max">
+                                <ObjectLink
+                                    objectId={payment.objectId}
+                                    noTruncate
+                                    copyText={payment.objectId}
+                                    className="text-label-md"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </ExpandableDetails>
+    );
+}
+
 interface TransactionOverviewProps {
     transaction: IotaTransactionBlockResponse;
     gasSummary?: GasSummaryType;
@@ -137,6 +346,8 @@ export function TransactionOverview({
     const [showAllGasPayment, setShowAllGasPayment] = useState(false);
     const [showGasFeeBreakdown, setShowGasFeeBreakdown] = useState(false);
     const [showFullSignatures, setShowFullSignatures] = useState(false);
+    const gasPaymentDetailsId = `gas-payment-objects-${useId().replace(/:/g, '')}`;
+    const isMediumOrAbove = useBreakpoint('md');
     const { userSignatures, sponsorSignature } = useDeserializedSignatures(transaction);
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
@@ -165,29 +376,31 @@ export function TransactionOverview({
     });
 
     return (
-        <div className="flex flex-col gap-sm p-md--rs md:max-w-4xl">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm p-md--rs">
             {transactionKindName && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Transaction Type"
                     value={
                         <div className="whitespace-nowrap">
                             <Badge label={transactionKindName} type={BadgeType.PrimarySoft} />
                         </div>
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             <KeyValueInfo
-                keyColumnWidth={KeyColumnWidth.Wide}
+                layout="receipt"
                 keyText="Digest"
                 value={transaction.digest}
                 copyText={transaction.digest}
                 onCopySuccess={onCopySuccess}
                 isTruncated
+                fullwidth={!isMediumOrAbove}
             />
             {transaction.checkpoint && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Checkpoint"
                     value={
                         <CheckpointSequenceLink sequence={transaction.checkpoint}>
@@ -196,22 +409,24 @@ export function TransactionOverview({
                     }
                     copyText={transaction.checkpoint}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {transaction.effects?.executedEpoch && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Epoch"
                     value={
                         <EpochLink epoch={transaction.effects.executedEpoch}>
                             {transaction.effects.executedEpoch}
                         </EpochLink>
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {transaction.timestampMs && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Timestamp"
                     value={
                         <DateDisplay
@@ -220,11 +435,12 @@ export function TransactionOverview({
                             showTimeAgo
                         />
                     }
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {sender && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Sender"
                     keyIcon={
                         <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
@@ -232,11 +448,12 @@ export function TransactionOverview({
                     value={<AddressLink address={sender} />}
                     copyText={sender}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {recipient && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Recipient"
                     keyIcon={
                         <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
@@ -244,21 +461,18 @@ export function TransactionOverview({
                     value={<AddressLink address={recipient} />}
                     copyText={recipient}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {isProgrammableTransaction && totalGas && (
                 <div data-testid="gas-breakdown">
                     <KeyValueInfo
-                        keyColumnWidth={KeyColumnWidth.Wide}
+                        layout="receipt"
                         keyText="Total Gas Fee"
-                        value={
-                            <div className="flex flex-col gap-xxs md:flex-row md:items-baseline md:gap-xs">
-                                <div className="flex flex-row items-baseline gap-xs">
-                                    <span>
-                                        {formattedTotalGas} {totalGasSymbol}
-                                    </span>
-                                    <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
-                                </div>
+                        value={`${formattedTotalGas} ${totalGasSymbol}`}
+                        supportingLabel={
+                            <div className="flex flex-row items-baseline gap-xs">
+                                <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
                                 {gasUsed && (
                                     <ButtonUnstyled
                                         className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
@@ -275,23 +489,23 @@ export function TransactionOverview({
                                 )}
                             </div>
                         }
+                        fullwidth={!isMediumOrAbove}
                     />
                 </div>
             )}
             {isProgrammableTransaction && showGasFeeBreakdown && gasUsed && (
-                <IndentGuide>
+                <ExpandableDetails ariaLabel="Gas fee details">
                     {gasPrice && (
                         <KeyValueInfo
-                            keyColumnWidth={KeyColumnWidth.Wide}
-                            keyIcon={INDENT_SPACER}
+                            layout="receipt"
                             keyText="Gas Price"
                             value={<GasFeeAmount amount={gasPrice} />}
+                            fullwidth={!isMediumOrAbove}
                         />
                     )}
                     {gasUsed.computationCost && (
                         <KeyValueInfo
-                            keyColumnWidth={KeyColumnWidth.Wide}
-                            keyIcon={INDENT_SPACER}
+                            layout="receipt"
                             keyText="Computation Fee"
                             value={
                                 <GasFeeAmount
@@ -299,103 +513,110 @@ export function TransactionOverview({
                                     burnedAmount={gasUsed.computationCostBurned}
                                 />
                             }
+                            fullwidth={!isMediumOrAbove}
                         />
                     )}
                     {gasUsed.storageCost && (
                         <KeyValueInfo
-                            keyColumnWidth={KeyColumnWidth.Wide}
-                            keyIcon={INDENT_SPACER}
+                            layout="receipt"
                             keyText="Storage Fee"
                             value={<GasFeeAmount amount={gasUsed.storageCost} />}
+                            fullwidth={!isMediumOrAbove}
                         />
                     )}
                     {gasUsed.storageRebate && (
                         <KeyValueInfo
-                            keyColumnWidth={KeyColumnWidth.Wide}
-                            keyIcon={INDENT_SPACER}
+                            layout="receipt"
                             keyText="Storage Rebate"
                             value={<GasFeeAmount amount={-Number(gasUsed.storageRebate)} />}
+                            fullwidth={!isMediumOrAbove}
                         />
                     )}
-                </IndentGuide>
+                </ExpandableDetails>
             )}
             {isProgrammableTransaction && gasBudget && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Gas Budget"
                     value={`${formattedBudget} ${budgetSymbol}`}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {isProgrammableTransaction && !!gasPayment?.length && (
-                <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
-                    keyText="Gas Payment Objects"
-                    value={
-                        <div className="flex flex-wrap gap-x-sm gap-y-xxs">
-                            {(showAllGasPayment ? gasPayment : gasPayment.slice(0, 3)).map(
-                                (payment) => (
-                                    <ObjectLink
-                                        key={payment.objectId}
-                                        objectId={payment.objectId}
-                                        label={formatAddress(payment.objectId)}
-                                        copyText={payment.objectId}
-                                    />
-                                ),
-                            )}
-                            {gasPayment.length > 3 && (
-                                <ButtonUnstyled
-                                    className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                    onClick={() => setShowAllGasPayment(!showAllGasPayment)}
-                                >
-                                    {showAllGasPayment
-                                        ? 'Show Less'
-                                        : `Show More (${gasPayment.length - 3})`}
-                                </ButtonUnstyled>
-                            )}
-                        </div>
-                    }
-                />
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Gas Payment Objects"
+                        value={
+                            <GasPaymentObjectsSummary
+                                payments={gasPayment}
+                                showAll={showAllGasPayment}
+                                detailsId={gasPaymentDetailsId}
+                                onToggle={() => setShowAllGasPayment(!showAllGasPayment)}
+                            />
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showAllGasPayment && (
+                        <GasPaymentObjectsDetails
+                            payments={gasPayment}
+                            detailsId={gasPaymentDetailsId}
+                        />
+                    )}
+                </>
             )}
             {isProgrammableTransaction && gasOwner && (
                 <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
+                    layout="receipt"
                     keyText="Gas Object Owner"
                     value={<AddressLink address={gasOwner} />}
                     copyText={gasOwner}
                     onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
                 />
             )}
             {!!signatures?.length && (
-                <KeyValueInfo
-                    keyColumnWidth={KeyColumnWidth.Wide}
-                    keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
-                    value={
-                        <ButtonUnstyled
-                            className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                            onClick={() => setShowFullSignatures(!showFullSignatures)}
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
+                        value={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="user-signature-details"
+                                aria-expanded={showFullSignatures}
+                                onClick={() => setShowFullSignatures(!showFullSignatures)}
+                            >
+                                {showFullSignatures ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showFullSignatures && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showFullSignatures && (
+                        <ExpandableDetails
+                            id="user-signature-details"
+                            ariaLabel="Signature details"
                         >
-                            {showFullSignatures ? 'Show Less' : 'Show More'}
-                            <ArrowDown
-                                className={clsx(
-                                    'h-4 w-4 transition-transform ease-linear',
-                                    showFullSignatures && 'rotate-180',
-                                )}
-                            />
-                        </ButtonUnstyled>
-                    }
-                />
-            )}
-            {showFullSignatures && (
-                <div className="flex flex-col gap-md">
-                    {[...userSignatures, ...(sponsorSignature ? [sponsorSignature] : [])].map(
-                        (signature, index) => (
-                            <div key={index} className="flex flex-col gap-md">
-                                {index > 0 && <Divider />}
-                                <SignatureBreakdown signature={signature} />
+                            <div className="flex max-h-64 flex-col gap-lg overflow-y-auto pr-xxs">
+                                {[
+                                    ...userSignatures,
+                                    ...(sponsorSignature ? [sponsorSignature] : []),
+                                ].map((signature, index) => (
+                                    <div key={index} className="flex w-full flex-col gap-md">
+                                        {index > 0 && <Divider />}
+                                        <SignatureBreakdown signature={signature} />
+                                    </div>
+                                ))}
                             </div>
-                        ),
+                        </ExpandableDetails>
                     )}
-                </div>
+                </>
             )}
         </div>
     );
