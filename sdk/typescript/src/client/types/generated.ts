@@ -1652,7 +1652,7 @@ export interface IotaTransactionBlockResponse {
     objectChanges?: IotaObjectChange[] | null;
     rawEffects?: number[];
     /**
-     * BCS encoded [SenderSignedData] that includes input object references returns empty array if
+     * BCS encoded [SenderSignedTransaction] that includes input object references returns empty array if
      * `show_raw_transaction` is false
      */
     rawTransaction?: string;
