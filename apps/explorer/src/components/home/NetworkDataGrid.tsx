@@ -15,6 +15,7 @@ import {
     formatBalanceToUSD,
     Feature,
     useFeatureEnabledByNetwork,
+    CoinFiatValue,
 } from '@iota/core';
 import { type Network } from '@iota/iota-sdk/client';
 import { useGetNetworkMetrics } from '~/hooks';
@@ -23,7 +24,7 @@ import { ArrowTopRight } from '@iota/apps-ui-icons';
 
 interface StatItem {
     label: string;
-    value: string;
+    value: React.ReactNode;
     supportingLabel?: string;
 }
 
@@ -36,7 +37,23 @@ const FALLBACK = '--';
 
 function formatSupply(value: string | undefined): string {
     if (!value) return FALLBACK;
-    return formatBalance(value, IOTA_DECIMALS, CoinFormat.Rounded);
+    return formatBalance(value, IOTA_DECIMALS, CoinFormat.Full);
+}
+
+function SupplyStatValue({ value }: { value: string | undefined }): React.JSX.Element {
+    return (
+        <div className="flex flex-col gap-xxs">
+            <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                <span>{formatSupply(value)}</span>
+                {value && (
+                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                        IOTA
+                    </span>
+                )}
+            </div>
+            {value && <CoinFiatValue amount={value} withParentheses={false} />}
+        </div>
+    );
 }
 
 export function NetworkDataGrid({
@@ -95,13 +112,11 @@ export function NetworkDataGrid({
     const stats: StatItem[] = [
         {
             label: 'Circulating Supply',
-            value: formatSupply(circulatingSupply?.value),
-            supportingLabel: circulatingSupply?.value ? 'IOTA' : undefined,
+            value: <SupplyStatValue value={circulatingSupply?.value} />,
         },
         {
             label: 'Total Supply',
-            value: formatSupply(totalSupply?.value),
-            supportingLabel: totalSupply?.value ? 'IOTA' : undefined,
+            value: <SupplyStatValue value={totalSupply?.value} />,
         },
         { label: 'TPS', value: tpsNow },
         { label: 'Peak TPS (30d)', value: tpsPeak },
