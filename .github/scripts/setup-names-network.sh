@@ -96,7 +96,7 @@ publish_iota_names() {
     echo "=== Phase 2: Publishing iota-names ==="
 
     iota keytool import "$ADMIN_MNEMONIC" ed25519
-    iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000
+    iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000 --grpc http://127.0.0.1:50051
     iota client switch --env localnet
     iota client faucet
     sleep 5

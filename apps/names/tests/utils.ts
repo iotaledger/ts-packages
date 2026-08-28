@@ -265,13 +265,46 @@ export async function renewName(name: string, parentNftId: string, signer: Signe
     return responseRenew;
 }
 
+const PUBLISH_ATTEMPTS = 3;
+const PUBLISH_RETRY_DELAY_MS = 5_000;
+
+function runPublishCommand(packagePath: string): string {
+    try {
+        return execFileSync('iota', ['client', 'publish', packagePath], {
+            encoding: 'utf-8',
+            stdio: ['ignore', 'pipe', 'pipe'],
+        });
+    } catch (error) {
+        const { stdout, stderr } = error as { stdout?: string; stderr?: string };
+        throw new Error(
+            [
+                `iota client publish ${packagePath} failed`,
+                `stdout:\n${stdout ?? ''}`,
+                `stderr:\n${stderr ?? ''}`,
+            ].join('\n'),
+        );
+    }
+}
+
 export async function publishMovePackage(packagePath: string) {
-    const cliOutput = execFileSync('iota', ['client', 'publish', packagePath], {
-        encoding: 'utf-8',
-    });
+    let cliOutput = '';
+
+    for (let attempt = 1; attempt <= PUBLISH_ATTEMPTS; attempt++) {
+        try {
+            cliOutput = runPublishCommand(packagePath);
+            break;
+        } catch (error) {
+            if (attempt === PUBLISH_ATTEMPTS) {
+                throw error;
+            }
+            console.warn(`Publish attempt ${attempt} failed, retrying:`, error);
+            await new Promise((resolve) => setTimeout(resolve, PUBLISH_RETRY_DELAY_MS));
+        }
+    }
+
     const pkgMatch = cliOutput.match(/PackageID:\s*(0x[0-9a-fA-F]+)/);
     const digestMatch = cliOutput.match(/Transaction Digest:\s*([A-Za-z0-9]+)/);
-    if (!pkgMatch) throw new Error('Failed to parse packageId from CLI output');
+    if (!pkgMatch) throw new Error(`Failed to parse packageId from CLI output:\n${cliOutput}`);
     const packageId = pkgMatch[1];
     const digest = digestMatch ? digestMatch[1] : 'UNKNOWN';
     console.log('[publishMovePackage] CLI publish packageId:', packageId);
