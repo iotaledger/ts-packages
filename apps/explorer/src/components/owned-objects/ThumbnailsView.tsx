@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Skeleton } from '@iota/apps-ui-kit';
+import { Skeleton, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import { type IotaObjectResponse } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { LinkWithQuery, ObjectVideoImage } from '~/components/ui';
@@ -16,31 +16,33 @@ function Thumbnail({ obj }: { obj: IotaObjectResponse }): JSX.Element {
     const id = obj.data?.objectId;
 
     return (
-        <LinkWithQuery
-            to={`/object/${encodeURI(id!)}`}
-            className="block w-full max-w-[170px] rounded-xl p-xs hover:bg-iota-neutral-92 dark:hover:bg-iota-neutral-12"
-        >
-            <div className="flex flex-col gap-sm">
-                <div className="aspect-square w-full overflow-hidden rounded-xl">
-                    <ObjectVideoImage
-                        disablePreview
-                        title={name}
-                        subtitle={type}
-                        src={src}
-                        variant="fill"
-                        disableAutoPlay
-                    />
+        <Tooltip text={id} position={TooltipPosition.Bottom}>
+            <LinkWithQuery
+                to={`/object/${encodeURI(id!)}`}
+                className="block w-full max-w-[170px] rounded-xl p-xs hover:bg-iota-neutral-92 dark:hover:bg-iota-neutral-12"
+            >
+                <div className="flex flex-col gap-sm">
+                    <div className="aspect-square w-full overflow-hidden rounded-xl">
+                        <ObjectVideoImage
+                            disablePreview
+                            title={name}
+                            subtitle={type}
+                            src={src}
+                            variant="fill"
+                            disableAutoPlay
+                        />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-xxs px-xxs">
+                        <span className="min-w-0 truncate text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                            {name}
+                        </span>
+                        <span className="truncate text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                            {formatAddress(id!)}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex min-w-0 flex-col gap-xxs px-xxs">
-                    <span className="min-w-0 truncate text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                        {name}
-                    </span>
-                    <span className="truncate text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                        {formatAddress(id!)}
-                    </span>
-                </div>
-            </div>
-        </LinkWithQuery>
+            </LinkWithQuery>
+        </Tooltip>
     );
 }
 
