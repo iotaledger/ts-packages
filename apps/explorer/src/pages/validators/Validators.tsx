@@ -356,7 +356,6 @@ function ValidatorPageResult(): JSX.Element {
                                     label={stat.title}
                                     tooltipText={stat.tooltipText}
                                     value={stat.value}
-                                    supportingLabel={stat.supportingLabel}
                                     size={DisplayStatsSize.Large}
                                     tooltipPosition={TooltipPosition.Right}
                                 />
