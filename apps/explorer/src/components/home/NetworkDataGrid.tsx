@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useIotaClientQuery, useIotaClientContext } from '@iota/dapp-kit';
-import { DisplayStats, DisplayStatsSize, DisplayStatsType } from '@iota/apps-ui-kit';
+import {
+    DisplayStats,
+    DisplayStatsSize,
+    DisplayStatsType,
+    TooltipPosition,
+} from '@iota/apps-ui-kit';
 import {
     CoinFormat,
     formatBalance,
@@ -26,6 +31,7 @@ interface StatItem {
     label: string;
     value: React.ReactNode;
     supportingLabel?: string;
+    tooltipText?: string;
 }
 
 interface NetworkDataGridProps {
@@ -113,23 +119,72 @@ export function NetworkDataGrid({
         {
             label: 'Circulating Supply',
             value: <SupplyStatValue value={circulatingSupply?.value} />,
+            tooltipText: 'The amount of IOTA currently in circulation, out of the total supply.',
         },
         {
             label: 'Total Supply',
             value: <SupplyStatValue value={totalSupply?.value} />,
+            tooltipText: 'The total amount of IOTA that currently exists.',
         },
-        { label: 'TPS', value: tpsNow },
-        { label: 'Peak TPS (30d)', value: tpsPeak },
-        { label: 'Total Transactions', value: totalTx },
-        { label: 'Total Addresses', value: totalAddresses },
-        { label: 'Total Packages', value: totalPackages },
-        { label: 'Total Objects', value: totalObjects },
-        ...(showExtendedStats ? [{ label: 'Active Validators', value: activeValidators }] : []),
+        {
+            label: 'TPS',
+            value: tpsNow,
+            tooltipText:
+                'The current transaction throughput of the network, in transaction blocks per second.',
+        },
+        {
+            label: 'Peak TPS (30d)',
+            value: tpsPeak,
+            tooltipText: 'The highest transactions-per-second rate reached in the last 30 days.',
+        },
+        {
+            label: 'Total Transactions',
+            value: totalTx,
+            tooltipText: 'The total number of transactions processed since the network started.',
+        },
+        {
+            label: 'Total Addresses',
+            value: totalAddresses,
+            tooltipText: 'The total number of distinct addresses seen on the network.',
+        },
+        {
+            label: 'Total Packages',
+            value: totalPackages,
+            tooltipText: 'The total number of packages published on the network.',
+        },
+        {
+            label: 'Total Objects',
+            value: totalObjects,
+            tooltipText: 'The total number of objects that currently exist on the network.',
+        },
+        ...(showExtendedStats
+            ? [
+                  {
+                      label: 'Active Validators',
+                      value: activeValidators,
+                      tooltipText: 'The number of validators currently active on the network.',
+                  },
+              ]
+            : []),
         ...(showExtendedStats && isFiatEnabled && priceDisplay
-            ? [{ label: 'Token Price', value: priceDisplay, supportingLabel: 'per IOTA' }]
+            ? [
+                  {
+                      label: 'Token Price',
+                      value: priceDisplay,
+                      supportingLabel: 'per IOTA',
+                      tooltipText: 'The current market price of one IOTA token.',
+                  },
+              ]
             : []),
         ...(showExtendedStats && isFiatEnabled && marketCapDisplay
-            ? [{ label: 'Market Cap', value: marketCapDisplay }]
+            ? [
+                  {
+                      label: 'Market Cap',
+                      value: marketCapDisplay,
+                      tooltipText:
+                          'The total market value of the circulating supply, calculated as circulating supply multiplied by token price.',
+                  },
+              ]
             : []),
     ];
 
@@ -150,12 +205,14 @@ export function NetworkDataGrid({
                 ) : null}
             </div>
             <div className="grid grid-cols-2 gap-md--rs sm:grid-cols-3 md:grid-cols-4">
-                {stats.map(({ label, value, supportingLabel }) => (
+                {stats.map(({ label, value, supportingLabel, tooltipText }) => (
                     <DisplayStats
                         key={label}
                         label={label}
                         value={value}
                         supportingLabel={supportingLabel}
+                        tooltipText={tooltipText}
+                        tooltipPosition={TooltipPosition.Top}
                         size={DisplayStatsSize.Default}
                         type={DisplayStatsType.Default}
                     />
