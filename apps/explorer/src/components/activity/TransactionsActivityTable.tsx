@@ -20,13 +20,7 @@ import {
     RETENTION_BANNER_TEXT,
     RETENTION_BANNER_TITLE,
 } from '~/lib/constants';
-import { type IotaTransactionBlockResponse, type IotaTransactionKind } from '@iota/iota-sdk/client';
-import { EVM_ANCHOR_ADDRESSES } from '~/lib/constants/evm.constants';
-
-function isEvmTransaction(tx: IotaTransactionBlockResponse): boolean {
-    const sender = tx.transaction?.data.sender;
-    return !!sender && EVM_ANCHOR_ADDRESSES.includes(sender);
-}
+import { type IotaTransactionKind } from '@iota/iota-sdk/client';
 
 interface TransactionsActivityTableProps {
     disablePagination?: boolean;
@@ -59,12 +53,6 @@ export function TransactionsActivityTable({
     const goToFirstPageRef = useRef(pagination.onFirst);
     goToFirstPageRef.current = pagination.onFirst;
     const tableColumns = generateTransactionsTableColumns();
-
-    const displayData =
-        transactionKindFilter === 'ProgrammableTransaction'
-            ? { ...data, data: data?.data.filter((tx) => !isEvmTransaction(tx)) }
-            : data;
-
     useEffect(() => {
         goToFirstPageRef.current();
     }, [transactionKindFilter]);
@@ -80,7 +68,7 @@ export function TransactionsActivityTable({
                 />
             ) : (
                 <div className="flex flex-col space-y-3 text-left">
-                    {isPending || isFetching || !displayData?.data ? (
+                    {isPending || isFetching || !data?.data ? (
                         <PlaceholderTable
                             rowCount={limit}
                             rowHeight="16px"
@@ -99,9 +87,9 @@ export function TransactionsActivityTable({
                             )}
                             {(disablePagination ||
                                 !transactionKindFilter ||
-                                displayData.data.length > 0) && (
+                                data.data.length > 0) && (
                                 <TableCard
-                                    data={displayData!.data}
+                                    data={data.data}
                                     columns={tableColumns}
                                     totalLabel={
                                         count ? `${numberSuffix(Number(count))} Total` : '-'

@@ -40,6 +40,11 @@ export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element |
                     current = section.id;
                 }
             }
+            const isAtPageBottom =
+                window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1;
+            if (isAtPageBottom) {
+                current = sections[sections.length - 1]?.id;
+            }
             if (current) setActiveSection(current);
         }
         onScroll();
