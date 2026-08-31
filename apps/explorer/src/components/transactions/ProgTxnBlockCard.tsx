@@ -18,6 +18,25 @@ interface ProgrammableTxnBlockCardProps {
     rawData?: unknown;
 }
 
+function renderResponsiveRows(items: ReactNode[], columns: number): JSX.Element {
+    const rows = Array.from({ length: Math.ceil(items.length / columns) }, (_, index) =>
+        items.slice(index * columns, (index + 1) * columns),
+    );
+
+    return (
+        <>
+            {rows.map((rowItems, index) => (
+                <div
+                    key={index}
+                    className="grid grid-cols-1 items-stretch gap-xxs md:grid-cols-2 md:gap-xs lg:grid-cols-3 lg:gap-sm [&:has(>div[data-state=open])>div[data-state=open]]:self-stretch [&:has(>div[data-state=open])]:items-start [&>div>div]:h-full [&>div[data-state=closed]>div>div[role=button]]:h-full"
+                >
+                    {rowItems}
+                </div>
+            ))}
+        </>
+    );
+}
+
 export function ProgrammableTxnBlockCard({
     items,
     itemsLabel,
@@ -38,8 +57,16 @@ export function ProgrammableTxnBlockCard({
     return (
         <CollapsibleCard title={itemsLabel} rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
-                <div className="mx-auto grid w-full grid-cols-1 items-start gap-xxs p-md--rs pt-xs--rs md:grid-cols-2 md:gap-xs lg:grid-cols-3 lg:gap-sm [&>div[data-state=open]>div]:h-full [&>div[data-state=open]]:self-stretch">
-                    {noExpandableList ? <>{items}</> : <ExpandableListItems />}
+                <div className="mx-auto flex w-full flex-col gap-xxs p-md--rs pt-xs--rs md:gap-xs lg:gap-sm">
+                    {noExpandableList ? (
+                        renderResponsiveRows(items, columns)
+                    ) : (
+                        <ExpandableListItems
+                            renderItems={(visibleItems) =>
+                                renderResponsiveRows(visibleItems, columns)
+                            }
+                        />
+                    )}
                 </div>
 
                 {items.length > itemsToShow && (
