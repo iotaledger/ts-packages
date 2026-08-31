@@ -69,6 +69,7 @@ const SYSTEM_TRANSACTION_KIND_LABELS: Record<
     EndOfEpochTransaction: 'Epoch Change',
     Genesis: 'Genesis',
     RandomnessStateUpdate: 'Randomness Update',
+    TransactionDenyRulesUpdate: 'Deny Rules Update',
 };
 
 export function getTransactionTypeLabel(

@@ -6,3 +6,4 @@ export * from './ValidatorStats';
 export * from './ValidatorFilters';
 export * from './ValidatorSearch';
 export * from './ValidatorStatusLegend';
+export * from './ValidatorStakingHistory';
