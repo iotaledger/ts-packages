@@ -1322,7 +1322,7 @@ export type EndOfEpochTransactionTransactionsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type EndOfEpochTransactionKind = ChangeEpochTransaction | ChangeEpochTransactionV2;
+export type EndOfEpochTransactionKind = ChangeEpochTransaction | ChangeEpochTransactionV2 | TransactionDenyRulesCreateTransaction;
 
 export type EndOfEpochTransactionKindConnection = {
   __typename?: 'EndOfEpochTransactionKindConnection';
@@ -5558,7 +5558,7 @@ export type TransactionBlockFilter = {
  * The kind of transaction block, either a programmable transaction or a system
  * transaction.
  */
-export type TransactionBlockKind = ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction;
+export type TransactionBlockKind = ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction | TransactionDenyRulesUpdateTransaction;
 
 /** An input filter selecting for either system or programmable transactions. */
 export enum TransactionBlockKindInput {
@@ -5588,6 +5588,50 @@ export enum TransactionBlockKindInput {
  * number of lost payloads.
  */
 export type TransactionBlockSubscriptionPayload = Lagged | TransactionBlock;
+
+export type TransactionDenyRulesCreateTransaction = {
+  __typename?: 'TransactionDenyRulesCreateTransaction';
+  /** A workaround to define an empty variant of a GraphQL union. */
+  dummy?: Maybe<Scalars['Boolean']['output']>;
+};
+
+/**
+ * System transaction that applies an add/remove delta to the on-chain
+ * transaction deny rules; the switch states are absolute.
+ */
+export type TransactionDenyRulesUpdateTransaction = {
+  __typename?: 'TransactionDenyRulesUpdateTransaction';
+  /** Addresses added to the sender-or-sponsor deny list. */
+  addedAddresses: Array<Scalars['IotaAddress']['output']>;
+  /** Objects added to the input-or-receiving deny list. */
+  addedObjects: Array<Scalars['IotaAddress']['output']>;
+  /** Packages added to the dependency deny list. */
+  addedPackages: Array<Scalars['IotaAddress']['output']>;
+  /** The initial version the deny rules object was shared at. */
+  denyRulesObjInitialSharedVersion: Scalars['UInt53']['output'];
+  /** Epoch of the deny rules update transaction. */
+  epoch?: Maybe<Epoch>;
+  /** Whether transactions signed with a Move authenticator are denied. */
+  moveAuthenticatorDisabled: Scalars['Boolean']['output'];
+  /** Whether all package publishing is denied. */
+  packagePublishDisabled: Scalars['Boolean']['output'];
+  /** Whether all package upgrades are denied. */
+  packageUpgradeDisabled: Scalars['Boolean']['output'];
+  /** Whether transactions that contain receiving objects are denied. */
+  receivingObjectsDisabled: Scalars['Boolean']['output'];
+  /** Addresses removed from the sender-or-sponsor deny list. */
+  removedAddresses: Array<Scalars['IotaAddress']['output']>;
+  /** Objects removed from the input-or-receiving deny list. */
+  removedObjects: Array<Scalars['IotaAddress']['output']>;
+  /** Packages removed from the dependency deny list. */
+  removedPackages: Array<Scalars['IotaAddress']['output']>;
+  /** Consensus round of the update. */
+  round: Scalars['UInt53']['output'];
+  /** Whether transactions that use shared objects as inputs are denied. */
+  sharedObjectDisabled: Scalars['Boolean']['output'];
+  /** Whether all user transactions are denied. */
+  userTransactionDisabled: Scalars['Boolean']['output'];
+};
 
 export type TransactionInput = OwnedOrImmutable | Pure | Receiving | SharedInput;
 
@@ -5925,7 +5969,7 @@ export type GetCheckpointQueryVariables = Exact<{
 }>;
 
 
-export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } } | null };
+export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } } | null };
 
 export type GetCheckpointsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -5935,7 +5979,7 @@ export type GetCheckpointsQueryVariables = Exact<{
 }>;
 
 
-export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } }> } };
+export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } }> } };
 
 export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
   id?: InputMaybe<CheckpointId>;
@@ -5945,7 +5989,7 @@ export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
 
 export type PaginateCheckpointTransactionBlocksQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> } } | null };
 
-export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } };
+export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } };
 
 export type DevInspectTransactionBlockQueryVariables = Exact<{
   txBytes: Scalars['String']['input'];
