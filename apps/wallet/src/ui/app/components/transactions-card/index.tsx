@@ -13,6 +13,7 @@ import {
     getTransactionAmountForTimelocked,
     useRecognizedPackages,
     isMigrationTransaction,
+    AmountWithFiat,
 } from '@iota/core';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { Link } from 'react-router-dom';
@@ -121,7 +122,21 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
-                    title={error ? '--' : `${formatAmount} ${symbol}`}
+                    title={
+                        error ? (
+                            '--'
+                        ) : (
+                            <AmountWithFiat
+                                amount={balance ?? 0}
+                                formatted={formatAmount}
+                                symbol={symbol}
+                                coinType={coinType}
+                                direction="column"
+                                align="end"
+                                showApproxSymbol={false}
+                            />
+                        )
+                    }
                 />
             </Card>
         </Link>
