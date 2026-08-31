@@ -38,7 +38,7 @@ export function ProgrammableTxnBlockCard({
     return (
         <CollapsibleCard title={itemsLabel} rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
-                <div className="mx-auto grid w-full grid-cols-1 items-start gap-xxs p-md--rs pt-xs--rs md:grid-cols-2 md:gap-xs lg:grid-cols-3 lg:gap-sm">
+                <div className="mx-auto grid w-full grid-cols-1 items-start gap-xxs p-md--rs pt-xs--rs md:grid-cols-2 md:gap-xs lg:grid-cols-3 lg:gap-sm [&>div[data-state=open]>div]:h-full [&>div[data-state=open]]:self-stretch">
                     {noExpandableList ? <>{items}</> : <ExpandableListItems />}
                 </div>
 
