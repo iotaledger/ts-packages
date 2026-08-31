@@ -255,11 +255,6 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
     ));
 
     return (
-        <ProgrammableTxnBlockCard
-            items={expandableItems}
-            itemsLabel="Inputs"
-            rawData={inputs}
-            defaultItemsToShow={4}
-        />
+        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Inputs" rawData={inputs} />
     );
 }

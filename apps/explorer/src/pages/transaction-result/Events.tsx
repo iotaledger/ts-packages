@@ -106,11 +106,6 @@ export function Events({ events }: EventsProps): JSX.Element | null {
     });
 
     return (
-        <ProgrammableTxnBlockCard
-            items={expandableItems}
-            itemsLabel="Events"
-            rawData={events}
-            defaultItemsToShow={4}
-        />
+        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Events" rawData={events} />
     );
 }

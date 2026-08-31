@@ -9,11 +9,11 @@ import {
     ExpandableListControl,
     ExpandableListItems,
 } from '~/components/ui';
+import { useBreakpoint } from '~/hooks';
 
 interface ProgrammableTxnBlockCardProps {
     items: ReactNode[];
     itemsLabel: string;
-    defaultItemsToShow?: number;
     noExpandableList?: boolean;
     rawData?: unknown;
 }
@@ -22,19 +22,23 @@ export function ProgrammableTxnBlockCard({
     items,
     itemsLabel,
     noExpandableList,
-    defaultItemsToShow,
     rawData,
 }: ProgrammableTxnBlockCardProps): JSX.Element | null {
+    const isMediumOrAbove = useBreakpoint('md');
+    const isLarge = useBreakpoint('lg');
+
     if (!items?.length) {
         return null;
     }
 
-    const itemsToShow = defaultItemsToShow || items.length;
+    const columns = isLarge ? 3 : isMediumOrAbove ? 2 : 1;
+    const maxRows = isLarge ? 2 : 3;
+    const itemsToShow = Math.min(items.length, columns * maxRows);
 
     return (
         <CollapsibleCard title={itemsLabel} rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
-                <div className="mx-auto flex w-full max-w-5xl flex-col gap-y-xxs p-md--rs pt-xs--rs">
+                <div className="mx-auto grid w-full grid-cols-1 items-start gap-xxs p-md--rs pt-xs--rs md:grid-cols-2 md:gap-xs lg:grid-cols-3 lg:gap-sm">
                     {noExpandableList ? <>{items}</> : <ExpandableListItems />}
                 </div>
 
