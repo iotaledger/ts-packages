@@ -2,10 +2,12 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { useState } from 'react';
+import { ButtonUnstyled, KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
+import clsx from 'clsx';
 import {
     ProgrammableTxnBlockCard,
     AddressLink,
@@ -17,13 +19,12 @@ import { useBreakpoint } from '~/hooks';
 import { decodeVectorU8Value, getCommandArguments } from './utils';
 
 const REGEX_NUMBER = /^\d+$/;
+const INPUT_VALUE_PREVIEW_LENGTH = 160;
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
     transactions: IotaTransaction[];
 }
-
-type ObjectCallArg = Extract<IotaCallArg, { type: 'object' }>;
 
 interface InputConsumer {
     commandIndex: number;
@@ -58,14 +59,13 @@ function getInputAddress(input: IotaCallArg): string | undefined {
     return undefined;
 }
 
-function ObjectInputSupportingElement({ input }: { input: ObjectCallArg }): JSX.Element {
-    const objectId = input.objectId;
+function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.Element {
     const { data } = useGetObject(objectId);
     const display = data?.data?.display?.data;
 
     return (
         <div
-            className="ml-xs flex flex-wrap items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
             {display?.name ? (
@@ -80,11 +80,11 @@ function ObjectInputSupportingElement({ input }: { input: ObjectCallArg }): JSX.
                             disablePreview
                         />
                     )}
-                    <span>{display.name}</span>
+                    <span className="truncate">{display.name}</span>
                 </>
             ) : (
                 <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
-                    <ObjectLink objectId={objectId} copyText={objectId} />
+                    <ObjectLink objectId={objectId} copyText={objectId} className="text-label-md" />
                 </div>
             )}
         </div>
@@ -97,7 +97,7 @@ function AddressInputSupportingElement({ address }: { address: string }): JSX.El
 
     if (addressAlias) {
         return (
-            <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+            <div className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                 {addressAlias.imageUrl ? (
                     <ImageIcon
                         src={addressAlias.imageUrl}
@@ -107,19 +107,19 @@ function AddressInputSupportingElement({ address }: { address: string }): JSX.El
                         rounded
                     />
                 ) : (
-                    <IotaLogoMark className="aspect-square h-full shrink-0" />
+                    <IotaLogoMark className="h-3 w-3 shrink-0" />
                 )}
-                <span>{addressAlias.alias}</span>
+                <span className="truncate">{addressAlias.alias}</span>
             </div>
         );
     }
 
     return (
         <div
-            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
-            <AddressLink address={address} copyText={address} />
+            <AddressLink address={address} copyText={address} className="text-label-md" />
         </div>
     );
 }
@@ -132,9 +132,42 @@ function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element 
     }
 
     return input.type === 'object' ? (
-        <ObjectInputSupportingElement input={input} />
+        <ObjectInputSupportingElement objectId={address} />
     ) : (
         <AddressInputSupportingElement address={address} />
+    );
+}
+
+function ExpandableInputValue({ value }: { value: string }): JSX.Element {
+    const [showFullValue, setShowFullValue] = useState(false);
+    const isLongValue = value.length > INPUT_VALUE_PREVIEW_LENGTH;
+    const displayedValue =
+        !isLongValue || showFullValue
+            ? value
+            : `${value.slice(0, INPUT_VALUE_PREVIEW_LENGTH).trimEnd()}…`;
+
+    if (!isLongValue) {
+        return <>{value}</>;
+    }
+
+    return (
+        <span className="flex max-w-full flex-col items-end gap-xxs text-right">
+            <span
+                className={clsx(
+                    'break-all',
+                    showFullValue &&
+                        'max-h-48 overflow-y-auto rounded-md border border-iota-neutral-92 bg-transparent p-xs text-left dark:border-iota-neutral-12',
+                )}
+            >
+                {displayedValue}
+            </span>
+            <ButtonUnstyled
+                className="shrink-0 text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
+                onClick={() => setShowFullValue((isExpanded) => !isExpanded)}
+            >
+                {showFullValue ? 'Show Less' : 'Show More'}
+            </ButtonUnstyled>
+        </span>
     );
 }
 
@@ -153,15 +186,17 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                 title={`Input ${index}`}
                 supportingTitleElement={<InputSupportingElement input={input} />}
                 collapsible
+                compactHeader
                 initialClose
                 titleSize={TitleSize.Small}
             >
                 <div
                     data-testid="inputs-card-content"
-                    className="flex flex-col gap-2 px-md pb-lg pt-xs md:max-w-4xl"
+                    className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs"
                 >
                     {usedByCommands.length > 0 && (
                         <KeyValueInfo
+                            layout="receipt"
                             keyText="Used by"
                             value={usedByCommands
                                 .map(
@@ -182,8 +217,6 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                             renderValue = (
                                 <ObjectLink objectId={stringValue} copyText={stringValue} />
                             );
-                        } else if (key === 'digest') {
-                            renderValue = stringValue;
                         } else if (
                             'valueType' in input &&
                             'value' in input &&
@@ -207,11 +240,19 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                             renderValue = stringValue;
                         }
 
+                        const displayedValue =
+                            typeof renderValue === 'string' ? (
+                                <ExpandableInputValue value={renderValue} />
+                            ) : (
+                                renderValue
+                            );
+
                         return (
                             <KeyValueInfo
+                                layout="receipt"
                                 key={key}
                                 keyText={key}
-                                value={renderValue}
+                                value={displayedValue}
                                 fullwidth={!isMediumOrAbove}
                             />
                         );
@@ -222,11 +263,6 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
     });
 
     return (
-        <ProgrammableTxnBlockCard
-            items={expandableItems}
-            itemsLabel="Inputs"
-            rawData={inputs}
-            defaultItemsToShow={4}
-        />
+        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Inputs" rawData={inputs} />
     );
 }

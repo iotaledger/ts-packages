@@ -128,7 +128,14 @@ function PackageIdList({ packageIds }: { packageIds: string[] }): JSX.Element {
 
 function Field({ keyText, value }: { keyText: string; value: ReactNode }): JSX.Element {
     const isMediumOrAbove = useBreakpoint('md');
-    return <KeyValueInfo keyText={keyText} value={value} fullwidth={!isMediumOrAbove} />;
+    return (
+        <KeyValueInfo
+            layout="receipt"
+            keyText={keyText}
+            value={value}
+            fullwidth={!isMediumOrAbove}
+        />
+    );
 }
 
 function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.Element {

@@ -63,6 +63,11 @@ interface KeyValueProps {
      */
     isReverse?: boolean;
     /**
+     * Use a receipt-style row with a dotted leader and right-aligned value.
+     * This is opt-in so existing KeyValueInfo layouts remain unchanged.
+     */
+    layout?: 'default' | 'receipt';
+    /**
      * Text shown on value hover.
      */
     valueHoverTitle?: string;
@@ -82,9 +87,11 @@ export function KeyValueInfo({
     onCopyError,
     fullwidth,
     isReverse = false,
+    layout = 'default',
     valueHoverTitle,
 }: KeyValueProps): React.JSX.Element {
     const flexDirectionClass = isReverse ? 'flex-row-reverse' : 'flex-row';
+    const isReceiptLayout = layout === 'receipt';
     async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
         if (!navigator.clipboard) {
             return;
@@ -113,7 +120,7 @@ export function KeyValueInfo({
         >
             <div
                 className={cx('flex shrink-0 flex-row items-center gap-x-0.5', {
-                    'w-1/4': !fullwidth,
+                    'w-1/4': !fullwidth && !isReceiptLayout,
                 })}
             >
                 {keyIcon}
@@ -126,10 +133,18 @@ export function KeyValueInfo({
                     </Tooltip>
                 )}
             </div>
+            {isReceiptLayout && !fullwidth && (
+                <span
+                    aria-hidden="true"
+                    className="mb-1 min-w-[0.5rem] flex-1 border-b border-dotted border-iota-neutral-80 opacity-60 dark:border-iota-neutral-20"
+                />
+            )}
             <div
                 className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
-                    'w-3/4': !fullwidth,
+                    'w-3/4': !fullwidth && !isReceiptLayout,
+                    'max-w-[60%] justify-end text-right': !fullwidth && isReceiptLayout,
                     'flex-wrap': fullwidth,
+                    'justify-end text-right': fullwidth && isReceiptLayout,
                     truncate: isTruncated,
                 })}
             >

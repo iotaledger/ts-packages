@@ -52,12 +52,15 @@ export function TransactionsCard({
                 supportingTitleElement={getTransactionSupportingElement(type, data)}
                 titleSize={TitleSize.Small}
                 collapsible
+                compactHeader
                 initialClose
+                isTransparent
             >
                 <div data-testid="transactions-card-content">
-                    <div className="flex flex-col gap-2 px-md pb-lg pt-xs">
+                    <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs">
                         {usedByCommands.length > 0 && (
                             <KeyValueInfo
+                                layout="receipt"
                                 keyText="Used by"
                                 value={usedByCommands
                                     .map(
@@ -70,7 +73,7 @@ export function TransactionsCard({
                                 fullwidth={!isMediumOrAbove}
                             />
                         )}
-                        <Transaction key={index} type={type} data={data} inputs={inputs} />
+                        <Transaction type={type} data={data} inputs={inputs} />
                     </div>
                 </div>
             </CollapsibleCard>
@@ -82,7 +85,6 @@ export function TransactionsCard({
             items={expandableItems}
             itemsLabel="Transactions"
             rawData={transactions}
-            defaultItemsToShow={4}
         />
     );
 }
