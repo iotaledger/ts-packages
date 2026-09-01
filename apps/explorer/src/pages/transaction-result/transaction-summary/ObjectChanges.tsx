@@ -51,25 +51,27 @@ export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Elemen
     return (
         <div className="flex flex-col gap-xs">
             <Title title="Object Change" />
-            <TableCard
-                data={pageData}
-                columns={columns}
-                paginationOptions={paginationOptions}
-                totalLabel={supportingLabel}
-                pageSizeSelector={
-                    paginationOptions && (
-                        <Select
-                            value={limit.toString()}
-                            options={PAGE_SIZES_RANGE_10_50.map((size) => ({
-                                label: `${size} / page`,
-                                id: size.toString(),
-                            }))}
-                            size={SelectSize.Small}
-                            onValueChange={(value) => setLimit(Number(value))}
-                        />
-                    )
-                }
-            />
+            <div className="px-md--rs">
+                <TableCard
+                    data={pageData}
+                    columns={columns}
+                    paginationOptions={paginationOptions}
+                    totalLabel={supportingLabel}
+                    pageSizeSelector={
+                        paginationOptions && (
+                            <Select
+                                value={limit.toString()}
+                                options={PAGE_SIZES_RANGE_10_50.map((size) => ({
+                                    label: `${size} / page`,
+                                    id: size.toString(),
+                                }))}
+                                size={SelectSize.Small}
+                                onValueChange={(value) => setLimit(Number(value))}
+                            />
+                        )
+                    }
+                />
+            </div>
         </div>
     );
 }
