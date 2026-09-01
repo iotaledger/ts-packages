@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useId, useMemo, useState } from 'react';
 import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
@@ -11,8 +11,19 @@ import {
     type GasSummaryType,
 } from '@iota/core';
 import { ArrowBottomLeft, ArrowDown, ArrowTopRight } from '@iota/apps-ui-icons';
-import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
-import { CoinFormat, formatAddress, toBase64 } from '@iota/iota-sdk/utils';
+import { bcs } from '@iota/iota-sdk/bcs';
+import type {
+    IotaTransactionBlockResponse,
+    OwnedObjectRef,
+    TransactionBlockEffectsModifiedAtVersions,
+} from '@iota/iota-sdk/client';
+import {
+    CoinFormat,
+    formatAddress,
+    formatDigest,
+    fromBase64,
+    toBase64,
+} from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import {
     AddressLink,
@@ -20,7 +31,9 @@ import {
     DateDisplay,
     EpochLink,
     ObjectLink,
+    TransactionLink,
 } from '~/components';
+import { useAdvancedMode } from '~/contexts';
 import {
     useBreakpoint,
     useDeserializedSignatures,
@@ -334,6 +347,214 @@ function GasPaymentObjectsDetails({
     );
 }
 
+function getExpiration(rawTransaction?: string): string | undefined {
+    if (!rawTransaction) {
+        return undefined;
+    }
+
+    try {
+        const [{ intentMessage }] = bcs.SenderSignedData.parse(fromBase64(rawTransaction));
+        const expiration = intentMessage.value.V1.expiration;
+        return 'Epoch' in expiration ? `Epoch ${expiration.Epoch}` : 'No Expiration';
+    } catch {
+        return undefined;
+    }
+}
+
+function ObjectRefList({
+    refs,
+}: {
+    refs: Array<{ objectId: string; version?: string }>;
+}): JSX.Element {
+    return (
+        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
+            {refs.map((ref, index) => (
+                <div
+                    key={ref.objectId}
+                    className={clsx(
+                        'min-w-0 py-xs',
+                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
+                    )}
+                >
+                    <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
+                        <div className="flex min-w-max flex-col items-end gap-xxs">
+                            <ObjectLink
+                                objectId={ref.objectId}
+                                noTruncate
+                                alignEnd
+                                copyText={ref.objectId}
+                                className="text-label-md"
+                            />
+                            {ref.version && (
+                                <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    v{ref.version}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function TransactionDependencies({ dependencies }: { dependencies: string[] }): JSX.Element {
+    return (
+        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
+            {dependencies.map((digest, index) => (
+                <div
+                    key={digest}
+                    className={clsx(
+                        'min-w-0 py-xs',
+                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
+                    )}
+                >
+                    <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
+                        <div className="min-w-max">
+                            <TransactionLink
+                                digest={digest}
+                                noTruncate
+                                copyText={digest}
+                                className="text-label-md"
+                            />
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+interface EffectsBreakdownProps {
+    dependencies?: string[];
+    modifiedAtVersions?: TransactionBlockEffectsModifiedAtVersions[];
+    sharedObjects?: Array<{ objectId: string; version: string }>;
+    gasObject?: OwnedObjectRef;
+    unwrapped?: OwnedObjectRef[];
+    eventsDigest?: string | null;
+    lamportVersion?: string;
+    expiration?: string;
+    isMediumOrAbove: boolean;
+}
+
+function EffectsBreakdown({
+    dependencies,
+    modifiedAtVersions,
+    sharedObjects,
+    gasObject,
+    unwrapped,
+    eventsDigest,
+    lamportVersion,
+    expiration,
+    isMediumOrAbove,
+}: EffectsBreakdownProps): JSX.Element {
+    return (
+        <div className="flex flex-col gap-sm" data-testid="effects-breakdown">
+            <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
+                Effects
+            </div>
+            {expiration && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Expiration"
+                    value={expiration}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {lamportVersion && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Lamport Version"
+                    value={lamportVersion}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {gasObject && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Gas Object"
+                    value={
+                        <ObjectLink
+                            objectId={gasObject.reference.objectId}
+                            copyText={gasObject.reference.objectId}
+                        />
+                    }
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {eventsDigest && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Events Digest"
+                    value={formatDigest(eventsDigest)}
+                    copyText={eventsDigest}
+                    onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {!!dependencies?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Dependencies"
+                        value={`${dependencies.length} transaction${dependencies.length === 1 ? '' : 's'}`}
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    <ExpandableDetails ariaLabel="Dependency transactions">
+                        <TransactionDependencies dependencies={dependencies} />
+                    </ExpandableDetails>
+                </>
+            )}
+            {!!modifiedAtVersions?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Modified At Versions"
+                        value={`${modifiedAtVersions.length} object${modifiedAtVersions.length === 1 ? '' : 's'}`}
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    <ExpandableDetails ariaLabel="Modified at versions">
+                        <ObjectRefList
+                            refs={modifiedAtVersions.map((v) => ({
+                                objectId: v.objectId,
+                                version: v.sequenceNumber,
+                            }))}
+                        />
+                    </ExpandableDetails>
+                </>
+            )}
+            {!!sharedObjects?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Shared Objects"
+                        value={`${sharedObjects.length} object${sharedObjects.length === 1 ? '' : 's'}`}
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    <ExpandableDetails ariaLabel="Shared objects">
+                        <ObjectRefList refs={sharedObjects} />
+                    </ExpandableDetails>
+                </>
+            )}
+            {!!unwrapped?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Unwrapped"
+                        value={`${unwrapped.length} object${unwrapped.length === 1 ? '' : 's'}`}
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    <ExpandableDetails ariaLabel="Unwrapped objects">
+                        <ObjectRefList
+                            refs={unwrapped.map((o) => ({ objectId: o.reference.objectId }))}
+                        />
+                    </ExpandableDetails>
+                </>
+            )}
+        </div>
+    );
+}
+
 interface TransactionOverviewProps {
     transaction: IotaTransactionBlockResponse;
     gasSummary?: GasSummaryType;
@@ -349,6 +570,11 @@ export function TransactionOverview({
     const gasPaymentDetailsId = `gas-payment-objects-${useId().replace(/:/g, '')}`;
     const isMediumOrAbove = useBreakpoint('md');
     const { userSignatures, sponsorSignature } = useDeserializedSignatures(transaction);
+    const { isAdvancedMode } = useAdvancedMode();
+    const expiration = useMemo(
+        () => getExpiration(transaction.rawTransaction),
+        [transaction.rawTransaction],
+    );
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
     const isProgrammableTransaction = transactionKindName === 'ProgrammableTransaction';
@@ -616,6 +842,22 @@ export function TransactionOverview({
                             </div>
                         </ExpandableDetails>
                     )}
+                </>
+            )}
+            {isAdvancedMode && transaction.effects && (
+                <>
+                    <Divider />
+                    <EffectsBreakdown
+                        dependencies={transaction.effects.dependencies}
+                        modifiedAtVersions={transaction.effects.modifiedAtVersions}
+                        sharedObjects={transaction.effects.sharedObjects}
+                        gasObject={transaction.effects.gasObject}
+                        unwrapped={transaction.effects.unwrapped}
+                        eventsDigest={transaction.effects.eventsDigest}
+                        lamportVersion={transaction.effects.gasObject?.reference.version}
+                        expiration={expiration}
+                        isMediumOrAbove={isMediumOrAbove}
+                    />
                 </>
             )}
         </div>

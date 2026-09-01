@@ -18,6 +18,7 @@ interface AddressAliasProps {
     renderAddress?: (addressToDisplay: string, copyButton: React.ReactNode) => React.ReactNode;
     renderAlias?: (addressAlias: string) => React.ReactNode;
     hideAlias?: boolean;
+    alignEnd?: boolean;
 }
 
 export function AddressAlias({
@@ -28,6 +29,7 @@ export function AddressAlias({
     renderAddress,
     renderAlias,
     hideAlias = false,
+    alignEnd = false,
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
 
@@ -51,6 +53,7 @@ export function AddressAlias({
                 <div
                     className={cx(
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
+                        alignEnd && 'self-end',
                     )}
                 >
                     {addressAlias.imageUrl ? (

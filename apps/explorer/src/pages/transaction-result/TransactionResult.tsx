@@ -11,35 +11,22 @@ import {
 } from '@iota/core';
 import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { useParams } from 'react-router-dom';
-import { useState } from 'react';
-import { ErrorBoundary, PageLayout, SyntaxHighlighter } from '~/components';
+import { PageLayout } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { TransactionView } from './TransactionView';
-import {
-    InfoBox,
-    InfoBoxType,
-    InfoBoxStyle,
-    Panel,
-    Toggle,
-    ToggleLabelPosition,
-    ToggleSize,
-} from '@iota/apps-ui-kit';
+import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 
 interface TransactionResultPageHeaderProps {
     transaction?: IotaTransactionBlockResponse;
     error?: string;
     loading?: boolean;
-    showRawJson: boolean;
-    onRawJsonChange: (isToggled: boolean) => void;
 }
 
 function TransactionResultPageHeader({
     transaction,
     error,
     loading,
-    showRawJson,
-    onRawJsonChange,
 }: TransactionResultPageHeaderProps): JSX.Element {
     const txnKindName = transaction?.transaction?.data.transaction?.kind;
     const txnStatus = transaction?.effects?.status.status;
@@ -85,20 +72,6 @@ function TransactionResultPageHeader({
                     </div>
                 )
             }
-            after={
-                transaction && (
-                    <div className="flex w-full md:justify-end">
-                        <Toggle
-                            name="raw-json-toggle"
-                            label="Raw JSON"
-                            labelPosition={ToggleLabelPosition.Left}
-                            size={ToggleSize.Small}
-                            isToggled={showRawJson}
-                            onChange={(isToggled) => onRawJsonChange(isToggled)}
-                        />
-                    </div>
-                )
-            }
             error={error}
         />
     );
@@ -113,7 +86,6 @@ export function TransactionResult(): JSX.Element {
         error: getTxnError,
     } = useGetTransaction(id as string);
     const txnQueryErrorMessage = getTxnError?.message;
-    const [showRawJson, setShowRawJson] = useState(false);
 
     return (
         <PageLayout
@@ -124,8 +96,6 @@ export function TransactionResult(): JSX.Element {
                         transaction={data}
                         error={txnQueryErrorMessage}
                         loading={isPending}
-                        showRawJson={showRawJson}
-                        onRawJsonChange={setShowRawJson}
                     />
                     {getTxnErrorBool || !data ? (
                         <InfoBox
@@ -139,17 +109,6 @@ export function TransactionResult(): JSX.Element {
                             type={InfoBoxType.Error}
                             style={InfoBoxStyle.Elevated}
                         />
-                    ) : showRawJson ? (
-                        <Panel>
-                            <ErrorBoundary>
-                                <div className="p-md--rs">
-                                    <SyntaxHighlighter
-                                        code={JSON.stringify(data, null, 2)}
-                                        language="json"
-                                    />
-                                </div>
-                            </ErrorBoundary>
-                        </Panel>
                     ) : (
                         <TransactionView transaction={data} />
                     )}
