@@ -9,8 +9,10 @@ import {
 } from '@iota/iota-sdk/client';
 
 import { Transaction } from './Transaction';
+import { getResultUsedByCommands } from './utils';
 import { CollapsibleCard, ProgrammableTxnBlockCard } from '~/components';
-import { TitleSize } from '@iota/apps-ui-kit';
+import { useBreakpoint } from '~/hooks';
+import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 
 interface TransactionsCardProps {
     transactions: IotaTransaction[];
@@ -34,12 +36,14 @@ export function TransactionsCard({
     transactions,
     inputs,
 }: TransactionsCardProps): JSX.Element | null {
+    const isMediumOrAbove = useBreakpoint('md');
     if (!transactions?.length) {
         return null;
     }
 
     const expandableItems = transactions.map((transaction, index) => {
         const [[type, data]] = Object.entries(transaction);
+        const usedByCommands = getResultUsedByCommands(index, transactions);
 
         return (
             <CollapsibleCard
@@ -51,7 +55,21 @@ export function TransactionsCard({
                 initialClose
             >
                 <div data-testid="transactions-card-content">
-                    <div className="px-md pb-lg pt-xs">
+                    <div className="flex flex-col gap-2 px-md pb-lg pt-xs">
+                        {usedByCommands.length > 0 && (
+                            <KeyValueInfo
+                                keyText="Used by"
+                                value={usedByCommands
+                                    .map(
+                                        ({ commandIndex, type: usedByType, nestedIndex }) =>
+                                            `Command #${commandIndex}${
+                                                nestedIndex !== undefined ? `[${nestedIndex}]` : ''
+                                            } (${usedByType})`,
+                                    )
+                                    .join(', ')}
+                                fullwidth={!isMediumOrAbove}
+                            />
+                        )}
                         <Transaction key={index} type={type} data={data} inputs={inputs} />
                     </div>
                 </div>
