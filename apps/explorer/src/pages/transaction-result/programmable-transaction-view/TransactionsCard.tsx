@@ -58,7 +58,6 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
             items={expandableItems}
             itemsLabel="Transactions"
             rawData={transactions}
-            defaultItemsToShow={4}
         />
     );
 }

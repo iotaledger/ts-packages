@@ -116,7 +116,7 @@ export function CollapsibleCard({
         />
     );
     return collapsible ? (
-        <div className="relative w-full">
+        <div className="relative w-full" data-state={open ? 'open' : 'closed'}>
             <Accordion hideBorder={hideBorder}>
                 <AccordionHeader
                     hideArrow={hideArrow || compactHeader}
