@@ -2,63 +2,134 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { type ReactNode } from 'react';
 import {
-    type MoveCallIotaTransaction,
     type IotaArgument,
-    type IotaMovePackage,
+    type IotaCallArg,
+    type MoveCallIotaTransaction,
 } from '@iota/iota-sdk/client';
 import { KeyValueInfo } from '@iota/apps-ui-kit';
-import { flattenIotaArguments } from './utils';
 import { ErrorBoundary } from '~/components';
-import { ObjectLink } from '~/components/ui';
+import { ObjectLink, AddressLink } from '~/components/ui';
 import { useBreakpoint } from '~/hooks';
 import { formatAddress } from '@iota/iota-sdk/utils';
 
 interface TransactionProps<T> {
     type: string;
     data: T;
+    inputs: IotaCallArg[];
 }
 
-const TRANSACTION_ARGUMENT_LABELS: Record<string, string[]> = {
-    SplitCoins: ['Coin', 'Amounts'],
-    TransferObjects: ['Objects', 'Recipient'],
-    MergeCoins: ['Destination Coin', 'Coins to Merge'],
-    MakeMoveVec: ['Type', 'Elements'],
-    Upgrade: ['Modules', 'Package', 'Ticket'],
-};
-
-type DisplayArgument = IotaArgument | DisplayArgument[];
-
-function formatArgument(value: DisplayArgument): string {
-    return Array.isArray(value)
-        ? `[${value.map((item) => formatArgument(item)).join(', ')}]`
-        : flattenIotaArguments([value]);
+interface CommandProps<T> {
+    data: T;
+    inputs: IotaCallArg[];
 }
 
-function ArrayArgument({
-    type,
-    data,
-}: TransactionProps<(IotaArgument | IotaArgument[])[] | undefined>): JSX.Element {
-    const values = type === 'Publish' && data ? [data] : data;
-    const labels = type === 'Publish' ? ['Modules'] : TRANSACTION_ARGUMENT_LABELS[type];
-    const isMediumOrAbove = useBreakpoint('md');
+function Arg({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX.Element {
+    if (arg === 'GasCoin') {
+        return (
+            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                Gas Coin
+            </span>
+        );
+    }
 
+    if ('Input' in arg) {
+        return <InputArg input={inputs[arg.Input]} />;
+    }
+
+    if ('Result' in arg) {
+        return (
+            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                Result of Command #{arg.Result}
+            </span>
+        );
+    }
+
+    const [commandIndex, resultIndex] = arg.NestedResult;
     return (
-        <div className="flex flex-col gap-xs">
-            {values?.map((value, index) => (
-                <KeyValueInfo
-                    layout="receipt"
-                    key={index}
-                    keyText={labels?.[index] ?? `Argument ${index + 1}`}
-                    value={formatArgument(value)}
-                    fullwidth={!isMediumOrAbove}
-                />
-            ))}
-        </div>
+        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+            Result of Command #{commandIndex}[{resultIndex}]
+        </span>
     );
 }
 
-function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Element {
+function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
+    if (!input) {
+        return (
+            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">—</span>
+        );
+    }
+
+    if (input.type === 'object') {
+        return (
+            <ObjectLink
+                objectId={input.objectId}
+                label={formatAddress(input.objectId)}
+                copyText={input.objectId}
+            />
+        );
+    }
+
+    if (input.type === 'pure' && input.valueType === 'address') {
+        const address = String(input.value);
+        return <AddressLink address={address} label={formatAddress(address)} copyText={address} />;
+    }
+
+    return (
+        <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+            {String(input.value)}
+        </span>
+    );
+}
+
+function ArgList({ args, inputs }: { args: IotaArgument[]; inputs: IotaCallArg[] }): JSX.Element {
+    return (
+        <span className="flex flex-wrap items-center gap-x-xs">
+            {args.map((arg, index) => (
+                <span key={index} className="flex items-center gap-x-xs">
+                    <Arg arg={arg} inputs={inputs} />
+                    {index < args.length - 1 && (
+                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">,</span>
+                    )}
+                </span>
+            ))}
+        </span>
+    );
+}
+
+function PackageIdList({ packageIds }: { packageIds: string[] }): JSX.Element {
+    return (
+        <span className="flex flex-wrap items-center gap-x-xs">
+            {packageIds.map((packageId, index) => (
+                <span key={packageId} className="flex items-center gap-x-xs">
+                    <ObjectLink
+                        objectId={packageId}
+                        label={formatAddress(packageId)}
+                        copyText={packageId}
+                    />
+                    {index < packageIds.length - 1 && (
+                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">,</span>
+                    )}
+                </span>
+            ))}
+        </span>
+    );
+}
+
+function Field({ keyText, value }: { keyText: string; value: ReactNode }): JSX.Element {
+    const isMediumOrAbove = useBreakpoint('md');
+    return (
+        <KeyValueInfo
+            layout="receipt"
+            keyText={keyText}
+            value={value}
+            fullwidth={!isMediumOrAbove}
+        />
+    );
+}
+
+function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.Element {
     const {
         module,
         package: movePackage,
@@ -66,12 +137,10 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
         arguments: args,
         type_arguments: typeArgs,
     } = data;
-    const isMediumOrAbove = useBreakpoint('md');
 
     return (
         <div className="flex flex-col gap-xs">
-            <KeyValueInfo
-                layout="receipt"
+            <Field
                 keyText="Package"
                 value={
                     <ObjectLink
@@ -80,10 +149,8 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
                         copyText={movePackage}
                     />
                 }
-                fullwidth={!isMediumOrAbove}
             />
-            <KeyValueInfo
-                layout="receipt"
+            <Field
                 keyText="Module"
                 value={
                     <ObjectLink
@@ -92,51 +159,147 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
                         showAddressAlias={false}
                     />
                 }
-                fullwidth={!isMediumOrAbove}
             />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Function"
-                value={func}
-                fullwidth={!isMediumOrAbove}
-            />
-            {args && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Arguments"
-                    value={`[${flattenIotaArguments(args)}]`}
-                    fullwidth={!isMediumOrAbove}
-                />
+            <Field keyText="Function" value={func} />
+            {args && <Field keyText="Arguments" value={<ArgList args={args} inputs={inputs} />} />}
+            {typeArgs && <Field keyText="Type Arguments" value={typeArgs.join(', ')} />}
+        </div>
+    );
+}
+
+function TransferObjects({
+    data,
+    inputs,
+}: CommandProps<[IotaArgument[], IotaArgument]>): JSX.Element {
+    const [objects, recipient] = data;
+
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field keyText="Objects" value={<ArgList args={objects} inputs={inputs} />} />
+            <Field keyText="Recipient" value={<Arg arg={recipient} inputs={inputs} />} />
+        </div>
+    );
+}
+
+function SplitCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]]>): JSX.Element {
+    const [coin, amounts] = data;
+
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field keyText="Coin" value={<Arg arg={coin} inputs={inputs} />} />
+            <Field keyText="Amounts" value={<ArgList args={amounts} inputs={inputs} />} />
+        </div>
+    );
+}
+
+function MergeCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]]>): JSX.Element {
+    const [destinationCoin, coins] = data;
+
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field keyText="Into Coin" value={<Arg arg={destinationCoin} inputs={inputs} />} />
+            <Field keyText="Coins" value={<ArgList args={coins} inputs={inputs} />} />
+        </div>
+    );
+}
+
+function MakeMoveVec({ data, inputs }: CommandProps<[string | null, IotaArgument[]]>): JSX.Element {
+    const [type, elements] = data;
+
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field keyText="Type" value={type ?? 'Inferred'} />
+            <Field keyText="Elements" value={<ArgList args={elements} inputs={inputs} />} />
+        </div>
+    );
+}
+
+function Publish({ data }: CommandProps<string[]>): JSX.Element {
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field keyText="Modules" value={data.length} />
+            {data.length > 0 && (
+                <Field keyText="Dependencies" value={<PackageIdList packageIds={data} />} />
             )}
-            {typeArgs && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Type Arguments"
-                    value={typeArgs.join(', ')}
-                    fullwidth={!isMediumOrAbove}
+        </div>
+    );
+}
+
+function Upgrade({ data, inputs }: CommandProps<[string[], string, IotaArgument]>): JSX.Element {
+    const [dependencies, packageId, ticket] = data;
+
+    return (
+        <div className="flex flex-col gap-xs">
+            <Field
+                keyText="Package"
+                value={
+                    <ObjectLink
+                        objectId={packageId}
+                        label={formatAddress(packageId)}
+                        copyText={packageId}
+                    />
+                }
+            />
+            <Field keyText="Upgrade Ticket" value={<Arg arg={ticket} inputs={inputs} />} />
+            <Field keyText="Dependencies" value={dependencies.length} />
+            {dependencies.length > 0 && (
+                <Field
+                    keyText="Dependency Packages"
+                    value={<PackageIdList packageIds={dependencies} />}
                 />
             )}
         </div>
     );
 }
 
-export function Transaction({
-    type,
-    data,
-}: TransactionProps<
-    (IotaArgument | IotaArgument[])[] | MoveCallIotaTransaction | IotaMovePackage
->): JSX.Element {
-    if (type === 'MoveCall') {
-        return (
-            <ErrorBoundary>
-                <MoveCall type={type} data={data as MoveCallIotaTransaction} />
-            </ErrorBoundary>
-        );
+export function Transaction({ type, data, inputs }: TransactionProps<unknown>): JSX.Element | null {
+    switch (type) {
+        case 'MoveCall':
+            return (
+                <ErrorBoundary>
+                    <MoveCall data={data as MoveCallIotaTransaction} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        case 'TransferObjects':
+            return (
+                <ErrorBoundary>
+                    <TransferObjects
+                        data={data as [IotaArgument[], IotaArgument]}
+                        inputs={inputs}
+                    />
+                </ErrorBoundary>
+            );
+        case 'SplitCoins':
+            return (
+                <ErrorBoundary>
+                    <SplitCoins data={data as [IotaArgument, IotaArgument[]]} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        case 'MergeCoins':
+            return (
+                <ErrorBoundary>
+                    <MergeCoins data={data as [IotaArgument, IotaArgument[]]} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        case 'MakeMoveVec':
+            return (
+                <ErrorBoundary>
+                    <MakeMoveVec data={data as [string | null, IotaArgument[]]} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        case 'Publish':
+            return (
+                <ErrorBoundary>
+                    <Publish data={data as string[]} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        case 'Upgrade':
+            return (
+                <ErrorBoundary>
+                    <Upgrade data={data as [string[], string, IotaArgument]} inputs={inputs} />
+                </ErrorBoundary>
+            );
+        default:
+            return null;
     }
-
-    return (
-        <ErrorBoundary>
-            <ArrayArgument type={type} data={data as (IotaArgument | IotaArgument[])[]} />
-        </ErrorBoundary>
-    );
 }

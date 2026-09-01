@@ -33,14 +33,20 @@ export function TransactionData({ transaction }: TransactionDataProps): JSX.Elem
                         id={PageSection.Inputs}
                         className={PAGE_SECTION_SCROLL_MARGIN}
                     >
-                        <InputsCard inputs={programmableTxn.inputs} />
+                        <InputsCard
+                            inputs={programmableTxn.inputs}
+                            transactions={programmableTxn.transactions}
+                        />
                     </div>
                     <div
                         data-testid="transactions-card"
                         id={PageSection.Transactions}
                         className={PAGE_SECTION_SCROLL_MARGIN}
                     >
-                        <TransactionsCard transactions={programmableTxn.transactions} />
+                        <TransactionsCard
+                            transactions={programmableTxn.transactions}
+                            inputs={programmableTxn.inputs}
+                        />
                     </div>
                 </section>
             )}

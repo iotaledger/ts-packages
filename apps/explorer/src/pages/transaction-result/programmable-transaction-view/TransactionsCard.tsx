@@ -2,7 +2,11 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type MoveCallIotaTransaction, type IotaTransaction } from '@iota/iota-sdk/client';
+import {
+    type MoveCallIotaTransaction,
+    type IotaTransaction,
+    type IotaCallArg,
+} from '@iota/iota-sdk/client';
 
 import { Transaction } from './Transaction';
 import { CollapsibleCard, ProgrammableTxnBlockCard } from '~/components';
@@ -10,6 +14,7 @@ import { TitleSize } from '@iota/apps-ui-kit';
 
 interface TransactionsCardProps {
     transactions: IotaTransaction[];
+    inputs: IotaCallArg[];
 }
 
 function getTransactionSupportingElement(type: string, data: unknown): JSX.Element | null {
@@ -25,7 +30,10 @@ function getTransactionSupportingElement(type: string, data: unknown): JSX.Eleme
     return null;
 }
 
-export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.Element | null {
+export function TransactionsCard({
+    transactions,
+    inputs,
+}: TransactionsCardProps): JSX.Element | null {
     if (!transactions?.length) {
         return null;
     }
@@ -46,7 +54,7 @@ export function TransactionsCard({ transactions }: TransactionsCardProps): JSX.E
             >
                 <div data-testid="transactions-card-content">
                     <div className="mx-auto w-full max-w-5xl px-lg pb-lg pt-xs">
-                        <Transaction type={type} data={data} />
+                        <Transaction type={type} data={data} inputs={inputs} />
                     </div>
                 </div>
             </CollapsibleCard>

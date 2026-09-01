@@ -1,7 +1,38 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { type IotaArgument } from '@iota/iota-sdk/client';
+import { type IotaArgument, type MoveCallIotaTransaction } from '@iota/iota-sdk/client';
+
+/** Extracts the `IotaArgument`s referenced by a single PTB command, regardless of its shape. */
+export function getCommandArguments(type: string, data: unknown): IotaArgument[] {
+    switch (type) {
+        case 'MoveCall':
+            return (data as MoveCallIotaTransaction).arguments ?? [];
+        case 'TransferObjects': {
+            const [objects, recipient] = data as [IotaArgument[], IotaArgument];
+            return [...objects, recipient];
+        }
+        case 'SplitCoins': {
+            const [coin, amounts] = data as [IotaArgument, IotaArgument[]];
+            return [coin, ...amounts];
+        }
+        case 'MergeCoins': {
+            const [destinationCoin, coins] = data as [IotaArgument, IotaArgument[]];
+            return [destinationCoin, ...coins];
+        }
+        case 'MakeMoveVec': {
+            const [, elements] = data as [string | null, IotaArgument[]];
+            return elements;
+        }
+        case 'Upgrade': {
+            const [, , ticket] = data as [string[], string, IotaArgument];
+            return [ticket];
+        }
+        case 'Publish':
+        default:
+            return [];
+    }
+}
 
 export function flattenIotaArguments(data: (IotaArgument | IotaArgument[])[]): string {
     if (!data) {
