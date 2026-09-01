@@ -43,6 +43,7 @@ import {
     addNewAccounts,
     getAccountsByAddress,
     getAllSerializedUIAccounts,
+    verifyPasswordWithLockedState,
 } from '../accounts';
 import { accountsEvents } from '../accounts/events';
 import { getAutoLockMinutes, notifyUserActive, setAutoLockMinutes } from '../autoLockAccounts';
@@ -279,40 +280,14 @@ export class UiConnection extends Connection {
                 accountsEvents.emit('accountsChanged');
             } else if (isMethodPayload(payload, 'changePassword')) {
                 const { currentPassword, newPassword } = payload.args;
+                await verifyPasswordWithLockedState(
+                    currentPassword,
+                    'Current password is incorrect',
+                );
+
                 const db = await getDB();
                 const allSources = await db.accountSources.toArray();
                 const allAccounts = await db.accounts.toArray();
-
-                let verified = false;
-                for (const source of allSources) {
-                    try {
-                        await decrypt(
-                            currentPassword,
-                            (source as unknown as { encryptedData: string }).encryptedData,
-                        );
-                        verified = true;
-                        break;
-                    } catch {
-                        // continue to next
-                    }
-                }
-                if (!verified) {
-                    for (const account of allAccounts) {
-                        const acc = account as unknown as { encrypted?: string };
-                        if (acc.encrypted) {
-                            try {
-                                await decrypt(currentPassword, acc.encrypted);
-                                verified = true;
-                                break;
-                            } catch {
-                                // continue to next
-                            }
-                        }
-                    }
-                }
-                if (!verified) {
-                    throw new Error('Current password is incorrect');
-                }
 
                 await db.transaction('rw', db.accountSources, db.accounts, async () => {
                     for (const source of allSources) {

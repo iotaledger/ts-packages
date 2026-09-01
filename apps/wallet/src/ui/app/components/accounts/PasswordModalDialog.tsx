@@ -20,7 +20,7 @@ import {
     InputType,
     LoadingIndicator,
 } from '@iota/apps-ui-kit';
-import { AccountTooManyAttemptsError } from '_src/shared/accounts';
+import { AccountTooManyAttemptsError, getTooManyAttemptsMessage } from '_src/shared/accounts';
 import UnlockWallet from '_assets/images/unlock_wallet.png';
 import UnlockWalletDarkmode from '_assets/images/unlock_wallet_darkmode.png';
 import clsx from 'clsx';
@@ -86,9 +86,7 @@ export function PasswordModalDialog({
                 setRunLockInterval(false);
             } else {
                 // Update the error
-                const remainingSeconds = Math.ceil(remainingTime / MILLISECONDS_PER_SECOND);
-                const message = `Too many failed attempts. Please try again in ${remainingSeconds} ${remainingSeconds === 1 ? 'second' : 'seconds'}.`;
-                setCountdownError(message);
+                setCountdownError(getTooManyAttemptsMessage(remainingTime));
             }
         }
 

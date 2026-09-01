@@ -5,8 +5,16 @@ import { useEffect } from 'react';
 import { useZodForm, toast } from '@iota/core';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Button, ButtonHtmlType, ButtonType, Input, InputType } from '@iota/apps-ui-kit';
+import {
+    Button,
+    ButtonHtmlType,
+    ButtonType,
+    Input,
+    InputType,
+    LoadingIndicator,
+} from '@iota/apps-ui-kit';
 import { Overlay } from '_components';
+import { AccountTooManyAttemptsError, getTooManyAttemptsMessage } from '_src/shared/accounts';
 import { Form } from '_src/ui/app/shared/forms/Form';
 import { CheckboxField } from '_src/ui/app/shared/forms/CheckboxField';
 import { validatePasswordStrength } from '_src/ui/app/shared/forms/passwordValidation';
@@ -85,6 +93,14 @@ export function ChangePasswordSettings() {
         return unsubscribe;
     }, [watch, trigger, getValues]);
 
+    async function getSubmitErrorMessage(error: unknown) {
+        if (error instanceof Error && AccountTooManyAttemptsError.is(error)) {
+            const { remainingTime } = await backgroundClient.getLockedState({});
+            return getTooManyAttemptsMessage(remainingTime);
+        }
+        return (error as Error)?.message || 'Failed to update password';
+    }
+
     async function handleSubmit(values: FormValues) {
         try {
             await backgroundClient.changePassword({
@@ -94,7 +110,7 @@ export function ChangePasswordSettings() {
             toast.success('Password updated successfully');
             navigate(-1);
         } catch (e) {
-            toast.error((e as Error)?.message || 'Failed to update password');
+            toast.error(await getSubmitErrorMessage(e));
         }
     }
 
@@ -142,6 +158,7 @@ export function ChangePasswordSettings() {
                     type={ButtonType.Primary}
                     htmlType={ButtonHtmlType.Submit}
                     text="Update Password"
+                    icon={isSubmitting ? <LoadingIndicator /> : null}
                     disabled={!isValid || isSubmitting}
                     fullWidth
                 />
