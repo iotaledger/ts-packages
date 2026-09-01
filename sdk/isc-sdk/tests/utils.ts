@@ -9,8 +9,40 @@ import type { AssetsResponse } from '../src/index.js';
 import { EvmRpcClient } from '../src/index.js';
 import { CONFIG } from './config.js';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
+import { retryUntil } from './retry.js';
 
 const { L2 } = CONFIG;
+
+const BALANCE_VISIBILITY_TIMEOUT_MS = 60_000;
+const AMOUNT_TO_TRANSFER = 1n * NANOS_PER_IOTA;
+
+async function waitForBalance(client: IotaClient, address: string, minimumBalance: bigint) {
+    try {
+        await retryUntil(() => client.getBalance({ owner: address }), {
+            until: ({ totalBalance }) => BigInt(totalBalance) >= minimumBalance,
+            timeoutMs: BALANCE_VISIBILITY_TIMEOUT_MS,
+            delayMs: 500,
+            maxDelayMs: 8_000,
+            onRetry: (msg) => console.warn(`Retrying getting balance for ${address}: ${msg}`),
+        });
+    } catch (error) {
+        throw new Error(`${address} balance didn't reach ${minimumBalance}.`, { cause: error });
+    }
+}
+
+export async function fundFromFaucet(
+    client: IotaClient,
+    faucetUrl: string,
+    address: string,
+    minimumBalance: bigint,
+) {
+    await requestIotaFromFaucet({
+        host: faucetUrl,
+        recipient: address,
+    });
+
+    await waitForBalance(client, address, minimumBalance);
+}
 
 export async function requestFunds(
     client: IotaClient,
@@ -20,54 +52,49 @@ export async function requestFunds(
     const keypair = new Ed25519Keypair();
     const address = keypair.toIotaAddress();
 
-    await requestIotaFromFaucet({
-        host: faucetUrl,
-        recipient: address,
-    });
+    await fundFromFaucet(client, faucetUrl, address, AMOUNT_TO_TRANSFER);
 
     const transaction = new Transaction();
-    const [coin] = transaction.splitCoins(transaction.gas, [1n * NANOS_PER_IOTA]);
+    const [coin] = transaction.splitCoins(transaction.gas, [AMOUNT_TO_TRANSFER]);
     transaction.transferObjects([coin], recipientAddress);
     transaction.setSender(address);
 
     await transaction.build({ client });
 
-    await client.signAndExecuteTransaction({
+    const { digest } = await client.signAndExecuteTransaction({
         signer: keypair,
         transaction,
     });
+
+    await client.waitForTransaction({ digest, waitMode: 'indexed-on-node' });
 }
 
 export async function checkL2BalanceWithRetries(
     address: string,
     coinType?: string,
-    maxRetries = 10,
+    timeout = 60_000,
     delay = 2500,
-): Promise<AssetsResponse | null> {
+): Promise<AssetsResponse> {
     const evmClient = new EvmRpcClient(L2.evmRpcUrl);
-    let evmBalance: AssetsResponse | null = null;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            evmBalance = await evmClient.getBalanceBaseToken(address);
-        } catch (error) {
-            console.error('Error checking balance:', error);
-        } finally {
-            const nativeToken = evmBalance?.nativeTokens?.find((t) => t.coinType === coinType);
-            const nativeTokenBalance = nativeToken ? nativeToken.balance : '0';
-
-            if (
-                (evmBalance?.baseTokens.startsWith('0') ||
-                    (coinType && nativeTokenBalance.startsWith('0'))) &&
-                attempt < maxRetries
-            ) {
-                console.log(
-                    `Fetching EVM balance attempt ${attempt + 1} out of ${maxRetries} in ${delay} ms`,
-                );
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-        }
+    function hasExpectedBalances(balance: AssetsResponse) {
+        const nativeToken = balance.nativeTokens?.find((t) => t.coinType === coinType);
+        const nativeTokenBalance = nativeToken ? nativeToken.balance : '0';
+        return balance.baseTokens !== '0' && (!coinType || nativeTokenBalance !== '0');
     }
 
-    return evmBalance;
+    try {
+        return await retryUntil(() => evmClient.getBalanceBaseToken(address), {
+            until: hasExpectedBalances,
+            timeoutMs: timeout,
+            delayMs: delay,
+            maxDelayMs: 10_000,
+            onRetry: (msg) => console.log(`Retrying fetching EVM balance: ${msg}`),
+        });
+    } catch (error) {
+        throw new Error(
+            `EVM balance of ${address} did not reach the expected amounts within ${timeout} ms.`,
+            { cause: error },
+        );
+    }
 }

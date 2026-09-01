@@ -3,7 +3,15 @@
 
 import { useEffect, useState } from 'react';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { LabelText, LabelTextSize, Panel, Skeleton, Title, TitleSize } from '@iota/apps-ui-kit';
+import {
+    LabelText,
+    LabelTextSize,
+    Panel,
+    Skeleton,
+    Title,
+    TitleSize,
+    TooltipPosition,
+} from '@iota/apps-ui-kit';
 import { ProgressBar, LinkWithQuery } from '~/components/ui';
 import { useGetNetworkMetrics } from '~/hooks';
 import { useEpochProgress } from '~/pages/epochs/utils';
@@ -90,6 +98,8 @@ export function EpochHeroCard(): JSX.Element {
                                     size={LabelTextSize.Small}
                                     label="Checkpoint"
                                     text={checkpoint}
+                                    tooltipPosition={TooltipPosition.Top}
+                                    tooltipText="The most recent checkpoint sequence number recorded by the network."
                                 />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -100,6 +110,8 @@ export function EpochHeroCard(): JSX.Element {
                                     supportingLabel={
                                         binaryVersion ? `v${binaryVersion}` : undefined
                                     }
+                                    tooltipPosition={TooltipPosition.Top}
+                                    tooltipText="The protocol version currently run by the network, and the binary version of the RPC node."
                                 />
                             </div>
                         </div>
