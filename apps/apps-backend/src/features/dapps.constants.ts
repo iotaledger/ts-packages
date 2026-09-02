@@ -66,13 +66,6 @@ export const RECOGNIZED_DAPPS: RecognizedDapp[] = [
         tags: ['DeFi', 'DEX'],
     },
     {
-        name: 'Cyberperp',
-        link: 'https://cyberperp.io/',
-        description: 'The First Decentralized Perpetual Exchange on Iota EVM',
-        icon: 'https://files.iota.org/media/tooling/dapps/cyberperp-logo.png',
-        tags: ['DeFi', 'EVM', 'DEX'],
-    },
-    {
         name: 'Houdini Swap',
         link: 'https://houdiniswap.com/',
         description:
