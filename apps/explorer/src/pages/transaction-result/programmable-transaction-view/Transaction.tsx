@@ -8,11 +8,11 @@ import {
     type IotaCallArg,
     type MoveCallIotaTransaction,
 } from '@iota/iota-sdk/client';
-import { KeyValueInfo } from '@iota/apps-ui-kit';
 import { ErrorBoundary } from '~/components';
 import { ObjectLink, AddressLink } from '~/components/ui';
-import { useBreakpoint } from '~/hooks';
 import { formatAddress } from '@iota/iota-sdk/utils';
+import { ExpandableValue } from './ExpandableValue';
+import { ArgumentsBlock, StackedField } from './Field';
 import { decodeVectorU8Value } from './utils';
 
 interface TransactionProps<T> {
@@ -80,62 +80,35 @@ function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
     if (input.type === 'pure' && input.valueType === 'vector<u8>') {
         return (
             <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                {decodeVectorU8Value(input.value)}
+                <ExpandableValue value={decodeVectorU8Value(input.value)} align="start" />
             </span>
         );
     }
 
     return (
         <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            {String(input.value)}
+            <ExpandableValue value={String(input.value)} align="start" />
         </span>
     );
 }
 
-function ArgList({ args, inputs }: { args: IotaArgument[]; inputs: IotaCallArg[] }): JSX.Element {
-    return (
-        <span className="flex flex-wrap items-center gap-x-xs">
-            {args.map((arg, index) => (
-                <span key={index} className="flex items-center gap-x-xs">
-                    <Arg arg={arg} inputs={inputs} />
-                    {index < args.length - 1 && (
-                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">,</span>
-                    )}
-                </span>
-            ))}
-        </span>
-    );
+function argRows(args: IotaArgument[], inputs: IotaCallArg[]): ReactNode[] {
+    return args.map((arg, index) => <Arg key={index} arg={arg} inputs={inputs} />);
 }
 
-function PackageIdList({ packageIds }: { packageIds: string[] }): JSX.Element {
-    return (
-        <span className="flex flex-wrap items-center gap-x-xs">
-            {packageIds.map((packageId, index) => (
-                <span key={packageId} className="flex items-center gap-x-xs">
-                    <ObjectLink
-                        objectId={packageId}
-                        label={formatAddress(packageId)}
-                        copyText={packageId}
-                    />
-                    {index < packageIds.length - 1 && (
-                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">,</span>
-                    )}
-                </span>
-            ))}
-        </span>
-    );
+function packageIdRows(packageIds: string[]): ReactNode[] {
+    return packageIds.map((packageId) => (
+        <ObjectLink
+            key={packageId}
+            objectId={packageId}
+            label={formatAddress(packageId)}
+            copyText={packageId}
+        />
+    ));
 }
 
 function Field({ keyText, value }: { keyText: string; value: ReactNode }): JSX.Element {
-    const isMediumOrAbove = useBreakpoint('md');
-    return (
-        <KeyValueInfo
-            layout="receipt"
-            keyText={keyText}
-            value={value}
-            fullwidth={!isMediumOrAbove}
-        />
-    );
+    return <StackedField keyText={keyText} value={value} />;
 }
 
 function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.Element {
@@ -148,7 +121,7 @@ function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.
     } = data;
 
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field
                 keyText="Package"
                 value={
@@ -170,7 +143,9 @@ function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.
                 }
             />
             <Field keyText="Function" value={func} />
-            {args && <Field keyText="Arguments" value={<ArgList args={args} inputs={inputs} />} />}
+            {args && args.length > 0 && (
+                <ArgumentsBlock label="Arguments" rows={argRows(args, inputs)} />
+            )}
             {typeArgs && <Field keyText="Type Arguments" value={typeArgs.join(', ')} />}
         </div>
     );
@@ -183,8 +158,8 @@ function TransferObjects({
     const [objects, recipient] = data;
 
     return (
-        <div className="flex flex-col gap-xs">
-            <Field keyText="Objects" value={<ArgList args={objects} inputs={inputs} />} />
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
+            <ArgumentsBlock label="Objects" rows={argRows(objects, inputs)} />
             <Field keyText="Recipient" value={<Arg arg={recipient} inputs={inputs} />} />
         </div>
     );
@@ -194,9 +169,9 @@ function SplitCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]
     const [coin, amounts] = data;
 
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field keyText="Coin" value={<Arg arg={coin} inputs={inputs} />} />
-            <Field keyText="Amounts" value={<ArgList args={amounts} inputs={inputs} />} />
+            <ArgumentsBlock label="Amounts" rows={argRows(amounts, inputs)} />
         </div>
     );
 }
@@ -205,9 +180,9 @@ function MergeCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]
     const [destinationCoin, coins] = data;
 
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field keyText="Into Coin" value={<Arg arg={destinationCoin} inputs={inputs} />} />
-            <Field keyText="Coins" value={<ArgList args={coins} inputs={inputs} />} />
+            <ArgumentsBlock label="Coins" rows={argRows(coins, inputs)} />
         </div>
     );
 }
@@ -216,20 +191,18 @@ function MakeMoveVec({ data, inputs }: CommandProps<[string | null, IotaArgument
     const [type, elements] = data;
 
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field keyText="Type" value={type ?? 'Inferred'} />
-            <Field keyText="Elements" value={<ArgList args={elements} inputs={inputs} />} />
+            <ArgumentsBlock label="Elements" rows={argRows(elements, inputs)} />
         </div>
     );
 }
 
 function Publish({ data }: CommandProps<string[]>): JSX.Element {
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field keyText="Modules" value={data.length} />
-            {data.length > 0 && (
-                <Field keyText="Dependencies" value={<PackageIdList packageIds={data} />} />
-            )}
+            {data.length > 0 && <ArgumentsBlock label="Dependencies" rows={packageIdRows(data)} />}
         </div>
     );
 }
@@ -238,7 +211,7 @@ function Upgrade({ data, inputs }: CommandProps<[string[], string, IotaArgument]
     const [dependencies, packageId, ticket] = data;
 
     return (
-        <div className="flex flex-col gap-xs">
+        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field
                 keyText="Package"
                 value={
@@ -252,10 +225,7 @@ function Upgrade({ data, inputs }: CommandProps<[string[], string, IotaArgument]
             <Field keyText="Upgrade Ticket" value={<Arg arg={ticket} inputs={inputs} />} />
             <Field keyText="Dependencies" value={dependencies.length} />
             {dependencies.length > 0 && (
-                <Field
-                    keyText="Dependency Packages"
-                    value={<PackageIdList packageIds={dependencies} />}
-                />
+                <ArgumentsBlock label="Dependency Packages" rows={packageIdRows(dependencies)} />
             )}
         </div>
     );
