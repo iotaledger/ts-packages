@@ -65,7 +65,7 @@ function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.E
 
     return (
         <div
-            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
             {display?.name ? (
