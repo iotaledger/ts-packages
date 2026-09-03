@@ -12,7 +12,13 @@ import {
     useGetPendingValidator,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
-import { PageLayout, ValidatorMeta, ValidatorStats, ValidatorStatusLegend } from '~/components';
+import {
+    PageLayout,
+    ValidatorMeta,
+    ValidatorStakingHistory,
+    ValidatorStats,
+    ValidatorStatusLegend,
+} from '~/components';
 import { VALIDATOR_LOW_STAKE_GRACE_PERIOD } from '~/lib/constants';
 import { getValidatorMoveEvent } from '~/lib/utils';
 import {
@@ -270,6 +276,7 @@ function ValidatorDetails(): JSX.Element {
                         />
                     )}
                     <ValidatorStatusLegend />
+                    <ValidatorStakingHistory validatorAddress={activeValidatorData.iotaAddress} />
                 </div>
             }
         />

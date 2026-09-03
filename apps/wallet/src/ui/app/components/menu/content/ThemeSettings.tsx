@@ -23,7 +23,7 @@ export function ThemeSettings() {
         ampli.changedTheme({ theme: value });
     }
     return (
-        <Overlay showModal title="Theme" closeOverlay={() => navigate('/tokens')} showBackButton>
+        <Overlay showModal title="Theme" closeOverlay={() => navigate('/tokens')}>
             <div className="flex w-full flex-col">
                 {THEME_ENTRIES.map(([label, value]) => (
                     <div className="px-md" key={value}>

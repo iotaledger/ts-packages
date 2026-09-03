@@ -10,13 +10,12 @@ import {
 } from '../src/index';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
-import { requestIotaFromFaucet } from '@iota/iota-sdk/faucet';
 import { IotaClient } from '@iota/iota-sdk/client';
 import { beforeAll, expect, test } from 'vitest';
 import { CONFIG } from './config';
 import { Wallet } from 'ethers';
 import { bcs } from '@iota/iota-sdk/bcs';
-import { checkL2BalanceWithRetries, requestFunds } from './utils';
+import { checkL2BalanceWithRetries, fundFromFaucet, requestFunds } from './utils';
 
 const { L1 } = CONFIG;
 
@@ -32,11 +31,6 @@ test('Send IOTA', async () => {
     const keypair = new Ed25519Keypair();
     const address = keypair.toIotaAddress();
 
-    await requestIotaFromFaucet({
-        host: L1.faucetUrl!,
-        recipient: address,
-    });
-
     const wallet = Wallet.createRandom();
 
     // EVM Address
@@ -45,6 +39,8 @@ test('Send IOTA', async () => {
     const amountToSend = BigInt(1 * 1000000000);
     // We also need to place a little more in the bag to cover the L2 gas
     const amountToPlace = amountToSend + L2_FROM_L1_GAS_BUDGET;
+
+    await fundFromFaucet(client, L1.faucetUrl!, address, amountToPlace);
 
     const iscTx = new IscTransaction(L1);
 
@@ -69,7 +65,7 @@ test('Send IOTA', async () => {
     });
 
     const evmBalance = await checkL2BalanceWithRetries(recipientAddress);
-    expect(evmBalance?.baseTokens).toEqual(amountToSend.toString());
+    expect(evmBalance.baseTokens).toEqual(amountToSend.toString());
 });
 
 test('Send Non-IOTA Tokens', async () => {
@@ -134,8 +130,8 @@ test('Send Non-IOTA Tokens', async () => {
     });
 
     const evmBalance = await checkL2BalanceWithRetries(recipientAddress, TOKEN_COIN_TYPE);
-    expect(evmBalance?.baseTokens).toEqual(amountToSend.toString());
-    expect(evmBalance?.nativeTokens).toEqual([
+    expect(evmBalance.baseTokens).toEqual(amountToSend.toString());
+    expect(evmBalance.nativeTokens).toEqual([
         {
             coinType: TOKEN_COIN_TYPE,
             balance: tokenAmountToSend.toString(),
