@@ -60,7 +60,7 @@ export function AddressAlias({
                                 ImageIconSize.Small,
                             )}
                         >
-                            <Warning className="dark:text-iota-neutral-60 text-iota-neutral-40" />
+                            <Warning className="dark:text-iota-warning-60 text-iota-warning-40" />
                         </div>
                     ) : addressAlias.imageUrl ? (
                         <ImageIcon
