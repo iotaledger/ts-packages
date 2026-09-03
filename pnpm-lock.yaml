@@ -28,7 +28,8 @@ overrides:
   axios@<1.18.0: ^1.18.0
   brace-expansion@>=2.0.0 <2.1.4: 2.1.4
   brace-expansion@>=4.0.0 <5.0.9: '>=5.0.9'
-  fast-uri: '>=4.1.2'
+  browserslist@<4.28.7: 4.28.7
+  fast-uri: '>=4.1.3'
   find-my-way@<9.7.0: '>=9.7.0'
   sharp@<0.35.0: '>=0.35.0'
   postcss@<8.5.23: '>=8.5.23'
@@ -9562,8 +9563,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.10.0:
-    resolution: {integrity: sha512-lIyg0szRfYbiy67j9KN8IyeD7q7hcmqnJ1ddWmNt19ItGpNN64mnllmxUNFIOdOm6by97jlL6wfpTTJrmnjWAA==}
+  baseline-browser-mapping@2.11.20:
+    resolution: {integrity: sha512-H0ulySigv6icDJ1F7SjtdCD6PrhTpdYCmP0CactWy1+ekh0AFd0o1Wn5T8b+hnTmdBx19u9yhL6wvCylXMY7zw==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -9642,8 +9643,8 @@ packages:
   brorand@1.1.0:
     resolution: {integrity: sha512-cKV8tMCEpQs4hK/ik71d6LrPOnpkpGBR0wzxqr68g2m/LB2GxVYQroAjMJZRVM1Y4BCjCKc3vAamxSzOY2RP+w==}
 
-  browserslist@4.28.1:
-    resolution: {integrity: sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==}
+  browserslist@4.28.7:
+    resolution: {integrity: sha512-JxV13hNrFxqjOc8alRbq9dK1MM79NEXYpma2B2J4wAtpWS5zIEIKqWPGCl7N4o7Uc7B7itylh7SuDujATRyyTw==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -9773,6 +9774,9 @@ packages:
 
   caniuse-lite@1.0.30001770:
     resolution: {integrity: sha512-x/2CLQ1jHENRbHg5PSId2sXq1CIO1CISvwWAj027ltMVG2UNgW+w9oH2+HzgEIRFembL8bUlXtfbBHR1fCg2xw==}
+
+  caniuse-lite@1.0.30001810:
+    resolution: {integrity: sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg==}
 
   capital-case@1.0.4:
     resolution: {integrity: sha512-ds37W8CytHgwnhGGTi88pcPyR15qoNkOpYwmMMfnWqqWgESapLqvDx6huFjQ5vqWSn2Z06173XNA7LtMOeUh1A==}
@@ -10770,8 +10774,8 @@ packages:
     engines: {node: '>=0.10.0'}
     hasBin: true
 
-  electron-to-chromium@1.5.286:
-    resolution: {integrity: sha512-9tfDXhJ4RKFNerfjdCcZfufu49vg620741MNs26a9+bhLThdB+plgMeou98CAaHu/WATj2iHOOHTp1hWtABj2A==}
+  electron-to-chromium@1.5.418:
+    resolution: {integrity: sha512-UzS26r3AEbG5wSoGVpJKqwHIU9zwQN7LHdVIThDrJpS0I5KdlXFMEb8543fhc9dVnIIAST6ar8rhwa00AL5MlA==}
 
   elliptic@6.6.1:
     resolution: {integrity: sha512-RaddvvMatK2LJHqFJ+YA4WysVN5Ita9E35botqIYspQ4TkRAlCicdzKOjlyv/1Za5RyTNn7di//eEV0uTAfe3g==}
@@ -11367,8 +11371,8 @@ packages:
   fast-stable-stringify@1.0.0:
     resolution: {integrity: sha512-wpYMUmFu5f00Sm0cj2pfivpmawLZ0NKdviQ4w9zJeR8JVtOpOxHmLaJuj0vxvGqMJQWyP/COUkF75/57OKyRag==}
 
-  fast-uri@4.1.2:
-    resolution: {integrity: sha512-TyGmBcbDTZXcb2cj5MV89DrF42DKvb3y5DDUNh95iO+IMeAzMkVSxK1PZRrRIpc9yg8U2GhGdbofNa0LS/a4Bw==}
+  fast-uri@4.1.3:
+    resolution: {integrity: sha512-7+72G6vLt7jjNas8SmSATx2qeyRIjxeqO3i4IkmDTxlqYZRKANhOe1bnovcp4WZmvsYrp60WyqPyHqgRiX0yXw==}
 
   fast-url-parser@1.1.3:
     resolution: {integrity: sha512-5jOCVXADYNuRkKFzNJ0dCCewsZiYo0dz8QNYljkOpFC6r2U4OBmKtvm/Tsuh4w1YYdDqDb31a8TVhBJ2OJKdqQ==}
@@ -13652,8 +13656,9 @@ packages:
   node-notifier@10.0.1:
     resolution: {integrity: sha512-YX7TSyDukOZ0g+gmzjB6abKu+hTGvO8+8+gIFDsRCU2t8fLV/P2unmt+LGFaIa4y64aX98Qksa97rgz4vMNeLQ==}
 
-  node-releases@2.0.27:
-    resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
+  node-releases@2.0.54:
+    resolution: {integrity: sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ==}
+    engines: {node: '>=18'}
 
   normalize-path@2.1.1:
     resolution: {integrity: sha512-3pKJwH184Xo/lnH6oyP1q2pMd7HcypqqmRs91/6/i2CGtWwIKGCkOOMTm/zXbgTEWHw1uNpNi/igc3ePOYHb6w==}
@@ -16549,7 +16554,7 @@ packages:
     resolution: {integrity: sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w==}
     hasBin: true
     peerDependencies:
-      browserslist: '>= 4.21.0'
+      browserslist: 4.28.7
 
   update-notifier@7.3.1:
     resolution: {integrity: sha512-+dwUY4L35XFYEzE+OAL3sarJdUioVovq+8f7lcIJ7wnmnYQV5UD1Y/lcwaMSyaQ6Bj3JMj1XSTjZbNLHn/19yA==}
@@ -17710,7 +17715,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.26.8
       '@babel/helper-validator-option': 7.25.9
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -17718,7 +17723,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/helper-validator-option': 7.29.7
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -20059,7 +20064,7 @@ snapshots:
     dependencies:
       ajv: 8.18.0
       ajv-formats: 3.0.1
-      fast-uri: 4.1.2
+      fast-uri: 4.1.3
 
   '@fastify/cors@11.2.0':
     dependencies:
@@ -27252,7 +27257,7 @@ snapshots:
   ajv@8.18.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 4.1.2
+      fast-uri: 4.1.3
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -27457,7 +27462,7 @@ snapshots:
 
   autoprefixer@10.4.20(postcss@8.5.26):
     dependencies:
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       caniuse-lite: 1.0.30001770
       fraction.js: 4.3.7
       normalize-range: 0.1.2
@@ -27679,7 +27684,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.10.0: {}
+  baseline-browser-mapping@2.11.20: {}
 
   batch@0.6.1: {}
 
@@ -27788,13 +27793,13 @@ snapshots:
 
   brorand@1.1.0: {}
 
-  browserslist@4.28.1:
+  browserslist@4.28.7:
     dependencies:
-      baseline-browser-mapping: 2.10.0
-      caniuse-lite: 1.0.30001770
-      electron-to-chromium: 1.5.286
-      node-releases: 2.0.27
-      update-browserslist-db: 1.2.3(browserslist@4.28.1)
+      baseline-browser-mapping: 2.11.20
+      caniuse-lite: 1.0.30001810
+      electron-to-chromium: 1.5.418
+      node-releases: 2.0.54
+      update-browserslist-db: 1.2.3(browserslist@4.28.7)
 
   bs-logger@0.2.6:
     dependencies:
@@ -27922,6 +27927,8 @@ snapshots:
   camelcase@8.0.0: {}
 
   caniuse-lite@1.0.30001770: {}
+
+  caniuse-lite@1.0.30001810: {}
 
   capital-case@1.0.4:
     dependencies:
@@ -28381,7 +28388,7 @@ snapshots:
 
   core-js-compat@3.41.0:
     dependencies:
-      browserslist: 4.28.1
+      browserslist: 4.28.7
 
   core-util-is@1.0.3: {}
 
@@ -28923,7 +28930,7 @@ snapshots:
     dependencies:
       jake: 10.9.2
 
-  electron-to-chromium@1.5.286: {}
+  electron-to-chromium@1.5.418: {}
 
   elliptic@6.6.1:
     dependencies:
@@ -29878,7 +29885,7 @@ snapshots:
       '@fastify/merge-json-schemas': 0.2.1
       ajv: 8.18.0
       ajv-formats: 3.0.1
-      fast-uri: 4.1.2
+      fast-uri: 4.1.3
       json-schema-ref-resolver: 3.0.0
       rfdc: 1.4.1
 
@@ -29896,7 +29903,7 @@ snapshots:
 
   fast-stable-stringify@1.0.0: {}
 
-  fast-uri@4.1.2: {}
+  fast-uri@4.1.3: {}
 
   fast-url-parser@1.1.3:
     dependencies:
@@ -32667,7 +32674,7 @@ snapshots:
       uuid: 11.1.1
       which: 2.0.2
 
-  node-releases@2.0.27: {}
+  node-releases@2.0.54: {}
 
   normalize-path@2.1.1:
     dependencies:
@@ -33625,7 +33632,7 @@ snapshots:
       '@csstools/postcss-trigonometric-functions': 3.0.10(postcss@8.5.26)
       '@csstools/postcss-unset-value': 3.0.1(postcss@8.5.26)
       autoprefixer: 10.4.20(postcss@8.5.26)
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       css-blank-pseudo: 6.0.2(postcss@8.5.26)
       css-has-pseudo: 6.0.5(postcss@8.5.26)
       css-prefers-color-scheme: 9.0.1(postcss@8.5.26)
@@ -35894,9 +35901,9 @@ snapshots:
 
   upath@2.0.1: {}
 
-  update-browserslist-db@1.2.3(browserslist@4.28.1):
+  update-browserslist-db@1.2.3(browserslist@4.28.7):
     dependencies:
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       escalade: 3.2.0
       picocolors: 1.1.1
 
@@ -36444,7 +36451,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.12.1
       acorn: 8.15.0
       acorn-import-attributes: 1.9.5(acorn@8.15.0)
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.17.1
       es-module-lexer: 1.7.0
@@ -36474,7 +36481,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.12.1
       acorn: 8.15.0
       acorn-import-attributes: 1.9.5(acorn@8.15.0)
-      browserslist: 4.28.1
+      browserslist: 4.28.7
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.17.1
       es-module-lexer: 1.7.0
