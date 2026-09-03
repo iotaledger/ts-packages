@@ -23,7 +23,7 @@ import {
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
 import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
-import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
+import { Badge, BadgeSize, BadgeType, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { cx } from 'class-variance-authority';
 
 function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
@@ -83,16 +83,25 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                         ) : name ? (
                             <IotaNameAddressHeader name={name} />
                         ) : knownAddress ? (
-                            <span
-                                className={cx(
-                                    'text-headline-sm',
-                                    knownAddress.isScam
-                                        ? 'text-iota-neutral-40 dark:text-iota-neutral-60'
-                                        : ' text-iota-neutral-10 dark:text-iota-neutral-92',
+                            <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
+                                <span
+                                    className={cx(
+                                        'break-all text-headline-sm',
+                                        knownAddress.isScam
+                                            ? 'text-iota-neutral-40 dark:text-iota-neutral-60'
+                                            : 'text-iota-neutral-10 dark:text-iota-neutral-92',
+                                    )}
+                                >
+                                    {knownAddress.alias}
+                                </span>
+                                {!knownAddress.isScam && (
+                                    <Badge
+                                        type={BadgeType.Outlined}
+                                        label="Address"
+                                        size={BadgeSize.Small}
+                                    />
                                 )}
-                            >
-                                {knownAddress.alias}
-                            </span>
+                            </div>
                         ) : null}
                         <AddressAlias
                             address={address}
