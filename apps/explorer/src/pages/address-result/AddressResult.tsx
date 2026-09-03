@@ -65,10 +65,10 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
         <>
             {knownAddress?.isScam && (
                 <InfoBox
-                    title="Scam Warning"
+                    title="Warning"
                     supportingText="This user account has been involved in fraudulent activities. Exercise caution when interacting with it to avoid potential scams or deceitful practices."
                     icon={<Warning />}
-                    type={InfoBoxType.Error}
+                    type={InfoBoxType.Warning}
                     style={InfoBoxStyle.Elevated}
                 />
             )}
