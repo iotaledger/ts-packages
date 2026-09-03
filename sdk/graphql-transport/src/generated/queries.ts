@@ -3006,7 +3006,7 @@ export type MovePackageObjectsArgs = {
  * definitions, functions, and dependencies.
  */
 export type MovePackagePackageAtVersionArgs = {
-  version: Scalars['Int']['input'];
+  version: Scalars['UInt53']['input'];
 };
 
 
