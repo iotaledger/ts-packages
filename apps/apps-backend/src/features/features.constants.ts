@@ -100,6 +100,10 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
         name: 'Scam',
         isScam: true,
     },
+    '0x49c4e917a0d6ca7da640b0267123e5416457e88651e06a79f99dc2fd7b88dbbf': {
+        name: 'Scam',
+        isScam: true,
+    },
 };
 
 export const KNOWN_ADDRESSES_ALIASES: KnownAddresses = Object.fromEntries(
