@@ -83,7 +83,6 @@ export function CreateNewPasskey() {
         <PageTemplate
             title="Create Passkey Account"
             isTitleCentered
-            showBackButton
             onBack={() => navigate('/accounts/import-existing')}
         >
             <Form
