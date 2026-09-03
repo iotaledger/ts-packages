@@ -88,7 +88,7 @@ interface OwnedObjectsProps {
 }
 
 export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
-    const [limit, setLimit] = useState(50);
+    const [limit, setLimit] = useState(10);
     const [filter, setFilter] = useLocalStorage<string | undefined>(
         'owned-objects-category-filter',
         undefined,
@@ -98,9 +98,19 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
         ObjectViewMode.Thumbnail,
     );
 
+    const [prevId, setPrevId] = useState(id);
+    const idChanged = id !== prevId;
+
+    useEffect(() => {
+        if (idChanged) {
+            setPrevId(id);
+            setFilter(undefined);
+        }
+    }, [idChanged, id, setFilter]);
+
     const ownedObjects = useGetCategorizedOwnedObjects(id, limit);
 
-    const activeCategory = (filter as OwnedObjectCategory) ?? undefined;
+    const activeCategory = (idChanged ? undefined : (filter as OwnedObjectCategory)) ?? undefined;
 
     const activeCategoryData = (() => {
         switch (activeCategory) {
@@ -118,6 +128,12 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
     })();
 
     const { availableCategories, isPending: isLoading } = ownedObjects;
+
+    const totalAssetsCount =
+        ownedObjects.nft.totalItems +
+        ownedObjects.name.totalItems +
+        ownedObjects.kiosk.totalItems +
+        ownedObjects.other.totalItems;
 
     useEffect(() => {
         if (!isLoading && availableCategories.length) {
@@ -223,7 +239,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                         <Tooltip text="Total assets owned">
                                             <Badge
                                                 type={BadgeType.Neutral}
-                                                label={String(sortedDataByDisplayImages.length)}
+                                                label={String(totalAssetsCount)}
                                             />
                                         </Tooltip>
                                     </span>

@@ -11,7 +11,7 @@ import { getNetwork, IotaClient } from '@iota/iota-sdk/client';
 import { getFaucetHost, requestIotaFromFaucet } from '@iota/iota-sdk/faucet';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
-import { retry } from 'ts-retry-promise';
+import { retryUntil } from './retry.js';
 
 export const IOTA_BIN = process.env.VITE_IOTA_BIN ?? `iota`;
 
@@ -57,16 +57,17 @@ export async function setupIotaClient() {
     const client = getClient();
     await requestIotaFromFaucet({ host: DEFAULT_FAUCET_URL, recipient: address });
 
-    const balance = await retry(
+    const balance = await retryUntil(
         () =>
             client.getBalance({
                 owner: address,
             }),
         {
-            retries: 25,
-            delay: 150,
-            logger: (msg) => console.warn('Retrying getting balance: ' + msg),
-            until: (balance) => balance.totalBalance != '0',
+            until: ({ totalBalance }) => BigInt(totalBalance ?? 0) > 0n,
+            timeoutMs: 4_000,
+            delayMs: 150,
+            maxDelayMs: 150,
+            onRetry: (msg) => console.warn('Retrying getting balance: ' + msg),
         },
     );
     console.log(`Balance for ${address}: ${balance.totalBalance} IOTA`);

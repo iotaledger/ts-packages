@@ -77,6 +77,10 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
         name: 'KuCoin',
         logo: `${KNOWN_LOGOS_BASE_URL}/kucoin.jpg`,
     },
+    '0xf1b15744168d00661fe0ca19095b5b79405a6dcf2414896fdb5f11d7d1327e61': {
+        name: 'KuCoin',
+        logo: `${KNOWN_LOGOS_BASE_URL}/kucoin.jpg`,
+    },
     '0x2ab07ce8498aa3c556fc1dbcbbba8ce40bcec7296e2aafbe5832592db046e9bd': {
         name: 'OKX',
         logo: `${KNOWN_LOGOS_BASE_URL}/okx.jpg`,

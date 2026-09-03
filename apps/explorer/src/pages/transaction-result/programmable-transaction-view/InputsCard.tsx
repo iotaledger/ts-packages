@@ -2,11 +2,13 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { useState } from 'react';
+import { ButtonUnstyled, KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
+import clsx from 'clsx';
 import {
     ProgrammableTxnBlockCard,
     AddressLink,
@@ -18,6 +20,7 @@ import { useBreakpoint } from '~/hooks';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
 const REGEX_NUMBER = /^\d+$/;
+const INPUT_VALUE_PREVIEW_LENGTH = 160;
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
@@ -41,7 +44,7 @@ function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.E
 
     return (
         <div
-            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
             {display?.name ? (
@@ -56,11 +59,11 @@ function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.E
                             disablePreview
                         />
                     )}
-                    <span>{display.name}</span>
+                    <span className="truncate">{display.name}</span>
                 </>
             ) : (
                 <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
-                    <ObjectLink objectId={objectId} copyText={objectId} />
+                    <ObjectLink objectId={objectId} copyText={objectId} className="text-label-md" />
                 </div>
             )}
         </div>
@@ -73,7 +76,7 @@ function AddressInputSupportingElement({ address }: { address: string }): JSX.El
 
     if (addressAlias) {
         return (
-            <div className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+            <div className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                 {addressAlias.imageUrl ? (
                     <ImageIcon
                         src={addressAlias.imageUrl}
@@ -83,19 +86,19 @@ function AddressInputSupportingElement({ address }: { address: string }): JSX.El
                         rounded
                     />
                 ) : (
-                    <IotaLogoMark className="aspect-square h-full shrink-0" />
+                    <IotaLogoMark className="h-3 w-3 shrink-0" />
                 )}
-                <span>{addressAlias.alias}</span>
+                <span className="truncate">{addressAlias.alias}</span>
             </div>
         );
     }
 
     return (
         <div
-            className="ml-xs flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
-            <AddressLink address={address} copyText={address} />
+            <AddressLink address={address} copyText={address} className="text-label-md" />
         </div>
     );
 }
@@ -114,6 +117,39 @@ function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element 
     );
 }
 
+function ExpandableInputValue({ value }: { value: string }): JSX.Element {
+    const [showFullValue, setShowFullValue] = useState(false);
+    const isLongValue = value.length > INPUT_VALUE_PREVIEW_LENGTH;
+    const displayedValue =
+        !isLongValue || showFullValue
+            ? value
+            : `${value.slice(0, INPUT_VALUE_PREVIEW_LENGTH).trimEnd()}…`;
+
+    if (!isLongValue) {
+        return <>{value}</>;
+    }
+
+    return (
+        <span className="flex max-w-full flex-col items-end gap-xxs text-right">
+            <span
+                className={clsx(
+                    'break-all',
+                    showFullValue &&
+                        'max-h-48 overflow-y-auto rounded-md border border-iota-neutral-92 bg-transparent p-xs text-left dark:border-iota-neutral-12',
+                )}
+            >
+                {displayedValue}
+            </span>
+            <ButtonUnstyled
+                className="shrink-0 text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
+                onClick={() => setShowFullValue((isExpanded) => !isExpanded)}
+            >
+                {showFullValue ? 'Show Less' : 'Show More'}
+            </ButtonUnstyled>
+        </span>
+    );
+}
+
 export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
     const isMediumOrAbove = useBreakpoint('md');
     if (!inputs?.length) {
@@ -126,12 +162,13 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
             title={`Input ${index}`}
             supportingTitleElement={<InputSupportingElement input={input} />}
             collapsible
+            compactHeader
             initialClose
             titleSize={TitleSize.Small}
         >
             <div
                 data-testid="inputs-card-content"
-                className="flex flex-col gap-2 px-md pb-lg pt-xs md:max-w-4xl"
+                className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs"
             >
                 {Object.entries(input).map(([key, value]) => {
                     let renderValue;
@@ -196,11 +233,19 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
                         renderValue = stringValue;
                     }
 
+                    const displayedValue =
+                        typeof renderValue === 'string' ? (
+                            <ExpandableInputValue value={renderValue} />
+                        ) : (
+                            renderValue
+                        );
+
                     return (
                         <KeyValueInfo
+                            layout="receipt"
                             key={key}
                             keyText={key}
-                            value={renderValue}
+                            value={displayedValue}
                             fullwidth={!isMediumOrAbove}
                         />
                     );
@@ -210,11 +255,6 @@ export function InputsCard({ inputs }: InputsCardProps): JSX.Element | null {
     ));
 
     return (
-        <ProgrammableTxnBlockCard
-            items={expandableItems}
-            itemsLabel="Inputs"
-            rawData={inputs}
-            defaultItemsToShow={4}
-        />
+        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Inputs" rawData={inputs} />
     );
 }
