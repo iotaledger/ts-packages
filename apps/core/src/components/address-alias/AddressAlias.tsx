@@ -1,7 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Copy, IotaLogoMark } from '@iota/apps-ui-icons';
+import { Copy, IotaLogoMark, Warning } from '@iota/apps-ui-icons';
 import cx from 'clsx';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { useAddressAliasLookup } from '../../hooks';
@@ -53,7 +53,16 @@ export function AddressAlias({
                         'flex items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
                     )}
                 >
-                    {addressAlias.imageUrl ? (
+                    {addressAlias.isScam ? (
+                        <div
+                            className={cx(
+                                'flex items-center justify-center rounded-full',
+                                ImageIconSize.Small,
+                            )}
+                        >
+                            <Warning className="dark:text-iota-neutral-60 text-iota-neutral-40" />
+                        </div>
+                    ) : addressAlias.imageUrl ? (
                         <ImageIcon
                             src={addressAlias.imageUrl}
                             label={addressAlias.alias}
@@ -64,6 +73,7 @@ export function AddressAlias({
                     ) : (
                         <IotaLogoMark className="h-full aspect-square shrink-0" />
                     )}
+
                     {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
                 </div>
             )}

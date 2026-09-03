@@ -10,6 +10,7 @@ type FeatureEnabledByNetwork = Record<Network, boolean>;
 export interface KnownAddress {
     name: string;
     logo?: string;
+    isScam?: boolean;
 }
 
 export type KnownAddresses = Record<string, KnownAddress>;
@@ -94,6 +95,10 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
     },
     '0x32bc9471570ca24fcd1fe5b201ea6894748aa0ddd44d20c68f1a4f99db513aa2': {
         name: 'IOTA Testnet Faucet',
+    },
+    '0x381d5b5fa3ae0ba5b3d0ce3421a43d48397cf6eb2a87e624d56dec5e68e7c7e9': {
+        name: 'Scam',
+        isScam: true,
     },
 };
 

@@ -11,7 +11,7 @@ import {
     ValidatorAddressHeader,
 } from '~/components';
 import { PageHeader } from '~/components/ui';
-import { IotaLogoMark } from '@iota/apps-ui-icons';
+import { IotaLogoMark, Warning } from '@iota/apps-ui-icons';
 import {
     AddressAlias,
     ImageIcon,
@@ -23,6 +23,7 @@ import {
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
 import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
+import { InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 
 function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
@@ -40,7 +41,11 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
         ? validator.imageUrl
         : (nameAvatarImageUrl ?? knownAddress?.imageUrl);
 
-    const leading = identityImageUrl ? (
+    const leading = knownAddress?.isScam ? (
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+            <Warning className="h-8 w-8 text-iota-neutral-40 dark:text-iota-neutral-60" />
+        </div>
+    ) : identityImageUrl ? (
         <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
             <ImageIcon
                 src={identityImageUrl}
@@ -58,6 +63,15 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
 
     return (
         <>
+            {knownAddress?.isScam && (
+                <InfoBox
+                    title="Scam Warning"
+                    supportingText="This user account has been involved in fraudulent activities. Exercise caution when interacting with it to avoid potential scams or deceitful practices."
+                    icon={<Warning />}
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
             <PageHeader
                 type="Address"
                 leading={leading}
