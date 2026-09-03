@@ -45,7 +45,7 @@ export async function navigateToDashboardStakePage(page: Page): Promise<void> {
     await expect(nextButton).toBeVisible();
     await nextButton.click();
 
-    await expect(page.getByText(/IOTA Available/)).toBeVisible({
+    await expect(page.getByText(/IOTA[\s\S]*Available/)).toBeVisible({
         timeout: SHORT_TIMEOUT,
     });
 }
