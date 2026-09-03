@@ -69,6 +69,7 @@ const SYSTEM_TRANSACTION_KIND_LABELS: Record<
     EndOfEpochTransaction: 'Epoch Change',
     Genesis: 'Genesis',
     RandomnessStateUpdate: 'Randomness Update',
+    TransactionDenyRulesUpdate: 'Deny Rules Update',
 };
 
 export function getTransactionTypeLabel(
@@ -188,7 +189,6 @@ export function generateTransactionsTableColumns(
                             address={address}
                             copyText={address}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            showValidatorImage
                         />
                     </TableCellBase>
                 );
