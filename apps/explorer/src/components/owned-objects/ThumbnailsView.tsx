@@ -19,7 +19,7 @@ function Thumbnail({ obj }: { obj: IotaObjectResponse }): JSX.Element {
         <Tooltip text={id} position={TooltipPosition.Bottom}>
             <LinkWithQuery
                 to={`/object/${encodeURI(id!)}`}
-                className="block w-full max-w-[170px] rounded-xl p-xs hover:bg-iota-neutral-92 dark:hover:bg-iota-neutral-12"
+                className="block w-[150px] rounded-xl p-xs hover:bg-iota-neutral-92 sm:w-[170px] dark:hover:bg-iota-neutral-12"
             >
                 <div className="flex flex-col gap-sm">
                     <div className="aspect-square w-full overflow-hidden rounded-xl">
@@ -48,7 +48,7 @@ function Thumbnail({ obj }: { obj: IotaObjectResponse }): JSX.Element {
 
 function ThumbnailLoading(): JSX.Element {
     return (
-        <div className="flex w-full max-w-[170px] flex-col gap-sm p-xs">
+        <div className="flex w-[150px] flex-col gap-sm p-xs sm:w-[170px]">
             <Skeleton className="aspect-square w-full rounded-xl" />
             <div className="flex flex-col gap-xxs px-xxs">
                 <Skeleton className="h-4 w-3/4" />
@@ -66,7 +66,7 @@ interface ThumbnailsViewViewProps {
 
 export function ThumbnailsView({ data, loading, limit }: ThumbnailsViewViewProps): JSX.Element {
     return (
-        <div className="grid grid-cols-2 justify-items-center gap-xs overflow-auto sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 items-start justify-items-center gap-xs overflow-auto sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {loading
                 ? new Array(limit).fill(0).map((_, index) => <ThumbnailLoading key={index} />)
                 : data?.map((obj) => <Thumbnail key={obj.data?.objectId} obj={obj} />)}
