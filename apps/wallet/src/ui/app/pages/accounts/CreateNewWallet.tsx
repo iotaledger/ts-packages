@@ -81,8 +81,6 @@ export function CreateNewWallet() {
         <PageTemplate
             title="Create a new wallet"
             isTitleCentered
-            onClose={() => navigate('/')}
-            showBackButton
             onBack={() => navigate('/accounts/add-account')}
         >
             <div className="flex h-full w-full flex-col">

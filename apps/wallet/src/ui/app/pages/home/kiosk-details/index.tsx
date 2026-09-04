@@ -13,12 +13,11 @@ import {
 } from '_components';
 import { useGetKioskContents, Collapsible } from '@iota/core';
 import { formatAddress } from '@iota/iota-sdk/utils';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import cl from 'clsx';
 import { KeyValueInfo } from '@iota/apps-ui-kit';
 
 export function KioskDetailsPage() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const kioskId = searchParams.get('kioskId');
     const accountAddress = useActiveAddress();
@@ -31,7 +30,7 @@ export function KioskDetailsPage() {
     }
 
     return (
-        <PageTemplate title="Kiosk" isTitleCentered onClose={() => navigate(-1)}>
+        <PageTemplate title="Kiosk" isTitleCentered>
             <div
                 className={cl('flex h-full flex-1 flex-col flex-nowrap gap-5', {
                     'items-center': isPending,
