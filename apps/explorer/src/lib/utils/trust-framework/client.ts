@@ -122,7 +122,7 @@ export const createAuditTrailClientReadOnly = async (
 ): Promise<auditTrail.AuditTrailClientReadOnly> => {
     // If IOTA_AUDIT_TRAIL_PKG_ID is declared it has precedence
     await initAuditTrailWasmWeb();
-    if (IOTA_AUDIT_TRAIL_PKG_ID != null && IOTA_TF_COMPONENTS_PKG_ID != null) {
+    if (IOTA_AUDIT_TRAIL_PKG_ID != null || IOTA_TF_COMPONENTS_PKG_ID != null) {
         return await auditTrail.AuditTrailClientReadOnly.createWithPackageOverrides(
             iotaClient,
             new auditTrail.PackageOverrides(IOTA_AUDIT_TRAIL_PKG_ID, IOTA_TF_COMPONENTS_PKG_ID),
