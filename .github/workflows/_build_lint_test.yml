@@ -15,7 +15,7 @@ on:
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
-      EVM_BRIDGE_CONFIG:
+      EVM_BRIDGE_CONFIG_TESTS:
         required: true
 
 concurrency:
@@ -26,7 +26,7 @@ jobs:
   build:
     name: Lint, Build, and Test
     if: inputs.isAffected
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-x64
     env:
       VITE_EVM_BRIDGE_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
       VITE_EVM_BRIDGE_CONFIG: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}

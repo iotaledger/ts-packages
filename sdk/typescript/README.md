@@ -87,10 +87,10 @@ read-only operations. The default URLs to connect with the RPC server are:
 - Devnet: `https://api.devnet.iota.cafe`
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 // create a client connected to devnet
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 
 // get coins owned by an address
 await client.getCoins({
@@ -103,10 +103,10 @@ local network with a local validator, a fullnode, and a faucet server. Refer to
 [this guide](https://docs.iota.org/developer/getting-started/local-network) for more information.
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 // create a client connected to devnet
-const client = new IotaClient({ url: getFullnodeUrl('localnet') });
+const client = new IotaClient({ url: getRpcUrl('localnet') });
 
 // get coins owned by an address
 await client.getCoins({
@@ -117,7 +117,7 @@ await client.getCoins({
 You can also construct your own in custom connections, with the URL for your own fullnode
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 // create a client connected to devnet
 const client = new IotaClient({
@@ -151,14 +151,14 @@ For a primer for building transactions, refer to
 ### Transfer Object
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 
 const tx = new Transaction();
@@ -178,14 +178,14 @@ console.log({ result });
 To transfer `1000` NANOS to another address:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 
 const tx = new Transaction();
@@ -201,14 +201,14 @@ console.log({ result });
 ### Merge coins
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 
 const tx = new Transaction();
@@ -225,14 +225,14 @@ console.log({ result });
 ### Move Call
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const packageObjectId = '0x...';
 const tx = new Transaction();
@@ -252,7 +252,7 @@ console.log({ result });
 To publish a package:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
@@ -260,7 +260,7 @@ const { execSync } = require('child_process');
 // Generate a new Ed25519 Keypair
 const keypair = new Ed25519Keypair();
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const { modules, dependencies } = JSON.parse(
     execSync(`${cliPath} move build --dump-bytecode-as-base64 --path ${packagePath}`, {
@@ -288,10 +288,10 @@ Fetch objects owned by the address
 `0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231`
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const objects = await client.getOwnedObjects({
     owner: '0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231',
@@ -304,10 +304,10 @@ Fetch object details for the object with id
 `0xe19739da1a701eadc21683c5b127e62b553e833e8a15a4f292f4f48b4afea3f2`
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const txn = await client.getObject({
     id: '0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231',
@@ -330,10 +330,10 @@ const txns = await client.multiGetObjects({
 Fetch transaction details from transaction digests:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const txn = await client.getTransaction({
     digest: '9XFneskU8tW7UxQf7tE5qFRfcN4FadtC2Z3HAZkgeETd',
@@ -398,10 +398,10 @@ Fetch coins of type `0x65b0553a591d7b13376e03a408e112c706dc0909a79080c810b93b06f
 owned by an address:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const coins = await client.getCoins({
     owner: '0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231',
@@ -412,10 +412,10 @@ const coins = await client.getCoins({
 Fetch all coin objects owned by an address:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const allCoins = await client.getAllCoins({
     owner: '0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231',
@@ -425,10 +425,10 @@ const allCoins = await client.getAllCoins({
 Fetch the total coin balance for one coin type, owned by an address:
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 // If coin type is not specified, it defaults to 0x2::iota::IOTA
 const coinBalance = await client.getBalance({
@@ -443,10 +443,10 @@ Querying events created by transactions sent by account
 `0xcc2bd176a478baea9a0de7a24cd927661cc6e860d5bacecb9a138ef20dbab231`
 
 ```typescript
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 
 const client = new IotaClient({
-    url: getFullnodeUrl('testnet'),
+    url: getRpcUrl('testnet'),
 });
 const events = client.queryEvents({
     query: { Sender: "0x34abc6dfbf9ae91106ccc21b1a7839704cc9932a8ab571b7f60a2894cea219e7" },

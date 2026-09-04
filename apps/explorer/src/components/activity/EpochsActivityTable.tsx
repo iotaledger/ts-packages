@@ -71,7 +71,7 @@ export function EpochsActivityTable({
                     data={data.data}
                     columns={tableColumns}
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
-                    viewAll="/recent?tab=epochs"
+                    viewAll={disablePagination ? '/recent?tab=epochs' : undefined}
                     paginationOptions={!disablePagination ? pagination : undefined}
                     pageSizeSelector={
                         !disablePagination && (

@@ -1,8 +1,8 @@
 services:
   names-display:
     build:
-      context: ..
-      dockerfile: names-display/Dockerfile
+      context: ../..
+      dockerfile: apps/names-display/Dockerfile
     ports:
       - "3000:3000"
     environment:

@@ -9,6 +9,7 @@ set -euo pipefail
 
 EPOCH_DURATION_MS="${EPOCH_DURATION_MS:-10000}"
 CONFIG_DIR="${CONFIG_DIR:-$(pwd)/persisted-localnet}"
+INGESTION_DIR="${INGESTION_DIR:-$(pwd)/checkpoints-ingestion}"
 GRAPHQL_CONFIG="${GRAPHQL_CONFIG:-$(pwd)/graphql-config.toml}"
 DB_URL="${DB_URL:-postgres://postgres:postgrespw@localhost:5432/iota_indexer}"
 ADMIN_MNEMONIC="${ADMIN_MNEMONIC:?ADMIN_MNEMONIC environment variable is required}"
@@ -46,10 +47,14 @@ start_initial_network() {
     pkill -f "iota start" || true
     sleep 2
 
+    rm -rf "$INGESTION_DIR"
+    mkdir -p "$INGESTION_DIR"
+
     iota-localnet start \
         --network.config "$CONFIG_DIR" \
         --with-faucet \
         --with-grpc \
+        --data-ingestion-dir "$INGESTION_DIR" \
         --faucet-amount 100000000000000 > iota-node.log 2>&1 &
     PID_IOTA=$!
 
@@ -58,8 +63,9 @@ start_initial_network() {
 
     iota-indexer \
         --db-url "$DB_URL" \
+        --metrics-address "0.0.0.0:9187" \
         indexer \
-        --remote-store-url "http://127.0.0.1:50051" \
+        --data-ingestion-path "$INGESTION_DIR" \
         --reset-db > indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
@@ -90,7 +96,7 @@ publish_iota_names() {
     echo "=== Phase 2: Publishing iota-names ==="
 
     iota keytool import "$ADMIN_MNEMONIC" ed25519
-    iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000
+    iota client --yes new-env --alias localnet --rpc http://127.0.0.1:9000 --grpc http://127.0.0.1:50051
     iota client switch --env localnet
     iota client faucet
     sleep 5
@@ -189,6 +195,7 @@ restart_with_configs() {
         --network.config "$CONFIG_DIR" \
         --with-faucet \
         --with-grpc \
+        --data-ingestion-dir "$INGESTION_DIR" \
         --faucet-amount 100000000000000 >> iota-node.log 2>&1 &
     PID_IOTA=$!
 
@@ -196,9 +203,9 @@ restart_with_configs() {
 
     iota-indexer \
         --db-url "$DB_URL" \
+        --metrics-address "0.0.0.0:9187" \
         indexer \
-        --remote-store-url "http://127.0.0.1:50051" \
-        --reset-db >> indexer-writer.log 2>&1 &
+        --data-ingestion-path "$INGESTION_DIR" >> indexer-writer.log 2>&1 &
     PID_INDEXER_WRITER=$!
 
     sleep 30

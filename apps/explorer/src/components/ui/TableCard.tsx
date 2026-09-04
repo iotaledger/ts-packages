@@ -9,21 +9,31 @@ import {
     TableHeaderCell,
     TableRow,
     TableActionButton,
+    Tooltip,
     type TablePaginationOptions,
     TableHeaderCellSortOrder,
 } from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
 import {
     type ColumnDef,
+    type RowData,
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    type RowData,
     type SortingState,
     useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import { Fragment, type ReactNode, useState } from 'react';
 import { Link } from './Link';
+
+declare module '@tanstack/react-table' {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    interface ColumnMeta<TData extends RowData, TValue> {
+        /** Tooltip text shown next to the column header, via an info icon. */
+        tooltip?: string;
+    }
+}
 
 export interface TableCardProps<DataType extends RowData> {
     refetching?: boolean;
@@ -132,6 +142,13 @@ export function TableCard<DataType extends object>({
                                             : undefined;
                                     }}
                                     isContentCentered={areHeadersCentered}
+                                    actionRight={
+                                        column.columnDef.meta?.tooltip ? (
+                                            <Tooltip text={column.columnDef.meta.tooltip}>
+                                                <Info className="h-3.5 w-3.5 text-iota-neutral-40 dark:text-iota-neutral-60" />
+                                            </Tooltip>
+                                        ) : undefined
+                                    }
                                 />
                             ))}
                         </TableRow>
