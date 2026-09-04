@@ -19,6 +19,11 @@ interface FieldItemProps {
 const TYPE_ADDRESS = 'Address';
 const TYPE_URL = '0x2::url::Url';
 
+/** Whether the value fits on a single line, and so does not need an expander. */
+export function isInlineFieldValue(value: FieldItemProps['value']): boolean {
+    return typeof value !== 'object' || value === null;
+}
+
 export function FieldItem({
     value,
     type,
@@ -26,6 +31,15 @@ export function FieldItem({
     truncate = false,
     objectType,
 }: FieldItemProps): JSX.Element {
+    const isNameId = name
+        ?.toLowerCase()
+        .split(/[_\s-]/)
+        .some((part) => part === 'id' || part === 'uid');
+
+    const objectId = isNameId && typeof value === 'string' ? value : null;
+
+    const { data: objectData } = useGetObject(objectId);
+
     // for object types, use SyntaxHighlighter
     if (typeof value === 'object') {
         return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
@@ -44,15 +58,6 @@ export function FieldItem({
             </div>
         );
     }
-
-    const isNameId = name
-        ?.toLowerCase()
-        .split(/[_\s-]/)
-        .some((part) => part === 'id' || part === 'uid');
-
-    const objectId = isNameId && typeof value === 'string' ? value : null;
-
-    const { data: objectData } = useGetObject(objectId);
 
     if (objectId && objectData?.data) {
         return (

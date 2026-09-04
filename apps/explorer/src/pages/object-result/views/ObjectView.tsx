@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
+import { Badge, BadgeSize, BadgeType, DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
 import { capitalize, resolveNFTMedia, useFormatCoin, useNFTMediaHeaders } from '@iota/core';
 import { type IotaObjectResponse, type ObjectOwner } from '@iota/iota-sdk/client';
 import {
@@ -17,6 +17,7 @@ import { SortByDefault } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
 import { AddressLink, Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
+import { OBJECT_FIELD_TOOLTIP } from '~/lib/constants';
 import { extractName, onCopySuccess, parseObjectType, trimStdLibPrefix } from '~/lib/utils';
 
 interface HeroVideoImageProps {
@@ -79,6 +80,8 @@ function ObjectIdCard({ objectId }: ObjectIdCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Object ID"
+            tooltipText={OBJECT_FIELD_TOOLTIP.objectId}
+            tooltipPosition={TooltipPosition.Top}
             value={
                 <div className="flex flex-col gap-xs">
                     <ObjectLink objectId={objectId} copyText={objectId} />
@@ -118,7 +121,13 @@ function TypeCard({ objectType }: TypeCardCardProps): JSX.Element {
         <DisplayStats
             label="Type"
             value={
-                <ObjectLink objectId={`${address}?module=${module}`} label={normalizedStructTag}>
+                <ObjectLink
+                    objectId={`${address}?module=${module}`}
+                    label={normalizedStructTag}
+                    // A Move type is not an address: the alias lookup does not
+                    // apply, and its `whitespace-nowrap` would overflow the card.
+                    showAddressAlias={false}
+                >
                     {normalizedStructTag}
                 </ObjectLink>
             }
@@ -135,7 +144,14 @@ interface VersionCardProps {
 }
 
 function VersionCard({ version }: VersionCardProps): JSX.Element {
-    return <DisplayStats label="Version" value={version ?? '--'} />;
+    return (
+        <DisplayStats
+            label="Version"
+            tooltipText={OBJECT_FIELD_TOOLTIP.version}
+            tooltipPosition={TooltipPosition.Top}
+            value={version ?? '--'}
+        />
+    );
 }
 
 interface LastTxBlockCardProps {
@@ -146,6 +162,8 @@ function LastTxBlockCard({ digest }: LastTxBlockCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Last Transaction Block Digest"
+            tooltipText={OBJECT_FIELD_TOOLTIP.lastTransaction}
+            tooltipPosition={TooltipPosition.Top}
             value={<TransactionLink digest={digest}>{formatDigest(digest)}</TransactionLink>}
             copyText={digest}
             onCopySuccess={onCopySuccess}
@@ -161,20 +179,13 @@ function DigestCard({ digest }: DigestCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Object Digest"
+            tooltipText={OBJECT_FIELD_TOOLTIP.digest}
+            tooltipPosition={TooltipPosition.Top}
             value={formatDigest(digest)}
             copyText={digest}
             onCopySuccess={onCopySuccess}
         />
     );
-}
-
-function getOwnerDisplay(objOwner: ObjectOwner): 'Shared' | 'Immutable' | string {
-    if (objOwner === 'Immutable') {
-        return 'Immutable';
-    } else if ('Shared' in objOwner) {
-        return 'Shared';
-    }
-    return 'ObjectOwner' in objOwner ? objOwner.ObjectOwner : objOwner.AddressOwner;
 }
 
 interface OwnerCardProps {
@@ -185,6 +196,8 @@ function OwnerCard({ objOwner }: OwnerCardProps): JSX.Element | null {
     return (
         <DisplayStats
             label="Owner"
+            tooltipText={OBJECT_FIELD_TOOLTIP.owner}
+            tooltipPosition={TooltipPosition.Top}
             value={
                 <div className="flex flex-col gap-xs">
                     <OwnerDisplay objOwner={objOwner} />
@@ -195,16 +208,40 @@ function OwnerCard({ objOwner }: OwnerCardProps): JSX.Element | null {
 }
 
 function OwnerDisplay({ objOwner }: { objOwner: ObjectOwner }): ReactNode {
-    const owner = getOwnerDisplay(objOwner);
-    if (objOwner !== 'Immutable' && !('Shared' in objOwner)) {
-        if ('ObjectOwner' in objOwner) {
-            return <ObjectLink objectId={objOwner.ObjectOwner} copyText={objOwner.ObjectOwner} />;
-        } else {
-            return <AddressLink address={objOwner.AddressOwner} copyText={objOwner.AddressOwner} />;
-        }
+    if (objOwner === 'Immutable') {
+        return <Badge type={BadgeType.Neutral} size={BadgeSize.Small} label="Immutable" />;
     }
 
-    return <span className="text-iota-neutral-10 dark:text-iota-neutral-92">{owner}</span>;
+    if ('Shared' in objOwner) {
+        // Single line, so the badge centres against the text. The owners below
+        // sit next to a two-line alias block and align to its top instead.
+        return (
+            <div className="flex flex-row flex-wrap items-center gap-xs">
+                <Badge type={BadgeType.PrimarySoft} size={BadgeSize.Small} label="Shared" />
+                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    since version {objOwner.Shared.initial_shared_version}
+                </span>
+            </div>
+        );
+    }
+
+    // Object and address owners both render as truncated hex, so they need a
+    // label to tell them apart. It trails the value it qualifies.
+    if ('ObjectOwner' in objOwner) {
+        return (
+            <div className="flex flex-row flex-wrap items-start gap-xs">
+                <ObjectLink objectId={objOwner.ObjectOwner} copyText={objOwner.ObjectOwner} />
+                <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Object" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-row flex-wrap items-start gap-xs">
+            <AddressLink address={objOwner.AddressOwner} copyText={objOwner.AddressOwner} />
+            <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Address" />
+        </div>
+    );
 }
 
 interface StorageRebateCardProps {
@@ -220,7 +257,9 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
     return (
         <DisplayStats
             label="Storage Rebate"
-            value={`-${storageRebateFormatted}`}
+            tooltipText={OBJECT_FIELD_TOOLTIP.storageRebate}
+            tooltipPosition={TooltipPosition.Top}
+            value={storageRebateFormatted}
             supportingLabel={symbol}
         />
     );
@@ -320,7 +359,16 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
                     <div className="flex-1">
                         <DisplayStats
                             label="Link"
-                            value={<Link href={display.link}>{display.link}</Link>}
+                            value={
+                                <Link
+                                    variant="mono"
+                                    href={display.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {display.link}
+                                </Link>
+                            }
                         />
                     </div>
                 )}
@@ -328,7 +376,16 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
                     <div className="flex-1">
                         <DisplayStats
                             label="Website"
-                            value={<Link href={display.project_url}>{display.project_url}</Link>}
+                            value={
+                                <Link
+                                    variant="mono"
+                                    href={display.project_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {display.project_url}
+                                </Link>
+                            }
                         />
                     </div>
                 )}

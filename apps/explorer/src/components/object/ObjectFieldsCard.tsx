@@ -6,27 +6,20 @@ import { type IotaMoveNormalizedStruct, type IotaObjectResponse } from '@iota/io
 import clsx from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
 import { getFieldTypeValue } from '~/lib/ui';
-import { FieldItem } from './FieldItem';
-import { ScrollToViewCard } from './ScrollToViewCard';
+import { EXPANDABLE_FIELD_REGION_CLASSES } from '~/lib/constants';
+import { FieldItem, isInlineFieldValue } from './FieldItem';
 import {
-    Accordion,
-    AccordionHeader,
-    Title,
-    AccordionContent,
     ButtonUnstyled,
     KeyValueInfo,
     Panel,
-    TitleSize,
     LoadingIndicator,
     Search,
-    ListItem,
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
 } from '@iota/apps-ui-kit';
-import { Warning } from '@iota/apps-ui-icons';
+import { ArrowDown, Warning } from '@iota/apps-ui-icons';
 
-const DEFAULT_OPEN_FIELDS = 3;
 const DEFAULT_FIELDS_COUNT_TO_SHOW_SEARCH = 10;
 
 interface ObjectFieldsProps {
@@ -47,23 +40,22 @@ export function ObjectFieldsCard({
     objectType,
 }: ObjectFieldsProps): JSX.Element | null {
     const [query, setQuery] = useState('');
-    const [activeFieldName, setActiveFieldName] = useState('');
     const [openFieldsName, setOpenFieldsName] = useState<{
         [name: string]: boolean;
     }>({});
 
+    const fieldsData =
+        iotaObjectResponseData?.data?.content?.dataType === 'moveObject'
+            ? (iotaObjectResponseData?.data?.content?.fields as Record<
+                  string,
+                  string | number | object
+              >)
+            : null;
+
+    // Everything starts collapsed, and collapses again when another object is
+    // shown, so the list always opens as a readable summary.
     useEffect(() => {
-        if (normalizedStructData?.fields) {
-            setOpenFieldsName(
-                normalizedStructData.fields.reduce(
-                    (acc, { name }, index) => {
-                        acc[name] = index < DEFAULT_OPEN_FIELDS;
-                        return acc;
-                    },
-                    {} as { [name: string]: boolean },
-                ),
-            );
-        }
+        setOpenFieldsName({});
     }, [normalizedStructData?.fields]);
 
     const onSetOpenFieldsName = useCallback(
@@ -74,14 +66,6 @@ export function ObjectFieldsCard({
             }));
         },
         [],
-    );
-
-    const onFieldsNameClick = useCallback(
-        (name: string) => {
-            setActiveFieldName(name);
-            onSetOpenFieldsName(name)(true);
-        },
-        [onSetOpenFieldsName],
     );
 
     if (loading) {
@@ -103,23 +87,15 @@ export function ObjectFieldsCard({
         );
     }
 
-    const fieldsData =
-        iotaObjectResponseData?.data?.content?.dataType === 'moveObject'
-            ? (iotaObjectResponseData?.data?.content?.fields as Record<
-                  string,
-                  string | number | object
-              >)
-            : null;
-
     // Return null if there are no fields
     if (!fieldsData || !normalizedStructData?.fields || !objectType) {
         return null;
     }
 
-    const filteredFieldNames =
+    const filteredFields =
         query === ''
-            ? normalizedStructData?.fields
-            : normalizedStructData?.fields.filter(({ name }) =>
+            ? normalizedStructData.fields
+            : normalizedStructData.fields.filter(({ name }) =>
                   name.toLowerCase().includes(query.toLowerCase()),
               );
 
@@ -127,98 +103,85 @@ export function ObjectFieldsCard({
         normalizedStructData?.fields.length >= DEFAULT_FIELDS_COUNT_TO_SHOW_SEARCH;
 
     return (
-        <div className="flex flex-col gap-md md:flex-row">
-            <div className="flex w-full flex-1 md:w-1/3">
-                <div className="w-full">
-                    <Panel hasBorder>
-                        <div className="flex flex-col gap-md p-xs">
-                            {renderSearchBar && (
-                                <Search
-                                    searchValue={query}
-                                    onSearchValueChange={setQuery}
-                                    placeholder="Search"
-                                    suggestions={
-                                        query.length > 0
-                                            ? filteredFieldNames.map((item) => ({
-                                                  id: item.name,
-                                                  type: item.name,
-                                                  label: item.name,
-                                              }))
-                                            : []
-                                    }
-                                    onSuggestionClick={(suggestion) => {
-                                        setActiveFieldName(suggestion.id);
-                                    }}
-                                    isLoading={false}
-                                    renderSuggestion={(suggestion) => (
-                                        <div className="flex cursor-pointer justify-between">
-                                            <ListItem hideBottomBorder>
-                                                <div className="overflow-hidden text-ellipsis">
-                                                    {suggestion.label}
-                                                </div>
-                                                <div className="text-caption text-steel break-words pl-xs font-medium uppercase">
-                                                    {suggestion.type}
-                                                </div>
-                                            </ListItem>
-                                        </div>
-                                    )}
-                                />
-                            )}
-                            <div
-                                className={clsx(
-                                    'flex max-h-44 flex-col overflow-y-auto md:max-h-96',
-                                    renderSearchBar && 'mt-4',
-                                )}
-                            >
-                                {filteredFieldNames?.map(({ name, type }) => (
-                                    <ButtonUnstyled
-                                        key={name}
-                                        className="rounded-lg p-xs hover:bg-iota-primary-80/20"
-                                        onClick={() => onFieldsNameClick(name)}
-                                    >
-                                        <KeyValueInfo
-                                            keyText={name}
-                                            value={getFieldTypeValue(type, objectType).displayName}
-                                            isTruncated
-                                            fullwidth
-                                        />
-                                    </ButtonUnstyled>
-                                ))}
-                            </div>
-                        </div>
-                    </Panel>
-                </div>
-            </div>
-            <div className="flex w-full md:w-2/3">
-                <Panel hasBorder>
-                    <div className="flex flex-col gap-md p-md--rs">
-                        {normalizedStructData?.fields.map(({ name, type }, index) => (
-                            <ScrollToViewCard key={name} inView={name === activeFieldName}>
-                                <Accordion>
-                                    <AccordionHeader
-                                        isExpanded={openFieldsName[name]}
-                                        onToggle={() =>
-                                            onSetOpenFieldsName(name)(!openFieldsName[name])
-                                        }
-                                    >
-                                        <Title size={TitleSize.Small} title={name ?? ''} />
-                                    </AccordionHeader>
-                                    <AccordionContent isExpanded={openFieldsName[name]}>
-                                        <div className="p-md--rs">
-                                            <FieldItem
-                                                value={fieldsData[name]}
-                                                objectType={objectType}
-                                                type={type}
-                                                name={name}
-                                            />
-                                        </div>
-                                    </AccordionContent>
-                                </Accordion>
-                            </ScrollToViewCard>
-                        ))}
+        <Panel hasBorder>
+            <div className="flex flex-col gap-sm p-md--rs">
+                {renderSearchBar && (
+                    <div className="pb-xs">
+                        <Search
+                            searchValue={query}
+                            onSearchValueChange={(value) => setQuery(value?.trim() ?? '')}
+                            placeholder="Search fields"
+                            isLoading={false}
+                        />
                     </div>
-                </Panel>
+                )}
+
+                {filteredFields.map(({ name, type }) => {
+                    const value = fieldsData[name];
+                    // Single-line values sit in the row itself; only the ones
+                    // rendered as code need somewhere to unfold.
+                    const isInline = isInlineFieldValue(value);
+                    const isExpanded = !!openFieldsName[name];
+                    const detailsId = `object-field-${name}`;
+                    const { displayName } = getFieldTypeValue(type, objectType);
+
+                    return (
+                        <div key={name} className="flex flex-col gap-sm">
+                            <KeyValueInfo
+                                layout="receipt"
+                                keyText={displayName ? `${name} (${displayName})` : name}
+                                value={
+                                    isInline ? (
+                                        <FieldItem
+                                            value={value}
+                                            objectType={objectType}
+                                            type={type}
+                                            name={name}
+                                            truncate
+                                        />
+                                    ) : (
+                                        <ButtonUnstyled
+                                            className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                            aria-controls={detailsId}
+                                            aria-expanded={isExpanded}
+                                            onClick={() => onSetOpenFieldsName(name)(!isExpanded)}
+                                        >
+                                            {isExpanded ? 'Show Less' : 'Show More'}
+                                            <ArrowDown
+                                                className={clsx(
+                                                    'h-4 w-4 transition-transform ease-linear',
+                                                    isExpanded && 'rotate-180',
+                                                )}
+                                            />
+                                        </ButtonUnstyled>
+                                    )
+                                }
+                            />
+                            {!isInline && isExpanded && (
+                                <div
+                                    id={detailsId}
+                                    role="region"
+                                    aria-label={`${name} details`}
+                                    className={EXPANDABLE_FIELD_REGION_CLASSES}
+                                >
+                                    <FieldItem
+                                        value={value}
+                                        objectType={objectType}
+                                        type={type}
+                                        name={name}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+
+                {!filteredFields.length && (
+                    <div className="flex justify-center py-md text-body-md text-iota-neutral-40">
+                        No fields match the search
+                    </div>
+                )}
             </div>
-        </div>
+        </Panel>
     );
 }

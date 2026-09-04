@@ -12,17 +12,21 @@ import {
     DateDisplay,
     EpochLink,
     ErrorBoundary,
+    getObjectFilterOptions,
     Link,
     ObjectLink,
     PkgModulesWrapper,
     TransactionBlocksForAddress,
+    type TransactionBlocksFilterOption,
 } from '~/components';
+import { useSearchParamsMerged } from '~/components/ui';
 import { usePackageUpgradePolicy } from '~/hooks';
 import { getOwnerStr, trimStdLibPrefix } from '~/lib/utils';
 import { type DataType } from '../ObjectResultType';
-
-import { ObjectFilterValue } from '~/lib/enums';
 import {
+    Badge,
+    BadgeSize,
+    BadgeType,
     ButtonSegment,
     ButtonSegmentType,
     KeyValueInfo,
@@ -42,6 +46,9 @@ const SPLIT_PANELS_ORIENTATION: { label: string; value: Direction }[] = [
     { label: 'Side-by-side', value: 'horizontal' },
 ];
 
+const PACKAGE_CALLS_FILTER = 'package-calls';
+const MODULE_CALLS_FILTER = 'module-calls';
+
 interface PkgViewProps {
     data: DataType;
 }
@@ -53,6 +60,7 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
 
     const { data: txnData, isPending } = useGetTransaction(data.data.tx_digest!);
     const { upgradePolicy } = usePackageUpgradePolicy(data.data.tx_digest);
+    const [searchParams] = useSearchParamsMerged();
 
     if (isPending) {
         return <LoadingIndicator text="Loading data" />;
@@ -84,6 +92,35 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
         .map(mapProperties);
 
     const publisherAddress = viewedData.publisherAddress;
+
+    // Mirrors the module PkgModulesWrapper shows, so the calls table follows
+    // whichever module the user is reading.
+    const moduleNameValue = searchParams.get('module');
+    const selectedModuleName =
+        properties.find(([moduleName]) => moduleName === moduleNameValue)?.[0] ??
+        properties[0]?.[0];
+
+    const packageCallsOption: TransactionBlocksFilterOption = {
+        label: 'Calls',
+        value: PACKAGE_CALLS_FILTER,
+        filter: { MoveFunction: { package: viewedData.id } },
+    };
+
+    const moduleCallsOption: TransactionBlocksFilterOption | null = selectedModuleName
+        ? {
+              label: `Calls: ${selectedModuleName}`,
+              value: MODULE_CALLS_FILTER,
+              filter: {
+                  MoveFunction: { package: viewedData.id, module: selectedModuleName },
+              },
+          }
+        : null;
+
+    const transactionFilterOptions: TransactionBlocksFilterOption[] = [
+        packageCallsOption,
+        ...(moduleCallsOption ? [moduleCallsOption] : []),
+        ...getObjectFilterOptions(viewedData.id),
+    ];
 
     return (
         <div>
@@ -163,7 +200,18 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                                         </>
                                     }
                                     tooltipPosition={TooltipPosition.Bottom}
-                                    value={upgradePolicy.label}
+                                    value={
+                                        <Badge
+                                            type={
+                                                upgradePolicy.isImmutable ||
+                                                upgradePolicy.isIndeterminate
+                                                    ? BadgeType.Neutral
+                                                    : BadgeType.PrimarySoft
+                                            }
+                                            size={BadgeSize.Small}
+                                            label={upgradePolicy.label}
+                                        />
+                                    }
                                 />
                             )}
                         </div>
@@ -206,8 +254,9 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                 <ErrorBoundary>
                     <TransactionBlocksForAddress
                         address={viewedData.id}
-                        filter={ObjectFilterValue.Input}
+                        filter={PACKAGE_CALLS_FILTER}
                         header="Transaction Blocks"
+                        options={transactionFilterOptions}
                     />
                 </ErrorBoundary>
             </div>
