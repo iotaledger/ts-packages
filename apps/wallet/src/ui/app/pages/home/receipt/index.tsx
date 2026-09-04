@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Loading, Overlay, ReceiptCard } from '_components';
+import { HOME_PATH } from '_components/NavigationStackProvider';
 import { useActiveAddress, useUnlockedGuard } from '_hooks';
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -19,7 +20,6 @@ export function ReceiptPage() {
 
     // get tx results from url params
     const transactionId = searchParams.get('txdigest');
-    const fromParam = searchParams.get('from');
 
     const initialDataFromState = location.state?.response as
         | IotaTransactionBlockResponse
@@ -31,10 +31,9 @@ export function ReceiptPage() {
     });
 
     const navigate = useNavigate();
-    // return to previous route or from param if available
     const closeReceipt = useCallback(() => {
-        fromParam ? navigate(`/${fromParam}`) : navigate(-1);
-    }, [fromParam, navigate]);
+        navigate(HOME_PATH, { replace: true });
+    }, [navigate]);
 
     const pageTitle = useMemo(() => {
         if (data) {

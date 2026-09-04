@@ -218,14 +218,5 @@ export function PageHeader({
         return panel;
     }
 
-    return (
-        <div className="flex w-full flex-col gap-xs">
-            {type && (
-                <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
-                    {type}
-                </span>
-            )}
-            {panel}
-        </div>
-    );
+    return <div className="flex w-full flex-col gap-xs">{panel}</div>;
 }
