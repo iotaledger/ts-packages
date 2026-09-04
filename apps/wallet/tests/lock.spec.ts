@@ -33,7 +33,7 @@ test('wallet auto-lock', async ({ page, extensionUrl }) => {
     await page.getByRole('button', { name: /Minute/ }).click();
     await page.getByText('Save').click();
     await expect(page.getByText(/Saved/i)).toBeVisible({ timeout: SHORT_TIMEOUT });
-    await page.getByTestId('close-icon').click();
+    await page.getByLabel('Back').click();
     await page.waitForTimeout(62 * 1000);
     await expect(page.getByPlaceholder('Password')).toBeVisible();
 });

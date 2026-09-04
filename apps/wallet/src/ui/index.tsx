@@ -30,6 +30,7 @@ import { HashRouter } from 'react-router-dom';
 import { App } from './app';
 import { walletApiProvider } from './app/apiProvider';
 import { AccountsFormProvider } from './app/components/accounts/AccountsFormContext';
+import { NavigationStackProvider } from './app/components/NavigationStackProvider';
 import { UnlockAccountsProvider } from './app/components/accounts/UnlockAccountsContext';
 import { IotaLedgerClientProvider } from './app/components/ledger/IotaLedgerClientProvider';
 import { appsBackendClient } from './app/experimentation/featureGating';
@@ -74,73 +75,75 @@ function AppWrapper() {
     return (
         <AppsBackendClientProvider client={appsBackendClient}>
             <HashRouter>
-                <IotaLedgerClientProvider>
-                    {/*
-                     * NOTE: We set a key here to force the entire react tree to be re-created when the network changes so that
-                     * the RPC client instance (api.instance.fullNode) is updated correctly. In the future, we should look into
-                     * making the API provider instance a reactive value and moving it out of the redux-thunk middleware
-                     */}
-                    <Fragment key={networkKey}>
-                        <PersistQueryClientProvider
-                            client={queryClient}
-                            persistOptions={{
-                                persister,
-                                dehydrateOptions: {
-                                    shouldDehydrateQuery: (query: Query) => {
-                                        return (
-                                            !query.meta?.skipPersistedCache &&
-                                            defaultShouldDehydrateQuery(query)
-                                        );
+                <NavigationStackProvider>
+                    <IotaLedgerClientProvider>
+                        {/*
+                         * NOTE: We set a key here to force the entire react tree to be re-created when the network changes so that
+                         * the RPC client instance (api.instance.fullNode) is updated correctly. In the future, we should look into
+                         * making the API provider instance a reactive value and moving it out of the redux-thunk middleware
+                         */}
+                        <Fragment key={networkKey}>
+                            <PersistQueryClientProvider
+                                client={queryClient}
+                                persistOptions={{
+                                    persister,
+                                    dehydrateOptions: {
+                                        shouldDehydrateQuery: (query: Query) => {
+                                            return (
+                                                !query.meta?.skipPersistedCache &&
+                                                defaultShouldDehydrateQuery(query)
+                                            );
+                                        },
                                     },
-                                },
-                            }}
-                        >
-                            <IotaClientProvider
-                                networks={{
-                                    [walletApiProvider.network]:
-                                        walletApiProvider.instance.fullNode,
                                 }}
                             >
-                                <StardustIndexerClientProvider>
-                                    <IotaGraphQLClientProvider>
-                                        <IotaNamesClientProvider>
-                                            <KioskClientProvider>
-                                                <AccountsFormProvider>
-                                                    <ThemeProvider appId="iota-wallet">
-                                                        <UnlockAccountsProvider>
-                                                            <ClipboardPasteSafetyWrapper>
-                                                                <KeystoneProvider>
-                                                                    <div
-                                                                        className={cn(
-                                                                            'relative flex h-screen flex-col flex-nowrap items-center justify-center overflow-hidden',
-                                                                            extensionViewType ===
-                                                                                ExtensionViewType.SidePanel
-                                                                                ? 'min-h-sidepanel-minimum max-h-sidepanel-height w-sidepanel-width'
-                                                                                : 'max-h-popup-height min-h-popup-minimum w-popup-width',
-                                                                            extensionViewType !==
-                                                                                ExtensionViewType.Popup &&
-                                                                                'rounded-xl shadow-lg',
-                                                                        )}
-                                                                    >
-                                                                        <ErrorBoundary>
-                                                                            <App />
-                                                                        </ErrorBoundary>
-                                                                        <div id="overlay-portal-container"></div>
-                                                                        <div id="toaster-portal-container"></div>
-                                                                    </div>
-                                                                </KeystoneProvider>
-                                                            </ClipboardPasteSafetyWrapper>
-                                                        </UnlockAccountsProvider>
-                                                    </ThemeProvider>
-                                                </AccountsFormProvider>
-                                            </KioskClientProvider>
-                                        </IotaNamesClientProvider>
-                                    </IotaGraphQLClientProvider>
-                                </StardustIndexerClientProvider>
-                            </IotaClientProvider>
-                        </PersistQueryClientProvider>
-                    </Fragment>
-                </IotaLedgerClientProvider>
+                                <IotaClientProvider
+                                    networks={{
+                                        [walletApiProvider.network]:
+                                            walletApiProvider.instance.fullNode,
+                                    }}
+                                >
+                                    <StardustIndexerClientProvider>
+                                        <IotaGraphQLClientProvider>
+                                            <IotaNamesClientProvider>
+                                                <KioskClientProvider>
+                                                    <AccountsFormProvider>
+                                                        <ThemeProvider appId="iota-wallet">
+                                                            <UnlockAccountsProvider>
+                                                                <ClipboardPasteSafetyWrapper>
+                                                                    <KeystoneProvider>
+                                                                        <div
+                                                                            className={cn(
+                                                                                'relative flex h-screen flex-col flex-nowrap items-center justify-center overflow-hidden',
+                                                                                extensionViewType ===
+                                                                                    ExtensionViewType.SidePanel
+                                                                                    ? 'min-h-sidepanel-minimum max-h-sidepanel-height w-sidepanel-width'
+                                                                                    : 'max-h-popup-height min-h-popup-minimum w-popup-width',
+                                                                                extensionViewType !==
+                                                                                    ExtensionViewType.Popup &&
+                                                                                    'rounded-xl shadow-lg',
+                                                                            )}
+                                                                        >
+                                                                            <ErrorBoundary>
+                                                                                <App />
+                                                                            </ErrorBoundary>
+                                                                            <div id="overlay-portal-container"></div>
+                                                                            <div id="toaster-portal-container"></div>
+                                                                        </div>
+                                                                    </KeystoneProvider>
+                                                                </ClipboardPasteSafetyWrapper>
+                                                            </UnlockAccountsProvider>
+                                                        </ThemeProvider>
+                                                    </AccountsFormProvider>
+                                                </KioskClientProvider>
+                                            </IotaNamesClientProvider>
+                                        </IotaGraphQLClientProvider>
+                                    </StardustIndexerClientProvider>
+                                </IotaClientProvider>
+                            </PersistQueryClientProvider>
+                        </Fragment>
+                    </IotaLedgerClientProvider>
+                </NavigationStackProvider>
             </HashRouter>
         </AppsBackendClientProvider>
     );

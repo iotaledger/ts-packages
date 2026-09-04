@@ -14,6 +14,7 @@ export function IotaNameAddressHeader({ name }: IotaNameAddressHeaderProps): JSX
                 {name}
             </span>
             <Badge type={BadgeType.Neutral} label="IOTA Name" size={BadgeSize.Small} />
+            <Badge type={BadgeType.Outlined} label="Address" size={BadgeSize.Small} />
         </div>
     );
 }
