@@ -16,7 +16,7 @@ import { TableCard, PlaceholderTable } from '~/components/ui';
 import { type ColumnDef } from '@tanstack/react-table';
 import { formatDate } from '@iota/core';
 import { useState } from 'react';
-import { formatAddress } from '@iota/iota-sdk/utils';
+import { formatAddress, toHex } from '@iota/iota-sdk/utils';
 
 type AuditTrailRecordsProps = {
     objectId: string;
@@ -71,14 +71,24 @@ function RecordsTable({ records }: { records: Record[] }) {
     return <TableCard data={records} columns={generateRecordsTableColumns()} />;
 }
 
+export function formatDataPreview(data: Data): string {
+    const dataValue = data.value;
+
+    return typeof dataValue === 'string' ? dataValue : `0x${toHex(data.toBytes())}`;
+}
+
 function DataPreviewCell({ data }: { data: Data }) {
     const [isExpanded, setIsExpanded] = useState(false);
-    const dataString = data.toString();
+    const isBinary = typeof data.value !== 'string';
+    const dataString = formatDataPreview(data);
+    const dataTitle = isBinary ? 'Binary data encoded as hexadecimal' : undefined;
 
     if (dataString.length <= 50) {
         return (
             <TableCellBase>
-                <TableCellText>{dataString}</TableCellText>
+                <TableCellText>
+                    <span title={dataTitle}>{dataString}</span>
+                </TableCellText>
             </TableCellBase>
         );
     }
@@ -89,9 +99,11 @@ function DataPreviewCell({ data }: { data: Data }) {
         <TableCellBase>
             <div className="group relative flex w-full flex-col">
                 <TableCellText>
-                    <div className="whitespace-pre-wrap break-all">{preview}</div>
+                    <div className="whitespace-pre-wrap break-all" title={dataTitle}>
+                        {preview}
+                    </div>
                 </TableCellText>
-                <div className="invisible absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] group-hover:visible dark:bg-black/60">
+                <div className="visible absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] md:invisible md:group-focus-within:visible md:group-hover:visible dark:bg-black/60">
                     <Button
                         type={ButtonType.Outlined}
                         size={ButtonSize.Small}
