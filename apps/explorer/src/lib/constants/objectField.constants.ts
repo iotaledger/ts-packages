@@ -15,6 +15,8 @@ export const OBJECT_FIELD_TOOLTIP = {
     digest: 'A fingerprint of this exact version of the object. Any change to its contents produces a different one.',
     owner: 'Determines who can use this object: a single address, anyone at all if it is shared, or nobody if it is immutable and can no longer change. Objects can also be held inside another object.',
     lastTransaction: 'The most recent transaction that changed this object.',
+    publisher: 'The address that sent the transaction publishing this package.',
+    published: 'When this version of the package was published on the network.',
     storageRebate:
         'IOTA held as a deposit for the storage this object uses. It is paid back when the object is deleted or gets smaller.',
 } as const;

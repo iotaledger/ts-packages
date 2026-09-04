@@ -4,5 +4,6 @@
 export * from './DynamicFieldsCard';
 export * from './FieldItem';
 export * from './ObjectFieldsCard';
+export * from './OwnerDisplay';
 export * from './ScrollToViewCard';
 export * from './UnderlyingObjectCard';

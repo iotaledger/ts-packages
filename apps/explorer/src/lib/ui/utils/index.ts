@@ -10,3 +10,4 @@ export * from './generateBalanceChangesTableColumns';
 export * from './generateObjectChangesTableColumns';
 export * from './generateActivityTableColumns';
 export * from './objectField';
+export * from './formatMoveType';
