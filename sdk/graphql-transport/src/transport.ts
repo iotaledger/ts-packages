@@ -13,11 +13,32 @@ import { IotaHTTPTransport } from '@iota/iota-sdk/client';
 import type { DocumentNode } from 'graphql';
 import { print } from 'graphql';
 
-import { TypedDocumentString } from './generated/queries.js';
+import {
+    SubscribeEventsDocument,
+    SubscribeTransactionsDocument,
+    TypedDocumentString,
+} from './generated/queries.js';
+import type {
+    SubscribeEventsSubscription,
+    SubscribeEventsSubscriptionVariables,
+    SubscribeTransactionsSubscription,
+    SubscribeTransactionsSubscriptionVariables,
+} from './generated/queries.js';
+import type { GraphQLWebSocketClientOptions } from './graphql-websocket-client.js';
+import { GraphQLWebSocketClient } from './graphql-websocket-client.js';
 import { RPC_METHODS, UnsupportedMethodError, UnsupportedParamError } from './methods.js';
+import {
+    mapRpcEventFilterToGraphQL,
+    mapRpcTransactionFilterToGraphQL,
+    mapSubscriptionEvent,
+    mapSubscriptionTransaction,
+} from './mappers/subscription.js';
 
 export interface IotaClientGraphQLTransportOptions {
     url: string;
+    wsUrl?: string;
+    wsOptions?: Omit<GraphQLWebSocketClientOptions, 'WebSocketConstructor'>;
+    WebSocketConstructor?: typeof WebSocket;
     fallbackTransportUrl?: string;
     fallbackMethods?: (keyof typeof RPC_METHODS)[];
     unsupportedMethods?: (keyof typeof RPC_METHODS)[];
@@ -64,6 +85,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
     #fallbackTransport?: IotaTransport;
     #fallbackMethods: (keyof typeof RPC_METHODS)[];
     #unsupportedMethods: (keyof typeof RPC_METHODS)[];
+    #wsClient: GraphQLWebSocketClient | null = null;
 
     constructor(options: IotaClientGraphQLTransportOptions) {
         this.#options = options;
@@ -87,6 +109,26 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 inspector: options.inspector,
             });
         }
+    }
+
+    #getWebSocketClient(): GraphQLWebSocketClient {
+        if (!this.#wsClient) {
+            const endpoint = this.#options.wsUrl
+                ? this.#options.wsUrl
+                : this.#options.url.replace(/\/?$/, '/subscriptions');
+            this.#wsClient = new GraphQLWebSocketClient(endpoint, {
+                ...this.#options.wsOptions,
+                ...(this.#options.WebSocketConstructor
+                    ? { WebSocketConstructor: this.#options.WebSocketConstructor }
+                    : {}),
+            });
+        }
+        return this.#wsClient;
+    }
+
+    close() {
+        this.#wsClient?.close();
+        this.#wsClient = null;
     }
 
     async graphqlQuery<
@@ -192,11 +234,74 @@ export class IotaClientGraphQLTransport implements IotaTransport {
     async subscribe<T = unknown>(
         input: IotaTransportSubscribeOptions<T>,
     ): Promise<() => Promise<boolean>> {
+        switch (input.method) {
+            case 'iotax_subscribeEvent':
+                return this.#subscribeEvents(input);
+            case 'iotax_subscribeTransaction':
+                return this.#subscribeTransactions(input);
+            default:
+                break;
+        }
+
         if (!this.#fallbackTransport) {
             throw new UnsupportedMethodError(input.method);
         }
 
         return this.#fallbackTransport.subscribe(input);
+    }
+
+    async #subscribeEvents<T>(
+        input: IotaTransportSubscribeOptions<T>,
+    ): Promise<() => Promise<boolean>> {
+        const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
+        const variables: SubscribeEventsSubscriptionVariables = {
+            filter: rpcFilter ? mapRpcEventFilterToGraphQL(rpcFilter) : undefined,
+        };
+
+        const client = this.#getWebSocketClient();
+        return client.subscribe<SubscribeEventsSubscription>({
+            query: SubscribeEventsDocument.toString(),
+            variables: variables as Record<string, unknown>,
+            onMessage: (data) => {
+                const payload = data.events;
+                if (payload.__typename === 'Lagged') {
+                    return;
+                }
+                const event = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
+                input.onMessage(mapSubscriptionEvent(event) as T);
+            },
+            onError: (errors) => {
+                console.error('GraphQL subscription error (events):', errors);
+            },
+            signal: input.signal,
+        });
+    }
+
+    async #subscribeTransactions<T>(
+        input: IotaTransportSubscribeOptions<T>,
+    ): Promise<() => Promise<boolean>> {
+        const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
+        const variables: SubscribeTransactionsSubscriptionVariables = {
+            filter: rpcFilter ? mapRpcTransactionFilterToGraphQL(rpcFilter) : undefined,
+        };
+
+        const client = this.#getWebSocketClient();
+        return client.subscribe<SubscribeTransactionsSubscription>({
+            query: SubscribeTransactionsDocument.toString(),
+            variables: variables as Record<string, unknown>,
+            onMessage: (data) => {
+                const payload = data.transactions;
+                if (payload.__typename === 'Lagged') {
+                    return;
+                }
+                const tx = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
+                input.onMessage(mapSubscriptionTransaction(tx) as T);
+            },
+            onError: (errors) => {
+                console.error('GraphQL subscription error (transactions):', errors);
+            },
+            signal: input.signal,
+        });
     }
 
     async #tryUseFallback<T = unknown>(input: IotaTransportRequestOptions): Promise<T> {
