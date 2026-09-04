@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Title, TitleSize } from '@iota/apps-ui-kit';
+import cx from 'classnames';
 
 interface ContainerInfoProps {
     title: string;
@@ -14,7 +15,12 @@ export function ContainerInfo({
     children,
 }: React.PropsWithChildren<ContainerInfoProps>) {
     return (
-        <div className="accordion-border-color border pt-sm--rs rounded-xl">
+        <div
+            className={cx(
+                'accordion-border-color border pt-sm--rs pb-sm--rs rounded-xl',
+                titleSize === TitleSize.Small ? 'px-md' : 'px-md--rs',
+            )}
+        >
             <Title title={title} size={titleSize} />
             <div className="mt-xs">{children}</div>
         </div>

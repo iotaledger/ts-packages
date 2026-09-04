@@ -196,19 +196,21 @@ function ValidatorDetails(): JSX.Element {
                     />
                     <div className="flex flex-col gap-lg md:flex-row">
                         <Panel>
-                            <Title
-                                title="Previous Epoch"
-                                trailingElement={
-                                    prevEpochEvent ? (
-                                        <EpochStatusIndicator
-                                            active={!!validatorRewards}
-                                            activeLabel="Earned rewards"
-                                            inactiveLabel="No rewards"
-                                            tooltipText="Whether this validator earned staking rewards in the previous epoch."
-                                        />
-                                    ) : undefined
-                                }
-                            />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title
+                                    title="Previous Epoch"
+                                    trailingElement={
+                                        prevEpochEvent ? (
+                                            <EpochStatusIndicator
+                                                active={!!validatorRewards}
+                                                activeLabel="Earned rewards"
+                                                inactiveLabel="No rewards"
+                                                tooltipText="Whether this validator earned staking rewards in the previous epoch."
+                                            />
+                                        ) : undefined
+                                    }
+                                />
+                            </div>
                             <div className="p-md--rs">
                                 <LabelText
                                     size={LabelTextSize.Medium}
@@ -227,23 +229,27 @@ function ValidatorDetails(): JSX.Element {
                             </div>
                         </Panel>
                         <Panel>
-                            <Title
-                                title="Next Epoch"
-                                trailingElement={
-                                    <EpochStatusIndicator
-                                        active={
-                                            maxCommitteeSize !== undefined && isEarningNextEpoch
-                                        }
-                                        activeLabel="Earning rewards"
-                                        inactiveLabel="Not earning"
-                                        tooltipText="Whether this validator is projected to earn rewards next epoch, based on its stake ranking and at-risk status."
-                                        tooltipPosition={TooltipPosition.Left}
-                                        loadingLabel={
-                                            maxCommitteeSize === undefined ? 'Loading…' : undefined
-                                        }
-                                    />
-                                }
-                            />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title
+                                    title="Next Epoch"
+                                    trailingElement={
+                                        <EpochStatusIndicator
+                                            active={
+                                                maxCommitteeSize !== undefined && isEarningNextEpoch
+                                            }
+                                            activeLabel="Earning rewards"
+                                            inactiveLabel="Not earning"
+                                            tooltipText="Whether this validator is projected to earn rewards next epoch, based on its stake ranking and at-risk status."
+                                            tooltipPosition={TooltipPosition.Left}
+                                            loadingLabel={
+                                                maxCommitteeSize === undefined
+                                                    ? 'Loading…'
+                                                    : undefined
+                                            }
+                                        />
+                                    }
+                                />
+                            </div>
                             <div className="grid grid-cols-2 gap-md p-md--rs">
                                 <LabelText
                                     size={LabelTextSize.Medium}

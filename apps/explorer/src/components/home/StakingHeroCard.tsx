@@ -65,7 +65,9 @@ export function StakingHeroCard(): JSX.Element {
 
     return (
         <Panel>
-            <Title title="Staking" size={TitleSize.Medium} />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Staking" size={TitleSize.Medium} />
+            </div>
             <div className="flex flex-col gap-md p-md--rs">
                 <div className="flex flex-wrap gap-md">
                     <div className="min-w-0 flex-1">

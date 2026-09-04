@@ -124,7 +124,9 @@ export function ValidatorsCard() {
                     supportingLabel={symbol}
                 />
             </div>
-            <Title title="In progress" size={TitleSize.Small} />
+            <div className="px-md py-sm--rs">
+                <Title title="In progress" size={TitleSize.Small} />
+            </div>
             <div className="flex w-full flex-1 flex-col items-start overflow-auto">
                 <div className="w-full gap-2">
                     {system &&

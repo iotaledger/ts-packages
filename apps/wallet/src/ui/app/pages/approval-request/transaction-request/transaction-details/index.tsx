@@ -89,7 +89,11 @@ export function TransactionDetails({ sender, transaction, chain }: TransactionDe
                 <Collapsible
                     hideBorder
                     defaultOpen
-                    render={() => <Title size={TitleSize.Small} title="Transaction Details" />}
+                    render={() => (
+                        <div className="pl-md">
+                            <Title size={TitleSize.Small} title="Transaction Details" />
+                        </div>
+                    )}
                 >
                     <SegmentedButton type={SegmentedButtonType.Transparent}>
                         {DETAILS_CATEGORIES.map(({ label, value }) => (

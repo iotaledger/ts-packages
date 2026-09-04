@@ -37,17 +37,19 @@ export function ValidatorStats({
 
     return (
         <Panel>
-            <Title
-                title="Current Epoch"
-                trailingElement={
-                    <EpochStatusIndicator
-                        active={isEarningCurrentEpoch}
-                        activeLabel="Earning rewards"
-                        inactiveLabel="Not earning"
-                        tooltipText="Whether this validator is in the active committee and earning staking rewards this epoch."
-                    />
-                }
-            />
+            <div className="px-md--rs py-sm--rs">
+                <Title
+                    title="Current Epoch"
+                    trailingElement={
+                        <EpochStatusIndicator
+                            active={isEarningCurrentEpoch}
+                            activeLabel="Earning rewards"
+                            inactiveLabel="Not earning"
+                            tooltipText="Whether this validator is in the active committee and earning staking rewards this epoch."
+                        />
+                    }
+                />
+            </div>
             <div className="flex flex-col gap-md p-md">
                 <div className="grid grid-cols-1 gap-xl sm:grid-cols-3 md:grid-cols-5">
                     <LabelText

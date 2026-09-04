@@ -55,7 +55,7 @@ export function SendView({ objectId, senderAddress, objectType, onClose, onBack 
                         />
                     </div>
                     <div className="flex w-full flex-col gap-md">
-                        <div className="flex flex-col items-center gap-xxxs break-words [&_div]:max-w-full [&_h4]:max-w-full [&_h4]:break-words">
+                        <div className="flex flex-col items-center gap-xxxs break-words px-md--rs py-sm--rs [&_div]:max-w-full [&_h4]:max-w-full [&_h4]:break-words">
                             <Title title={nftName} />
                         </div>
                         <div data-amp-mask>

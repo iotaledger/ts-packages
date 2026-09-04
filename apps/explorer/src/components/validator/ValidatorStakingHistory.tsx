@@ -38,7 +38,9 @@ export function ValidatorStakingHistory({
 
     return (
         <Panel>
-            <Title title="Staking History" />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Staking History" />
+            </div>
             <div className="p-md--rs">
                 {isError ? (
                     <InfoBox
