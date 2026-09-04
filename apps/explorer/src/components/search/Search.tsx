@@ -9,6 +9,7 @@ import { ListItem, Search as SearchBox, type Suggestion } from '@iota/apps-ui-ki
 import { useDebouncedValue } from '~/hooks/useDebouncedValue';
 import { useSearch } from '~/hooks/useSearch';
 import { ampli } from '~/lib/utils';
+import { trimAuditTrailNotalizationSuffix } from './utils';
 
 export function Search(): JSX.Element {
     const [query, setQuery] = useState('');
@@ -22,7 +23,10 @@ export function Search(): JSX.Element {
                     searchQuery: result.id,
                     searchCategory: result.type,
                 });
-                navigate(`/${result?.type}/${encodeURIComponent(result?.id)}`, {});
+                navigate(
+                    `/${result.type}/${encodeURIComponent(trimAuditTrailNotalizationSuffix(result.id))}`,
+                    {},
+                );
                 setQuery('');
             }
         },
