@@ -8,6 +8,7 @@ import {
     type IotaCallArg,
     type MoveCallIotaTransaction,
 } from '@iota/iota-sdk/client';
+import { useGetObject } from '@iota/core';
 import { ErrorBoundary } from '~/components';
 import { ObjectLink, AddressLink } from '~/components/ui';
 import { formatAddress } from '@iota/iota-sdk/utils';
@@ -55,6 +56,21 @@ function Arg({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX
     );
 }
 
+function ObjectInputArg({ objectId }: { objectId: string }): JSX.Element {
+    const { data } = useGetObject(objectId);
+    const objectNotFound = data?.error != null;
+
+    if (objectNotFound) {
+        return (
+            <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                {formatAddress(objectId)}
+            </span>
+        );
+    }
+
+    return <ObjectLink objectId={objectId} label={formatAddress(objectId)} copyText={objectId} />;
+}
+
 function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
     if (!input) {
         return (
@@ -63,13 +79,7 @@ function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
     }
 
     if (input.type === 'object') {
-        return (
-            <ObjectLink
-                objectId={input.objectId}
-                label={formatAddress(input.objectId)}
-                copyText={input.objectId}
-            />
-        );
+        return <ObjectInputArg objectId={input.objectId} />;
     }
 
     if (input.type === 'pure' && input.valueType === 'address') {

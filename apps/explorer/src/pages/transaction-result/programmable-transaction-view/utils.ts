@@ -77,7 +77,7 @@ export function decodeVectorU8Value(value: unknown): string {
     try {
         parsedVector = JSON.parse(`[${stringValue}]`);
     } catch (_) {
-        // Silent error
+        parsedVector = null;
     }
 
     let parsedUtf: string | null = null;
@@ -86,7 +86,7 @@ export function decodeVectorU8Value(value: unknown): string {
             fatal: true,
         }).decode(new Uint8Array(parsedVector ?? []));
     } catch (_) {
-        // Silent error
+        parsedUtf = null;
     }
 
     let parsedAddress: string | null = null;
@@ -98,7 +98,7 @@ export function decodeVectorU8Value(value: unknown): string {
             }
         }
     } catch (_) {
-        // Silent error
+        parsedAddress = null;
     }
 
     if (parsedUtf) {
