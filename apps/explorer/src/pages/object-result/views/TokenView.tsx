@@ -7,17 +7,14 @@ import {
     ButtonSegmentType,
     SegmentedButton,
     SegmentedButtonType,
+    Tooltip,
+    TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { useGetDynamicFields, useGetObjectOrPastObject } from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { type IotaObjectResponse } from '@iota/iota-sdk/client';
 import { useState } from 'react';
 import { DynamicFieldsCard, ObjectFieldsCard, TransactionBlocksForAddress } from '~/components';
-
-enum FieldCategory {
-    Default = 'fields',
-    Dynamic = 'dynamicFields',
-}
 
 function useObjectFieldsCard(id: string) {
     const { data: iotaObjectResponseData, isPending, isError } = useGetObjectOrPastObject(id);
@@ -62,7 +59,7 @@ interface FieldsContentProps {
 
 enum FieldCategory {
     Fields = 'fields',
-    DynamicFields = 'dynamicFields',
+    Dynamic = 'dynamicFields',
 }
 
 export function FieldsContent({ objectId }: FieldsContentProps) {
@@ -74,6 +71,9 @@ export function FieldsContent({ objectId }: FieldsContentProps) {
         isError: objectFieldsCardError,
     } = useObjectFieldsCard(objectId);
 
+    const { data: dynamicFieldsData } = useGetDynamicFields(objectId);
+    const hasDynamicFields = !!dynamicFieldsData?.pages?.[0]?.data.length;
+
     const fieldsCount = normalizedStructData?.fields.length;
     const FIELDS_CATEGORIES = [
         {
@@ -83,14 +83,12 @@ export function FieldsContent({ objectId }: FieldsContentProps) {
         {
             label: 'Dynamic Fields',
             value: FieldCategory.Dynamic,
+            disabled: !hasDynamicFields,
+            disabledTooltip: 'This object has no dynamic fields attached',
         },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(FieldCategory.Fields);
-
-    const { data: dynamicFieldsData } = useGetDynamicFields(objectId);
-
-    const renderDynamicFields = !!dynamicFieldsData?.pages?.[0].data.length;
 
     return (
         <div>
@@ -98,16 +96,34 @@ export function FieldsContent({ objectId }: FieldsContentProps) {
                 type={SegmentedButtonType.Transparent}
                 shape={ButtonSegmentType.Underlined}
             >
-                {FIELDS_CATEGORIES.map(({ label, value }) => (
-                    <ButtonSegment
-                        key={value}
-                        onClick={() => setActiveTab(value)}
-                        label={label}
-                        selected={activeTab === value}
-                        type={ButtonSegmentType.Underlined}
-                        disabled={value === FieldCategory.Dynamic && !renderDynamicFields}
-                    />
-                ))}
+                {FIELDS_CATEGORIES.map(({ label, value, disabled, disabledTooltip }) => {
+                    const segment = (
+                        <ButtonSegment
+                            key={value}
+                            onClick={() => setActiveTab(value)}
+                            label={label}
+                            selected={activeTab === value}
+                            type={ButtonSegmentType.Underlined}
+                            disabled={disabled}
+                        />
+                    );
+
+                    if (!disabled || !disabledTooltip) {
+                        return segment;
+                    }
+
+                    // A disabled button swallows hover events, so the tooltip
+                    // has to be triggered by its wrapper instead.
+                    return (
+                        <Tooltip
+                            key={value}
+                            text={disabledTooltip}
+                            position={TooltipPosition.Bottom}
+                        >
+                            <div className="[&>button]:pointer-events-none">{segment}</div>
+                        </Tooltip>
+                    );
+                })}
             </SegmentedButton>
             <div className="flex flex-col gap-5 p-md">
                 {activeTab === FieldCategory.Fields && (

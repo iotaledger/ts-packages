@@ -28,7 +28,7 @@ interface DisplayStatsProps {
     /**
      * The tooltip text.
      */
-    tooltipText?: string;
+    tooltipText?: ReactNode;
     /**
      * The value of the stats.
      */

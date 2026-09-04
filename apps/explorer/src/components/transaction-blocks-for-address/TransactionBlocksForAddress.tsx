@@ -3,7 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type TransactionFilter } from '@iota/iota-sdk/client';
-import { type Dispatch, type SetStateAction, useReducer, useState } from 'react';
+import {
+    type Dispatch,
+    type SetStateAction,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from 'react';
 import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
 import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
@@ -25,10 +33,26 @@ import {
 } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 
+export interface TransactionBlocksFilterOption {
+    label: string;
+    /**
+     * Stable identity of the segment. It must not change when `filter` changes,
+     * otherwise the selected segment would silently jump to another one.
+     */
+    value: string;
+    filter: TransactionFilter;
+}
+
 type TransactionBlocksForAddressProps = {
     address: string;
-    filter?: ObjectFilterValue;
+    /** Value of the option selected on first render. */
+    filter?: string;
     header?: string;
+    /**
+     * Overrides the default object filters. Pagination is tracked per option
+     * and reset whenever the active option's filter changes.
+     */
+    options?: TransactionBlocksFilterOption[];
 };
 
 enum PageAction {
@@ -39,33 +63,42 @@ enum PageAction {
 
 type TransactionBlocksForAddressActionType = {
     type: PageAction;
-    filterValue: ObjectFilterValue;
+    filterValue: string;
 };
 
-type PageStateByFilterMap = {
-    [ObjectFilterValue.Input]: number;
-    [ObjectFilterValue.Changed]: number;
-};
+type PageStateByFilterMap = Record<string, number>;
 
-const FILTER_OPTIONS: { label: string; value: ObjectFilterValue }[] = [
-    { label: 'Input Objects', value: ObjectFilterValue.Input },
-    { label: 'Updated Objects', value: ObjectFilterValue.Changed },
-];
+export function getObjectFilterOptions(address: string): TransactionBlocksFilterOption[] {
+    return [
+        {
+            label: 'Input Objects',
+            value: ObjectFilterValue.Input,
+            filter: { InputObject: address },
+        },
+        {
+            label: 'Updated Objects',
+            value: ObjectFilterValue.Changed,
+            filter: { ChangedObject: address },
+        },
+    ];
+}
 
 function reducer(
     state: PageStateByFilterMap,
     action: TransactionBlocksForAddressActionType,
 ): PageStateByFilterMap {
+    const currentPage = state[action.filterValue] ?? 0;
+
     switch (action.type) {
         case PageAction.Next:
             return {
                 ...state,
-                [action.filterValue]: state[action.filterValue] + 1,
+                [action.filterValue]: currentPage + 1,
             };
         case PageAction.Prev:
             return {
                 ...state,
-                [action.filterValue]: state[action.filterValue] - 1,
+                [action.filterValue]: currentPage - 1,
             };
         case PageAction.First:
             return {
@@ -78,14 +111,19 @@ function reducer(
 }
 
 interface FiltersControlProps {
+    options: TransactionBlocksFilterOption[];
     filterValue: string;
-    setFilterValue: Dispatch<SetStateAction<ObjectFilterValue>>;
+    setFilterValue: Dispatch<SetStateAction<string>>;
 }
 
-export function FiltersControl({ filterValue, setFilterValue }: FiltersControlProps): JSX.Element {
+export function FiltersControl({
+    options,
+    filterValue,
+    setFilterValue,
+}: FiltersControlProps): JSX.Element {
     return (
         <SegmentedButton type={SegmentedButtonType.Outlined}>
-            {FILTER_OPTIONS.map(({ label, value }) => (
+            {options.map(({ label, value }) => (
                 <ButtonSegment
                     key={value}
                     onClick={() => setFilterValue(value)}
@@ -102,19 +140,40 @@ export function TransactionBlocksForAddress({
     address,
     filter = ObjectFilterValue.Changed,
     header,
+    options,
 }: TransactionBlocksForAddressProps): JSX.Element {
-    const [filterValue, setFilterValue] = useState(filter);
-    const [currentPageState, dispatch] = useReducer(reducer, {
-        [ObjectFilterValue.Input]: 0,
-        [ObjectFilterValue.Changed]: 0,
-    });
+    const filterOptions = useMemo(
+        () => options ?? getObjectFilterOptions(address),
+        [options, address],
+    );
+
+    const [filterValue, setFilterValue] = useState<string>(filter);
+    const [currentPageState, dispatch] = useReducer(reducer, {});
+
+    // Falling back to the first option keeps the component usable when the
+    // caller provides its own options and no `filter` matches them.
+    const activeOption =
+        filterOptions.find((option) => option.value === filterValue) ?? filterOptions[0];
+    const activeValue = activeOption.value;
+    const activeFilterKey = JSON.stringify(activeOption.filter);
 
     const { data, isPending, isFetching, isFetchingNextPage, fetchNextPage, hasNextPage } =
-        useGetTransactionBlocks({
-            [filterValue]: address,
-        } as TransactionFilter);
+        useGetTransactionBlocks(activeOption.filter);
 
-    const currentPage = currentPageState[filterValue];
+    // A segment can point at different filters over time (e.g. when the selected
+    // module changes), and then its page index has to start over. Switching
+    // between segments must not reset anything: each one keeps its own page.
+    const lastFilterKeyByValue = useRef<Record<string, string>>({});
+    useEffect(() => {
+        const previousFilterKey = lastFilterKeyByValue.current[activeValue];
+        lastFilterKeyByValue.current[activeValue] = activeFilterKey;
+
+        if (previousFilterKey !== undefined && previousFilterKey !== activeFilterKey) {
+            dispatch({ type: PageAction.First, filterValue: activeValue });
+        }
+    }, [activeFilterKey, activeValue]);
+
+    const currentPage = currentPageState[activeValue] ?? 0;
     const tableColumns = generateTransactionsTableColumns(address);
 
     return (
@@ -123,14 +182,15 @@ export function TransactionBlocksForAddress({
                 <div className="flex w-full flex-col justify-between gap-xxs p-md--rs sm:flex-row md:items-center">
                     {header && <Title title={header} />}
                     <div className="inline-flex">
-                        <FiltersControl filterValue={filterValue} setFilterValue={setFilterValue} />
+                        <FiltersControl
+                            options={filterOptions}
+                            filterValue={activeValue}
+                            setFilterValue={setFilterValue}
+                        />
                     </div>
                 </div>
                 <div className="flex flex-col gap-sm p-md--rs">
-                    {isPending ||
-                    isFetching ||
-                    isFetchingNextPage ||
-                    !data?.pages[currentPage].data ? (
+                    {isPending || isFetching || isFetchingNextPage || !data?.pages[currentPage] ? (
                         <PlaceholderTable
                             rowCount={DEFAULT_TRANSACTIONS_LIMIT}
                             rowHeight="16px"
@@ -145,18 +205,22 @@ export function TransactionBlocksForAddress({
                                 type={InfoBoxType.Warning}
                                 style={InfoBoxStyle.Elevated}
                             />
-                            {!!data.pages[currentPage].data.length && (
+                            {data.pages[currentPage].data.length ? (
                                 <TableCard
                                     data={data.pages[currentPage].data}
                                     columns={tableColumns}
                                 />
+                            ) : (
+                                <div className="flex justify-center py-md text-body-md text-iota-neutral-40">
+                                    No transactions found
+                                </div>
                             )}
                         </>
                     )}
 
                     {(hasNextPage || (data && data?.pages.length > 1)) && (
                         <Pagination
-                            hasFirst={currentPageState[filterValue] !== 0}
+                            hasFirst={currentPage !== 0}
                             onNext={() => {
                                 if (isPending || isFetching) {
                                     return;
@@ -165,7 +229,7 @@ export function TransactionBlocksForAddress({
                                 // Make sure we are at the end before fetching another page
                                 if (
                                     data &&
-                                    currentPageState[filterValue] === data?.pages.length - 1 &&
+                                    currentPage === data?.pages.length - 1 &&
                                     !isPending &&
                                     !isFetching
                                 ) {
@@ -173,26 +237,24 @@ export function TransactionBlocksForAddress({
                                 }
                                 dispatch({
                                     type: PageAction.Next,
-
-                                    filterValue,
+                                    filterValue: activeValue,
                                 });
                             }}
                             hasNext={
                                 (Boolean(hasNextPage) && Boolean(data?.pages[currentPage])) ||
                                 currentPage < (data?.pages.length ?? 0) - 1
                             }
-                            hasPrev={currentPageState[filterValue] !== 0}
+                            hasPrev={currentPage !== 0}
                             onPrev={() =>
                                 dispatch({
                                     type: PageAction.Prev,
-
-                                    filterValue,
+                                    filterValue: activeValue,
                                 })
                             }
                             onFirst={() =>
                                 dispatch({
                                     type: PageAction.First,
-                                    filterValue,
+                                    filterValue: activeValue,
                                 })
                             }
                         />
