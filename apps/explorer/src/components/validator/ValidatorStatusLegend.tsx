@@ -39,7 +39,7 @@ const VALIDATOR_ROLES = [
 export function ValidatorStatusLegend(): JSX.Element {
     return (
         <Panel>
-            <div className="bg-shader-neutral-light-4 flex flex-col gap-y-sm border-b border-t border-shader-neutral-light-8 py-sm">
+            <div className="bg-shader-neutral-light-4 flex flex-col gap-y-sm border-b border-t border-shader-neutral-light-8 px-md py-sm">
                 <Title
                     size={TitleSize.Small}
                     title="Status Legend"

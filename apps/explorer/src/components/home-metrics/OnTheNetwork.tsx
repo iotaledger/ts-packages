@@ -50,7 +50,9 @@ export function OnTheNetwork(): JSX.Element {
 
     return (
         <Panel>
-            <Title title="Network Activity" size={TitleSize.Medium} />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Network Activity" size={TitleSize.Medium} />
+            </div>
             <div className="flex flex-col gap-md p-md--rs">
                 <div className="flex gap-md">
                     <div className="flex-1">

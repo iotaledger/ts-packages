@@ -50,7 +50,9 @@ export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Elemen
 
     return (
         <div className="flex flex-col gap-xs">
-            <Title title="Object Change" />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Object Change" />
+            </div>
             <div className="px-md--rs">
                 <TableCard
                     data={pageData}

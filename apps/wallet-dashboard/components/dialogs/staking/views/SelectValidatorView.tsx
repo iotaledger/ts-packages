@@ -67,12 +67,14 @@ export function SelectValidatorView({
                         ))}
                     </div>
                     {nonCommitteeMemberValidators.length > 0 && (
-                        <Title
-                            size={TitleSize.Small}
-                            title="Currently not earning rewards"
-                            tooltipText="These validators are not part of the committee."
-                            tooltipPosition={TooltipPosition.Left}
-                        />
+                        <div className="px-md py-sm--rs">
+                            <Title
+                                size={TitleSize.Small}
+                                title="Currently not earning rewards"
+                                tooltipText="These validators are not part of the committee."
+                                tooltipPosition={TooltipPosition.Left}
+                            />
+                        </div>
                     )}
                     <div className="flex w-full flex-col">
                         {nonCommitteeMemberValidators.map((validator) => (

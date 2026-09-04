@@ -27,7 +27,9 @@ export function StatisticsPanel<T>({
 }: StatisticsPanelProps<T>): React.JSX.Element {
     return (
         <Panel>
-            <Title title={title} size={TitleSize.Medium} />
+            <div className="px-md--rs py-sm--rs">
+                <Title title={title} size={TitleSize.Medium} />
+            </div>
             <div className="flex h-full flex-col gap-md p-md--rs">
                 <div className="grid grid-cols-2 gap-md">
                     {stats.map((stat, index) => (

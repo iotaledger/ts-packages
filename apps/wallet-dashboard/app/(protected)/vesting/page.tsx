@@ -293,22 +293,24 @@ export default function VestingDashboardPage(): JSX.Element {
                             }
                         />
                         <Panel>
-                            <Title
-                                title="Vesting"
-                                size={TitleSize.Medium}
-                                trailingElement={
-                                    <div className="flex flex-row gap-xs">
-                                        <Button
-                                            type={ButtonType.Secondary}
-                                            onClick={openReceiveTokenDialog}
-                                            text="Rewards Schedule"
-                                            icon={<StarHex />}
-                                            disabled={!supplyIncreaseVestingPortfolio}
-                                            size={ButtonSize.Small}
-                                        />
-                                    </div>
-                                }
-                            />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title
+                                    title="Vesting"
+                                    size={TitleSize.Medium}
+                                    trailingElement={
+                                        <div className="flex flex-row gap-xs">
+                                            <Button
+                                                type={ButtonType.Secondary}
+                                                onClick={openReceiveTokenDialog}
+                                                text="Rewards Schedule"
+                                                icon={<StarHex />}
+                                                disabled={!supplyIncreaseVestingPortfolio}
+                                                size={ButtonSize.Small}
+                                            />
+                                        </div>
+                                    }
+                                />
+                            </div>
                             <div className="flex flex-col gap-md p-lg pt-sm">
                                 <div className="flex h-24 flex-row gap-md">
                                     <DisplayStats
@@ -349,7 +351,9 @@ export default function VestingDashboardPage(): JSX.Element {
                     supplyIncreaseVestingSchedule.totalStaked !== 0n ? (
                         <div className="flex w-full md:w-3/4">
                             <Panel>
-                                <Title title="Staked Vesting" />
+                                <div className="px-md--rs py-sm--rs">
+                                    <Title title="Staked Vesting" />
+                                </div>
 
                                 <div className="flex flex-col gap-y-md px-lg py-sm">
                                     {inactiveValidatorUnlockedStakes.length > 0 && (
@@ -458,7 +462,9 @@ export default function VestingDashboardPage(): JSX.Element {
             <div className="flex w-full flex-col items-center justify-center gap-lg justify-self-center">
                 <div className="flex w-full flex-col gap-lg md:w-3/4">
                     <Panel>
-                        <Title title="Vesting" size={TitleSize.Medium} />
+                        <div className="px-md--rs py-sm--rs">
+                            <Title title="Vesting" size={TitleSize.Medium} />
+                        </div>
                         <div className="flex flex-col gap-md p-lg pt-sm">
                             <div className="flex h-24 flex-row gap-md">
                                 <DisplayStats
@@ -563,30 +569,32 @@ export default function VestingDashboardPage(): JSX.Element {
                 supplyIncreaseVestingSchedule.totalStaked !== 0n ? (
                     <div className="flex w-full md:w-3/4">
                         <Panel>
-                            <Title
-                                title="Staked Vesting"
-                                trailingElement={
-                                    <Button
-                                        type={ButtonType.Primary}
-                                        text="Stake"
-                                        onClick={() => {
-                                            if (
-                                                supplyIncreaseVestingSchedule.availableStaking ===
-                                                    0n ||
-                                                new BigNumber(formattedAvailableStaking).lt(
-                                                    MIN_NUMBER_IOTA_TO_STAKE,
-                                                )
-                                            ) {
-                                                toast.error(
-                                                    'Not enough funds available for staking',
-                                                );
-                                                return;
-                                            }
-                                            setStakeDialogView(StakeDialogView.SelectValidator);
-                                        }}
-                                    />
-                                }
-                            />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title
+                                    title="Staked Vesting"
+                                    trailingElement={
+                                        <Button
+                                            type={ButtonType.Primary}
+                                            text="Stake"
+                                            onClick={() => {
+                                                if (
+                                                    supplyIncreaseVestingSchedule.availableStaking ===
+                                                        0n ||
+                                                    new BigNumber(formattedAvailableStaking).lt(
+                                                        MIN_NUMBER_IOTA_TO_STAKE,
+                                                    )
+                                                ) {
+                                                    toast.error(
+                                                        'Not enough funds available for staking',
+                                                    );
+                                                    return;
+                                                }
+                                                setStakeDialogView(StakeDialogView.SelectValidator);
+                                            }}
+                                        />
+                                    }
+                                />
+                            </div>
 
                             <div className="flex flex-col gap-y-md px-lg py-sm">
                                 <div className="flex flex-row gap-x-md">
