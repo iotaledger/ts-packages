@@ -376,22 +376,19 @@ function ObjectRefList({
                         index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
                     )}
                 >
-                    <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
-                        <div className="flex min-w-max flex-col items-end gap-xxs">
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText={String(index + 1).padStart(2, '0')}
+                        value={
                             <ObjectLink
                                 objectId={ref.objectId}
-                                noTruncate
-                                alignEnd
                                 copyText={ref.objectId}
                                 className="text-label-md"
                             />
-                            {ref.version && (
-                                <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    v{ref.version}
-                                </span>
-                            )}
-                        </div>
-                    </div>
+                        }
+                        supportingLabel={ref.version ? `v${ref.version}` : undefined}
+                        fullwidth
+                    />
                 </div>
             ))}
         </div>
@@ -409,16 +406,18 @@ function TransactionDependencies({ dependencies }: { dependencies: string[] }): 
                         index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
                     )}
                 >
-                    <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
-                        <div className="min-w-max">
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText={String(index + 1).padStart(2, '0')}
+                        value={
                             <TransactionLink
                                 digest={digest}
-                                noTruncate
                                 copyText={digest}
                                 className="text-label-md"
                             />
-                        </div>
-                    </div>
+                        }
+                        fullwidth
+                    />
                 </div>
             ))}
         </div>
@@ -448,6 +447,10 @@ function EffectsBreakdown({
     expiration,
     isMediumOrAbove,
 }: EffectsBreakdownProps): JSX.Element {
+    const [showDependencies, setShowDependencies] = useState(false);
+    const [showModifiedAtVersions, setShowModifiedAtVersions] = useState(false);
+    const [showSharedObjects, setShowSharedObjects] = useState(false);
+
     return (
         <div className="flex flex-col gap-sm" data-testid="effects-breakdown">
             <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
@@ -498,11 +501,32 @@ function EffectsBreakdown({
                         layout="receipt"
                         keyText="Dependencies"
                         value={`${dependencies.length} transaction${dependencies.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="dependencies-details"
+                                aria-expanded={showDependencies}
+                                onClick={() => setShowDependencies(!showDependencies)}
+                            >
+                                {showDependencies ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showDependencies && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
                         fullwidth={!isMediumOrAbove}
                     />
-                    <ExpandableDetails ariaLabel="Dependency transactions">
-                        <TransactionDependencies dependencies={dependencies} />
-                    </ExpandableDetails>
+                    {showDependencies && (
+                        <ExpandableDetails
+                            id="dependencies-details"
+                            ariaLabel="Dependency transactions"
+                        >
+                            <TransactionDependencies dependencies={dependencies} />
+                        </ExpandableDetails>
+                    )}
                 </>
             )}
             {!!modifiedAtVersions?.length && (
@@ -511,16 +535,37 @@ function EffectsBreakdown({
                         layout="receipt"
                         keyText="Modified At Versions"
                         value={`${modifiedAtVersions.length} object${modifiedAtVersions.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="modified-at-versions-details"
+                                aria-expanded={showModifiedAtVersions}
+                                onClick={() => setShowModifiedAtVersions(!showModifiedAtVersions)}
+                            >
+                                {showModifiedAtVersions ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showModifiedAtVersions && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
                         fullwidth={!isMediumOrAbove}
                     />
-                    <ExpandableDetails ariaLabel="Modified at versions">
-                        <ObjectRefList
-                            refs={modifiedAtVersions.map((v) => ({
-                                objectId: v.objectId,
-                                version: v.sequenceNumber,
-                            }))}
-                        />
-                    </ExpandableDetails>
+                    {showModifiedAtVersions && (
+                        <ExpandableDetails
+                            id="modified-at-versions-details"
+                            ariaLabel="Modified at versions"
+                        >
+                            <ObjectRefList
+                                refs={modifiedAtVersions.map((v) => ({
+                                    objectId: v.objectId,
+                                    version: v.sequenceNumber,
+                                }))}
+                            />
+                        </ExpandableDetails>
+                    )}
                 </>
             )}
             {!!sharedObjects?.length && (
@@ -529,11 +574,29 @@ function EffectsBreakdown({
                         layout="receipt"
                         keyText="Shared Objects"
                         value={`${sharedObjects.length} object${sharedObjects.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="shared-objects-details"
+                                aria-expanded={showSharedObjects}
+                                onClick={() => setShowSharedObjects(!showSharedObjects)}
+                            >
+                                {showSharedObjects ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showSharedObjects && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
                         fullwidth={!isMediumOrAbove}
                     />
-                    <ExpandableDetails ariaLabel="Shared objects">
-                        <ObjectRefList refs={sharedObjects} />
-                    </ExpandableDetails>
+                    {showSharedObjects && (
+                        <ExpandableDetails id="shared-objects-details" ariaLabel="Shared objects">
+                            <ObjectRefList refs={sharedObjects} />
+                        </ExpandableDetails>
+                    )}
                 </>
             )}
             {!!unwrapped?.length && (
@@ -846,7 +909,7 @@ export function TransactionOverview({
             )}
             {isAdvancedMode && transaction.effects && (
                 <>
-                    <Divider />
+                    {showFullSignatures && <Divider />}
                     <EffectsBreakdown
                         dependencies={transaction.effects.dependencies}
                         modifiedAtVersions={transaction.effects.modifiedAtVersions}
