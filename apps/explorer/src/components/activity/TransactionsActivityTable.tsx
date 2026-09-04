@@ -15,14 +15,12 @@ import { numberSuffix } from '~/lib/utils';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
-import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
-import { type IotaTransactionBlockResponse, type IotaTransactionKind } from '@iota/iota-sdk/client';
-import { EVM_ANCHOR_ADDRESSES } from '~/lib/constants/evm.constants';
-
-function isEvmTransaction(tx: IotaTransactionBlockResponse): boolean {
-    const sender = tx.transaction?.data.sender;
-    return !!sender && EVM_ANCHOR_ADDRESSES.includes(sender);
-}
+import {
+    PAGE_SIZES_RANGE_20_60,
+    RETENTION_BANNER_TEXT,
+    RETENTION_BANNER_TITLE,
+} from '~/lib/constants';
+import { type IotaTransactionKind } from '@iota/iota-sdk/client';
 
 interface TransactionsActivityTableProps {
     disablePagination?: boolean;
@@ -55,12 +53,6 @@ export function TransactionsActivityTable({
     const goToFirstPageRef = useRef(pagination.onFirst);
     goToFirstPageRef.current = pagination.onFirst;
     const tableColumns = generateTransactionsTableColumns();
-
-    const displayData =
-        transactionKindFilter === 'ProgrammableTransaction'
-            ? { ...data, data: data?.data.filter((tx) => !isEvmTransaction(tx)) }
-            : data;
-
     useEffect(() => {
         goToFirstPageRef.current();
     }, [transactionKindFilter]);
@@ -76,36 +68,53 @@ export function TransactionsActivityTable({
                 />
             ) : (
                 <div className="flex flex-col space-y-3 text-left">
-                    {isPending || isFetching || !displayData?.data ? (
+                    {isPending || isFetching || !data?.data ? (
                         <PlaceholderTable
                             rowCount={limit}
                             rowHeight="16px"
                             colHeadings={['Type', 'Sender', 'Txns', 'Gas', 'Time']}
                         />
                     ) : (
-                        <TableCard
-                            data={displayData!.data}
-                            columns={tableColumns}
-                            totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
-                            viewAll="/recent"
-                            paginationOptions={!disablePagination ? pagination : undefined}
-                            pageSizeSelector={
-                                !disablePagination && (
-                                    <Select
-                                        value={limit.toString()}
-                                        options={PAGE_SIZES_RANGE_20_60.map((size) => ({
-                                            label: `${size} / page`,
-                                            id: size.toString(),
-                                        }))}
-                                        onValueChange={(e) => {
-                                            setLimit(Number(e));
-                                            pagination.onFirst();
-                                        }}
-                                        size={SelectSize.Small}
-                                    />
-                                )
-                            }
-                        />
+                        <>
+                            {transactionKindFilter && !disablePagination && (
+                                <InfoBox
+                                    title={RETENTION_BANNER_TITLE}
+                                    supportingText={RETENTION_BANNER_TEXT}
+                                    icon={<Warning />}
+                                    type={InfoBoxType.Warning}
+                                    style={InfoBoxStyle.Elevated}
+                                />
+                            )}
+                            {(disablePagination ||
+                                !transactionKindFilter ||
+                                data.data.length > 0) && (
+                                <TableCard
+                                    data={data.data}
+                                    columns={tableColumns}
+                                    totalLabel={
+                                        count ? `${numberSuffix(Number(count))} Total` : '-'
+                                    }
+                                    viewAll={disablePagination ? '/recent' : undefined}
+                                    paginationOptions={!disablePagination ? pagination : undefined}
+                                    pageSizeSelector={
+                                        !disablePagination && (
+                                            <Select
+                                                value={limit.toString()}
+                                                options={PAGE_SIZES_RANGE_20_60.map((size) => ({
+                                                    label: `${size} / page`,
+                                                    id: size.toString(),
+                                                }))}
+                                                onValueChange={(e) => {
+                                                    setLimit(Number(e));
+                                                    pagination.onFirst();
+                                                }}
+                                                size={SelectSize.Small}
+                                            />
+                                        )
+                                    }
+                                />
+                            )}
+                        </>
                     )}
                 </div>
             )}

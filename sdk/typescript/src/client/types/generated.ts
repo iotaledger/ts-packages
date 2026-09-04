@@ -528,6 +528,7 @@ export interface CoinMetadata {
     symbol: string;
 }
 export type IotaEndOfEpochTransactionKind =
+    | 'TransactionDenyRulesCreate'
     | {
           ChangeEpoch: IotaChangeEpoch;
       }
@@ -983,6 +984,7 @@ export type IotaTransactionKind =
     | 'ConsensusCommitPrologueV1'
     | 'RandomnessStateUpdate'
     | 'EndOfEpochTransaction'
+    | 'TransactionDenyRulesUpdate'
     | 'SystemTransaction';
 /**
  * This is the JSON-RPC type for the IOTA validator. It flattens all inner structures to top-level
@@ -1321,7 +1323,7 @@ export type ObjectOwner =
           AddressOwner: string;
       } /**
      * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
-     * IotaAddress as IotaAddress is universal.
+     * Address as Address is universal.
      */
     | {
           ObjectOwner: string;
@@ -1632,6 +1634,23 @@ export type IotaTransactionBlockKind =
           kind: 'RandomnessStateUpdate';
           random_bytes: number[];
           randomness_round: string;
+      } /** A transaction which applies an add/remove delta to the on-chain transaction deny rules */
+    | {
+          added_addresses: string[];
+          added_objects: string[];
+          added_packages: string[];
+          epoch: string;
+          kind: 'TransactionDenyRulesUpdate';
+          move_authenticator_disabled: boolean;
+          package_publish_disabled: boolean;
+          package_upgrade_disabled: boolean;
+          receiving_objects_disabled: boolean;
+          removed_addresses: string[];
+          removed_objects: string[];
+          removed_packages: string[];
+          round: string;
+          shared_object_disabled: boolean;
+          user_transaction_disabled: boolean;
       } /** The transaction which occurs only at the end of the epoch */
     | {
           kind: 'EndOfEpochTransaction';
@@ -1652,7 +1671,7 @@ export interface IotaTransactionBlockResponse {
     objectChanges?: IotaObjectChange[] | null;
     rawEffects?: number[];
     /**
-     * BCS encoded [SenderSignedData] that includes input object references returns empty array if
+     * BCS encoded [SenderSignedTransaction] that includes input object references returns empty array if
      * `show_raw_transaction` is false
      */
     rawTransaction?: string;

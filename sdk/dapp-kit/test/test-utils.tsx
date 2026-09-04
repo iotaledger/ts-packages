@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import type { IdentifierRecord, ReadonlyWalletAccount } from '@iota/wallet-standard';
 import { getWallets } from '@iota/wallet-standard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -21,7 +21,7 @@ export function createIotaClientContextWrapper(client: IotaClient) {
 
 export function createWalletProviderContextWrapper(
     providerProps: Omit<ComponentProps<typeof WalletProvider>, 'children'> = {},
-    iotaClient: IotaClient = new IotaClient({ url: getFullnodeUrl('localnet') }),
+    iotaClient: IotaClient = new IotaClient({ url: getRpcUrl('localnet') }),
 ) {
     const queryClient = new QueryClient();
     return function WalletProviderContextWrapper({ children }: { children: React.ReactNode }) {
