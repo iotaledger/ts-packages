@@ -22,6 +22,7 @@ export function useGetTransaction(
                     showEvents: true,
                     showBalanceChanges: true,
                     showObjectChanges: true,
+                    showRawInput: true,
                 },
             }),
         enabled: !!transactionId,

@@ -17,9 +17,10 @@ export interface PageSectionNavItem {
 
 interface PageSectionNavProps {
     sections: PageSectionNavItem[];
+    actions?: ReactNode;
 }
 
-export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element | null {
+export function PageSectionNav({ sections, actions }: PageSectionNavProps): JSX.Element | null {
     const [activeSection, setActiveSection] = useState<string>(sections[0]?.id ?? '');
     const navRef = useRef<HTMLDivElement>(null);
 
@@ -55,8 +56,11 @@ export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element |
     if (!sections.length) return null;
 
     return (
-        <div ref={navRef} className="sticky top-[128px] z-10 md:top-[88px]">
-            <div className="panel-bg panel-border-color flex flex-row flex-wrap items-center gap-x-xs gap-y-xs rounded-3xl border p-xs sm:gap-x-md sm:rounded-full">
+        <div
+            ref={navRef}
+            className="panel-bg panel-border-color sticky top-[128px] z-10 flex w-full flex-wrap items-center justify-between gap-sm rounded-3xl border p-xs sm:rounded-full md:top-[88px]"
+        >
+            <div className="flex flex-row flex-wrap items-center gap-x-xs gap-y-xs sm:gap-x-md">
                 {sections.map(({ id, label }) => (
                     <ButtonSegment
                         key={id}
@@ -66,6 +70,9 @@ export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element |
                     />
                 ))}
             </div>
+            {actions && (
+                <div className="flex flex-row flex-wrap items-center gap-md pr-xs">{actions}</div>
+            )}
         </div>
     );
 }
