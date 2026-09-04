@@ -99,10 +99,7 @@ describe('Transaction Reading API', () => {
         expect(txn.digest).toEqual(digest);
     });
 
-    // Skipped: fullnode pruning drops the pre-transaction object versions these
-    // reads need. iota-localnet can't disable it — start --network.config discards
-    // authority_store_pruning_config, and there's no CLI flag. Blocked on a node change.
-    it.skip('Multi Get Pay Transactions', async () => {
+    it('Multi Get Pay Transactions', async () => {
         const digests = transactions.map((t) => t.digest);
         const txns = await toolbox.client.multiGetTransactionBlocks({
             digests,
@@ -114,10 +111,7 @@ describe('Transaction Reading API', () => {
         });
     });
 
-    // Skipped: fullnode pruning drops the pre-transaction object versions these
-    // reads need. iota-localnet can't disable it — start --network.config discards
-    // authority_store_pruning_config, and there's no CLI flag. Blocked on a node change.
-    it.skip('Query Transactions with opts', async () => {
+    it('Query Transactions with opts', async () => {
         const options = {
             showInput: true,
             showEffects: true,

@@ -13,9 +13,9 @@ os_type="${os_name}-${arch_name}"
 gh --version
 
 run_info=$(gh run list --repo iotaledger/iota --workflow=release.yml \
-    --event=schedule --status=success --limit=1 \
+    --event=schedule --status=success --limit=20 \
     --json databaseId,createdAt \
-    --jq '.[0] | "\(.databaseId) \(.createdAt)"')
+    --jq 'sort_by(.createdAt) | last | "\(.databaseId) \(.createdAt)"')
 run_id="${run_info% *}"
 run_created="${run_info#* }"
 echo "Using iotaledger/iota release.yml run $run_id (created $run_created)"

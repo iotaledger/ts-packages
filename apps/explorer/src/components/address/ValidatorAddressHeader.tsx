@@ -22,6 +22,7 @@ export function ValidatorAddressHeader({ validator }: ValidatorAddressHeaderProp
                 }
             />
             <Badge type={BadgeType.Neutral} label="Validator" size={BadgeSize.Small} />
+            <Badge type={BadgeType.Outlined} label="Address" size={BadgeSize.Small} />
         </div>
     );
 }

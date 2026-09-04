@@ -10,7 +10,8 @@ import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { Header } from '../header/Header';
 import { Toaster } from '../toaster';
 import { IotaLogoMark, Keystone, Ledger, Passkey } from '@iota/apps-ui-icons';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { HOME_PATH } from '../../components/NavigationStackProvider';
 import { isLedgerAccountSerializedUI } from '_src/background/accounts/ledgerAccount';
 import { type SerializedUIAccount } from '_src/background/accounts/account';
 import { Badge, BadgeType } from '@iota/apps-ui-kit';
@@ -38,7 +39,9 @@ export function PageMainLayout({
     const activeAccount = useActiveAccount();
     const isFullScreen = extensionViewType === ExtensionViewType.FullScreen;
     const [titlePortalContainer, setTitlePortalContainer] = useState<HTMLDivElement | null>(null);
-    const isHomePage = window.location.hash === '#/tokens';
+    const location = useLocation();
+    const isHomePage =
+        location.pathname === HOME_PATH || location.pathname.startsWith(HOME_PATH + '/');
 
     return (
         <div

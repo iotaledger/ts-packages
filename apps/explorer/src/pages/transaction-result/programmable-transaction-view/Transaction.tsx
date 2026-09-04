@@ -19,17 +19,42 @@ interface TransactionProps<T> {
     data: T;
 }
 
+const TRANSACTION_ARGUMENT_LABELS: Record<string, string[]> = {
+    SplitCoins: ['Coin', 'Amounts'],
+    TransferObjects: ['Objects', 'Recipient'],
+    MergeCoins: ['Destination Coin', 'Coins to Merge'],
+    MakeMoveVec: ['Type', 'Elements'],
+    Upgrade: ['Modules', 'Package', 'Ticket'],
+};
+
+type DisplayArgument = IotaArgument | DisplayArgument[];
+
+function formatArgument(value: DisplayArgument): string {
+    return Array.isArray(value)
+        ? `[${value.map((item) => formatArgument(item)).join(', ')}]`
+        : flattenIotaArguments([value]);
+}
+
 function ArrayArgument({
+    type,
     data,
 }: TransactionProps<(IotaArgument | IotaArgument[])[] | undefined>): JSX.Element {
+    const values = type === 'Publish' && data ? [data] : data;
+    const labels = type === 'Publish' ? ['Modules'] : TRANSACTION_ARGUMENT_LABELS[type];
+    const isMediumOrAbove = useBreakpoint('md');
+
     return (
-        <>
-            {data && (
-                <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                    ({flattenIotaArguments(data)})
-                </span>
-            )}
-        </>
+        <div className="flex flex-col gap-xs">
+            {values?.map((value, index) => (
+                <KeyValueInfo
+                    layout="receipt"
+                    key={index}
+                    keyText={labels?.[index] ?? `Argument ${index + 1}`}
+                    value={formatArgument(value)}
+                    fullwidth={!isMediumOrAbove}
+                />
+            ))}
+        </div>
     );
 }
 
@@ -46,6 +71,7 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
     return (
         <div className="flex flex-col gap-xs">
             <KeyValueInfo
+                layout="receipt"
                 keyText="Package"
                 value={
                     <ObjectLink
@@ -57,6 +83,7 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
                 fullwidth={!isMediumOrAbove}
             />
             <KeyValueInfo
+                layout="receipt"
                 keyText="Module"
                 value={
                     <ObjectLink
@@ -67,9 +94,15 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
                 }
                 fullwidth={!isMediumOrAbove}
             />
-            <KeyValueInfo keyText="Function" value={func} fullwidth={!isMediumOrAbove} />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Function"
+                value={func}
+                fullwidth={!isMediumOrAbove}
+            />
             {args && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Arguments"
                     value={`[${flattenIotaArguments(args)}]`}
                     fullwidth={!isMediumOrAbove}
@@ -77,6 +110,7 @@ function MoveCall({ data }: TransactionProps<MoveCallIotaTransaction>): JSX.Elem
             )}
             {typeArgs && (
                 <KeyValueInfo
+                    layout="receipt"
                     keyText="Type Arguments"
                     value={typeArgs.join(', ')}
                     fullwidth={!isMediumOrAbove}
