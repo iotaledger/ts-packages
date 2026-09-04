@@ -544,6 +544,9 @@ importers:
       '@iota/apps-ui-kit':
         specifier: workspace:*
         version: link:../ui-kit
+      '@iota/audit-trails':
+        specifier: 0.1.1
+        version: 0.1.1(@iota/iota-sdk@sdk+typescript)
       '@iota/core':
         specifier: workspace:*
         version: link:../core
@@ -4555,6 +4558,12 @@ packages:
     resolution: {integrity: sha512-XvJRx+2KR3YXyYtPUUy+qd9i7p+GO9Ko6VIIpWlBrpWwXDv8WLFeHTxz35CfQFUiBMLXlGHhGzys7lqit9gWag==}
     engines: {node: '>=18'}
 
+  '@iota/audit-trails@0.1.1':
+    resolution: {integrity: sha512-YPDrk/kx2uc3qu82Tiq9upkaPGfRwLJOOnBHHlJ3u3hjtWgbeU161nl3FDyq7ctZsK1bW+A/rjqmR3oGeWF5rw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@iota/iota-sdk': ^1.14.0
+
   '@iota/identity-wasm@1.7.0-beta.1':
     resolution: {integrity: sha512-wB+VyLR7tqwwXdKNN6HThBu8T5OGMFYNITg3aPP9opL8TvnHQJS4HPvrSH+5zMkTXLxV8XNP24xXZbugkyIV2Q==}
     engines: {node: '>=20'}
@@ -4566,6 +4575,12 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       '@iota/iota-sdk': ^1.11.0
+
+  '@iota/iota-interaction-ts@0.14.0':
+    resolution: {integrity: sha512-LojlV7UL/cMERaJqw1IBeL9bWSJPJ91kiOQ6kWTUH775kuWLixx0JBJJINGpbQVZXIsUV0T62nbipVfk+JferA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@iota/iota-sdk': ^1.14.0
 
   '@iota/iota-interaction-ts@0.8.0':
     resolution: {integrity: sha512-FxihkQA7ah0wB3/TbXTaEpOvJu9Jt1D+43oTNxuVCAvYfNT2rm3yeR5dEtNN5iGK+5GnK66MK0gmcWzFHFzEYQ==}
@@ -20822,6 +20837,11 @@ snapshots:
     dependencies:
       mute-stream: 1.0.0
 
+  '@iota/audit-trails@0.1.1(@iota/iota-sdk@sdk+typescript)':
+    dependencies:
+      '@iota/iota-interaction-ts': 0.14.0(@iota/iota-sdk@sdk+typescript)
+      '@iota/iota-sdk': link:sdk/typescript
+
   '@iota/identity-wasm@1.7.0-beta.1(@iota/iota-sdk@sdk+typescript)':
     dependencies:
       '@iota/iota-interaction-ts': 0.8.0(@iota/iota-sdk@sdk+typescript)
@@ -20838,6 +20858,10 @@ snapshots:
       - encoding
 
   '@iota/iota-interaction-ts@0.12.0(@iota/iota-sdk@sdk+typescript)':
+    dependencies:
+      '@iota/iota-sdk': link:sdk/typescript
+
+  '@iota/iota-interaction-ts@0.14.0(@iota/iota-sdk@sdk+typescript)':
     dependencies:
       '@iota/iota-sdk': link:sdk/typescript
 

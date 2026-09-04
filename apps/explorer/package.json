@@ -25,6 +25,7 @@
         "@iota/apps-backend-client": "workspace:*",
         "@iota/apps-ui-icons": "workspace:*",
         "@iota/apps-ui-kit": "workspace:*",
+        "@iota/audit-trails": "0.1.1",
         "@iota/core": "workspace:*",
         "@iota/dapp-kit": "workspace:*",
         "@iota/identity-wasm": "1.7.0-beta.1",

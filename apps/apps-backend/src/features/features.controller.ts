@@ -106,6 +106,9 @@ export class FeaturesController {
                 [Feature.ExplorerTFNotarization]: {
                     defaultValue: true,
                 },
+                [Feature.ExplorerTFAuditTrail]: {
+                    defaultValue: true,
+                },
                 ...LEGACY_FEATURE_FLAGS,
             },
             dateUpdated: new Date().toISOString(),
@@ -179,6 +182,9 @@ export class FeaturesController {
                     defaultValue: true,
                 },
                 [Feature.ExplorerTFNotarization]: {
+                    defaultValue: true,
+                },
+                [Feature.ExplorerTFAuditTrail]: {
                     defaultValue: true,
                 },
                 ...LEGACY_FEATURE_FLAGS,
