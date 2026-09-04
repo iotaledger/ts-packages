@@ -70,10 +70,15 @@ export function useStakeRewardStatus({
         return statusText[delegationState];
     };
 
+    const isRewardAmount =
+        !Number(epochBeforeRewards) &&
+        (delegationState === StakeState.Earning || delegationState === StakeState.NotEarning);
+
     return {
         rewards,
         title: rewardTime(),
         subtitle: STATUS_COPY[delegationState],
+        isRewardAmount,
     };
 }
 export enum StakeState {

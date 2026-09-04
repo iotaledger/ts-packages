@@ -17,6 +17,7 @@ import { ExtendedDelegatedStake } from '../../utils';
 import { useFormatCoin, useStakeRewardStatus, useGetInactiveValidator } from '../../hooks';
 import { RewardsOff, Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
+import { AmountWithFiat } from '../coin';
 
 interface StakedCardProps {
     extendedStake: ExtendedDelegatedStake;
@@ -38,7 +39,7 @@ export function StakedCard({
     const { principal, stakeRequestEpoch, estimatedReward, validatorAddress } = extendedStake;
     const { data } = useIotaClientQuery('getLatestIotaSystemState');
 
-    const { title, subtitle } = useStakeRewardStatus({
+    const { title, subtitle, rewards, isRewardAmount } = useStakeRewardStatus({
         stakeRequestEpoch,
         currentEpoch,
         estimatedReward,
@@ -48,6 +49,9 @@ export function StakedCard({
 
     const [principalStaked, symbol] = useFormatCoin({
         balance: principal,
+    });
+    const [rewardsFormatted, rewardsSymbol] = useFormatCoin({
+        balance: rewards,
     });
 
     const validatorMeta = useMemo(() => {
@@ -68,7 +72,13 @@ export function StakedCard({
             </CardImage>
             <CardBody
                 title={name}
-                subtitle={`${principalStaked} ${symbol}`}
+                subtitle={
+                    <AmountWithFiat
+                        amount={principal}
+                        formatted={principalStaked}
+                        symbol={symbol}
+                    />
+                }
                 icon={
                     activeButNotInTheCommittee ? (
                         <RewardsOff className="text-iota-warning-60" />
@@ -85,7 +95,24 @@ export function StakedCard({
                 }
                 tooltipPosition={TooltipPosition.Bottom}
             />
-            <CardAction title={title} subtitle={subtitle} type={CardActionType.SupportingText} />
+            <CardAction
+                title={
+                    isRewardAmount ? (
+                        <AmountWithFiat
+                            amount={rewards}
+                            formatted={rewardsFormatted}
+                            symbol={rewardsSymbol}
+                            direction="column"
+                            showApproxSymbol={false}
+                            align="end"
+                        />
+                    ) : (
+                        title
+                    )
+                }
+                subtitle={subtitle}
+                type={CardActionType.SupportingText}
+            />
         </Card>
     );
 }

@@ -45,7 +45,7 @@ export async function navigateToDashboardStakePage(page: Page): Promise<void> {
     await expect(nextButton).toBeVisible();
     await nextButton.click();
 
-    await expect(page.getByText(/IOTA Available/)).toBeVisible({
+    await expect(page.getByText(/IOTA[\s\S]*Available/)).toBeVisible({
         timeout: SHORT_TIMEOUT,
     });
 }
@@ -138,11 +138,15 @@ export async function getStakedAmount(page: Page): Promise<string | null> {
     }
     await expect(label).toBeVisible({ timeout: SHORT_TIMEOUT });
 
-    return page
+    const text = await page
         .locator('div:has(> span:text("Your stake"))')
         .locator('xpath=../../div/span')
         .first()
         .textContent();
+
+    // The value span now bundles the fiat value (and symbol) right after the
+    // amount with no separator, e.g. "100 IOTA$4.08" — pull out just the amount.
+    return text?.match(/^[\d,.]+/)?.[0] ?? null;
 }
 
 export async function splitCoinsTransaction(

@@ -71,38 +71,40 @@ export function AccountBalance() {
                                     />
                                 </div>
                             )}
-                            <div className="flex items-baseline gap-xs">
-                                <span
-                                    data-testid="balance-amount"
-                                    className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
-                                >
-                                    {isBalanceVisible ? formatted : BALANCE_MASK}
-                                </span>
-                                <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    <span>{symbol}</span>
-                                    <Button
-                                        type={ButtonType.Ghost}
-                                        size={ButtonSize.Small}
-                                        onClick={toggleBalanceVisible}
-                                        className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
-                                        aria-label={
-                                            isBalanceVisible ? 'Hide balances' : 'Show balances'
-                                        }
-                                        icon={
-                                            isBalanceVisible ? (
-                                                <VisibilityOn className="h-4 w-4" />
-                                            ) : (
-                                                <VisibilityOff className="h-4 w-4" />
-                                            )
-                                        }
-                                    />
+                            <div className="flex flex-col items-center gap-y-xxs">
+                                <div className="flex items-baseline gap-xs">
+                                    <span
+                                        data-testid="balance-amount"
+                                        className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+                                    >
+                                        {isBalanceVisible ? formatted : BALANCE_MASK}
+                                    </span>
+                                    <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        <span>{symbol}</span>
+                                        <Button
+                                            type={ButtonType.Ghost}
+                                            size={ButtonSize.Small}
+                                            onClick={toggleBalanceVisible}
+                                            className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
+                                            aria-label={
+                                                isBalanceVisible ? 'Hide balances' : 'Show balances'
+                                            }
+                                            icon={
+                                                isBalanceVisible ? (
+                                                    <VisibilityOn className="h-4 w-4" />
+                                                ) : (
+                                                    <VisibilityOff className="h-4 w-4" />
+                                                )
+                                            }
+                                        />
+                                    </div>
                                 </div>
+                                {fiatBalance && (
+                                    <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                                        {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                    </div>
+                                )}
                             </div>
-                            {fiatBalance && (
-                                <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
-                                </div>
-                            )}
                         </div>
                         <div className="flex w-full max-w-56 gap-xs">
                             <Button

@@ -6,7 +6,7 @@ import { CardActionType } from './card.enums';
 import { Button, ButtonSize, ButtonType } from '@/components/atoms/button';
 
 export type CardActionProps = {
-    title?: string;
+    title?: React.ReactNode;
     subtitle?: string | React.ReactNode;
     type: CardActionType;
     onClick?: () => void;
@@ -64,7 +64,7 @@ export function CardAction({
                 <Button
                     type={buttonType || ButtonType.Outlined}
                     size={ButtonSize.Small}
-                    text={title}
+                    text={title as string}
                     onClick={handleActionClick}
                     icon={icon}
                     iconAfterText={iconAfterText}

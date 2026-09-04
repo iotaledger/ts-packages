@@ -81,6 +81,7 @@ export function useGetStakingValidatorDetails({
         totalStake: totalStakeFormatted,
         totalStakeOriginal: totalStake,
         totalValidatorsStake: totalValidatorsStakeFormatted,
+        totalValidatorsStakeOriginal: totalValidatorStake,
         totalStakePercentage,
         validatorApy,
         systemDataResult,
