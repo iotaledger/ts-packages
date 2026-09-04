@@ -1,7 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { type IotaArgument, type MoveCallIotaTransaction } from '@iota/iota-sdk/client';
+import {
+    type IotaArgument,
+    type IotaTransaction,
+    type MoveCallIotaTransaction,
+} from '@iota/iota-sdk/client';
+import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
+import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
 /** Extracts the `IotaArgument`s referenced by a single PTB command, regardless of its shape. */
 export function getCommandArguments(type: string, data: unknown): IotaArgument[] {
@@ -62,4 +68,78 @@ export function flattenIotaArguments(data: (IotaArgument | IotaArgument[])[]): s
             }
         })
         .join(', ');
+}
+
+export function decodeVectorU8Value(value: unknown): string {
+    const stringValue = String(value);
+
+    let parsedVector: Array<number> | null = null;
+    try {
+        parsedVector = JSON.parse(`[${stringValue}]`);
+    } catch (_) {
+        // Silent error
+    }
+
+    let parsedUtf: string | null = null;
+    try {
+        parsedUtf = new TextDecoder('utf-8', {
+            fatal: true,
+        }).decode(new Uint8Array(parsedVector ?? []));
+    } catch (_) {
+        // Silent error
+    }
+
+    let parsedAddress: string | null = null;
+    try {
+        if (parsedVector) {
+            const hex = toHex(new Uint8Array(parsedVector));
+            if (hex.length == EVM_ADDRESS_LENGTH || isValidIotaAddress(hex)) {
+                parsedAddress = hex;
+            }
+        }
+    } catch (_) {
+        // Silent error
+    }
+
+    if (parsedUtf) {
+        return parsedUtf;
+    } else if (parsedAddress) {
+        return parsedAddress;
+    }
+
+    return stringValue;
+}
+
+export interface ResultConsumer {
+    commandIndex: number;
+    type: string;
+    nestedIndex?: number;
+}
+
+export function getResultUsedByCommands(
+    commandIndex: number,
+    transactions: IotaTransaction[],
+): ResultConsumer[] {
+    return transactions.reduce<ResultConsumer[]>((usedBy, transaction, otherCommandIndex) => {
+        const [[type, data]] = Object.entries(transaction);
+        const args = getCommandArguments(type, data);
+
+        args.forEach((arg) => {
+            if (typeof arg !== 'object' || arg === null) {
+                return;
+            }
+
+            if ('Result' in arg && arg.Result === commandIndex) {
+                usedBy.push({ commandIndex: otherCommandIndex, type });
+            } else if ('NestedResult' in arg && arg.NestedResult[0] === commandIndex) {
+                usedBy.push({
+                    commandIndex: otherCommandIndex,
+                    type,
+                    nestedIndex: arg.NestedResult[1],
+                });
+            }
+        });
+
+        return usedBy;
+    }, []);
 }

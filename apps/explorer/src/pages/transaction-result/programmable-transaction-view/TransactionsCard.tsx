@@ -9,8 +9,10 @@ import {
 } from '@iota/iota-sdk/client';
 
 import { Transaction } from './Transaction';
+import { getResultUsedByCommands } from './utils';
 import { CollapsibleCard, ProgrammableTxnBlockCard } from '~/components';
-import { TitleSize } from '@iota/apps-ui-kit';
+import { useBreakpoint } from '~/hooks';
+import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 
 interface TransactionsCardProps {
     transactions: IotaTransaction[];
@@ -34,12 +36,14 @@ export function TransactionsCard({
     transactions,
     inputs,
 }: TransactionsCardProps): JSX.Element | null {
+    const isMediumOrAbove = useBreakpoint('md');
     if (!transactions?.length) {
         return null;
     }
 
     const expandableItems = transactions.map((transaction, index) => {
         const [[type, data]] = Object.entries(transaction);
+        const usedByCommands = getResultUsedByCommands(index, transactions);
 
         return (
             <CollapsibleCard
@@ -53,7 +57,22 @@ export function TransactionsCard({
                 isTransparent
             >
                 <div data-testid="transactions-card-content">
-                    <div className="mx-auto w-full max-w-5xl px-lg pb-lg pt-xs">
+                    <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs">
+                        {usedByCommands.length > 0 && (
+                            <KeyValueInfo
+                                layout="receipt"
+                                keyText="Used by"
+                                value={usedByCommands
+                                    .map(
+                                        ({ commandIndex, type: usedByType, nestedIndex }) =>
+                                            `Command #${commandIndex}${
+                                                nestedIndex !== undefined ? `[${nestedIndex}]` : ''
+                                            } (${usedByType})`,
+                                    )
+                                    .join(', ')}
+                                fullwidth={!isMediumOrAbove}
+                            />
+                        )}
                         <Transaction type={type} data={data} inputs={inputs} />
                     </div>
                 </div>

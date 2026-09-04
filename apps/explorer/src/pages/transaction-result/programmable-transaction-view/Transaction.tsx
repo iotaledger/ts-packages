@@ -13,6 +13,7 @@ import { ErrorBoundary } from '~/components';
 import { ObjectLink, AddressLink } from '~/components/ui';
 import { useBreakpoint } from '~/hooks';
 import { formatAddress } from '@iota/iota-sdk/utils';
+import { decodeVectorU8Value } from './utils';
 
 interface TransactionProps<T> {
     type: string;
@@ -74,6 +75,14 @@ function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
     if (input.type === 'pure' && input.valueType === 'address') {
         const address = String(input.value);
         return <AddressLink address={address} label={formatAddress(address)} copyText={address} />;
+    }
+
+    if (input.type === 'pure' && input.valueType === 'vector<u8>') {
+        return (
+            <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                {decodeVectorU8Value(input.value)}
+            </span>
+        );
     }
 
     return (

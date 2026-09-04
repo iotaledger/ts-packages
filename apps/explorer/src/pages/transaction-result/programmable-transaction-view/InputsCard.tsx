@@ -7,7 +7,6 @@ import { ButtonUnstyled, KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
-import { formatDigest, isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import {
     ProgrammableTxnBlockCard,
@@ -17,8 +16,7 @@ import {
     CollapsibleCard,
 } from '~/components';
 import { useBreakpoint } from '~/hooks';
-import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
-import { getCommandArguments } from './utils';
+import { decodeVectorU8Value, getCommandArguments } from './utils';
 
 const REGEX_NUMBER = /^\d+$/;
 const INPUT_VALUE_PREVIEW_LENGTH = 160;
@@ -28,20 +26,13 @@ interface InputsCardProps {
     transactions: IotaTransaction[];
 }
 
-type ObjectCallArg = Extract<IotaCallArg, { type: 'object' }>;
-
-function getObjectVersionInfo(
-    input: ObjectCallArg,
-): { version: string; digest: string } | { initialSharedVersion: string; mutable: boolean } {
-    if (input.objectType === 'sharedObject') {
-        return { initialSharedVersion: input.initialSharedVersion, mutable: input.mutable };
-    }
-
-    return { version: input.version, digest: input.digest };
+interface InputConsumer {
+    commandIndex: number;
+    type: string;
 }
 
-function getUsedByCommands(inputIndex: number, transactions: IotaTransaction[]): number[] {
-    return transactions.reduce<number[]>((usedBy, transaction, commandIndex) => {
+function getUsedByCommands(inputIndex: number, transactions: IotaTransaction[]): InputConsumer[] {
+    return transactions.reduce<InputConsumer[]>((usedBy, transaction, commandIndex) => {
         const [[type, data]] = Object.entries(transaction);
         const args = getCommandArguments(type, data);
         const usesInput = args.some(
@@ -49,7 +40,7 @@ function getUsedByCommands(inputIndex: number, transactions: IotaTransaction[]):
         );
 
         if (usesInput) {
-            usedBy.push(commandIndex);
+            usedBy.push({ commandIndex, type });
         }
 
         return usedBy;
@@ -68,15 +59,13 @@ function getInputAddress(input: IotaCallArg): string | undefined {
     return undefined;
 }
 
-function ObjectInputSupportingElement({ input }: { input: ObjectCallArg }): JSX.Element {
-    const objectId = input.objectId;
+function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.Element {
     const { data } = useGetObject(objectId);
     const display = data?.data?.display?.data;
-    const versionInfo = getObjectVersionInfo(input);
 
     return (
         <div
-            className="ml-xs flex min-w-0 flex-wrap items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
+            className="ml-xs flex min-w-0 items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
             onClick={(event) => event.stopPropagation()}
         >
             {display?.name ? (
@@ -97,17 +86,6 @@ function ObjectInputSupportingElement({ input }: { input: ObjectCallArg }): JSX.
                 <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
                     <ObjectLink objectId={objectId} copyText={objectId} className="text-label-md" />
                 </div>
-            )}
-            {'version' in versionInfo ? (
-                <>
-                    <span className="text-body-sm">v{versionInfo.version}</span>
-                    <span className="text-body-sm">{formatDigest(versionInfo.digest)}</span>
-                </>
-            ) : (
-                <span className="text-body-sm">
-                    shared @ {versionInfo.initialSharedVersion}
-                    {versionInfo.mutable ? '' : ' (read-only)'}
-                </span>
             )}
         </div>
     );
@@ -154,7 +132,7 @@ function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element 
     }
 
     return input.type === 'object' ? (
-        <ObjectInputSupportingElement input={input} />
+        <ObjectInputSupportingElement objectId={address} />
     ) : (
         <AddressInputSupportingElement address={address} />
     );
@@ -221,7 +199,10 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                             layout="receipt"
                             keyText="Used by"
                             value={usedByCommands
-                                .map((commandIndex) => `Command #${commandIndex}`)
+                                .map(
+                                    ({ commandIndex, type }) =>
+                                        `Command #${commandIndex} (${type})`,
+                                )
                                 .join(', ')}
                             fullwidth={!isMediumOrAbove}
                         />
@@ -236,8 +217,6 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                             renderValue = (
                                 <ObjectLink objectId={stringValue} copyText={stringValue} />
                             );
-                        } else if (key === 'digest') {
-                            renderValue = formatDigest(stringValue);
                         } else if (
                             'valueType' in input &&
                             'value' in input &&
@@ -256,44 +235,7 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                             input.valueType === 'vector<u8>' &&
                             key === 'value'
                         ) {
-                            let parsedVector: Array<number> | null = null;
-                            try {
-                                parsedVector = JSON.parse(`[${stringValue}]`);
-                            } catch (_) {
-                                // Silent error
-                            }
-
-                            let parsedUtf: string | null = null;
-                            try {
-                                parsedUtf = new TextDecoder('utf-8', {
-                                    fatal: true,
-                                }).decode(new Uint8Array(parsedVector ?? []));
-                            } catch (_) {
-                                // Silent error
-                            }
-
-                            let parsedAddress: string | null = null;
-                            try {
-                                if (parsedVector) {
-                                    const hex = toHex(new Uint8Array(parsedVector));
-                                    if (
-                                        hex.length == EVM_ADDRESS_LENGTH ||
-                                        isValidIotaAddress(hex)
-                                    ) {
-                                        parsedAddress = hex;
-                                    }
-                                }
-                            } catch (_) {
-                                // Silent error
-                            }
-
-                            if (parsedUtf) {
-                                renderValue = parsedUtf;
-                            } else if (parsedAddress) {
-                                renderValue = parsedAddress;
-                            } else {
-                                renderValue = stringValue;
-                            }
+                            renderValue = decodeVectorU8Value(value);
                         } else {
                             renderValue = stringValue;
                         }
