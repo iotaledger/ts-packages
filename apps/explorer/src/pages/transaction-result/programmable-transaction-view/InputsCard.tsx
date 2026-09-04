@@ -2,12 +2,10 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
-import { ButtonUnstyled, KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { TitleSize } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
-import clsx from 'clsx';
 import {
     ProgrammableTxnBlockCard,
     AddressLink,
@@ -15,11 +13,11 @@ import {
     ObjectVideoImage,
     CollapsibleCard,
 } from '~/components';
-import { useBreakpoint } from '~/hooks';
+import { ExpandableValue } from './ExpandableValue';
+import { StackedField } from './Field';
 import { decodeVectorU8Value, getCommandArguments } from './utils';
 
 const REGEX_NUMBER = /^\d+$/;
-const INPUT_VALUE_PREVIEW_LENGTH = 160;
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
@@ -138,41 +136,7 @@ function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element 
     );
 }
 
-function ExpandableInputValue({ value }: { value: string }): JSX.Element {
-    const [showFullValue, setShowFullValue] = useState(false);
-    const isLongValue = value.length > INPUT_VALUE_PREVIEW_LENGTH;
-    const displayedValue =
-        !isLongValue || showFullValue
-            ? value
-            : `${value.slice(0, INPUT_VALUE_PREVIEW_LENGTH).trimEnd()}…`;
-
-    if (!isLongValue) {
-        return <>{value}</>;
-    }
-
-    return (
-        <span className="flex max-w-full flex-col items-end gap-xxs text-right">
-            <span
-                className={clsx(
-                    'break-all',
-                    showFullValue &&
-                        'max-h-48 overflow-y-auto rounded-md border border-iota-neutral-92 bg-transparent p-xs text-left dark:border-iota-neutral-12',
-                )}
-            >
-                {displayedValue}
-            </span>
-            <ButtonUnstyled
-                className="shrink-0 text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
-                onClick={() => setShowFullValue((isExpanded) => !isExpanded)}
-            >
-                {showFullValue ? 'Show Less' : 'Show More'}
-            </ButtonUnstyled>
-        </span>
-    );
-}
-
 export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Element | null {
-    const isMediumOrAbove = useBreakpoint('md');
     if (!inputs?.length) {
         return null;
     }
@@ -192,11 +156,10 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
             >
                 <div
                     data-testid="inputs-card-content"
-                    className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs"
+                    className="mx-auto flex w-full max-w-5xl flex-col divide-y divide-iota-neutral-92 px-lg pb-lg pt-xs dark:divide-iota-neutral-12"
                 >
                     {usedByCommands.length > 0 && (
-                        <KeyValueInfo
-                            layout="receipt"
+                        <StackedField
                             keyText="Used by"
                             value={usedByCommands
                                 .map(
@@ -204,7 +167,6 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                                         `Command #${commandIndex} (${type})`,
                                 )
                                 .join(', ')}
-                            fullwidth={!isMediumOrAbove}
                         />
                     )}
                     {Object.entries(input).map(([key, value]) => {
@@ -242,20 +204,12 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
 
                         const displayedValue =
                             typeof renderValue === 'string' ? (
-                                <ExpandableInputValue value={renderValue} />
+                                <ExpandableValue value={renderValue} align="start" />
                             ) : (
                                 renderValue
                             );
 
-                        return (
-                            <KeyValueInfo
-                                layout="receipt"
-                                key={key}
-                                keyText={key}
-                                value={displayedValue}
-                                fullwidth={!isMediumOrAbove}
-                            />
-                        );
+                        return <StackedField key={key} keyText={key} value={displayedValue} />;
                     })}
                 </div>
             </CollapsibleCard>

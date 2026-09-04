@@ -9,10 +9,10 @@ import {
 } from '@iota/iota-sdk/client';
 
 import { Transaction } from './Transaction';
+import { StackedField } from './Field';
 import { getResultUsedByCommands } from './utils';
 import { CollapsibleCard, ProgrammableTxnBlockCard } from '~/components';
-import { useBreakpoint } from '~/hooks';
-import { KeyValueInfo, TitleSize } from '@iota/apps-ui-kit';
+import { TitleSize } from '@iota/apps-ui-kit';
 
 interface TransactionsCardProps {
     transactions: IotaTransaction[];
@@ -36,7 +36,6 @@ export function TransactionsCard({
     transactions,
     inputs,
 }: TransactionsCardProps): JSX.Element | null {
-    const isMediumOrAbove = useBreakpoint('md');
     if (!transactions?.length) {
         return null;
     }
@@ -57,10 +56,9 @@ export function TransactionsCard({
                 isTransparent
             >
                 <div data-testid="transactions-card-content">
-                    <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-xs">
+                    <div className="mx-auto flex w-full max-w-5xl flex-col divide-y divide-iota-neutral-92 px-lg pb-lg pt-xs dark:divide-iota-neutral-12">
                         {usedByCommands.length > 0 && (
-                            <KeyValueInfo
-                                layout="receipt"
+                            <StackedField
                                 keyText="Used by"
                                 value={usedByCommands
                                     .map(
@@ -70,7 +68,6 @@ export function TransactionsCard({
                                             } (${usedByType})`,
                                     )
                                     .join(', ')}
-                                fullwidth={!isMediumOrAbove}
                             />
                         )}
                         <Transaction type={type} data={data} inputs={inputs} />

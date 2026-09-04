@@ -3,42 +3,37 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
-import {
-    Accordion,
-    AccordionHeader,
-    AccordionContent,
-    KeyValueInfo,
-    TitleSize,
-} from '@iota/apps-ui-kit';
+import { Accordion, AccordionHeader, AccordionContent, TitleSize } from '@iota/apps-ui-kit';
 import { type IotaEvent } from '@iota/iota-sdk/client';
 import { formatAddress, parseStructTag } from '@iota/iota-sdk/utils';
 import { TriangleDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { ProgrammableTxnBlockCard, SyntaxHighlighter } from '~/components';
 import { CollapsibleCard, ObjectLink } from '~/components/ui';
-import { useBreakpoint } from '~/hooks';
 import { onCopySuccess } from '~/lib';
+import { CopyButton, StackedField } from './programmable-transaction-view/Field';
 
 function EventContent({ event }: { event: IotaEvent }): JSX.Element {
     const [open, setOpen] = useState(false);
-    const isMediumOrAbove = useBreakpoint('md');
     const { address, module, name } = parseStructTag(event.type);
     const objectLinkLabel = [formatAddress(address), module, name].join('::');
 
     return (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-md--rs">
-            <KeyValueInfo
-                layout="receipt"
+        <div className="mx-auto flex w-full max-w-5xl flex-col divide-y divide-iota-neutral-92 px-lg pb-lg pt-md--rs dark:divide-iota-neutral-12">
+            <StackedField
                 keyText="Type"
-                value={objectLinkLabel}
-                copyText={[address, module, name].join('::')}
-                onCopySuccess={onCopySuccess}
-                isTruncated
-                fullwidth={!isMediumOrAbove}
+                value={
+                    <span className="flex items-center gap-xs">
+                        <span className="truncate">{objectLinkLabel}</span>
+                        <CopyButton
+                            text={[address, module, name].join('::')}
+                            onCopySuccess={onCopySuccess}
+                        />
+                    </span>
+                }
             />
 
-            <KeyValueInfo
-                layout="receipt"
+            <StackedField
                 keyText="Event Emitter"
                 value={
                     <ObjectLink
@@ -48,8 +43,6 @@ function EventContent({ event }: { event: IotaEvent }): JSX.Element {
                         copyText={event.packageId}
                     />
                 }
-                isTruncated
-                fullwidth={!isMediumOrAbove}
             />
             <Accordion hideBorder>
                 <AccordionHeader hideArrow isExpanded={open} onToggle={() => setOpen(!open)}>
