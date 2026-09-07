@@ -129,7 +129,16 @@ export function ObjectFieldsCard({
                         <div key={name} className="flex flex-col gap-sm">
                             <KeyValueInfo
                                 layout="receipt"
-                                keyText={displayName ? `${name} (${displayName})` : name}
+                                keyText={
+                                    <>
+                                        {name}
+                                        {displayName && (
+                                            <span className="pl-xxs text-iota-neutral-60 dark:text-iota-neutral-40">
+                                                ({displayName})
+                                            </span>
+                                        )}
+                                    </>
+                                }
                                 value={
                                     isInline ? (
                                         <FieldItem

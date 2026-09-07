@@ -135,7 +135,7 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
     return (
         <DisplayStats
             label="Storage Rebate"
-            value={`-${storageRebateFormatted}`}
+            value={storageRebateFormatted}
             supportingLabel={symbol}
             tooltipPosition={TooltipPosition.Left}
             tooltipText="IOTA tokens locked as a storage deposit for this object. Partially refundable when the object is deleted or reduced in size."

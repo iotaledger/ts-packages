@@ -34,6 +34,19 @@ export function ObjectResult(): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
     const [showRawJson, setShowRawJson] = useState(false);
 
+    const rawJsonToggle = (
+        <div className="flex w-full md:justify-end">
+            <Toggle
+                name="raw-json-toggle"
+                label="Raw JSON"
+                labelPosition={ToggleLabelPosition.Left}
+                size={ToggleSize.Small}
+                isToggled={showRawJson}
+                onChange={setShowRawJson}
+            />
+        </div>
+    );
+
     const isPageError = !isPending && (isError || data?.error || (isFetched && !data));
     const resp = data && !isPageError ? translate(data) : null;
     const isPackage = resp ? resp.objType === PACKAGE_TYPE_NAME : false;
@@ -69,20 +82,7 @@ export function ObjectResult(): JSX.Element {
                                     </div>
                                 }
                                 showCopyButton={false}
-                                after={
-                                    data && (
-                                        <div className="flex w-full md:justify-end">
-                                            <Toggle
-                                                name="raw-json-toggle"
-                                                label="Raw JSON"
-                                                labelPosition={ToggleLabelPosition.Left}
-                                                size={ToggleSize.Small}
-                                                isToggled={showRawJson}
-                                                onChange={setShowRawJson}
-                                            />
-                                        </div>
-                                    )
-                                }
+                                after={data && rawJsonToggle}
                                 error={
                                     data?.isViewingPastVersion
                                         ? 'This object was deleted. You are viewing a past version of this object.'
@@ -116,6 +116,7 @@ export function ObjectResult(): JSX.Element {
                                 <PageHeader
                                     type="Package"
                                     showCopyButton={false}
+                                    after={rawJsonToggle}
                                     title={
                                         <AddressAlias
                                             address={resp.id}
@@ -147,9 +148,7 @@ export function ObjectResult(): JSX.Element {
                                 />
                             )}
                             <ErrorBoundary>
-                                {isPackage ? (
-                                    <PkgView data={resp} />
-                                ) : showRawJson ? (
+                                {showRawJson ? (
                                     <Panel>
                                         <div className="p-md--rs">
                                             <SyntaxHighlighter
@@ -158,6 +157,8 @@ export function ObjectResult(): JSX.Element {
                                             />
                                         </div>
                                     </Panel>
+                                ) : isPackage ? (
+                                    <PkgView data={resp} />
                                 ) : (
                                     <TokenView data={data} />
                                 )}

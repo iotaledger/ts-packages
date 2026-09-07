@@ -3,4 +3,3 @@
 
 export * from './objectViewMode.enums';
 export * from './objectFilterValue.enums';
-export * from './splitPaneKey.enums';

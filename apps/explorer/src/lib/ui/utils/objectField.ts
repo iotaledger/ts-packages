@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
+import { formatTypeTag } from './formatMoveType';
 
 type TypeReference =
     | {
@@ -75,8 +76,9 @@ function getDisplayName(type: IotaMoveNormalizedType | '', objectType: string): 
 
     if (typeof normalizedType === 'number') {
         const typeParameter = splitByCommaExcludingBrackets(getContentInsideBrackets(objectType));
+        const resolved = typeParameter?.[normalizedType];
 
-        return typeParameter?.[normalizedType]?.split('::').pop() || '';
+        return resolved ? formatTypeTag(resolved) : '';
     }
 
     const { name } = normalizedType;
