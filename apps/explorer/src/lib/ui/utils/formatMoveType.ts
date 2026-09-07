@@ -68,7 +68,7 @@ export function formatTypeTag(type: string): string {
 
         return `${name}<${args.join(', ')}>`;
     } catch {
-        // Primitives and anything unparseable are already written as displayed.
+        // Primitives and anything unparsable are already written as displayed.
         return type;
     }
 }
