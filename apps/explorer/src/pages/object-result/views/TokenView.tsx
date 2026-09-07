@@ -27,7 +27,6 @@ function useObjectFieldsCard(id: string) {
 
     const [packageId, moduleName, functionName] = objectType?.split('<')[0]?.split('::') || [];
 
-    // Get the normalized struct for the object
     const {
         data: normalizedStructData,
         isLoading: loadingNormalizedStruct,
@@ -112,8 +111,6 @@ export function FieldsContent({ objectId }: FieldsContentProps) {
                         return segment;
                     }
 
-                    // A disabled button swallows hover events, so the tooltip
-                    // has to be triggered by its wrapper instead.
                     return (
                         <Tooltip
                             key={value}

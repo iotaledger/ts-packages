@@ -56,25 +56,25 @@ export function ModuleStructsList({
                                 ))}
                             </div>
 
-                            <dl className="flex flex-col gap-xxs text-body-sm">
+                            <div className="flex flex-col gap-xxs text-body-sm">
                                 {structDetails.fields.map((field) => (
                                     <div
                                         key={field.name}
                                         className="flex flex-row flex-wrap gap-xs"
                                     >
-                                        <dt className="shrink-0 text-iota-neutral-10 dark:text-iota-neutral-92">
+                                        <span className="shrink-0 text-iota-neutral-10 dark:text-iota-neutral-92">
                                             {field.name}:
-                                        </dt>
-                                        <dd className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        </span>
+                                        <span className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
                                             {formatMoveType(
                                                 field.type,
                                                 packageId,
                                                 typeParameterNames,
                                             )}
-                                        </dd>
+                                        </span>
                                     </div>
                                 ))}
-                            </dl>
+                            </div>
                         </div>
                     );
                 })}

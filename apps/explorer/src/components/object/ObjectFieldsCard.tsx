@@ -6,7 +6,6 @@ import { type IotaMoveNormalizedStruct, type IotaObjectResponse } from '@iota/io
 import clsx from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
 import { getFieldTypeValue } from '~/lib/ui';
-import { EXPANDABLE_FIELD_REGION_CLASSES } from '~/lib/constants';
 import { FieldItem, isInlineFieldValue } from './FieldItem';
 import {
     ButtonUnstyled,
@@ -52,8 +51,6 @@ export function ObjectFieldsCard({
               >)
             : null;
 
-    // Everything starts collapsed, and collapses again when another object is
-    // shown, so the list always opens as a readable summary.
     useEffect(() => {
         setOpenFieldsName({});
     }, [normalizedStructData?.fields]);
@@ -87,7 +84,6 @@ export function ObjectFieldsCard({
         );
     }
 
-    // Return null if there are no fields
     if (!fieldsData || !normalizedStructData?.fields || !objectType) {
         return null;
     }
@@ -118,8 +114,6 @@ export function ObjectFieldsCard({
 
                 {filteredFields.map(({ name, type }) => {
                     const value = fieldsData[name];
-                    // Single-line values sit in the row itself; only the ones
-                    // rendered as code need somewhere to unfold.
                     const isInline = isInlineFieldValue(value);
                     const isExpanded = !!openFieldsName[name];
                     const detailsId = `object-field-${name}`;
@@ -171,7 +165,7 @@ export function ObjectFieldsCard({
                                     id={detailsId}
                                     role="region"
                                     aria-label={`${name} details`}
-                                    className={EXPANDABLE_FIELD_REGION_CLASSES}
+                                    className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
                                 >
                                     <FieldItem
                                         value={value}

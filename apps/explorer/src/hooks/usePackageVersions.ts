@@ -9,7 +9,6 @@ import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 export interface PackageVersion {
     address: string;
     version: number;
-    /** The transaction that published this version, when it is still available. */
     previousTransaction?: string;
 }
 
@@ -38,8 +37,6 @@ interface PackageVersionsQueryResult {
 }
 
 const PAGE_SIZE = 50;
-// A package upgraded more times than this is far past the point where a list is
-// the right way to look at it.
 const MAX_PAGES = 4;
 
 /**

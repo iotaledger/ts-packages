@@ -8,7 +8,6 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import clsx from 'clsx';
 import { UnderlyingObjectCard } from './UnderlyingObjectCard';
 import { ObjectLink } from '~/components/ui';
-import { EXPANDABLE_FIELD_REGION_CLASSES } from '~/lib/constants';
 import {
     Badge,
     BadgeSize,
@@ -28,9 +27,7 @@ const LABEL_SEGMENT_LENGTH = 20;
 
 interface DynamicFieldLabel {
     label: string;
-    /** Set when the key is a Move struct, in which case the label is its type. */
     isStructKey: boolean;
-    /** Only set when the label had to be cut. */
     fullLabel?: string;
 }
 
@@ -145,7 +142,7 @@ export function DynamicFieldsCard({ id }: { id: string }) {
                                     id={detailsId}
                                     role="region"
                                     aria-label={`${label} details`}
-                                    className={EXPANDABLE_FIELD_REGION_CLASSES}
+                                    className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
                                 >
                                     <UnderlyingObjectCard
                                         parentId={id}

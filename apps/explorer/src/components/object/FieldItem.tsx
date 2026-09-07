@@ -81,8 +81,6 @@ export function FieldItem({
         );
     }
 
-    // In a row a long value would either overflow or be cut mid-word, so it is
-    // shortened from the middle and shown in full on hover.
     const text = value === null || value === undefined ? '' : String(value);
     const shouldTruncate = truncate && text.length > INLINE_VALUE_MAX_LENGTH;
 

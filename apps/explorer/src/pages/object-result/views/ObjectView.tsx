@@ -18,7 +18,6 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import { OwnerDisplay } from '~/components/object';
 import { Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
-import { OBJECT_FIELD_TOOLTIP } from '~/lib/constants';
 import { extractName, onCopySuccess, parseObjectType, trimStdLibPrefix } from '~/lib/utils';
 
 interface HeroVideoImageProps {
@@ -125,8 +124,6 @@ function TypeCard({ objectType }: TypeCardCardProps): JSX.Element {
                 <ObjectLink
                     objectId={`${address}?module=${module}`}
                     label={normalizedStructTag}
-                    // A Move type is not an address: the alias lookup does not
-                    // apply, and its `whitespace-nowrap` would overflow the card.
                     showAddressAlias={false}
                 >
                     {normalizedStructTag}
@@ -232,6 +229,20 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
 interface ObjectViewProps {
     data: IotaObjectResponse;
 }
+
+export const OBJECT_FIELD_TOOLTIP = {
+    objectId:
+        'The unique identifier of this object. It is assigned when the object is created and never changes, even if the object is transferred or updated.',
+    version:
+        'Every change to an object raises its version number. The numbers are not consecutive, so gaps between versions are normal.',
+    digest: 'A fingerprint of this exact version of the object. Any change to its contents produces a different one.',
+    owner: 'Determines who can use this object: a single address, anyone at all if it is shared, or nobody if it is immutable and can no longer change. Objects can also be held inside another object.',
+    lastTransaction: 'The most recent transaction that changed this object.',
+    publisher: 'The address that sent the transaction publishing this package.',
+    published: 'When this version of the package was published on the network.',
+    storageRebate:
+        'IOTA held as a deposit for the storage this object uses. It is paid back when the object is deleted or gets smaller.',
+};
 
 export function ObjectView({ data }: ObjectViewProps): JSX.Element {
     const display = data.data?.display?.data;

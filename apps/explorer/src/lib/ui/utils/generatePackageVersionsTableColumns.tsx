@@ -7,9 +7,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { ObjectLink, TransactionLink } from '~/components/ui';
 import type { PackageVersion } from '~/hooks';
 
-/**
- * Generate table columns renderers for a package's version history.
- */
 export function generatePackageVersionsTableColumns(
     currentPackageId: string,
 ): ColumnDef<PackageVersion>[] {

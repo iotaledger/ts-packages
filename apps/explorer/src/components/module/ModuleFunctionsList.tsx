@@ -102,8 +102,6 @@ export function ModuleFunctionsList({
                             return segment;
                         }
 
-                        // A disabled button swallows hover events, so the
-                        // tooltip is triggered by its wrapper instead.
                         return (
                             <Tooltip
                                 key={value}
@@ -159,28 +157,26 @@ export function ModuleFunctionsList({
                                 )}
                             </div>
 
-                            <dl className="flex flex-col gap-xxs text-body-sm">
+                            <div className="flex flex-col gap-xxs text-body-sm">
                                 <div className="flex flex-row flex-wrap gap-xs">
-                                    <dt className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40">
+                                    <div className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40">
                                         args
-                                    </dt>
-                                    {/* Breaking on words keeps the wrap
-                                            between parameters, not inside a type. */}
-                                    <dd className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    </div>
+                                    <div className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
                                         ({args})
-                                    </dd>
+                                    </div>
                                 </div>
                                 {!!returns && (
                                     <div className="flex flex-row flex-wrap gap-xs">
-                                        <dt className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40">
+                                        <div className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40">
                                             returns
-                                        </dt>
-                                        <dd className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        </div>
+                                        <div className="min-w-0 break-words text-iota-neutral-40 dark:text-iota-neutral-60">
                                             {returns}
-                                        </dd>
+                                        </div>
                                     </div>
                                 )}
-                            </dl>
+                            </div>
 
                             {isOpen && (
                                 <div id={formId}>

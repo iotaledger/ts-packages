@@ -48,8 +48,6 @@ export function ModuleCodeTabs({
     const TABS: TabItem[] = [bytecodeTab, sourceTab];
     const visibleTabs = TABS.filter(({ hidden }) => !hidden);
 
-    // Verified sources come from a service that is not always available, so the
-    // selector only earns its place once there is something to select between.
     if (visibleTabs.length < 2) {
         return (
             <div className="max-h-[560px] overflow-auto">

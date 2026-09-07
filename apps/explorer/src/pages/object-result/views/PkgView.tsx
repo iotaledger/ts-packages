@@ -9,16 +9,14 @@ import {
     DateDisplay,
     EpochLink,
     ErrorBoundary,
-    getObjectFilterOptions,
     Link,
     ObjectLink,
     OwnerDisplay,
     PackageVersionsList,
     PkgModulesWrapper,
     TransactionBlocksForAddress,
-    type TransactionBlocksFilterOption,
 } from '~/components';
-import { useSearchParamsMerged } from '~/components/ui';
+import { ObjectFilterValue } from '~/lib/enums';
 import { usePackageUpgradePolicy, usePackageVersions } from '~/hooks';
 import { trimStdLibPrefix } from '~/lib/utils';
 import { type DataType } from '../ObjectResultType';
@@ -36,12 +34,10 @@ import {
 import { ArrowDown } from '@iota/apps-ui-icons';
 import cx from 'clsx';
 import { useState } from 'react';
-import { OBJECT_FIELD_TOOLTIP, UPGRADE_DOCS_URL } from '~/lib';
+import { UPGRADE_DOCS_URL } from '~/lib';
+import { OBJECT_FIELD_TOOLTIP } from './ObjectView';
 
 const GENESIS_TX_DIGEST = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
-
-const PACKAGE_CALLS_FILTER = 'package-calls';
-const MODULE_CALLS_FILTER = 'module-calls';
 
 interface PkgViewProps {
     data: DataType;
@@ -50,7 +46,6 @@ interface PkgViewProps {
 export function PkgView({ data }: PkgViewProps): JSX.Element {
     const { data: txnData, isPending } = useGetTransaction(data.data.tx_digest!);
     const { upgradePolicy } = usePackageUpgradePolicy(data.data.tx_digest);
-    const [searchParams] = useSearchParamsMerged();
     const [isVersionsExpanded, setIsVersionsExpanded] = useState(false);
     const { data: packageVersions } = usePackageVersions(data.id);
 
@@ -87,35 +82,6 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
         .map(mapProperties);
 
     const publisherAddress = viewedData.publisherAddress;
-
-    // Mirrors the module PkgModulesWrapper shows, so the calls table follows
-    // whichever module the user is reading.
-    const moduleNameValue = searchParams.get('module');
-    const selectedModuleName =
-        properties.find(([moduleName]) => moduleName === moduleNameValue)?.[0] ??
-        properties[0]?.[0];
-
-    const packageCallsOption: TransactionBlocksFilterOption = {
-        label: 'Calls',
-        value: PACKAGE_CALLS_FILTER,
-        filter: { MoveFunction: { package: viewedData.id } },
-    };
-
-    const moduleCallsOption: TransactionBlocksFilterOption | null = selectedModuleName
-        ? {
-              label: `Calls: ${selectedModuleName}`,
-              value: MODULE_CALLS_FILTER,
-              filter: {
-                  MoveFunction: { package: viewedData.id, module: selectedModuleName },
-              },
-          }
-        : null;
-
-    const transactionFilterOptions: TransactionBlocksFilterOption[] = [
-        packageCallsOption,
-        ...(moduleCallsOption ? [moduleCallsOption] : []),
-        ...getObjectFilterOptions(viewedData.id),
-    ];
 
     return (
         <div>
@@ -250,9 +216,8 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                 <ErrorBoundary>
                     <TransactionBlocksForAddress
                         address={viewedData.id}
-                        filter={PACKAGE_CALLS_FILTER}
+                        filter={ObjectFilterValue.Input}
                         header="Transaction Blocks"
-                        options={transactionFilterOptions}
                     />
                 </ErrorBoundary>
             </div>

@@ -12,8 +12,6 @@ export function OwnerDisplay({ objOwner }: { objOwner: ObjectOwner }): ReactNode
     }
 
     if ('Shared' in objOwner) {
-        // Single line, so the badge centres against the text. The owners below
-        // sit next to a two-line alias block and align to its top instead.
         return (
             <div className="flex flex-row flex-wrap items-center gap-xs">
                 <Badge type={BadgeType.PrimarySoft} size={BadgeSize.Small} label="Shared" />
@@ -24,8 +22,6 @@ export function OwnerDisplay({ objOwner }: { objOwner: ObjectOwner }): ReactNode
         );
     }
 
-    // Object and address owners both render as truncated hex, so they need a
-    // label to tell them apart. It trails the value it qualifies.
     if ('ObjectOwner' in objOwner) {
         return (
             <div className="flex flex-row flex-wrap items-start gap-xs">
