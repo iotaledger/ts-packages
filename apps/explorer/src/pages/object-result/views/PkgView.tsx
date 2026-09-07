@@ -13,24 +13,29 @@ import {
     Link,
     ObjectLink,
     OwnerDisplay,
+    PackageVersionsList,
     PkgModulesWrapper,
     TransactionBlocksForAddress,
     type TransactionBlocksFilterOption,
 } from '~/components';
 import { useSearchParamsMerged } from '~/components/ui';
-import { usePackageUpgradePolicy } from '~/hooks';
+import { usePackageUpgradePolicy, usePackageVersions } from '~/hooks';
 import { trimStdLibPrefix } from '~/lib/utils';
 import { type DataType } from '../ObjectResultType';
 import {
     Badge,
     BadgeSize,
     BadgeType,
+    ButtonUnstyled,
     DisplayStats,
     LoadingIndicator,
     Panel,
     Title,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
+import { ArrowDown } from '@iota/apps-ui-icons';
+import cx from 'clsx';
+import { useState } from 'react';
 import { OBJECT_FIELD_TOOLTIP, UPGRADE_DOCS_URL } from '~/lib';
 
 const GENESIS_TX_DIGEST = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
@@ -46,6 +51,12 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
     const { data: txnData, isPending } = useGetTransaction(data.data.tx_digest!);
     const { upgradePolicy } = usePackageUpgradePolicy(data.data.tx_digest);
     const [searchParams] = useSearchParamsMerged();
+    const [isVersionsExpanded, setIsVersionsExpanded] = useState(false);
+    const { data: packageVersions } = usePackageVersions(data.id);
+
+    // Nothing to say about a package that was never upgraded: its version is
+    // already on the card above.
+    const showVersions = !!packageVersions && (packageVersions.length > 1 || data.version !== '1');
 
     if (isPending) {
         return <LoadingIndicator text="Loading data" />;
@@ -197,6 +208,35 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                         />
                     )}
                 </div>
+
+                {showVersions && (
+                    <Panel>
+                        <Title
+                            title="Versions"
+                            trailingElement={
+                                <ButtonUnstyled
+                                    className="flex flex-row items-center gap-xxxs pr-md--rs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                    aria-controls="package-versions"
+                                    aria-expanded={isVersionsExpanded}
+                                    onClick={() => setIsVersionsExpanded((expanded) => !expanded)}
+                                >
+                                    {isVersionsExpanded ? 'Show Less' : 'Show More'}
+                                    <ArrowDown
+                                        className={cx(
+                                            'h-4 w-4 transition-transform ease-linear',
+                                            isVersionsExpanded && 'rotate-180',
+                                        )}
+                                    />
+                                </ButtonUnstyled>
+                            }
+                        />
+                        {isVersionsExpanded && (
+                            <div id="package-versions" className="p-md--rs">
+                                <PackageVersionsList packageId={viewedData.id} />
+                            </div>
+                        )}
+                    </Panel>
+                )}
 
                 <Panel>
                     <Title title="Modules" />

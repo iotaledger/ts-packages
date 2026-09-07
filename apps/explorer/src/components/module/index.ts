@@ -4,5 +4,6 @@
 export * from './ModuleCodeTabs';
 export * from './ModuleView';
 export * from './ModuleFunctionsList';
+export * from './PackageVersionsList';
 export * from './ModuleStructsList';
 export * from './PkgModulesWrapper';
