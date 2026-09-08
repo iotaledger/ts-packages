@@ -13,8 +13,9 @@ import { ErrorBoundary } from '~/components';
 import { ObjectLink, AddressLink } from '~/components/ui';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { ExpandableValue } from './ExpandableValue';
-import { ArgumentsBlock, StackedField } from './Field';
+import { ArgumentsBlock, StackedField, type ArgumentRow } from './Field';
 import { decodeVectorU8Value } from './utils';
+import { HighlightableRef, type PtbRefId } from './PtbHighlight';
 
 interface TransactionProps<T> {
     type: string;
@@ -53,6 +54,30 @@ function Arg({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX
         <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
             Result of Command #{commandIndex}[{resultIndex}]
         </span>
+    );
+}
+
+function argRefId(arg: IotaArgument): PtbRefId | undefined {
+    if (arg === 'GasCoin') {
+        return undefined;
+    }
+
+    if ('Input' in arg) {
+        return `input-${arg.Input}`;
+    }
+
+    if ('Result' in arg) {
+        return `command-${arg.Result}`;
+    }
+
+    return `command-${arg.NestedResult[0]}`;
+}
+
+function RefValue({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX.Element {
+    return (
+        <HighlightableRef refId={argRefId(arg)}>
+            <Arg arg={arg} inputs={inputs} />
+        </HighlightableRef>
     );
 }
 
@@ -102,19 +127,24 @@ function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
     );
 }
 
-function argRows(args: IotaArgument[], inputs: IotaCallArg[]): ReactNode[] {
-    return args.map((arg, index) => <Arg key={index} arg={arg} inputs={inputs} />);
+function argRows(args: IotaArgument[], inputs: IotaCallArg[]): ArgumentRow[] {
+    return args.map((arg, index) => ({
+        node: <Arg key={index} arg={arg} inputs={inputs} />,
+        refId: argRefId(arg),
+    }));
 }
 
-function packageIdRows(packageIds: string[]): ReactNode[] {
-    return packageIds.map((packageId) => (
-        <ObjectLink
-            key={packageId}
-            objectId={packageId}
-            label={formatAddress(packageId)}
-            copyText={packageId}
-        />
-    ));
+function packageIdRows(packageIds: string[]): ArgumentRow[] {
+    return packageIds.map((packageId) => ({
+        node: (
+            <ObjectLink
+                key={packageId}
+                objectId={packageId}
+                label={formatAddress(packageId)}
+                copyText={packageId}
+            />
+        ),
+    }));
 }
 
 function Field({ keyText, value }: { keyText: string; value: ReactNode }): JSX.Element {
@@ -153,9 +183,7 @@ function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.
                 }
             />
             <Field keyText="Function" value={func} />
-            {args && args.length > 0 && (
-                <ArgumentsBlock label="Arguments" rows={argRows(args, inputs)} />
-            )}
+            {args && <ArgumentsBlock label="Arguments" rows={argRows(args, inputs)} />}
             {typeArgs && <Field keyText="Type Arguments" value={typeArgs.join(', ')} />}
         </div>
     );
@@ -170,7 +198,7 @@ function TransferObjects({
     return (
         <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <ArgumentsBlock label="Objects" rows={argRows(objects, inputs)} />
-            <Field keyText="Recipient" value={<Arg arg={recipient} inputs={inputs} />} />
+            <Field keyText="Recipient" value={<RefValue arg={recipient} inputs={inputs} />} />
         </div>
     );
 }
@@ -180,7 +208,7 @@ function SplitCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]
 
     return (
         <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Coin" value={<Arg arg={coin} inputs={inputs} />} />
+            <Field keyText="Coin" value={<RefValue arg={coin} inputs={inputs} />} />
             <ArgumentsBlock label="Amounts" rows={argRows(amounts, inputs)} />
         </div>
     );
@@ -191,7 +219,7 @@ function MergeCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]
 
     return (
         <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Into Coin" value={<Arg arg={destinationCoin} inputs={inputs} />} />
+            <Field keyText="Into Coin" value={<RefValue arg={destinationCoin} inputs={inputs} />} />
             <ArgumentsBlock label="Coins" rows={argRows(coins, inputs)} />
         </div>
     );
@@ -212,7 +240,7 @@ function Publish({ data }: CommandProps<string[]>): JSX.Element {
     return (
         <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
             <Field keyText="Modules" value={data.length} />
-            {data.length > 0 && <ArgumentsBlock label="Dependencies" rows={packageIdRows(data)} />}
+            <ArgumentsBlock label="Dependencies" rows={packageIdRows(data)} />
         </div>
     );
 }
@@ -232,7 +260,7 @@ function Upgrade({ data, inputs }: CommandProps<[string[], string, IotaArgument]
                     />
                 }
             />
-            <Field keyText="Upgrade Ticket" value={<Arg arg={ticket} inputs={inputs} />} />
+            <Field keyText="Upgrade Ticket" value={<RefValue arg={ticket} inputs={inputs} />} />
             <Field keyText="Dependencies" value={dependencies.length} />
             {dependencies.length > 0 && (
                 <ArgumentsBlock label="Dependency Packages" rows={packageIdRows(dependencies)} />

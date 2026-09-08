@@ -16,6 +16,7 @@ import {
 import { ExpandableValue } from './ExpandableValue';
 import { StackedField } from './Field';
 import { decodeVectorU8Value, getCommandArguments } from './utils';
+import { HighlightableRef, usePtbHighlight } from './PtbHighlight';
 
 const REGEX_NUMBER = /^\d+$/;
 
@@ -143,6 +144,8 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
 
     const expandableItems = inputs.map((input, index) => {
         const usedByCommands = getUsedByCommands(index, transactions);
+        const refId = `input-${index}` as const;
+        const { isHighlighted } = usePtbHighlight(refId);
 
         return (
             <CollapsibleCard
@@ -153,6 +156,11 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                 compactHeader
                 initialClose
                 titleSize={TitleSize.Small}
+                className={
+                    isHighlighted
+                        ? 'rounded-xl ring-1 ring-iota-primary-30 dark:ring-iota-primary-80'
+                        : undefined
+                }
             >
                 <div
                     data-testid="inputs-card-content"
@@ -161,12 +169,19 @@ export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Eleme
                     {usedByCommands.length > 0 && (
                         <StackedField
                             keyText="Used by"
-                            value={usedByCommands
-                                .map(
-                                    ({ commandIndex, type }) =>
-                                        `Command #${commandIndex} (${type})`,
-                                )
-                                .join(', ')}
+                            value={
+                                <span className="flex flex-wrap gap-x-xxs">
+                                    {usedByCommands.map(({ commandIndex, type }, usedByIndex) => (
+                                        <HighlightableRef
+                                            key={commandIndex}
+                                            refId={`command-${commandIndex}`}
+                                        >
+                                            Command #{commandIndex} ({type})
+                                            {usedByIndex < usedByCommands.length - 1 ? ',' : ''}
+                                        </HighlightableRef>
+                                    ))}
+                                </span>
+                            }
                         />
                     )}
                     {Object.entries(input).map(([key, value]) => {
