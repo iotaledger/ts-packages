@@ -5,6 +5,8 @@
 import { type ReactNode, useState } from 'react';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { Copy } from '@iota/apps-ui-icons';
+import clsx from 'clsx';
+import { usePtbHighlight, type PtbRefId } from './PtbHighlight';
 
 export function StackedField({
     keyText,
@@ -23,8 +25,47 @@ export function StackedField({
 
 const VISIBLE_ARGUMENT_ROWS = 3;
 
-export function ArgumentsBlock({ label, rows }: { label: string; rows: ReactNode[] }): JSX.Element {
+export interface ArgumentRow {
+    node: ReactNode;
+    refId?: PtbRefId;
+}
+
+function ArgumentRowContainer({ index, row }: { index: number; row: ArgumentRow }): JSX.Element {
+    const { isHighlighted, onMouseEnter, onMouseLeave } = usePtbHighlight(row.refId ?? null);
+
+    return (
+        <div
+            onMouseEnter={row.refId ? onMouseEnter : undefined}
+            onMouseLeave={row.refId ? onMouseLeave : undefined}
+            className={clsx(
+                'grid grid-cols-[20px_minmax(0,1fr)] items-center gap-xs rounded-lg px-sm py-xs transition-colors',
+                row.refId && 'cursor-pointer select-none',
+                isHighlighted
+                    ? 'bg-iota-primary-90/60 dark:bg-iota-primary-70/10'
+                    : 'bg-iota-neutral-98 dark:bg-iota-neutral-10',
+            )}
+        >
+            <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                {index}
+            </span>
+            <div className="min-w-0">{row.node}</div>
+        </div>
+    );
+}
+
+export function ArgumentsBlock({
+    label,
+    rows,
+}: {
+    label: string;
+    rows: ArgumentRow[];
+}): JSX.Element | null {
     const [showAll, setShowAll] = useState(false);
+
+    if (rows.length === 0) {
+        return null;
+    }
+
     const visibleRows = showAll ? rows : rows.slice(0, VISIBLE_ARGUMENT_ROWS);
     const hiddenCount = rows.length - VISIBLE_ARGUMENT_ROWS;
 
@@ -38,15 +79,7 @@ export function ArgumentsBlock({ label, rows }: { label: string; rows: ReactNode
             </div>
             <div className="flex flex-col gap-xxs">
                 {visibleRows.map((row, index) => (
-                    <div
-                        key={index}
-                        className="grid grid-cols-[20px_minmax(0,1fr)] items-center gap-xs rounded-lg bg-iota-neutral-98 px-sm py-xs dark:bg-iota-neutral-10"
-                    >
-                        <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                            {index}
-                        </span>
-                        <div className="min-w-0">{row}</div>
-                    </div>
+                    <ArgumentRowContainer key={index} index={index} row={row} />
                 ))}
             </div>
             {hiddenCount > 0 && (
