@@ -11,8 +11,10 @@ import { CoinItem } from '../coin';
 import { RecognizedBadge } from '@iota/apps-ui-icons';
 import { formatIotaName, getRecognizedUnRecognizedTokenChanges } from '../../utils';
 import { BalanceChange } from '../../interfaces';
-import { useGetDefaultIotaName } from '../../hooks';
+import { useBalanceInUSD, useGetDefaultIotaName } from '../../hooks';
 import { NamedAddressTooltip } from '../NamedAddressTooltip';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { type Network } from '@iota/iota-sdk/client';
 
 interface BalanceChangesProps {
     renderExplorerLink: RenderExplorerLink;
@@ -100,10 +102,13 @@ function BalanceChangePanel({
 
 function BalanceChangeEntry({ change }: { change: BalanceChange }) {
     const { amount, coinType, unRecognizedToken } = change;
+    const { network } = useIotaClientContext();
+    const usd = useBalanceInUSD(coinType, amount, network as Network);
     return (
         <CoinItem
             coinType={coinType}
             balance={BigInt(amount)}
+            usd={usd ?? undefined}
             icon={
                 unRecognizedToken ? undefined : (
                     <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />

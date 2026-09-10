@@ -14,6 +14,7 @@ import {
     useIsActiveValidator,
     useGetNextEpochCommitteeMember,
     useGetInactiveValidator,
+    AmountWithFiat,
 } from '@iota/core';
 import {
     Header,
@@ -164,14 +165,24 @@ export function DetailsView({
                         <div className="flex flex-col gap-y-sm p-md">
                             <KeyValueInfo
                                 keyText="Your Stake"
-                                value={totalStakeFormatted}
-                                supportingLabel={totalStakeSymbol}
+                                value={
+                                    <AmountWithFiat
+                                        amount={totalStake}
+                                        formatted={totalStakeFormatted}
+                                        symbol={totalStakeSymbol}
+                                    />
+                                }
                                 fullwidth
                             />
                             <KeyValueInfo
                                 keyText="Earned"
-                                value={iotaEarnedFormatted}
-                                supportingLabel={iotaEarnedSymbol}
+                                value={
+                                    <AmountWithFiat
+                                        amount={iotaEarned}
+                                        formatted={iotaEarnedFormatted}
+                                        symbol={iotaEarnedSymbol}
+                                    />
+                                }
                                 fullwidth
                             />
                             <Divider />

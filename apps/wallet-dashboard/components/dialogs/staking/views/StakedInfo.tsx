@@ -5,6 +5,7 @@ import {
     formatPercentageDisplay,
     useValidatorInfo,
     useGetStakingValidatorDetails,
+    AmountWithFiat,
 } from '@iota/core';
 import { KeyValueInfo, Panel, TooltipPosition } from '@iota/apps-ui-kit';
 
@@ -18,13 +19,19 @@ export function StakedInfo({ validatorAddress, accountAddress }: StakedInfoProps
         validatorAddress: validatorAddress,
     });
 
-    const { totalValidatorsStake, totalStakePercentage, totalStake, effectiveCommission } =
-        useGetStakingValidatorDetails({
-            accountAddress: accountAddress,
-            stakeId: null,
-            validatorAddress: validatorAddress,
-            unstake: false,
-        });
+    const {
+        totalValidatorsStake,
+        totalValidatorsStakeOriginal,
+        totalStakePercentage,
+        totalStake,
+        totalStakeOriginal,
+        effectiveCommission,
+    } = useGetStakingValidatorDetails({
+        accountAddress: accountAddress,
+        stakeId: null,
+        validatorAddress: validatorAddress,
+        unstake: false,
+    });
 
     const [totalValidatorStakeFormatted, totalValidatorStakeSymbol] = totalValidatorsStake;
     const [totalStakeFormatted, totalStakeSymbol] = totalStake;
@@ -57,16 +64,26 @@ export function StakedInfo({ validatorAddress, accountAddress }: StakedInfoProps
                     keyText="Total Staked"
                     tooltipPosition={TooltipPosition.Right}
                     tooltipText="The full amount of IOTA staked by this validator and delegators for network validation and rewards."
-                    value={totalValidatorStakeFormatted}
-                    supportingLabel={totalValidatorStakeSymbol}
+                    value={
+                        <AmountWithFiat
+                            amount={totalValidatorsStakeOriginal}
+                            formatted={totalValidatorStakeFormatted}
+                            symbol={totalValidatorStakeSymbol}
+                        />
+                    }
                     fullwidth
                 />
                 <KeyValueInfo
                     keyText="Your Staked IOTA"
                     tooltipPosition={TooltipPosition.Right}
                     tooltipText="Your current staked balance."
-                    value={totalStakeFormatted}
-                    supportingLabel={totalStakeSymbol}
+                    value={
+                        <AmountWithFiat
+                            amount={totalStakeOriginal}
+                            formatted={totalStakeFormatted}
+                            symbol={totalStakeSymbol}
+                        />
+                    }
                     fullwidth
                 />
             </div>
