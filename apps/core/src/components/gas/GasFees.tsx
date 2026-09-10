@@ -39,11 +39,13 @@ export function GasFees({
                     hideBorder
                     defaultOpen
                     render={() => (
-                        <Title
-                            size={TitleSize.Small}
-                            title={title}
-                            trailingElement={trailingElement}
-                        />
+                        <div className="pl-md">
+                            <Title
+                                size={TitleSize.Small}
+                                title={title}
+                                trailingElement={trailingElement}
+                            />
+                        </div>
                     )}
                 >
                     <div className="flex flex-col gap-y-sm p-md">

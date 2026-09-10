@@ -34,7 +34,9 @@ export function BalanceChanges({ changes }: BalanceChangesProps): JSX.Element | 
 
     return (
         <div className="flex flex-col gap-xs">
-            <Title title="Balance Change" />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Balance Change" />
+            </div>
             <div className="px-md--rs">
                 <TableCard
                     data={pageData}

@@ -29,7 +29,9 @@ export function StakingData({ stakingData }: StakingDataProps) {
 
     return (
         <Panel>
-            <Title title="Staking" />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Staking" />
+            </div>
             <div className="flex h-full w-full items-center gap-md p-md--rs">
                 <div className="w-1/2 text-iota-primary-80">
                     <LabelText

@@ -68,7 +68,7 @@ export function MyTokens({ coinBalances, isLoading, isFetched }: MyTokensProps) 
     return (
         <Loading loading={isFirstTimeLoading}>
             <div className="w-full">
-                <div className="flex h-[56px] items-center">
+                <div className="flex h-[56px] items-center px-md--rs">
                     <Title title="My coins" />
                 </div>
                 <div className="inline-flex">

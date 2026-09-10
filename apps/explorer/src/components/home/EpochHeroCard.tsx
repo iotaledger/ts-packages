@@ -69,7 +69,7 @@ export function EpochHeroCard(): JSX.Element {
     return (
         <LinkWithQuery className="flex w-full" to={`/epoch/${epoch}`}>
             <Panel>
-                <div className="group relative">
+                <div className="group relative px-md--rs py-sm--rs">
                     <Title title={`Epoch ${epoch ?? '--'}`} size={TitleSize.Medium} />
                     <ArrowTopRight className="dark:iota-neutral-60 absolute right-4 top-4 size-6 text-iota-neutral-40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                     <div className="flex flex-col gap-md p-md--rs">

@@ -298,7 +298,9 @@ export function CheckpointDetail(): JSX.Element {
                             </Panel>
                         </div>
                         <Panel>
-                            <Title title="Checkpoint Transaction Blocks" />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title title="Checkpoint Transaction Blocks" />
+                            </div>
                             <div className="p-md--rs">
                                 <CheckpointTransactionBlocks id={data.sequenceNumber} />
                             </div>

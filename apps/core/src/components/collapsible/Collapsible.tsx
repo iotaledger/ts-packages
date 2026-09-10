@@ -46,7 +46,13 @@ export function Collapsible({
                 isExpanded={isOpen ?? open}
                 onToggle={() => handleOpenChange(!open)}
             >
-                {render ? render({ isOpen: open }) : <Title size={titleSize} title={title} />}
+                {render ? (
+                    render({ isOpen: open })
+                ) : (
+                    <div className="pl-md">
+                        <Title size={titleSize} title={title} />
+                    </div>
+                )}
             </AccordionHeader>
             <AccordionContent isExpanded={isOpen ?? open}>{children}</AccordionContent>
         </Accordion>

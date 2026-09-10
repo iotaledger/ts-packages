@@ -46,7 +46,9 @@ export function TransactionSummary({
             ) : (
                 <div className="flex flex-col gap-3">
                     {isDryRun && (
-                        <Title title="Do you approve these actions?" size={TitleSize.Medium} />
+                        <div className="px-md--rs py-sm--rs">
+                            <Title title="Do you approve these actions?" size={TitleSize.Medium} />
+                        </div>
                     )}
                     {isDryRun && txHash && (
                         <Panel hasBorder>

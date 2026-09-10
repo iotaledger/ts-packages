@@ -178,7 +178,7 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                 </div>
             ) : (
                 <div className="flex h-full flex-col">
-                    <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px] [&_h4]:whitespace-nowrap">
+                    <div className="flex flex-col justify-center sm:min-h-[72px] [&_h4]:whitespace-nowrap">
                         <Title
                             title="Coins"
                             supportingElement={coinCountBadge}

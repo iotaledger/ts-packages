@@ -106,7 +106,9 @@ export function AbstractAccountResultPage(): JSX.Element {
         ) : (
             <>
                 <Panel>
-                    <Title title="Authenticator" />
+                    <div className="px-md--rs py-sm--rs">
+                        <Title title="Authenticator" />
+                    </div>
                     <Divider />
                     <div className="flex flex-col gap-sm p-md--rs">
                         <KeyValueInfo

@@ -76,20 +76,22 @@ export function ObjectDetail({ change, renderExplorerLink: ExplorerLink }: Objec
             hideArrow
             render={() => (
                 <div className="flex w-full flex-row items-center justify-between">
-                    <Title
-                        size={TitleSize.Small}
-                        title="Object"
-                        trailingElement={
-                            <TriangleDown
-                                className={cx(
-                                    'ml-xxxs h-5 w-5 text-iota-neutral-60',
-                                    open
-                                        ? 'rotate-0 transition-transform ease-linear'
-                                        : '-rotate-90 transition-transform ease-linear',
-                                )}
-                            />
-                        }
-                    />
+                    <div className="pl-md">
+                        <Title
+                            size={TitleSize.Small}
+                            title="Object"
+                            trailingElement={
+                                <TriangleDown
+                                    className={cx(
+                                        'ml-xxxs h-5 w-5 text-iota-neutral-60',
+                                        open
+                                            ? 'rotate-0 transition-transform ease-linear'
+                                            : '-rotate-90 transition-transform ease-linear',
+                                    )}
+                                />
+                            }
+                        />
+                    </div>
                     <div className="flex flex-row items-center gap-xxs pr-md">
                         <Badge type={BadgeType.Neutral} label={typeName} />
                         {change.objectId && (
@@ -214,15 +216,17 @@ function ObjectChangeByOwnerPanel({
                         setOpen(isOpen);
                     }}
                     render={() => (
-                        <Title
-                            size={TitleSize.Small}
-                            title="Object Changes"
-                            trailingElement={
-                                <div className="ml-1 flex">
-                                    <Badge type={BadgeType.PrimarySoft} label={label} />
-                                </div>
-                            }
-                        />
+                        <div className="pl-md">
+                            <Title
+                                size={TitleSize.Small}
+                                title="Object Changes"
+                                trailingElement={
+                                    <div className="ml-1 flex">
+                                        <Badge type={BadgeType.PrimarySoft} label={label} />
+                                    </div>
+                                }
+                            />
+                        </div>
                     )}
                 >
                     <>

@@ -129,7 +129,9 @@ export function ModuleFunction({
     return (
         <Accordion>
             <AccordionHeader isExpanded={isExpanded} onToggle={onToggle}>
-                <Title size={TitleSize.Small} title={functionName} />
+                <div className="pl-md">
+                    <Title size={TitleSize.Small} title={functionName} />
+                </div>
             </AccordionHeader>
             <AccordionContent isExpanded={isExpanded}>
                 <form
