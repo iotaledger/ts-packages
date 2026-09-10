@@ -57,7 +57,7 @@ export function ProgrammableTxnBlockCard({
     return (
         <CollapsibleCard title={itemsLabel} rawData={rawData}>
             <ExpandableList items={items} defaultItemsToShow={itemsToShow} itemsLabel={itemsLabel}>
-                <div className="mx-auto flex w-full max-w-5xl flex-col gap-xxs p-md--rs pt-xs--rs md:gap-xs lg:gap-sm">
+                <div className="mx-auto flex w-full flex-col gap-xxs p-md--rs pt-xs--rs md:gap-xs lg:gap-sm">
                     {noExpandableList ? (
                         renderResponsiveRows(items, columns)
                     ) : (
