@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useId, useMemo, useState } from 'react';
 import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
 import {
     CoinFiatValue,
@@ -11,8 +11,20 @@ import {
     type GasSummaryType,
 } from '@iota/core';
 import { ArrowBottomLeft, ArrowDown, ArrowTopRight } from '@iota/apps-ui-icons';
-import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
-import { CoinFormat, formatAddress, toBase64 } from '@iota/iota-sdk/utils';
+import { bcs } from '@iota/iota-sdk/bcs';
+import type {
+    IotaTransactionBlockResponse,
+    OwnedObjectRef,
+    TransactionBlockEffectsModifiedAtVersions,
+    TransactionEffects,
+} from '@iota/iota-sdk/client';
+import {
+    CoinFormat,
+    formatAddress,
+    formatDigest,
+    fromBase64,
+    toBase64,
+} from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import {
     AddressLink,
@@ -20,7 +32,9 @@ import {
     DateDisplay,
     EpochLink,
     ObjectLink,
+    TransactionLink,
 } from '~/components';
+import { useAdvancedMode } from '~/contexts';
 import {
     useBreakpoint,
     useDeserializedSignatures,
@@ -88,7 +102,12 @@ function MultiSigParticipantRow({
                 keyText="Address"
                 value={<AddressLink address={participant.address} copyText={participant.address} />}
             />
-            <KeyValueInfo layout="receipt" keyText="Scheme" value={participant.signatureScheme} />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Scheme"
+                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
+                value={participant.signatureScheme}
+            />
             <KeyValueInfo layout="receipt" keyText="Weight" value={participant.weight.toString()} />
             <KeyValueInfo
                 layout="receipt"
@@ -135,7 +154,12 @@ function MultiSigBreakdown({ signature: data }: { signature: MultiSigSignature }
 
     return (
         <div className="flex flex-col gap-sm">
-            <KeyValueInfo layout="receipt" keyText="Scheme" value="MultiSig" />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Scheme"
+                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
+                value="MultiSig"
+            />
             <KeyValueInfo
                 layout="receipt"
                 keyText="Participants"
@@ -176,7 +200,12 @@ function SignatureBreakdown({
     const { signature, signatureScheme } = data;
     return (
         <div className="flex flex-col gap-sm">
-            <KeyValueInfo layout="receipt" keyText="Scheme" value={signatureScheme} />
+            <KeyValueInfo
+                layout="receipt"
+                keyText="Scheme"
+                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
+                value={signatureScheme}
+            />
             <KeyValueInfo
                 layout="receipt"
                 keyText="Address"
@@ -334,6 +363,282 @@ function GasPaymentObjectsDetails({
     );
 }
 
+function getLamportVersion(effects?: TransactionEffects): string | undefined {
+    const touchedRefs = [
+        ...(effects?.mutated ?? []),
+        ...(effects?.created ?? []),
+        ...(effects?.unwrapped ?? []),
+    ];
+
+    return touchedRefs.reduce<string | undefined>((highest, { reference }) => {
+        const version = reference.version;
+        return highest === undefined || Number(version) > Number(highest) ? version : highest;
+    }, undefined);
+}
+
+function getExpiration(rawTransaction?: string): string | undefined {
+    if (!rawTransaction) {
+        return undefined;
+    }
+
+    try {
+        const [{ intentMessage }] = bcs.SenderSignedData.parse(fromBase64(rawTransaction));
+        const expiration = intentMessage.value.V1.expiration;
+        return 'Epoch' in expiration ? `Epoch ${expiration.Epoch}` : 'No Expiration';
+    } catch {
+        return undefined;
+    }
+}
+
+function ObjectRefList({
+    refs,
+}: {
+    refs: Array<{ objectId: string; version?: string }>;
+}): JSX.Element {
+    return (
+        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
+            {refs.map((ref, index) => (
+                <div
+                    key={ref.objectId}
+                    className={clsx(
+                        'min-w-0 py-xs',
+                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
+                    )}
+                >
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText={String(index + 1).padStart(2, '0')}
+                        value={
+                            <ObjectLink
+                                objectId={ref.objectId}
+                                copyText={ref.objectId}
+                                className="text-label-md"
+                            />
+                        }
+                        supportingLabel={ref.version ? `v${ref.version}` : undefined}
+                        fullwidth
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function TransactionDependencies({ dependencies }: { dependencies: string[] }): JSX.Element {
+    return (
+        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
+            {dependencies.map((digest, index) => (
+                <div
+                    key={digest}
+                    className={clsx(
+                        'min-w-0 py-xs',
+                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
+                    )}
+                >
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText={String(index + 1).padStart(2, '0')}
+                        value={
+                            <TransactionLink
+                                digest={digest}
+                                copyText={digest}
+                                className="text-label-md"
+                            />
+                        }
+                        fullwidth
+                    />
+                </div>
+            ))}
+        </div>
+    );
+}
+
+interface EffectsBreakdownProps {
+    dependencies?: string[];
+    modifiedAtVersions?: TransactionBlockEffectsModifiedAtVersions[];
+    sharedObjects?: Array<{ objectId: string; version: string }>;
+    unwrapped?: OwnedObjectRef[];
+    eventsDigest?: string | null;
+    lamportVersion?: string;
+    expiration?: string;
+    isMediumOrAbove: boolean;
+}
+
+function EffectsBreakdown({
+    dependencies,
+    modifiedAtVersions,
+    sharedObjects,
+    unwrapped,
+    eventsDigest,
+    lamportVersion,
+    expiration,
+    isMediumOrAbove,
+}: EffectsBreakdownProps): JSX.Element {
+    const [showDependencies, setShowDependencies] = useState(false);
+    const [showModifiedAtVersions, setShowModifiedAtVersions] = useState(false);
+    const [showSharedObjects, setShowSharedObjects] = useState(false);
+
+    return (
+        <div className="flex flex-col gap-sm" data-testid="effects-breakdown">
+            <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
+                Effects
+            </div>
+            {expiration && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Expiration"
+                    tooltipText="An optional epoch after which this transaction is invalid and can no longer be executed."
+                    value={expiration}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {lamportVersion !== undefined && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Lamport Version"
+                    tooltipText="The version assigned to every object this transaction touches, one higher than the highest input version."
+                    value={lamportVersion}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {eventsDigest && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Events Digest"
+                    tooltipText="The hash of all events emitted during this transaction's execution."
+                    value={formatDigest(eventsDigest)}
+                    copyText={eventsDigest}
+                    onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {!!dependencies?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Dependencies"
+                        tooltipText="Other transactions that must be executed before this one, based on the objects they share."
+                        value={`${dependencies.length} transaction${dependencies.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="dependencies-details"
+                                aria-expanded={showDependencies}
+                                onClick={() => setShowDependencies(!showDependencies)}
+                            >
+                                {showDependencies ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showDependencies && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showDependencies && (
+                        <ExpandableDetails
+                            id="dependencies-details"
+                            ariaLabel="Dependency transactions"
+                        >
+                            <TransactionDependencies dependencies={dependencies} />
+                        </ExpandableDetails>
+                    )}
+                </>
+            )}
+            {!!modifiedAtVersions?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Modified At Versions"
+                        tooltipText="The version each modified object had immediately before this transaction changed it."
+                        value={`${modifiedAtVersions.length} object${modifiedAtVersions.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="modified-at-versions-details"
+                                aria-expanded={showModifiedAtVersions}
+                                onClick={() => setShowModifiedAtVersions(!showModifiedAtVersions)}
+                            >
+                                {showModifiedAtVersions ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showModifiedAtVersions && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showModifiedAtVersions && (
+                        <ExpandableDetails
+                            id="modified-at-versions-details"
+                            ariaLabel="Modified at versions"
+                        >
+                            <ObjectRefList
+                                refs={modifiedAtVersions.map((v) => ({
+                                    objectId: v.objectId,
+                                    version: v.sequenceNumber,
+                                }))}
+                            />
+                        </ExpandableDetails>
+                    )}
+                </>
+            )}
+            {!!sharedObjects?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Shared Objects"
+                        tooltipText="The shared objects read or mutated by this transaction."
+                        value={`${sharedObjects.length} object${sharedObjects.length === 1 ? '' : 's'}`}
+                        supportingLabel={
+                            <ButtonUnstyled
+                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                                aria-controls="shared-objects-details"
+                                aria-expanded={showSharedObjects}
+                                onClick={() => setShowSharedObjects(!showSharedObjects)}
+                            >
+                                {showSharedObjects ? 'Show Less' : 'Show More'}
+                                <ArrowDown
+                                    className={clsx(
+                                        'h-4 w-4 transition-transform ease-linear',
+                                        showSharedObjects && 'rotate-180',
+                                    )}
+                                />
+                            </ButtonUnstyled>
+                        }
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    {showSharedObjects && (
+                        <ExpandableDetails id="shared-objects-details" ariaLabel="Shared objects">
+                            <ObjectRefList refs={sharedObjects} />
+                        </ExpandableDetails>
+                    )}
+                </>
+            )}
+            {!!unwrapped?.length && (
+                <>
+                    <KeyValueInfo
+                        layout="receipt"
+                        keyText="Unwrapped"
+                        tooltipText="Objects that were wrapped inside another object in the past and got extracted back out by this transaction."
+                        value={`${unwrapped.length} object${unwrapped.length === 1 ? '' : 's'}`}
+                        fullwidth={!isMediumOrAbove}
+                    />
+                    <ExpandableDetails ariaLabel="Unwrapped objects">
+                        <ObjectRefList
+                            refs={unwrapped.map((o) => ({ objectId: o.reference.objectId }))}
+                        />
+                    </ExpandableDetails>
+                </>
+            )}
+        </div>
+    );
+}
+
 interface TransactionOverviewProps {
     transaction: IotaTransactionBlockResponse;
     gasSummary?: GasSummaryType;
@@ -344,11 +649,15 @@ export function TransactionOverview({
     gasSummary,
 }: TransactionOverviewProps): JSX.Element {
     const [showAllGasPayment, setShowAllGasPayment] = useState(false);
-    const [showGasFeeBreakdown, setShowGasFeeBreakdown] = useState(false);
     const [showFullSignatures, setShowFullSignatures] = useState(false);
     const gasPaymentDetailsId = `gas-payment-objects-${useId().replace(/:/g, '')}`;
     const isMediumOrAbove = useBreakpoint('md');
     const { userSignatures, sponsorSignature } = useDeserializedSignatures(transaction);
+    const { isAdvancedMode } = useAdvancedMode();
+    const expiration = useMemo(
+        () => getExpiration(transaction.rawTransaction),
+        [transaction.rawTransaction],
+    );
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
     const isProgrammableTransaction = transactionKindName === 'ProgrammableTransaction';
@@ -392,6 +701,7 @@ export function TransactionOverview({
             <KeyValueInfo
                 layout="receipt"
                 keyText="Digest"
+                tooltipText="The unique hash that identifies this transaction on the network."
                 value={transaction.digest}
                 copyText={transaction.digest}
                 onCopySuccess={onCopySuccess}
@@ -402,6 +712,7 @@ export function TransactionOverview({
                 <KeyValueInfo
                     layout="receipt"
                     keyText="Checkpoint"
+                    tooltipText="The checkpoint that finalized this transaction. Once included in a checkpoint, a transaction is final."
                     value={
                         <CheckpointSequenceLink sequence={transaction.checkpoint}>
                             {Number(transaction.checkpoint).toLocaleString()}
@@ -469,36 +780,22 @@ export function TransactionOverview({
                     <KeyValueInfo
                         layout="receipt"
                         keyText="Total Gas Fee"
+                        tooltipText="Computation cost plus storage cost, minus any storage rebate."
                         value={`${formattedTotalGas} ${totalGasSymbol}`}
                         supportingLabel={
-                            <div className="flex flex-row items-baseline gap-xs">
-                                <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
-                                {gasUsed && (
-                                    <ButtonUnstyled
-                                        className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                        onClick={() => setShowGasFeeBreakdown(!showGasFeeBreakdown)}
-                                    >
-                                        {showGasFeeBreakdown ? 'Show Less' : 'Show More'}
-                                        <ArrowDown
-                                            className={clsx(
-                                                'h-4 w-4 transition-transform ease-linear',
-                                                showGasFeeBreakdown && 'rotate-180',
-                                            )}
-                                        />
-                                    </ButtonUnstyled>
-                                )}
-                            </div>
+                            <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
                         }
                         fullwidth={!isMediumOrAbove}
                     />
                 </div>
             )}
-            {isProgrammableTransaction && showGasFeeBreakdown && gasUsed && (
+            {isProgrammableTransaction && isAdvancedMode && gasUsed && (
                 <ExpandableDetails ariaLabel="Gas fee details">
                     {gasPrice && (
                         <KeyValueInfo
                             layout="receipt"
                             keyText="Gas Price"
+                            tooltipText="What the sender offered to pay per unit of computation. Must be at least the epoch's reference gas price."
                             value={<GasFeeAmount amount={gasPrice} />}
                             fullwidth={!isMediumOrAbove}
                         />
@@ -507,6 +804,7 @@ export function TransactionOverview({
                         <KeyValueInfo
                             layout="receipt"
                             keyText="Computation Fee"
+                            tooltipText="Fee for executing the transaction's logic (CPU). Part of it is burned (removed from supply)."
                             value={
                                 <GasFeeAmount
                                     amount={gasUsed.computationCost}
@@ -520,6 +818,7 @@ export function TransactionOverview({
                         <KeyValueInfo
                             layout="receipt"
                             keyText="Storage Fee"
+                            tooltipText="A deposit paid for the bytes this transaction stores on-chain. It is refunded later (as storage rebate) when the data is deleted or rewritten."
                             value={<GasFeeAmount amount={gasUsed.storageCost} />}
                             fullwidth={!isMediumOrAbove}
                         />
@@ -528,6 +827,7 @@ export function TransactionOverview({
                         <KeyValueInfo
                             layout="receipt"
                             keyText="Storage Rebate"
+                            tooltipText="Deposit returned to the sender for on-chain data this transaction deleted or replaced."
                             value={<GasFeeAmount amount={-Number(gasUsed.storageRebate)} />}
                             fullwidth={!isMediumOrAbove}
                         />
@@ -538,6 +838,7 @@ export function TransactionOverview({
                 <KeyValueInfo
                     layout="receipt"
                     keyText="Gas Budget"
+                    tooltipText="The maximum the sender allowed this transaction to cost. Unused budget isn't charged."
                     value={`${formattedBudget} ${budgetSymbol}`}
                     fullwidth={!isMediumOrAbove}
                 />
@@ -616,6 +917,21 @@ export function TransactionOverview({
                             </div>
                         </ExpandableDetails>
                     )}
+                </>
+            )}
+            {isAdvancedMode && transaction.effects && (
+                <>
+                    {showFullSignatures && <Divider />}
+                    <EffectsBreakdown
+                        dependencies={transaction.effects.dependencies}
+                        modifiedAtVersions={transaction.effects.modifiedAtVersions}
+                        sharedObjects={transaction.effects.sharedObjects}
+                        unwrapped={transaction.effects.unwrapped}
+                        eventsDigest={transaction.effects.eventsDigest}
+                        lamportVersion={getLamportVersion(transaction.effects)}
+                        expiration={expiration}
+                        isMediumOrAbove={isMediumOrAbove}
+                    />
                 </>
             )}
         </div>

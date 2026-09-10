@@ -7,6 +7,7 @@ import { type IotaObjectChangeTypes, type ObjectChangeSummary } from '@iota/core
 import { type DisplayFieldsResponse } from '@iota/iota-sdk/client';
 import { useMemo } from 'react';
 import { TableCard } from '~/components/ui';
+import { useAdvancedMode } from '~/contexts';
 import { useLocalTablePagination } from '~/hooks';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib/constants';
 import { generateObjectChangesTableColumns, type ObjectChangeTableRow } from '~/lib/ui';
@@ -16,6 +17,8 @@ interface ObjectChangesProps {
 }
 
 export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Element | null {
+    const { isAdvancedMode } = useAdvancedMode();
+
     const rows = useMemo<ObjectChangeTableRow[]>(() => {
         if (!objectSummary) return [];
 
@@ -31,6 +34,7 @@ export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Elemen
                             objectType: 'objectType' in change ? change.objectType : undefined,
                             status: status as IotaObjectChangeTypes,
                             version: change.version,
+                            digest: 'digest' in change ? change.digest : undefined,
                             display:
                                 'display' in change
                                     ? (change.display as DisplayFieldsResponse | undefined)
@@ -46,7 +50,7 @@ export function ObjectChanges({ objectSummary }: ObjectChangesProps): JSX.Elemen
 
     if (!rows.length) return null;
 
-    const columns = generateObjectChangesTableColumns();
+    const columns = generateObjectChangesTableColumns(isAdvancedMode);
 
     return (
         <div className="flex flex-col gap-xs">

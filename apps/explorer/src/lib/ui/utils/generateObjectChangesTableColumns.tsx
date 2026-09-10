@@ -5,6 +5,7 @@ import { Badge, BadgeType, ButtonUnstyled, TableCellBase, TableCellText } from '
 import { Copy } from '@iota/apps-ui-icons';
 import { ObjectChangeLabels, useCopyToClipboard, type IotaObjectChangeTypes } from '@iota/core';
 import { type DisplayFieldsResponse } from '@iota/iota-sdk/client';
+import { formatDigest } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, ObjectVideoImage } from '~/components/ui';
 
@@ -15,6 +16,7 @@ export interface ObjectChangeTableRow {
     objectType?: string;
     status: IotaObjectChangeTypes;
     version?: string;
+    digest?: string;
     display?: DisplayFieldsResponse;
 }
 
@@ -94,7 +96,35 @@ function CurrentOwnerCell({
     );
 }
 
-export function generateObjectChangesTableColumns(): ColumnDef<ObjectChangeTableRow>[] {
+function NewDigestCell({ digest }: { digest?: string }): JSX.Element {
+    const copyToClipboard = useCopyToClipboard();
+
+    if (!digest) {
+        return (
+            <TableCellBase>
+                <TableCellText>-</TableCellText>
+            </TableCellBase>
+        );
+    }
+
+    return (
+        <TableCellBase>
+            <div className="flex min-w-0 items-center gap-xxs">
+                <TableCellText>{formatDigest(digest)}</TableCellText>
+                <ButtonUnstyled
+                    onClick={() => copyToClipboard(digest)}
+                    aria-label="Copy to clipboard"
+                >
+                    <Copy className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40" />
+                </ButtonUnstyled>
+            </div>
+        </TableCellBase>
+    );
+}
+
+export function generateObjectChangesTableColumns(
+    isAdvancedMode?: boolean,
+): ColumnDef<ObjectChangeTableRow>[] {
     return [
         {
             header: 'Object ID',
@@ -163,5 +193,16 @@ export function generateObjectChangesTableColumns(): ColumnDef<ObjectChangeTable
                 </TableCellBase>
             ),
         },
+        ...(isAdvancedMode
+            ? [
+                  {
+                      header: 'New Digest',
+                      id: 'digest',
+                      cell: ({ row }: { row: { original: ObjectChangeTableRow } }) => (
+                          <NewDigestCell digest={row.original.digest} />
+                      ),
+                  },
+              ]
+            : []),
     ];
 }
