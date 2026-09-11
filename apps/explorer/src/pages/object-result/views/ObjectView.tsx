@@ -197,7 +197,7 @@ function OwnerCard({ objOwner }: OwnerCardProps): JSX.Element | null {
             tooltipText={OBJECT_FIELD_TOOLTIP.owner}
             tooltipPosition={TooltipPosition.Top}
             value={
-                <div className="flex flex-col gap-xs">
+                <div className="flex w-full min-w-0 flex-col gap-xs">
                     <OwnerDisplay objOwner={objOwner} />
                 </div>
             }
@@ -220,7 +220,7 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
             label="Storage Rebate"
             tooltipText={OBJECT_FIELD_TOOLTIP.storageRebate}
             tooltipPosition={TooltipPosition.Top}
-            value={storageRebateFormatted}
+            value={`-${storageRebateFormatted}`}
             supportingLabel={symbol}
         />
     );
@@ -241,7 +241,7 @@ export const OBJECT_FIELD_TOOLTIP = {
     publisher: 'The address that sent the transaction publishing this package.',
     published: 'When this version of the package was published on the network.',
     storageRebate:
-        'IOTA held as a deposit for the storage this object uses. It is paid back when the object is deleted or gets smaller.',
+        'IOTA held as a storage deposit for this object. The amount is returned when the object is deleted or its storage usage decreases.',
 };
 
 export function ObjectView({ data }: ObjectViewProps): JSX.Element {

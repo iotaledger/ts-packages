@@ -125,6 +125,7 @@ export function PkgModulesWrapper({ id, modules }: PkgModulesWrapperProps): JSX.
             </div>
             <div className="w-full md:w-4/5">
                 <ModuleContent
+                    key={`${id}-${selectedModuleName}`}
                     packageId={id}
                     moduleName={selectedModuleName}
                     moduleBytecode={selectedModuleCode}

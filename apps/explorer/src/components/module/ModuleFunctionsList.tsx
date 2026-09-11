@@ -125,18 +125,20 @@ export function ModuleFunctionsList({
                             key={functionName}
                             className="flex flex-col gap-xxs rounded-xl border border-shader-neutral-light-8 p-md dark:border-shader-neutral-dark-8"
                         >
-                            <div className="flex flex-row flex-wrap items-center gap-xs">
-                                <Badge
-                                    type={VISIBILITY_BADGE_TYPE[functionDetails.visibility]}
-                                    size={BadgeSize.Small}
-                                    label={functionDetails.visibility.toLowerCase()}
-                                />
-                                <span className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    {functionName}
-                                </span>
+                            <div className="flex flex-row items-start gap-xs">
+                                <div className="flex min-w-0 flex-row flex-wrap items-center gap-xs">
+                                    <Badge
+                                        type={VISIBILITY_BADGE_TYPE[functionDetails.visibility]}
+                                        size={BadgeSize.Small}
+                                        label={functionDetails.visibility.toLowerCase()}
+                                    />
+                                    <span className="min-w-0 break-words text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                        {functionName}
+                                    </span>
+                                </div>
 
                                 {functionDetails.isEntry && (
-                                    <div className="ml-auto">
+                                    <div className="ml-auto shrink-0">
                                         <ButtonUnstyled
                                             className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
                                             aria-controls={formId}

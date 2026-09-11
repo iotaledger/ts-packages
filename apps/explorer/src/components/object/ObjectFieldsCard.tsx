@@ -5,6 +5,7 @@
 import { type IotaMoveNormalizedStruct, type IotaObjectResponse } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { useCallback, useEffect, useState } from 'react';
+import { useBreakpoint } from '~/hooks/useBreakpoint';
 import { getFieldTypeValue } from '~/lib/ui';
 import { FieldItem, isInlineFieldValue } from './FieldItem';
 import {
@@ -39,6 +40,7 @@ export function ObjectFieldsCard({
     objectType,
 }: ObjectFieldsProps): JSX.Element | null {
     const [query, setQuery] = useState('');
+    const isMediumOrAbove = useBreakpoint('md');
     const [openFieldsName, setOpenFieldsName] = useState<{
         [name: string]: boolean;
     }>({});
@@ -123,6 +125,7 @@ export function ObjectFieldsCard({
                         <div key={name} className="flex flex-col gap-sm">
                             <KeyValueInfo
                                 layout="receipt"
+                                fullwidth={!isMediumOrAbove}
                                 keyText={
                                     <>
                                         {name}
@@ -165,7 +168,7 @@ export function ObjectFieldsCard({
                                     id={detailsId}
                                     role="region"
                                     aria-label={`${name} details`}
-                                    className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
+                                    className="ml-xs flex min-w-0 flex-col gap-md overflow-x-auto border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
                                 >
                                     <FieldItem
                                         value={value}

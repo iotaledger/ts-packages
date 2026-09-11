@@ -25,16 +25,24 @@ export function OwnerDisplay({ objOwner }: { objOwner: ObjectOwner }): ReactNode
     if ('ObjectOwner' in objOwner) {
         return (
             <div className="flex flex-row flex-wrap items-start gap-xs">
-                <ObjectLink objectId={objOwner.ObjectOwner} copyText={objOwner.ObjectOwner} />
-                <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Object" />
+                <div className="min-w-0 flex-1">
+                    <ObjectLink objectId={objOwner.ObjectOwner} copyText={objOwner.ObjectOwner} />
+                </div>
+                <div className="shrink-0">
+                    <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Object" />
+                </div>
             </div>
         );
     }
 
     return (
         <div className="flex flex-row flex-wrap items-start gap-xs">
-            <AddressLink address={objOwner.AddressOwner} copyText={objOwner.AddressOwner} />
-            <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Address" />
+            <div className="min-w-0 flex-1">
+                <AddressLink address={objOwner.AddressOwner} copyText={objOwner.AddressOwner} />
+            </div>
+            <div className="shrink-0">
+                <Badge type={BadgeType.Outlined} size={BadgeSize.Small} label="Address" />
+            </div>
         </div>
     );
 }

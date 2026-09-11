@@ -8,6 +8,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import clsx from 'clsx';
 import { UnderlyingObjectCard } from './UnderlyingObjectCard';
 import { ObjectLink } from '~/components/ui';
+import { useBreakpoint } from '~/hooks/useBreakpoint';
 import {
     Badge,
     BadgeSize,
@@ -50,6 +51,7 @@ export function DynamicFieldsCard({ id }: { id: string }) {
     const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
         useGetDynamicFields(id);
     const [openFields, setOpenFields] = useState<Record<string, boolean>>({});
+    const isMediumOrAbove = useBreakpoint('md');
 
     const observerElem = useRef<HTMLDivElement | null>(null);
     const { isIntersecting } = useOnScreen(observerElem);
@@ -90,6 +92,7 @@ export function DynamicFieldsCard({ id }: { id: string }) {
                         <div key={result.objectId} className="flex flex-col gap-sm">
                             <KeyValueInfo
                                 layout="receipt"
+                                fullwidth={!isMediumOrAbove}
                                 keyText={label}
                                 keyIcon={
                                     isStructKey && (
@@ -142,7 +145,7 @@ export function DynamicFieldsCard({ id }: { id: string }) {
                                     id={detailsId}
                                     role="region"
                                     aria-label={`${label} details`}
-                                    className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
+                                    className="ml-xs flex min-w-0 flex-col gap-md overflow-x-auto border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
                                 >
                                     <UnderlyingObjectCard
                                         parentId={id}

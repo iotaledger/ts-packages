@@ -43,7 +43,7 @@ export function ModuleStructsList({
                             className="flex flex-col gap-xxs rounded-xl border border-shader-neutral-light-8 p-md dark:border-shader-neutral-dark-8"
                         >
                             <div className="flex flex-row flex-wrap items-center gap-xs">
-                                <span className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                                <span className="min-w-0 break-words text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                                     {structName}
                                 </span>
                                 {structDetails.abilities.abilities.map((ability) => (
