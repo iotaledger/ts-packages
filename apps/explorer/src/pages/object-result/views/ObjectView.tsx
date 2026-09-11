@@ -15,8 +15,9 @@ import {
 } from '@iota/iota-sdk/utils';
 import { SortByDefault } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
-import { type ReactNode, useState } from 'react';
-import { AddressLink, Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
+import { useState } from 'react';
+import { OwnerDisplay } from '~/components/object';
+import { Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
 import { extractName, onCopySuccess, parseObjectType, trimStdLibPrefix } from '~/lib/utils';
 
 interface HeroVideoImageProps {
@@ -79,6 +80,8 @@ function ObjectIdCard({ objectId }: ObjectIdCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Object ID"
+            tooltipText={OBJECT_FIELD_TOOLTIP.objectId}
+            tooltipPosition={TooltipPosition.Top}
             value={
                 <div className="flex flex-col gap-xs">
                     <ObjectLink objectId={objectId} copyText={objectId} />
@@ -118,7 +121,11 @@ function TypeCard({ objectType }: TypeCardCardProps): JSX.Element {
         <DisplayStats
             label="Type"
             value={
-                <ObjectLink objectId={`${address}?module=${module}`} label={normalizedStructTag}>
+                <ObjectLink
+                    objectId={`${address}?module=${module}`}
+                    label={normalizedStructTag}
+                    showAddressAlias={false}
+                >
                     {normalizedStructTag}
                 </ObjectLink>
             }
@@ -135,7 +142,14 @@ interface VersionCardProps {
 }
 
 function VersionCard({ version }: VersionCardProps): JSX.Element {
-    return <DisplayStats label="Version" value={version ?? '--'} />;
+    return (
+        <DisplayStats
+            label="Version"
+            tooltipText={OBJECT_FIELD_TOOLTIP.version}
+            tooltipPosition={TooltipPosition.Top}
+            value={version ?? '--'}
+        />
+    );
 }
 
 interface LastTxBlockCardProps {
@@ -146,6 +160,8 @@ function LastTxBlockCard({ digest }: LastTxBlockCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Last Transaction Block Digest"
+            tooltipText={OBJECT_FIELD_TOOLTIP.lastTransaction}
+            tooltipPosition={TooltipPosition.Top}
             value={<TransactionLink digest={digest}>{formatDigest(digest)}</TransactionLink>}
             copyText={digest}
             onCopySuccess={onCopySuccess}
@@ -161,20 +177,13 @@ function DigestCard({ digest }: DigestCardProps): JSX.Element {
     return (
         <DisplayStats
             label="Object Digest"
+            tooltipText={OBJECT_FIELD_TOOLTIP.digest}
+            tooltipPosition={TooltipPosition.Top}
             value={formatDigest(digest)}
             copyText={digest}
             onCopySuccess={onCopySuccess}
         />
     );
-}
-
-function getOwnerDisplay(objOwner: ObjectOwner): 'Shared' | 'Immutable' | string {
-    if (objOwner === 'Immutable') {
-        return 'Immutable';
-    } else if ('Shared' in objOwner) {
-        return 'Shared';
-    }
-    return 'ObjectOwner' in objOwner ? objOwner.ObjectOwner : objOwner.AddressOwner;
 }
 
 interface OwnerCardProps {
@@ -185,26 +194,15 @@ function OwnerCard({ objOwner }: OwnerCardProps): JSX.Element | null {
     return (
         <DisplayStats
             label="Owner"
+            tooltipText={OBJECT_FIELD_TOOLTIP.owner}
+            tooltipPosition={TooltipPosition.Top}
             value={
-                <div className="flex flex-col gap-xs">
+                <div className="flex w-full min-w-0 flex-col gap-xs">
                     <OwnerDisplay objOwner={objOwner} />
                 </div>
             }
         />
     );
-}
-
-function OwnerDisplay({ objOwner }: { objOwner: ObjectOwner }): ReactNode {
-    const owner = getOwnerDisplay(objOwner);
-    if (objOwner !== 'Immutable' && !('Shared' in objOwner)) {
-        if ('ObjectOwner' in objOwner) {
-            return <ObjectLink objectId={objOwner.ObjectOwner} copyText={objOwner.ObjectOwner} />;
-        } else {
-            return <AddressLink address={objOwner.AddressOwner} copyText={objOwner.AddressOwner} />;
-        }
-    }
-
-    return <span className="text-iota-neutral-10 dark:text-iota-neutral-92">{owner}</span>;
 }
 
 interface StorageRebateCardProps {
@@ -220,6 +218,8 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
     return (
         <DisplayStats
             label="Storage Rebate"
+            tooltipText={OBJECT_FIELD_TOOLTIP.storageRebate}
+            tooltipPosition={TooltipPosition.Top}
             value={`-${storageRebateFormatted}`}
             supportingLabel={symbol}
         />
@@ -229,6 +229,20 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
 interface ObjectViewProps {
     data: IotaObjectResponse;
 }
+
+export const OBJECT_FIELD_TOOLTIP = {
+    objectId:
+        'The unique identifier of this object. It is assigned when the object is created and never changes, even if the object is transferred or updated.',
+    version:
+        'Every change to an object raises its version number. The numbers are not consecutive, so gaps between versions are normal.',
+    digest: 'A fingerprint of this exact version of the object. Any change to its contents produces a different one.',
+    owner: 'Determines who can use this object: a single address, anyone at all if it is shared, or nobody if it is immutable and can no longer change. Objects can also be held inside another object.',
+    lastTransaction: 'The most recent transaction that changed this object.',
+    publisher: 'The address that sent the transaction publishing this package.',
+    published: 'When this version of the package was published on the network.',
+    storageRebate:
+        'IOTA held as a storage deposit for this object. The amount is returned when the object is deleted or its storage usage decreases.',
+};
 
 export function ObjectView({ data }: ObjectViewProps): JSX.Element {
     const display = data.data?.display?.data;
@@ -320,7 +334,16 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
                     <div className="flex-1">
                         <DisplayStats
                             label="Link"
-                            value={<Link href={display.link}>{display.link}</Link>}
+                            value={
+                                <Link
+                                    variant="mono"
+                                    href={display.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {display.link}
+                                </Link>
+                            }
                         />
                     </div>
                 )}
@@ -328,7 +351,16 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
                     <div className="flex-1">
                         <DisplayStats
                             label="Website"
-                            value={<Link href={display.project_url}>{display.project_url}</Link>}
+                            value={
+                                <Link
+                                    variant="mono"
+                                    href={display.project_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {display.project_url}
+                                </Link>
+                            }
                         />
                     </div>
                 )}

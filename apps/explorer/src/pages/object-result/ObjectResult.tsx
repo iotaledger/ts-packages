@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ErrorBoundary, PageLayout } from '~/components';
+import { ErrorBoundary, PageLayout, SyntaxHighlighter } from '~/components';
 import { PageHeader } from '~/components/ui';
 import { usePackageUpgradePolicy } from '~/hooks';
 import { getHistoryUnavailableMessage, INDEXER_RETENTION_DAYS } from '~/lib/constants';
@@ -18,6 +19,10 @@ import {
     InfoBoxStyle,
     InfoBoxType,
     LoadingIndicator,
+    Panel,
+    Toggle,
+    ToggleLabelPosition,
+    ToggleSize,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 
@@ -27,6 +32,20 @@ export function ObjectResult(): JSX.Element {
     const { id: objID } = useParams();
     const { data, isPending, isError, isFetched } = useGetObjectOrPastObject(objID);
     const copyToClipboard = useCopyToClipboard();
+    const [showRawJson, setShowRawJson] = useState(false);
+
+    const rawJsonToggle = (
+        <div className="flex w-full md:justify-end">
+            <Toggle
+                name="raw-json-toggle"
+                label="Raw JSON"
+                labelPosition={ToggleLabelPosition.Left}
+                size={ToggleSize.Small}
+                isToggled={showRawJson}
+                onChange={setShowRawJson}
+            />
+        </div>
+    );
 
     const isPageError = !isPending && (isError || data?.error || (isFetched && !data));
     const resp = data && !isPageError ? translate(data) : null;
@@ -63,13 +82,16 @@ export function ObjectResult(): JSX.Element {
                                     </div>
                                 }
                                 showCopyButton={false}
+                                after={data && rawJsonToggle}
                                 error={
                                     data?.isViewingPastVersion
                                         ? 'This object was deleted. You are viewing a past version of this object.'
                                         : undefined
                                 }
                             />
-                            <ErrorBoundary>{data && <ObjectView data={data} />}</ErrorBoundary>
+                            {!showRawJson && (
+                                <ErrorBoundary>{data && <ObjectView data={data} />}</ErrorBoundary>
+                            )}
                         </div>
                     )}
                     {data?.isHistoryUnavailable ? (
@@ -94,6 +116,7 @@ export function ObjectResult(): JSX.Element {
                                 <PageHeader
                                     type="Package"
                                     showCopyButton={false}
+                                    after={rawJsonToggle}
                                     title={
                                         <AddressAlias
                                             address={resp.id}
@@ -125,7 +148,20 @@ export function ObjectResult(): JSX.Element {
                                 />
                             )}
                             <ErrorBoundary>
-                                {isPackage ? <PkgView data={resp} /> : <TokenView data={data} />}
+                                {showRawJson ? (
+                                    <Panel>
+                                        <div className="p-md--rs">
+                                            <SyntaxHighlighter
+                                                code={JSON.stringify(data, null, 2)}
+                                                language="json"
+                                            />
+                                        </div>
+                                    </Panel>
+                                ) : isPackage ? (
+                                    <PkgView data={resp} />
+                                ) : (
+                                    <TokenView data={data} />
+                                )}
                             </ErrorBoundary>
                         </>
                     )}

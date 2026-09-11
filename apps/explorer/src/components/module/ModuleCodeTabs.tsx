@@ -46,6 +46,15 @@ export function ModuleCodeTabs({
     };
 
     const TABS: TabItem[] = [bytecodeTab, sourceTab];
+    const visibleTabs = TABS.filter(({ hidden }) => !hidden);
+
+    if (visibleTabs.length < 2) {
+        return (
+            <div className="max-h-[560px] overflow-auto">
+                <ModuleView id={packageId} name={moduleName} code={moduleBytecode} />
+            </div>
+        );
+    }
 
     return (
         <TabbedContentWrapper>
@@ -56,7 +65,7 @@ export function ModuleCodeTabs({
                             type={SegmentedButtonType.Transparent}
                             shape={ButtonSegmentType.Underlined}
                         >
-                            {TABS.filter(({ hidden }) => !hidden).map(({ id, label }) => (
+                            {visibleTabs.map(({ id, label }) => (
                                 <ButtonSegment
                                     key={id}
                                     type={ButtonSegmentType.Underlined}

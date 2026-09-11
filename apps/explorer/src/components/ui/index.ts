@@ -20,6 +20,5 @@ export * from './PlaceholderTable';
 export * from './PlayPause';
 export * from './ProgressBar';
 export * from './RingChart';
-export * from './SplitPanes';
 export * from './TableCard';
 export * from './VerticalList';
