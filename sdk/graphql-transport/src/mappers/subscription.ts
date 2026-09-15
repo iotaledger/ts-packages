@@ -104,6 +104,7 @@ export function mapRpcTransactionFilterToGraphQL(
 export function mapSubscriptionEvent(event: SubscriptionEvent) {
     return {
         bcs: event.bcs,
+        bcsEncoding: 'base64',
         id: {
             eventSeq: '', // TODO
             txDigest: '', // TODO

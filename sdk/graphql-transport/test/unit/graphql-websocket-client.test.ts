@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { parse } from 'graphql';
 import { describe, expect, test, vi } from 'vitest';
 
 import { GraphQLWebSocketClient } from '../../src/graphql-websocket-client.js';
@@ -90,6 +91,19 @@ describe('GraphQLWebSocketClient', () => {
                     payload: { query: QUERY, variables: { filter: { emittingModule: '0x3' } } },
                 },
             ]);
+        });
+    });
+
+    describe('document handling', () => {
+        test('a DocumentNode is printed rather than serialized as an AST', async () => {
+            const harness = createMockWebSocket();
+            await connect(harness).subscribe({ query: parse(QUERY), onMessage: () => {} });
+
+            const [frame] = framesOfType(harness.latest(), 'subscribe');
+            const { query } = frame.payload as { query: string };
+            expect(typeof query).toBe('string');
+            expect(query).toContain('subscription');
+            expect(query).toContain('__typename');
         });
     });
 

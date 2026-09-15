@@ -91,6 +91,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
 
         expect(onMessage).toHaveBeenCalledWith(
             expect.objectContaining({
+                bcsEncoding: 'base64',
                 packageId: '0x2',
                 parsedJson: { amount: '1' },
                 sender: '0xabc',

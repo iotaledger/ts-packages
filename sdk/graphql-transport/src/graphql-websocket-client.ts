@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { GraphQLDocument } from '@iota/iota-sdk/graphql';
+import { print } from 'graphql';
 
 interface ConnectionInitMessage {
     type: 'connection_init';
@@ -136,6 +137,18 @@ const DEFAULT_OPTIONS: ResolvedGraphQLWebSocketClientOptions = {
     maxReconnects: 5,
     startupErrorGrace: 250,
 };
+
+/**
+ * `GraphQLDocument` covers plain strings, `DocumentNode` ASTs and the string-mode documents
+ * codegen emits, which stringify themselves. Only a real AST needs printing.
+ */
+function toQueryString(query: GraphQLDocument): string {
+    if (typeof query === 'string') {
+        return query;
+    }
+
+    return 'kind' in query ? print(query) : String(query);
+}
 
 function toWebSocketUrl(httpUrl: string): string {
     const url = new URL(httpUrl);
@@ -388,7 +401,7 @@ class GraphQLSubscription {
             id,
             type: 'subscribe',
             payload: {
-                query: this.#request.query as string,
+                query: toQueryString(this.#request.query),
                 ...(variables ? { variables } : {}),
             },
         });
