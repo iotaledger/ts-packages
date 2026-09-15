@@ -160,6 +160,57 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         transport.close();
     });
 
+    test.each([
+        ['Sender', { Sender: '0xabc' }],
+        ['Transaction', { Transaction: 'digest' }],
+        ['MoveEventType', { MoveEventType: '0x2::coin::Event' }],
+    ])('rejects the %s event filter rather than dropping it', async (_name, filter) => {
+        const { transport } = createTransport();
+
+        await expect(
+            transport.subscribe({
+                method: 'iotax_subscribeEvent',
+                unsubscribe: 'iotax_unsubscribeEvent',
+                params: [filter],
+                onMessage: () => {},
+            }),
+        ).rejects.toThrow(/not supported/i);
+        transport.close();
+    });
+
+    test.each([
+        ['Checkpoint', { Checkpoint: '1' }],
+        ['ToAddress', { ToAddress: '0xabc' }],
+        ['TransactionKindIn', { TransactionKindIn: ['ProgrammableTransaction'] }],
+        ['an unmappable TransactionKind', { TransactionKind: 'TransactionDenyRulesUpdate' }],
+        ['MoveFunction without a module', { MoveFunction: { package: '0x2', function: 'mint' } }],
+    ])('rejects the %s transaction filter rather than dropping it', async (_name, filter) => {
+        const { transport } = createTransport();
+
+        await expect(
+            transport.subscribe({
+                method: 'iotax_subscribeTransaction',
+                unsubscribe: 'iotax_unsubscribeTransaction',
+                params: [filter],
+                onMessage: () => {},
+            }),
+        ).rejects.toThrow(/not supported/i);
+        transport.close();
+    });
+
+    test('an empty filter object still means no filter', async () => {
+        const { harness, transport } = createTransport();
+        await transport.subscribe({
+            method: 'iotax_subscribeEvent',
+            unsubscribe: 'iotax_unsubscribeEvent',
+            params: [{}],
+            onMessage: () => {},
+        });
+
+        expect(subscribeFrame(harness).variables).toEqual({ filter: undefined });
+        transport.close();
+    });
+
     test('an unmapped subscribe method falls back to the JSON-RPC transport', async () => {
         const { transport } = createTransport();
 

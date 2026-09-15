@@ -236,9 +236,9 @@ export class IotaClientGraphQLTransport implements IotaTransport {
     ): Promise<() => Promise<boolean>> {
         switch (input.method) {
             case 'iotax_subscribeEvent':
-                return this.#subscribeEvents(input);
+                return this.#subscribeWithFallback(input, () => this.#subscribeEvents(input));
             case 'iotax_subscribeTransaction':
-                return this.#subscribeTransactions(input);
+                return this.#subscribeWithFallback(input, () => this.#subscribeTransactions(input));
             default:
                 break;
         }
@@ -248,6 +248,22 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         }
 
         return this.#fallbackTransport.subscribe(input);
+    }
+
+    async #subscribeWithFallback<T>(
+        input: IotaTransportSubscribeOptions<T>,
+        subscribe: () => Promise<() => Promise<boolean>>,
+    ): Promise<() => Promise<boolean>> {
+        try {
+            return await subscribe();
+        } catch (error) {
+            // A filter GraphQL cannot express is still expressible over JSON-RPC.
+            if (error instanceof UnsupportedParamError && this.#fallbackTransport) {
+                return this.#fallbackTransport.subscribe(input);
+            }
+
+            throw error;
+        }
     }
 
     async #subscribeEvents<T>(
