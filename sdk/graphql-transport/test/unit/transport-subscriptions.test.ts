@@ -11,6 +11,7 @@ function createTransport() {
     const transport = new IotaClientGraphQLTransport({
         url: 'http://localhost:9125/graphql',
         WebSocketConstructor: harness.WebSocketConstructor,
+        wsOptions: { startupErrorGrace: 1 },
     });
     return { harness, transport };
 }

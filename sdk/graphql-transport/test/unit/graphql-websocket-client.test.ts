@@ -21,12 +21,14 @@ function connect(
         reconnectTimeout?: number;
         maxReconnects?: number;
         connectionAckTimeout?: number;
+        startupErrorGrace?: number;
     } = {},
 ) {
     return new GraphQLWebSocketClient('http://localhost:9125/graphql/subscriptions', {
         WebSocketConstructor: harness.WebSocketConstructor,
         reconnectTimeout: 1,
         connectionAckTimeout: 50,
+        startupErrorGrace: 1,
         ...options,
     });
 }
@@ -159,6 +161,40 @@ describe('GraphQLWebSocketClient', () => {
             expect(framesOfType(harness.latest(), 'subscribe').map((frame) => frame.id)).toEqual([
                 '2',
             ]);
+        });
+    });
+
+    describe('startup errors', () => {
+        test('a rejected operation rejects subscribe() instead of resolving', async () => {
+            const harness = createMockWebSocket();
+            const onError = vi.fn();
+            const client = connect(harness, { startupErrorGrace: 50 });
+
+            const subscribing = client.subscribe({ query: QUERY, onMessage: () => {}, onError });
+            await tick();
+            emitServerMessage(harness.latest(), {
+                id: '1',
+                type: 'error',
+                payload: [{ message: 'unknown field emittingModule' }],
+            });
+
+            await expect(subscribing).rejects.toThrow(/unknown field emittingModule/);
+            expect(onError).not.toHaveBeenCalled();
+        });
+
+        test('an error after the startup window goes to onError', async () => {
+            const harness = createMockWebSocket();
+            const onError = vi.fn();
+            const client = connect(harness);
+
+            await client.subscribe({ query: QUERY, onMessage: () => {}, onError });
+            emitServerMessage(harness.latest(), {
+                id: '1',
+                type: 'error',
+                payload: [{ message: 'lost downstream' }],
+            });
+
+            expect(onError).toHaveBeenCalledWith([{ message: 'lost downstream' }]);
         });
     });
 

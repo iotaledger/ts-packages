@@ -100,6 +100,15 @@ export type GraphQLWebSocketClientOptions = {
      * @default 5
      */
     maxReconnects?: number;
+    /**
+     * Milliseconds to wait after sending `subscribe` for the server to reject the operation.
+     * graphql-ws does not acknowledge a `subscribe`, so a validation error is the only signal
+     * that the operation was refused and it arrives immediately. Within this window such an
+     * error rejects `subscribe()`; afterwards it goes to `onError`. Messages are delivered
+     * throughout, only the handle is returned later.
+     * @default 250
+     */
+    startupErrorGrace?: number;
 };
 
 type ResolvedGraphQLWebSocketClientOptions = {
@@ -108,6 +117,7 @@ type ResolvedGraphQLWebSocketClientOptions = {
     connectionAckTimeout: number;
     reconnectTimeout: number;
     maxReconnects: number;
+    startupErrorGrace: number;
 };
 
 const DEFAULT_OPTIONS: ResolvedGraphQLWebSocketClientOptions = {
@@ -118,6 +128,7 @@ const DEFAULT_OPTIONS: ResolvedGraphQLWebSocketClientOptions = {
     connectionAckTimeout: 30_000,
     reconnectTimeout: 3_000,
     maxReconnects: 5,
+    startupErrorGrace: 250,
 };
 
 function toWebSocketUrl(httpUrl: string): string {
@@ -161,6 +172,17 @@ export class GraphQLWebSocketClient {
         } catch (e) {
             this.#subscriptions.delete(id);
             throw e;
+        }
+
+        const startupError = await subscription.settleStartup(this.#options.startupErrorGrace);
+
+        if (startupError) {
+            this.#subscriptions.delete(id);
+            throw new Error(
+                `GraphQL subscription was rejected: ${startupError
+                    .map((error) => error.message)
+                    .join(', ')}`,
+            );
         }
 
         const cleanup = async () => {
@@ -339,6 +361,8 @@ class GraphQLSubscription {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #request: GraphQLSubscriptionRequest<any>;
     #active = false;
+    #startingUp = true;
+    #startupError: Array<{ message: string }> | null = null;
 
     constructor(request: GraphQLSubscriptionRequest) {
         this.#request = request;
@@ -384,8 +408,21 @@ class GraphQLSubscription {
         }
     }
 
+    /** Closes the startup window and reports an error the server sent inside it, if any. */
+    async settleStartup(grace: number): Promise<Array<{ message: string }> | null> {
+        await new Promise((resolve) => setTimeout(resolve, grace));
+        this.#startingUp = false;
+        return this.#startupError;
+    }
+
     onError(errors: ErrorMessage['payload']): void {
         this.#active = false;
+
+        if (this.#startingUp) {
+            this.#startupError = errors;
+            return;
+        }
+
         this.#request.onError?.(errors);
     }
 
