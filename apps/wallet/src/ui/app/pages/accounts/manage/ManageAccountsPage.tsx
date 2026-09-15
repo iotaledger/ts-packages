@@ -33,7 +33,6 @@ export function ManageAccountsPage() {
         <Overlay
             showModal
             title="Manage Accounts"
-            showBackButton
             titleCentered={false}
             hideCloseIcon
             headerAction={

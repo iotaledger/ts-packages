@@ -13,8 +13,6 @@ import {
     getTransactionAmountForTimelocked,
     useRecognizedPackages,
     isMigrationTransaction,
-    useBalanceVisible,
-    BALANCE_MASK,
 } from '@iota/core';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { Link } from 'react-router-dom';
@@ -80,7 +78,6 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
     })();
 
     const [formatAmount, symbol] = useFormatCoin({ balance, coinType });
-    const isBalanceVisible = useBalanceVisible();
 
     const error = txn.effects?.status.error;
 
@@ -124,9 +121,7 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
-                    title={
-                        error ? '--' : `${isBalanceVisible ? formatAmount : BALANCE_MASK} ${symbol}`
-                    }
+                    title={error ? '--' : `${formatAmount} ${symbol}`}
                 />
             </Card>
         </Link>

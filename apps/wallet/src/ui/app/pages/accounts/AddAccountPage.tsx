@@ -164,13 +164,7 @@ export function AddAccountPage() {
     }
 
     return (
-        <PageTemplate
-            title="Add Profile"
-            isTitleCentered
-            onClose={() => navigate('/')}
-            showBackButton
-            onBack={() => navigate('/')}
-        >
+        <PageTemplate title="Add Profile" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col pb-md--rs text-center">
                     <img

@@ -14,8 +14,6 @@ import {
     useIsActiveValidator,
     useGetNextEpochCommitteeMember,
     useGetInactiveValidator,
-    useBalanceVisible,
-    BALANCE_MASK,
 } from '@iota/core';
 import {
     Header,
@@ -78,7 +76,6 @@ export function DetailsView({
     const { isCommitteeMember } = useIsValidatorCommitteeMember();
     const { isActiveValidator } = useIsActiveValidator();
 
-    const isBalanceVisible = useBalanceVisible();
     const iotaEarned = BigInt(stakedDetails?.estimatedReward || 0n);
     const [iotaEarnedFormatted, iotaEarnedSymbol] = useFormatCoin({ balance: iotaEarned });
     const [totalStakeFormatted, totalStakeSymbol] = useFormatCoin({ balance: totalStake });
@@ -167,14 +164,14 @@ export function DetailsView({
                         <div className="flex flex-col gap-y-sm p-md">
                             <KeyValueInfo
                                 keyText="Your Stake"
-                                value={isBalanceVisible ? totalStakeFormatted : BALANCE_MASK}
-                                supportingLabel={isBalanceVisible ? totalStakeSymbol : undefined}
+                                value={totalStakeFormatted}
+                                supportingLabel={totalStakeSymbol}
                                 fullwidth
                             />
                             <KeyValueInfo
                                 keyText="Earned"
-                                value={isBalanceVisible ? iotaEarnedFormatted : BALANCE_MASK}
-                                supportingLabel={isBalanceVisible ? iotaEarnedSymbol : undefined}
+                                value={iotaEarnedFormatted}
+                                supportingLabel={iotaEarnedSymbol}
                                 fullwidth
                             />
                             <Divider />

@@ -7,7 +7,6 @@ import { CoinBalance } from '@iota/iota-sdk/client';
 import { useFormatCoin } from '../../hooks';
 import { CoinIcon } from './CoinIcon';
 import { ImageIconSize } from '../icon';
-import { BALANCE_MASK, useBalanceVisible } from '../../contexts/BalanceVisibilityContext';
 
 interface CoinSelectorBaseProps {
     hasCoinWrapper?: boolean;
@@ -57,7 +56,6 @@ function CoinSelectOption({
         balance: totalBalance,
         coinType,
     });
-    const isBalanceVisible = useBalanceVisible();
     const isIota = coinType === IOTA_TYPE_ARG;
 
     return (
@@ -76,7 +74,7 @@ function CoinSelectOption({
                 </span>
             </div>
             <span className="text-label-lg text-iota-neutral-60">
-                {isBalanceVisible ? `${formatted} ${symbol}` : BALANCE_MASK}
+                {formatted} {symbol}
             </span>
         </div>
     );

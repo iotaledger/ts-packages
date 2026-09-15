@@ -11,8 +11,6 @@ import {
     toast,
     getGasBudgetErrorMessage,
     useCoinMetadata,
-    useBalanceVisible,
-    BALANCE_MASK,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -98,8 +96,7 @@ export function EnterTimelockedAmountView({
         format: CoinFormat.Full,
     });
 
-    const isBalanceVisible = useBalanceVisible();
-    const caption = `${isBalanceVisible ? `${maxTokenFormatted} ${maxTokenFormattedSymbol}` : BALANCE_MASK} Available`;
+    const caption = `${maxTokenFormatted} ${maxTokenFormattedSymbol} Available`;
     const info = useMemo(() => {
         if (isSearchingProtocolMaxAmount) {
             let message = 'The current amount is not valid due to the large number of objects. ';

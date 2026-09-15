@@ -72,7 +72,6 @@ export function SupplyIncreaseVestingOverview({
         balance: supplyIncreaseVestingSchedule.availableStaking,
     });
     const isBalanceVisible = useBalanceVisible();
-
     function handleOnSuccess(digest: string): void {
         iotaClient
             .waitForTransaction({
@@ -165,7 +164,9 @@ export function SupplyIncreaseVestingOverview({
                                                 ? formattedAvailableStaking
                                                 : BALANCE_MASK
                                         }
-                                        supportingLabel={availableStakingSymbol}
+                                        supportingLabel={
+                                            isBalanceVisible ? availableStakingSymbol : undefined
+                                        }
                                     />
                                 }
                             />

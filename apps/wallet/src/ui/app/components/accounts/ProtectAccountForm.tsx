@@ -7,42 +7,19 @@ import { useEffect } from 'react';
 import { type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import zxcvbn from 'zxcvbn';
 import { parseAutoLock, useAutoLockMinutes } from '_hooks';
 import { CheckboxField } from '../../shared/forms/CheckboxField';
 import { Form } from '../../shared/forms/Form';
+import { validatePasswordStrength } from '../../shared/forms/passwordValidation';
 import { AutoLockSelector, zodSchema } from './AutoLockSelector';
 import { Button, ButtonHtmlType, ButtonType, Input, InputType } from '@iota/apps-ui-kit';
 import { ExternalLink } from '_components';
-
-function addDot(str: string | undefined) {
-    if (str && !str.endsWith('.')) {
-        return `${str}.`;
-    }
-    return str;
-}
 
 const formSchema = z
     .object({
         password: z
             .object({
-                input: z
-                    .string()
-                    .nonempty('Required')
-                    .superRefine((val, ctx) => {
-                        const {
-                            score,
-                            feedback: { warning, suggestions },
-                        } = zxcvbn(val);
-                        if (score <= 2) {
-                            ctx.addIssue({
-                                code: z.ZodIssueCode.custom,
-                                message: `${addDot(warning) || 'Password is not strong enough.'}${
-                                    suggestions ? ` ${suggestions.join(' ')}` : ''
-                                }`,
-                            });
-                        }
-                    }),
+                input: z.string().nonempty('Required').superRefine(validatePasswordStrength),
                 confirmation: z.string().nonempty('Required'),
             })
             .refine(({ input, confirmation }) => input && confirmation && input === confirmation, {

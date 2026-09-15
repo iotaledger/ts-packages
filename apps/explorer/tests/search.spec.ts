@@ -6,7 +6,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { faucet, split_coin } from './utils/localnet';
 
 async function search(page: Page, text: string, resultLabel?: string) {
-    const searchbar = page.getByPlaceholder('Search');
+    await page.getByLabel('Open search').click({ timeout: 5_000 });
+    const searchbar = page.getByTestId('Search input');
     await searchbar.fill(text);
 
     let result;

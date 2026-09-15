@@ -153,12 +153,7 @@ export function ProtectAccountPage() {
     }
 
     return (
-        <PageTemplate
-            title="Create Password"
-            isTitleCentered
-            showBackButton
-            onClose={() => navigate(-1)}
-        >
+        <PageTemplate title="Create Password" isTitleCentered>
             <Loading loading={showVerifyPasswordView === null}>
                 {showVerifyPasswordView ? (
                     <VerifyPasswordModal

@@ -24,7 +24,6 @@ export function NftTransferPage() {
             title="Send NFT"
             closeOverlay={() => navigate('/nfts')}
             onBack={() => navigate('/nfts')}
-            showBackButton
         >
             <Loading loading={isPending}>
                 <div className="flex h-full w-full flex-col gap-md">

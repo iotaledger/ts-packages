@@ -603,6 +603,18 @@ export class BackgroundClient {
         );
     }
 
+    public changePassword(args: MethodPayload<'changePassword'>['args']) {
+        return lastValueFrom(
+            this.sendMessage(
+                createMessage<MethodPayload<'changePassword'>>({
+                    type: 'method-payload',
+                    method: 'changePassword',
+                    args,
+                }),
+            ).pipe(take(1)),
+        );
+    }
+
     public verifyPasswordRecoveryData(args: MethodPayload<'verifyPasswordRecoveryData'>['args']) {
         return lastValueFrom(
             this.sendMessage(

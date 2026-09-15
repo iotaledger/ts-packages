@@ -14,6 +14,7 @@ export * from './Link';
 export * from './LinkWithQuery';
 export * from './ObjectVideoImage';
 export * from './PageHeader';
+export * from './PageSectionNav';
 export * from './Pagination';
 export * from './PlaceholderTable';
 export * from './PlayPause';

@@ -102,8 +102,6 @@ export function ImportExistingWallet() {
         <PageTemplate
             title="Import a wallet"
             isTitleCentered
-            onClose={() => navigate('/')}
-            showBackButton
             onBack={() => navigate('/accounts/add-account')}
         >
             <div className="flex h-full w-full flex-col">

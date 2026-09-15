@@ -1,5 +1,10 @@
+// Copyright (c) 2026 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { ethers, HDNodeWallet, Wallet } from 'ethers';
+import type { IotaClient } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
+import { retryUntil } from './retry';
 
 export type TestWalletData = {
     addressL1: string;
@@ -22,27 +27,39 @@ export function deriveAddressFromMnemonic(mnemonic: string) {
 export async function checkBalanceWithRetries(
     fetchBalance: () => Promise<string | null>,
     layer: 'L1' | 'L2',
-    maxRetries = 10,
+    timeout = 60_000,
     delay = 2500,
 ): Promise<string | null> {
-    let balance: string | null = null;
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            balance = await fetchBalance();
-        } catch (error) {
-            console.error('Error checking balance:', error);
-        } finally {
-            if ((!balance || balance?.startsWith('0')) && attempt < maxRetries) {
-                console.log(
-                    `Fetching ${layer} balance attempt ${attempt + 1} out of ${maxRetries} in ${delay} ms`,
-                );
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
-        }
+    try {
+        return await retryUntil(fetchBalance, {
+            until: (result) => !!result && !result.startsWith('0'),
+            timeoutMs: timeout,
+            delayMs: delay,
+            maxDelayMs: 10_000,
+            onRetry: (msg) => console.log(`Retrying fetching ${layer} balance: ${msg}`),
+        });
+    } catch (error) {
+        throw new Error(`${layer} balance did not become available within ${timeout} ms.`, {
+            cause: error,
+        });
     }
+}
 
-    return balance;
+export async function waitForL1Coins(client: IotaClient, address: string, timeout = 60_000) {
+    try {
+        await retryUntil(() => client.getCoins({ owner: address }), {
+            until: ({ data }) => data.length > 0,
+            timeoutMs: timeout,
+            delayMs: 500,
+            maxDelayMs: 8_000,
+            onRetry: (msg) => console.warn(`Retrying getting L1 coins for ${address}: ${msg}`),
+        });
+    } catch (error) {
+        throw new Error(
+            `No coins visible for ${address} within ${timeout} ms of a successful faucet request.`,
+            { cause: error },
+        );
+    }
 }
 
 export function getRandomL2MnemonicAndAddress(): { mnemonic: string; address: string } {

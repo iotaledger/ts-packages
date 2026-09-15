@@ -5,4 +5,8 @@ export * from './generateCheckpointsTableColumns';
 export * from './generateEpochsTableColumns';
 export * from './generateValidatorsTableColumns';
 export * from './generateTransactionsTableColumns';
+export * from './generateStakingHistoryTableColumns';
+export * from './generateBalanceChangesTableColumns';
+export * from './generateObjectChangesTableColumns';
+export * from './generateActivityTableColumns';
 export * from './objectField';
