@@ -148,6 +148,10 @@ export class GraphQLWebSocketClient {
     }
 
     async subscribe<T>(request: GraphQLSubscriptionRequest<T>): Promise<() => Promise<boolean>> {
+        if (request.signal?.aborted) {
+            return async () => false;
+        }
+
         const subscription = new GraphQLSubscription(request);
         const id = this.#nextId();
         this.#subscriptions.set(id, subscription);
@@ -159,12 +163,18 @@ export class GraphQLWebSocketClient {
             throw e;
         }
 
-        // Handle AbortSignal
         const cleanup = async () => {
             const result = await subscription.unsubscribe(this, id);
             this.#subscriptions.delete(id);
             return result;
         };
+
+        // The handshake above is awaited, so the signal may have fired while it was in
+        // flight. A listener added to an already-aborted signal never runs.
+        if (request.signal?.aborted) {
+            await cleanup();
+            return async () => false;
+        }
 
         request.signal?.addEventListener('abort', cleanup, { once: true });
 
@@ -186,6 +196,7 @@ export class GraphQLWebSocketClient {
         this.#webSocket?.close();
         this.#webSocket = null;
         this.#connectionPromise = null;
+        this.#disconnects = 0;
     }
 
     #nextId(): string {
@@ -250,6 +261,7 @@ export class GraphQLWebSocketClient {
 
                     case 'error':
                         this.#subscriptions.get(message.id)?.onError(message.payload);
+                        this.#subscriptions.delete(message.id);
                         break;
 
                     case 'complete':
@@ -265,25 +277,19 @@ export class GraphQLWebSocketClient {
             });
 
             ws.addEventListener('close', () => {
-                this.#connectionPromise = null;
-                if (!acknowledged) {
-                    clearTimeout(ackTimeout);
-                    reject(new Error('WebSocket closed before connection was acknowledged'));
+                if (this.#webSocket !== ws) {
                     return;
                 }
 
-                this.#disconnects++;
+                this.#connectionPromise = null;
+                this.#webSocket = null;
 
-                if (this.#disconnects <= this.#options.maxReconnects) {
-                    setTimeout(() => {
-                        this.#reconnect();
-                    }, this.#options.reconnectTimeout);
-                } else {
-                    for (const subscription of this.#subscriptions.values()) {
-                        subscription.onError([{ message: 'WebSocket connection lost' }]);
-                    }
-                    this.#subscriptions.clear();
+                if (!acknowledged) {
+                    clearTimeout(ackTimeout);
+                    reject(new Error('WebSocket closed before connection was acknowledged'));
                 }
+
+                this.#scheduleReconnect();
             });
 
             ws.addEventListener('error', () => {
@@ -297,10 +303,31 @@ export class GraphQLWebSocketClient {
         return this.#connectionPromise;
     }
 
-    async #reconnect(): Promise<void> {
-        this.#webSocket?.close();
-        this.#connectionPromise = null;
+    #scheduleReconnect(): void {
+        const live = [...this.#subscriptions.values()].filter(
+            (subscription) => subscription.isActive,
+        );
 
+        if (live.length === 0) {
+            return;
+        }
+
+        this.#disconnects++;
+
+        if (this.#disconnects > this.#options.maxReconnects) {
+            for (const subscription of live) {
+                subscription.onError([{ message: 'WebSocket connection lost' }]);
+            }
+            this.#subscriptions.clear();
+            return;
+        }
+
+        setTimeout(() => {
+            this.#reconnect();
+        }, this.#options.reconnectTimeout);
+    }
+
+    async #reconnect(): Promise<void> {
         const entries = [...this.#subscriptions.entries()];
         await Promise.allSettled(
             entries.map(([id, subscription]) => subscription.subscribe(this, id)),
@@ -317,8 +344,11 @@ class GraphQLSubscription {
         this.#request = request;
     }
 
+    get isActive(): boolean {
+        return this.#active;
+    }
+
     async subscribe(client: GraphQLWebSocketClient, id: string): Promise<void> {
-        this.#active = true;
         await client.send({
             id,
             type: 'subscribe',
@@ -327,6 +357,7 @@ class GraphQLSubscription {
                 ...(this.#request.variables ? { variables: this.#request.variables } : {}),
             },
         });
+        this.#active = true;
     }
 
     async unsubscribe(client: GraphQLWebSocketClient, id: string): Promise<boolean> {
