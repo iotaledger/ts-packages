@@ -267,8 +267,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 if (payload.__typename === 'Lagged') {
                     return;
                 }
-                const event = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
-                input.onMessage(mapSubscriptionEvent(event) as T);
+                input.onMessage(mapSubscriptionEvent(payload) as T);
             },
             onError: (errors) => {
                 console.error('GraphQL subscription error (events):', errors);
@@ -294,8 +293,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 if (payload.__typename === 'Lagged') {
                     return;
                 }
-                const tx = payload as Exclude<typeof payload, { __typename?: 'Lagged' }>;
-                input.onMessage(mapSubscriptionTransaction(tx) as T);
+                input.onMessage(mapSubscriptionTransaction(payload) as T);
             },
             onError: (errors) => {
                 console.error('GraphQL subscription error (transactions):', errors);

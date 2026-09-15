@@ -1,19 +1,21 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { IotaTransactionKind } from '@iota/iota-sdk/client';
+
 import type {
     SubscribeEventsSubscription,
     SubscribeTransactionsSubscription,
     SubscriptionEventFilter,
     SubscriptionTransactionFilter,
 } from '../generated/queries.js';
-import { toShortTypeString } from './util.js';
+import { toGraphQLTransactionKind, toShortTypeString } from './util.js';
 
-type SubscriptionEvent = Exclude<SubscribeEventsSubscription['events'], { __typename?: 'Lagged' }>;
+type SubscriptionEvent = Extract<SubscribeEventsSubscription['events'], { __typename: 'Event' }>;
 
-type SubscriptionTransaction = Exclude<
+type SubscriptionTransaction = Extract<
     SubscribeTransactionsSubscription['transactions'],
-    { __typename?: 'Lagged' }
+    { __typename: 'TransactionBlock' }
 >;
 
 /**
@@ -53,13 +55,8 @@ export function mapRpcTransactionFilterToGraphQL(
     rpcFilter: Record<string, unknown>,
 ): SubscriptionTransactionFilter | undefined {
     if ('TransactionKind' in rpcFilter) {
-        return {
-            kind: rpcFilter.TransactionKind as SubscriptionTransactionFilter & {
-                kind: unknown;
-            } extends { kind: infer K }
-                ? K
-                : never,
-        } as SubscriptionTransactionFilter;
+        const kind = toGraphQLTransactionKind(rpcFilter.TransactionKind as IotaTransactionKind);
+        return kind ? { kind } : undefined;
     }
 
     if ('FromAddress' in rpcFilter) {

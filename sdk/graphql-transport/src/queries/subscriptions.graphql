@@ -3,6 +3,7 @@
 
 subscription subscribeEvents($filter: SubscriptionEventFilter) {
     events(filter: $filter) {
+        __typename
         ... on Event {
             ...RPC_EVENTS_FIELDS
         }
@@ -23,6 +24,7 @@ subscription subscribeTransactions(
     $showRawInput: Boolean = false
 ) {
     transactions(filter: $filter) {
+        __typename
         ... on TransactionBlock {
             ...RPC_TRANSACTION_FIELDS
         }
