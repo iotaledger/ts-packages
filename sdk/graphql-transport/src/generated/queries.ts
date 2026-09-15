@@ -6370,13 +6370,15 @@ export type Rpc_Stake_FieldsFragment = { __typename?: 'StakedIota', principal?: 
 
 export type SubscribeEventsSubscriptionVariables = Exact<{
   filter?: InputMaybe<SubscriptionEventFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type SubscribeEventsSubscription = { __typename?: 'Subscription', events: { __typename: 'Event', json: any, bcs: any, timestamp?: any | null, sendingModule?: { __typename?: 'MoveModule', name: string, package: { __typename?: 'MovePackage', address: any } } | null, sender?: { __typename?: 'Address', address: any } | null, type: { __typename?: 'MoveType', repr: string } } | { __typename: 'Lagged', count: number } };
+export type SubscribeEventsSubscription = { __typename?: 'Subscription', events: { __typename: 'Event', json: any, bcs: any, timestamp?: any | null, transactionBlock?: { __typename?: 'TransactionBlock', digest?: string | null } | null, sendingModule?: { __typename?: 'MoveModule', name: string, package: { __typename?: 'MovePackage', address: any } } | null, sender?: { __typename?: 'Address', address: any } | null, type: { __typename?: 'MoveType', repr: string } } | { __typename: 'Lagged', count: number } };
 
 export type SubscribeTransactionsSubscriptionVariables = Exact<{
   filter?: InputMaybe<SubscriptionTransactionFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -9015,11 +9017,14 @@ export const GetStakesByIdsDocument = new TypedDocumentString(`
   estimatedReward
 }`) as unknown as TypedDocumentString<GetStakesByIdsQuery, GetStakesByIdsQueryVariables>;
 export const SubscribeEventsDocument = new TypedDocumentString(`
-    subscription subscribeEvents($filter: SubscriptionEventFilter) {
-  events(filter: $filter) {
+    subscription subscribeEvents($filter: SubscriptionEventFilter, $startAfter: String) {
+  events(filter: $filter, startAfter: $startAfter) {
     __typename
     ... on Event {
       ...RPC_EVENTS_FIELDS
+      transactionBlock {
+        digest
+      }
     }
     ... on Lagged {
       count
@@ -9044,8 +9049,8 @@ export const SubscribeEventsDocument = new TypedDocumentString(`
   timestamp
 }`) as unknown as TypedDocumentString<SubscribeEventsSubscription, SubscribeEventsSubscriptionVariables>;
 export const SubscribeTransactionsDocument = new TypedDocumentString(`
-    subscription subscribeTransactions($filter: SubscriptionTransactionFilter) {
-  transactions(filter: $filter) {
+    subscription subscribeTransactions($filter: SubscriptionTransactionFilter, $startAfter: String) {
+  transactions(filter: $filter, startAfter: $startAfter) {
     __typename
     ... on TransactionBlock {
       effects {

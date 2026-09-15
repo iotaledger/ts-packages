@@ -1,11 +1,14 @@
 # Copyright (c) 2026 IOTA Stiftung
 # SPDX-License-Identifier: Apache-2.0
 
-subscription subscribeEvents($filter: SubscriptionEventFilter) {
-    events(filter: $filter) {
+subscription subscribeEvents($filter: SubscriptionEventFilter, $startAfter: String) {
+    events(filter: $filter, startAfter: $startAfter) {
         __typename
         ... on Event {
             ...RPC_EVENTS_FIELDS
+            transactionBlock {
+                digest
+            }
         }
         ... on Lagged {
             count
@@ -13,8 +16,8 @@ subscription subscribeEvents($filter: SubscriptionEventFilter) {
     }
 }
 
-subscription subscribeTransactions($filter: SubscriptionTransactionFilter) {
-    transactions(filter: $filter) {
+subscription subscribeTransactions($filter: SubscriptionTransactionFilter, $startAfter: String) {
+    transactions(filter: $filter, startAfter: $startAfter) {
         __typename
         ... on TransactionBlock {
             effects {

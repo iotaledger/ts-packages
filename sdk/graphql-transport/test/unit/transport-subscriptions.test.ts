@@ -4,7 +4,13 @@
 import { describe, expect, test, vi } from 'vitest';
 
 import { IotaClientGraphQLTransport } from '../../src/transport.js';
-import { createMockWebSocket, emitServerMessage, framesOfType } from './mock-websocket.js';
+import {
+    createMockWebSocket,
+    emitClose,
+    emitServerMessage,
+    framesOfType,
+    tick,
+} from './mock-websocket.js';
 
 function createTransport() {
     const harness = createMockWebSocket();
@@ -209,6 +215,57 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         });
 
         expect(subscribeFrame(harness).variables).toEqual({ filter: undefined });
+        transport.close();
+    });
+
+    test('resumes after the last fully received transaction on reconnect', async () => {
+        const harness = createMockWebSocket();
+        const transport = new IotaClientGraphQLTransport({
+            url: 'http://localhost:9125/graphql',
+            WebSocketConstructor: harness.WebSocketConstructor,
+            wsOptions: { startupErrorGrace: 1, reconnectTimeout: 5 },
+        });
+
+        await transport.subscribe({
+            method: 'iotax_subscribeEvent',
+            unsubscribe: 'iotax_unsubscribeEvent',
+            params: [{}],
+            onMessage: () => {},
+        });
+
+        expect(subscribeFrame(harness).variables).toEqual({
+            filter: undefined,
+            startAfter: undefined,
+        });
+
+        const event = (digest: string) => ({
+            id: '1',
+            type: 'next',
+            payload: {
+                data: {
+                    events: {
+                        __typename: 'Event',
+                        json: {},
+                        bcs: 'AA==',
+                        type: { repr: '0x2::a::B' },
+                        transactionBlock: { digest },
+                    },
+                },
+            },
+        });
+
+        // Two events from tx-a, then one from tx-b: only tx-a is known to be complete.
+        emitServerMessage(harness.latest(), event('tx-a'));
+        emitServerMessage(harness.latest(), event('tx-a'));
+        emitServerMessage(harness.latest(), event('tx-b'));
+
+        emitClose(harness.latest());
+        await tick(30);
+
+        expect(subscribeFrame(harness).variables).toEqual({
+            filter: undefined,
+            startAfter: 'tx-a',
+        });
         transport.close();
     });
 

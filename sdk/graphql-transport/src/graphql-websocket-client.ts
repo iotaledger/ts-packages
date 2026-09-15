@@ -61,10 +61,16 @@ type ServerMessage =
     | CompleteMessage
     | PingMessage;
 
+export type GraphQLSubscriptionVariables = Record<string, unknown>;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GraphQLSubscriptionRequest<T = any> = {
     query: GraphQLDocument;
-    variables?: Record<string, unknown>;
+    /**
+     * Resolved every time the operation is sent, so a resubscribe after a dropped connection
+     * can carry a resume cursor the first subscribe did not have.
+     */
+    variables?: GraphQLSubscriptionVariables | (() => GraphQLSubscriptionVariables | undefined);
     onMessage: (data: T) => void;
     onError?: (errors: Array<{ message: string }>) => void;
     onComplete?: () => void;
@@ -373,12 +379,17 @@ class GraphQLSubscription {
     }
 
     async subscribe(client: GraphQLWebSocketClient, id: string): Promise<void> {
+        const variables =
+            typeof this.#request.variables === 'function'
+                ? this.#request.variables()
+                : this.#request.variables;
+
         await client.send({
             id,
             type: 'subscribe',
             payload: {
                 query: this.#request.query as string,
-                ...(this.#request.variables ? { variables: this.#request.variables } : {}),
+                ...(variables ? { variables } : {}),
             },
         });
         this.#active = true;

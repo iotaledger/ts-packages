@@ -270,19 +270,30 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         input: IotaTransportSubscribeOptions<T>,
     ): Promise<() => Promise<boolean>> {
         const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
-        const variables: SubscribeEventsSubscriptionVariables = {
-            filter: rpcFilter ? mapRpcEventFilterToGraphQL(rpcFilter) : undefined,
-        };
+        const filter = rpcFilter ? mapRpcEventFilterToGraphQL(rpcFilter) : undefined;
+
+        // Events stream in transaction order and a drop can leave one transaction only
+        // partially delivered, so the stream can only be resumed after a transaction whose
+        // end we have seen. A digest change is what marks the previous one as complete.
+        let currentDigest: string | undefined;
+        let startAfter: string | undefined;
 
         const client = this.#getWebSocketClient();
         return client.subscribe<SubscribeEventsSubscription>({
             query: SubscribeEventsDocument.toString(),
-            variables: variables as Record<string, unknown>,
+            variables: (): SubscribeEventsSubscriptionVariables => ({ filter, startAfter }),
             onMessage: (data) => {
                 const payload = data.events;
                 if (payload.__typename === 'Lagged') {
                     return;
                 }
+
+                const digest = payload.transactionBlock?.digest ?? undefined;
+                if (digest && digest !== currentDigest) {
+                    startAfter = currentDigest;
+                    currentDigest = digest;
+                }
+
                 input.onMessage(mapSubscriptionEvent(payload) as T);
             },
             onError: (errors) => {
@@ -296,14 +307,15 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         input: IotaTransportSubscribeOptions<T>,
     ): Promise<() => Promise<boolean>> {
         const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
-        const variables: SubscribeTransactionsSubscriptionVariables = {
-            filter: rpcFilter ? mapRpcTransactionFilterToGraphQL(rpcFilter) : undefined,
-        };
+        const filter = rpcFilter ? mapRpcTransactionFilterToGraphQL(rpcFilter) : undefined;
+
+        // Each message is one whole transaction, so it is safe to resume after every delivery.
+        let startAfter: string | undefined;
 
         const client = this.#getWebSocketClient();
         return client.subscribe<SubscribeTransactionsSubscription>({
             query: SubscribeTransactionsDocument.toString(),
-            variables: variables as Record<string, unknown>,
+            variables: (): SubscribeTransactionsSubscriptionVariables => ({ filter, startAfter }),
             onMessage: (data) => {
                 const payload = data.transactions;
                 if (payload.__typename === 'Lagged') {
@@ -313,6 +325,8 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 if (!effects) {
                     return;
                 }
+
+                startAfter = effects.transactionDigest;
                 input.onMessage(effects as T);
             },
             onError: (errors) => {
