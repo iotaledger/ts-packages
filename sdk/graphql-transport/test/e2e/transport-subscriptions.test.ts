@@ -50,11 +50,11 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
             transport = new IotaClientGraphQLTransport({ url: DEFAULT_GRAPHQL_URL });
 
             const digests: string[] = [];
-            const unsubscribe = await transport.subscribe<{ digest: string }>({
+            const unsubscribe = await transport.subscribe<{ transactionDigest: string }>({
                 method: 'iotax_subscribeTransaction',
                 unsubscribe: 'iotax_unsubscribeTransaction',
                 params: [{}],
-                onMessage: (tx) => digests.push(tx.digest),
+                onMessage: (effects) => digests.push(effects.transactionDigest),
             });
 
             const digest = await transfer(toolbox);
@@ -72,11 +72,11 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
             transport = new IotaClientGraphQLTransport({ url: DEFAULT_GRAPHQL_URL });
 
             const digests: string[] = [];
-            const unsubscribe = await transport.subscribe<{ digest: string }>({
+            const unsubscribe = await transport.subscribe<{ transactionDigest: string }>({
                 method: 'iotax_subscribeTransaction',
                 unsubscribe: 'iotax_unsubscribeTransaction',
                 params: [{ FromAddress: toolbox.address() }],
-                onMessage: (tx) => digests.push(tx.digest),
+                onMessage: (effects) => digests.push(effects.transactionDigest),
             });
 
             const digest = await transfer(toolbox);

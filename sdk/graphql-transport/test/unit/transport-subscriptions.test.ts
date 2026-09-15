@@ -124,6 +124,42 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         transport.close();
     });
 
+    test('requests the effects bcs and nothing else for transactions', async () => {
+        const { harness, transport } = createTransport();
+        await transport.subscribe({
+            method: 'iotax_subscribeTransaction',
+            unsubscribe: 'iotax_unsubscribeTransaction',
+            params: [{}],
+            onMessage: () => {},
+        });
+
+        const { query, variables } = subscribeFrame(harness);
+        expect(query).toContain('effects {');
+        expect(query).not.toContain('@include');
+        expect(variables).toEqual({ filter: undefined });
+        transport.close();
+    });
+
+    test('a transaction without effects is not delivered', async () => {
+        const { harness, transport } = createTransport();
+        const onMessage = vi.fn();
+        await transport.subscribe({
+            method: 'iotax_subscribeTransaction',
+            unsubscribe: 'iotax_unsubscribeTransaction',
+            params: [{}],
+            onMessage,
+        });
+
+        emitServerMessage(harness.latest(), {
+            id: '1',
+            type: 'next',
+            payload: { data: { transactions: { __typename: 'TransactionBlock', effects: null } } },
+        });
+
+        expect(onMessage).not.toHaveBeenCalled();
+        transport.close();
+    });
+
     test('an unmapped subscribe method falls back to the JSON-RPC transport', async () => {
         const { transport } = createTransport();
 

@@ -293,7 +293,11 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 if (payload.__typename === 'Lagged') {
                     return;
                 }
-                input.onMessage(mapSubscriptionTransaction(payload) as T);
+                const effects = mapSubscriptionTransaction(payload);
+                if (!effects) {
+                    return;
+                }
+                input.onMessage(effects as T);
             },
             onError: (errors) => {
                 console.error('GraphQL subscription error (transactions):', errors);

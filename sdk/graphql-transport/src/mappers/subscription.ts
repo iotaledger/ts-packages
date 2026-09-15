@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaTransactionKind } from '@iota/iota-sdk/client';
+import type { IotaTransactionBlockResponse, IotaTransactionKind } from '@iota/iota-sdk/client';
 
 import type {
     SubscribeEventsSubscription,
@@ -9,6 +9,7 @@ import type {
     SubscriptionEventFilter,
     SubscriptionTransactionFilter,
 } from '../generated/queries.js';
+import { mapEffects } from './transaction-block.js';
 import { toGraphQLTransactionKind, toShortTypeString } from './util.js';
 
 type SubscriptionEvent = Extract<SubscribeEventsSubscription['events'], { __typename: 'Event' }>;
@@ -104,14 +105,13 @@ export function mapSubscriptionEvent(event: SubscriptionEvent) {
     };
 }
 
-export function mapSubscriptionTransaction(tx: SubscriptionTransaction) {
-    return {
-        bcs: tx.effects?.bcs,
-        digest: tx.digest,
-        ...(tx.effects?.timestamp
-            ? {
-                  timestampMs: new Date(tx.effects.timestamp as string).getTime().toString(),
-              }
-            : {}),
-    };
+/**
+ * `iotax_subscribeTransaction` delivers `TransactionEffects`, so the subscription selects the
+ * effects BCS and decodes it through the same mapper the query path uses. Returns undefined
+ * when the node sent a transaction without effects, which there is nothing useful to emit for.
+ */
+export function mapSubscriptionTransaction(
+    tx: SubscriptionTransaction,
+): IotaTransactionBlockResponse['effects'] {
+    return tx.effects?.bcs ? mapEffects(tx.effects.bcs) : undefined;
 }
