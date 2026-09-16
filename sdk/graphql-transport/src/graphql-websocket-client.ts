@@ -62,15 +62,15 @@ type ServerMessage =
     | CompleteMessage
     | PingMessage;
 
+/** The socket or handshake failed, as opposed to the server refusing one operation. */
+export class GraphQLWebSocketConnectionError extends Error {}
+
 export type GraphQLSubscriptionVariables = Record<string, unknown>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type GraphQLSubscriptionRequest<T = any> = {
     query: GraphQLDocument;
-    /**
-     * Resolved every time the operation is sent, so a resubscribe after a dropped connection
-     * can carry a resume cursor the first subscribe did not have.
-     */
+    /** Resolved on every send, so a resubscribe can carry a resume cursor. */
     variables?: GraphQLSubscriptionVariables | (() => GraphQLSubscriptionVariables | undefined);
     onMessage: (data: T) => void;
     onError?: (errors: Array<{ message: string }>) => void;
@@ -108,11 +108,9 @@ export type GraphQLWebSocketClientOptions = {
      */
     maxReconnects?: number;
     /**
-     * Milliseconds to wait after sending `subscribe` for the server to reject the operation.
-     * graphql-ws does not acknowledge a `subscribe`, so a validation error is the only signal
-     * that the operation was refused and it arrives immediately. Within this window such an
-     * error rejects `subscribe()`; afterwards it goes to `onError`. Messages are delivered
-     * throughout, only the handle is returned later.
+     * Milliseconds to wait for the server to refuse the operation. graphql-ws does not
+     * acknowledge a `subscribe`, so an `error` frame is the only signal. Inside this window it
+     * rejects `subscribe()`, after it it goes to `onError`. Messages arrive throughout.
      * @default 250
      */
     startupErrorGrace?: number;
@@ -138,10 +136,7 @@ const DEFAULT_OPTIONS: ResolvedGraphQLWebSocketClientOptions = {
     startupErrorGrace: 250,
 };
 
-/**
- * `GraphQLDocument` covers plain strings, `DocumentNode` ASTs and the string-mode documents
- * codegen emits, which stringify themselves. Only a real AST needs printing.
- */
+/** Codegen's string-mode documents stringify themselves; only a real AST needs printing. */
 function toQueryString(query: GraphQLDocument): string {
     if (typeof query === 'string') {
         return query;
@@ -169,7 +164,7 @@ export class GraphQLWebSocketClient {
         this.#options = { ...DEFAULT_OPTIONS, ...options };
 
         if (!this.#options.WebSocketConstructor) {
-            throw new Error(
+            throw new GraphQLWebSocketConnectionError(
                 'Missing WebSocket constructor. Provide a WebSocketConstructor option or ensure the global WebSocket is available.',
             );
         }
@@ -210,8 +205,8 @@ export class GraphQLWebSocketClient {
             return result;
         };
 
-        // The handshake above is awaited, so the signal may have fired while it was in
-        // flight. A listener added to an already-aborted signal never runs.
+        // A listener added to an already-aborted signal never runs, and the handshake
+        // above is awaited.
         if (request.signal?.aborted) {
             await cleanup();
             return async () => false;
@@ -224,9 +219,10 @@ export class GraphQLWebSocketClient {
 
     async send(
         message: ConnectionInitMessage | SubscribeMessage | CompleteMessage | PongMessage,
-    ): Promise<void> {
+    ): Promise<WebSocket> {
         const ws = await this.#setupWebSocket();
         ws.send(JSON.stringify(message));
+        return ws;
     }
 
     close(): void {
@@ -260,7 +256,7 @@ export class GraphQLWebSocketClient {
             // Timeout for the connection_ack
             const ackTimeout = setTimeout(() => {
                 ws.close();
-                reject(new Error('Connection acknowledgement timeout'));
+                reject(new GraphQLWebSocketConnectionError('Connection acknowledgement timeout'));
             }, this.#options.connectionAckTimeout);
 
             let acknowledged = false;
@@ -327,7 +323,11 @@ export class GraphQLWebSocketClient {
 
                 if (!acknowledged) {
                     clearTimeout(ackTimeout);
-                    reject(new Error('WebSocket closed before connection was acknowledged'));
+                    reject(
+                        new GraphQLWebSocketConnectionError(
+                            'WebSocket closed before connection was acknowledged',
+                        ),
+                    );
                 }
 
                 this.#scheduleReconnect();
@@ -336,7 +336,7 @@ export class GraphQLWebSocketClient {
             ws.addEventListener('error', () => {
                 if (!acknowledged) {
                     clearTimeout(ackTimeout);
-                    reject(new Error('WebSocket connection error'));
+                    reject(new GraphQLWebSocketConnectionError('WebSocket connection error'));
                 }
             });
         });
@@ -369,7 +369,12 @@ export class GraphQLWebSocketClient {
     }
 
     async #reconnect(): Promise<void> {
-        const entries = [...this.#subscriptions.entries()];
+        // A subscribe() during the reconnect delay is already live on the new socket.
+        // A duplicate id makes graphql-transport-ws close the connection with 4409.
+        const entries = [...this.#subscriptions.entries()].filter(
+            ([, subscription]) => subscription.socket !== this.#webSocket,
+        );
+
         await Promise.allSettled(
             entries.map(([id, subscription]) => subscription.subscribe(this, id)),
         );
@@ -380,6 +385,7 @@ class GraphQLSubscription {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #request: GraphQLSubscriptionRequest<any>;
     #active = false;
+    #socket: WebSocket | null = null;
     #startingUp = true;
     #startupError: Array<{ message: string }> | null = null;
 
@@ -391,13 +397,18 @@ class GraphQLSubscription {
         return this.#active;
     }
 
+    /** The socket this operation's `subscribe` frame was last sent on. */
+    get socket(): WebSocket | null {
+        return this.#socket;
+    }
+
     async subscribe(client: GraphQLWebSocketClient, id: string): Promise<void> {
         const variables =
             typeof this.#request.variables === 'function'
                 ? this.#request.variables()
                 : this.#request.variables;
 
-        await client.send({
+        this.#socket = await client.send({
             id,
             type: 'subscribe',
             payload: {

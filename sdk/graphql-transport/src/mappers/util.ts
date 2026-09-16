@@ -14,10 +14,7 @@ export function isNumericString(value: string) {
     return /^-?\d+$/.test(value);
 }
 
-/**
- * The JSON-RPC `IotaTransactionKind` values have no GraphQL counterpart for
- * `TransactionDenyRulesUpdate`, so that kind maps to `undefined`.
- */
+/** `TransactionDenyRulesUpdate` has no GraphQL counterpart. */
 const TRANSACTION_KIND_TO_GRAPHQL: Record<
     IotaTransactionKind,
     TransactionBlockKindInput | undefined

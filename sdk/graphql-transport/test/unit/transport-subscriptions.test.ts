@@ -172,6 +172,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         ['Sender', { Sender: '0xabc' }],
         ['Transaction', { Transaction: 'digest' }],
         ['MoveEventType', { MoveEventType: '0x2::coin::Event' }],
+        ['MoveEventModule', { MoveEventModule: { package: '0x2', module: 'coin' } }],
     ])('rejects the %s event filter rather than dropping it', async (_name, filter) => {
         const { transport } = createTransport();
 
@@ -267,6 +268,30 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
             filter: undefined,
             startAfter: 'tx-a',
         });
+        transport.close();
+    });
+
+    test('reports a terminal error to onError instead of only logging', async () => {
+        const { harness, transport } = createTransport();
+        const onError = vi.fn();
+
+        await transport.subscribe({
+            method: 'iotax_subscribeEvent',
+            unsubscribe: 'iotax_unsubscribeEvent',
+            params: [{}],
+            onMessage: () => {},
+            onError,
+        });
+
+        emitServerMessage(harness.latest(), {
+            id: '1',
+            type: 'error',
+            payload: [{ message: 'stream terminated' }],
+        });
+
+        expect(onError).toHaveBeenCalledWith(
+            expect.objectContaining({ message: expect.stringContaining('stream terminated') }),
+        );
         transport.close();
     });
 

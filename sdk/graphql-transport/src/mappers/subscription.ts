@@ -21,10 +21,9 @@ type SubscriptionTransaction = Extract<
 >;
 
 /**
- * Maps a JSON-RPC `IotaEventFilter` to the GraphQL `SubscriptionEventFilter`, which only
- * supports `emittingModule`. Anything that cannot be expressed exactly throws
- * `UnsupportedParamError` so the transport can hand the subscription to JSON-RPC rather than
- * dropping the filter and streaming everything. An empty filter means no filter.
+ * `SubscriptionEventFilter` only supports `emittingModule`, the module that emitted the
+ * event. `MoveEventModule` selects the module the struct was declared in, a different set.
+ * An empty filter means no filter; anything inexpressible throws so the caller falls back.
  */
 export function mapRpcEventFilterToGraphQL(
     rpcFilter: Record<string, unknown>,
@@ -41,11 +40,6 @@ export function mapRpcEventFilterToGraphQL(
 
     if ('MoveModule' in rpcFilter) {
         const mod = rpcFilter.MoveModule as { package: string; module: string };
-        return { emittingModule: `${mod.package}::${mod.module}` };
-    }
-
-    if ('MoveEventModule' in rpcFilter) {
-        const mod = rpcFilter.MoveEventModule as { package: string; module: string };
         return { emittingModule: `${mod.package}::${mod.module}` };
     }
 
@@ -85,8 +79,7 @@ export function mapRpcTransactionFilterToGraphQL(
             function?: string | null;
         };
 
-        // The GraphQL filter is a package/module/function prefix, so a function name cannot
-        // be expressed without the module that holds it.
+        // The filter is a package/module/function prefix.
         if (fn.function && !fn.module) {
             throw new UnsupportedParamError(
                 'iotax_subscribeTransaction',
@@ -122,11 +115,7 @@ export function mapSubscriptionEvent(event: SubscriptionEvent) {
     };
 }
 
-/**
- * `iotax_subscribeTransaction` delivers `TransactionEffects`, so the subscription selects the
- * effects BCS and decodes it through the same mapper the query path uses. Returns undefined
- * when the node sent a transaction without effects, which there is nothing useful to emit for.
- */
+/** `iotax_subscribeTransaction` delivers `TransactionEffects`, decoded from the effects BCS. */
 export function mapSubscriptionTransaction(
     tx: SubscriptionTransaction,
 ): IotaTransactionBlockResponse['effects'] {

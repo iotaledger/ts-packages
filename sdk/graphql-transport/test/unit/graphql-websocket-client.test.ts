@@ -288,6 +288,21 @@ describe('GraphQLWebSocketClient', () => {
             expect(replacement.closeCalls).toBe(0);
         });
 
+        test('does not replay a subscription already live on the current socket', async () => {
+            const harness = createMockWebSocket();
+            const client = connect(harness, { reconnectTimeout: 20 });
+
+            await client.subscribe({ query: QUERY, onMessage: () => {} });
+            emitClose(harness.sockets[0]);
+            await client.subscribe({ query: QUERY, onMessage: () => {} });
+            const replacement = harness.latest();
+
+            await tick(50);
+
+            const ids = framesOfType(replacement, 'subscribe').map((frame) => frame.id);
+            expect(ids).toEqual(['2', '1']);
+        });
+
         test('does not reconnect after close()', async () => {
             const harness = createMockWebSocket();
             const client = connect(harness, { reconnectTimeout: 20 });

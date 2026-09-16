@@ -25,7 +25,10 @@ import type {
     SubscribeTransactionsSubscriptionVariables,
 } from './generated/queries.js';
 import type { GraphQLWebSocketClientOptions } from './graphql-websocket-client.js';
-import { GraphQLWebSocketClient } from './graphql-websocket-client.js';
+import {
+    GraphQLWebSocketClient,
+    GraphQLWebSocketConnectionError,
+} from './graphql-websocket-client.js';
 import { RPC_METHODS, UnsupportedMethodError, UnsupportedParamError } from './methods.js';
 import {
     mapRpcEventFilterToGraphQL,
@@ -257,8 +260,13 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         try {
             return await subscribe();
         } catch (error) {
-            // A filter GraphQL cannot express is still expressible over JSON-RPC.
-            if (error instanceof UnsupportedParamError && this.#fallbackTransport) {
+            // JSON-RPC serves both an inexpressible filter and an endpoint with no
+            // subscriptions endpoint at all.
+            const recoverable =
+                error instanceof UnsupportedParamError ||
+                error instanceof GraphQLWebSocketConnectionError;
+
+            if (recoverable && this.#fallbackTransport) {
                 return this.#fallbackTransport.subscribe(input);
             }
 
@@ -272,9 +280,8 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
         const filter = rpcFilter ? mapRpcEventFilterToGraphQL(rpcFilter) : undefined;
 
-        // Events stream in transaction order and a drop can leave one transaction only
-        // partially delivered, so the stream can only be resumed after a transaction whose
-        // end we have seen. A digest change is what marks the previous one as complete.
+        // Events arrive in transaction order, so a drop can cut one transaction in half.
+        // Only a digest change proves the previous transaction was delivered whole.
         let currentDigest: string | undefined;
         let startAfter: string | undefined;
 
@@ -297,7 +304,11 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 input.onMessage(mapSubscriptionEvent(payload) as T);
             },
             onError: (errors) => {
-                console.error('GraphQL subscription error (events):', errors);
+                input.onError?.(
+                    new Error(
+                        `GraphQL events subscription ended: ${errors.map((e) => e.message).join(', ')}`,
+                    ),
+                );
             },
             signal: input.signal,
         });
@@ -309,7 +320,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         const rpcFilter = input.params[0] as Record<string, unknown> | undefined;
         const filter = rpcFilter ? mapRpcTransactionFilterToGraphQL(rpcFilter) : undefined;
 
-        // Each message is one whole transaction, so it is safe to resume after every delivery.
+        // Each message is one whole transaction.
         let startAfter: string | undefined;
 
         const client = this.#getWebSocketClient();
@@ -330,7 +341,11 @@ export class IotaClientGraphQLTransport implements IotaTransport {
                 input.onMessage(effects as T);
             },
             onError: (errors) => {
-                console.error('GraphQL subscription error (transactions):', errors);
+                input.onError?.(
+                    new Error(
+                        `GraphQL transactions subscription ended: ${errors.map((e) => e.message).join(', ')}`,
+                    ),
+                );
             },
             signal: input.signal,
         });
