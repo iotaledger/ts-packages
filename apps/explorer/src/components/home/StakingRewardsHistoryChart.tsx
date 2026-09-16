@@ -56,6 +56,7 @@ export function StakingRewardsHistoryChart(): JSX.Element {
                     label: 'Total Distributed',
                     text: formatBalance(totalDistributed, IOTA_DECIMALS, CoinFormat.Rounded),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalDistributed,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}

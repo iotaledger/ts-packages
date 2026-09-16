@@ -82,6 +82,7 @@ export function SupplyHistoryChart(): React.JSX.Element {
                     label: 'Total Supply',
                     text: totalSupplyFormatted,
                     supportingLabel: totalSupply?.value ? 'IOTA' : undefined,
+                    fiatAmount: totalSupply?.value,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}

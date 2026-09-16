@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    CoinFiatValue,
     useGetInactiveValidator,
     useGetValidatorsApy,
     useGetValidatorsEvents,
@@ -214,12 +215,24 @@ function ValidatorDetails(): JSX.Element {
                                     size={LabelTextSize.Medium}
                                     label="Last Epoch Rewards"
                                     text={
-                                        validatorRewards === null ? '--' : formattedPrevEpochRewards
-                                    }
-                                    supportingLabel={
-                                        validatorRewards !== null
-                                            ? prevEpochRewardsSymbol
-                                            : undefined
+                                        validatorRewards === null ? (
+                                            '--'
+                                        ) : (
+                                            <div className="flex min-w-0 flex-col gap-xxs">
+                                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                                    <span className="break-all">
+                                                        {formattedPrevEpochRewards}
+                                                    </span>
+                                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                                        {prevEpochRewardsSymbol}
+                                                    </span>
+                                                </div>
+                                                <CoinFiatValue
+                                                    amount={validatorRewards}
+                                                    withParentheses={false}
+                                                />
+                                            </div>
+                                        )
                                     }
                                     tooltipText="Total staking rewards distributed to this validator's pool at the last epoch boundary."
                                     tooltipPosition={TooltipPosition.Right}
@@ -248,8 +261,22 @@ function ValidatorDetails(): JSX.Element {
                                 <LabelText
                                     size={LabelTextSize.Medium}
                                     label="Stake"
-                                    text={formattedNextEpochStake}
-                                    supportingLabel={nextEpochStakeSymbol}
+                                    text={
+                                        <div className="flex min-w-0 flex-col gap-xxs">
+                                            <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                                <span className="break-all">
+                                                    {formattedNextEpochStake}
+                                                </span>
+                                                <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                                    {nextEpochStakeSymbol}
+                                                </span>
+                                            </div>
+                                            <CoinFiatValue
+                                                amount={activeValidatorData.nextEpochStake ?? 0}
+                                                withParentheses={false}
+                                            />
+                                        </div>
+                                    }
                                     tooltipText="The projected total stake at the next epoch boundary, after all pending delegations and withdrawals are settled."
                                     tooltipPosition={TooltipPosition.Right}
                                 />

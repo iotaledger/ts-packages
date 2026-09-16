@@ -4,7 +4,7 @@
 
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
-import { getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
+import { CoinFiatValue, getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -74,15 +74,36 @@ export function ValidatorStats({
                     />
                     <LabelText
                         label="Total IOTA Staked"
-                        text={formattedTotalStakeAmount}
-                        supportingLabel={totalStakeSymbol}
+                        text={
+                            <div className="flex min-w-0 flex-col gap-xxs">
+                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                    <span className="break-all">{formattedTotalStakeAmount}</span>
+                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                        {totalStakeSymbol}
+                                    </span>
+                                </div>
+                                <CoinFiatValue amount={totalStake} withParentheses={false} />
+                            </div>
+                        }
                         tooltipText="The total amount of IOTA staked on the network by validators and delegators to secure the network and earn rewards."
                         tooltipPosition={TooltipPosition.Right}
                     />
                     <LabelText
                         label="Reward Balance"
-                        text={formattedRewardsPoolBalance}
-                        supportingLabel={rewardsPoolBalanceSymbol}
+                        text={
+                            <div className="flex min-w-0 flex-col gap-xxs">
+                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                    <span className="break-all">{formattedRewardsPoolBalance}</span>
+                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                        {rewardsPoolBalanceSymbol}
+                                    </span>
+                                </div>
+                                <CoinFiatValue
+                                    amount={rewardsPoolBalance}
+                                    withParentheses={false}
+                                />
+                            </div>
+                        }
                         tooltipText={
                             Number(rewardsPoolBalance) <= 0
                                 ? 'Coming soon'

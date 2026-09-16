@@ -50,6 +50,7 @@ export function TotalStakeHistoryChart(): JSX.Element {
                         ? formatBalance(latestTotalStake, IOTA_DECIMALS, CoinFormat.Rounded)
                         : '--',
                     supportingLabel: latestTotalStake ? 'IOTA' : undefined,
+                    fiatAmount: latestTotalStake,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}

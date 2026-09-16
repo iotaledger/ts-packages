@@ -52,6 +52,7 @@ export function GasFeesHistoryChart(): JSX.Element {
                     label: 'Total Collected',
                     text: formatBalance(totalFees, IOTA_DECIMALS, CoinFormat.Rounded),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalFees,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}

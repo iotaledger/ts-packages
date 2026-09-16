@@ -57,12 +57,14 @@ export function TokenEmissionChart(): JSX.Element {
                     label: 'Total Minted',
                     text: formatBalance(totalMinted, IOTA_DECIMALS, CoinFormat.Rounded),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalMinted,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Burnt',
                     text: formatBalance(totalBurnt, IOTA_DECIMALS, CoinFormat.Rounded),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalBurnt,
                 },
                 {
                     size: LabelTextSize.Large,
@@ -74,6 +76,7 @@ export function TokenEmissionChart(): JSX.Element {
                         true,
                     ),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalMinted - totalBurnt,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}
