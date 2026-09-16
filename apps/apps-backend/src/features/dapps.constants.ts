@@ -81,14 +81,6 @@ export const RECOGNIZED_DAPPS: RecognizedDapp[] = [
         tags: ['DeFi', 'DEX'],
     },
     {
-        name: 'Tradeport',
-        link: 'https://tradeport.xyz/',
-        description:
-            'TradePort is the leading NFT marketplace and developer platform on Sui, Movement, Aptos, Supra, NEAR, and Stacks. Trade and create NFTs, or build  apps with our API and SDKs',
-        icon: 'https://files.iota.org/media/tooling/dapps/tradeport-logo.svg',
-        tags: ['NFT'],
-    },
-    {
         name: 'Stargate',
         link: 'https://stargate.finance/',
         description: 'Omnichain liquidity bridge connecting IOTA EVM to other networks',
