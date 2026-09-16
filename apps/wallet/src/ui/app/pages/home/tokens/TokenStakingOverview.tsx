@@ -12,6 +12,7 @@ import {
     DELEGATED_STAKES_QUERY_STALE_TIME,
     useBalanceVisible,
     BALANCE_MASK,
+    CoinFiatValue,
 } from '@iota/core';
 import {
     Card,
@@ -80,7 +81,26 @@ export function TokenStakingOverview({
                           ? `${isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK} ${symbol}`
                           : 'Start Staking'
                 }
-                subtitle={isLoading ? '--' : totalDelegatedStake ? 'Current Stake' : 'Earn Rewards'}
+                subtitle={
+                    isLoading ? (
+                        '--'
+                    ) : totalDelegatedStake ? (
+                        <span className="flex items-center gap-1">
+                            <span>Current Stake</span>
+                            {isBalanceVisible && (
+                                <span className="flex items-center gap-0.5 [&>span]:!text-body-sm">
+                                    <span className="text-body-sm">~</span>
+                                    <CoinFiatValue
+                                        amount={totalDelegatedStake}
+                                        withParentheses={false}
+                                    />
+                                </span>
+                            )}
+                        </span>
+                    ) : (
+                        'Earn Rewards'
+                    )
+                }
             />
             <CardAction type={CardActionType.Link} onClick={handleOnClick} />
         </Card>
