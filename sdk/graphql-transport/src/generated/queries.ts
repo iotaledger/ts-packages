@@ -5420,6 +5420,11 @@ export type TransactionBlockEdge = {
 export type TransactionBlockEffects = {
   __typename?: 'TransactionBlockEffects';
   /**
+   * The error code of the Move abort, populated if this transaction failed
+   * with a Move abort.
+   */
+  abortCode?: Maybe<Scalars['BigInt']['output']>;
+  /**
    * The effect this transaction had on the balances (sum of coin values per
    * coin type) of addresses and objects.
    */
