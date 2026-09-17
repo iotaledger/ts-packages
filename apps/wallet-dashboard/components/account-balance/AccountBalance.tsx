@@ -56,7 +56,7 @@ export function AccountBalance() {
                         <LoadingIndicator />
                     </div>
                 ) : (
-                    <div className="flex h-full flex-col justify-center gap-y-5 px-6 py-[22px]">
+                    <div className="flex h-full flex-col justify-center gap-y-xs px-6">
                         {address && (
                             <div className="flex w-full" data-full-address={address} data-amp-mask>
                                 <NamedAddress
