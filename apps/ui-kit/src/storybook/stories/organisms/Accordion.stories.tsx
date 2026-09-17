@@ -30,10 +30,12 @@ const Template: StoryFn<CustomStoryProps> = (args) => {
     return (
         <Accordion>
             <AccordionHeader isExpanded={isExpanded} onToggle={onToggle}>
-                <Title
-                    title={args.title}
-                    supportingElement={<Badge type={args.badgeType} label={args.badgeLabel} />}
-                />
+                <div className="pl-md--rs">
+                    <Title
+                        title={args.title}
+                        supportingElement={<Badge type={args.badgeType} label={args.badgeLabel} />}
+                    />
+                </div>
             </AccordionHeader>
             <AccordionContent isExpanded={isExpanded}>
                 <div className="flex flex-col gap-2">

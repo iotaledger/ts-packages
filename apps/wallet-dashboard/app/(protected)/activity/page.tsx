@@ -11,7 +11,7 @@ function ActivityPage(): JSX.Element {
         <div className="flex justify-center">
             <div className="w-full md:w-3/4">
                 <Panel>
-                    <div className="pt-md">
+                    <div className="px-md--rs pt-md">
                         <Title title="Activity" size={TitleSize.Medium} testId="activity-page" />
                     </div>
                     <div className="px-sm pb-md pt-sm">

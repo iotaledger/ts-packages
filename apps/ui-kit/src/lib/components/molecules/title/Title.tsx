@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/atoms';
 import { Info } from '@iota/apps-ui-icons';
 import { TitleSize } from './titleSize.enums';
 import cx from 'classnames';
-import { TITLE_PADDINGS, TITLE_SIZE } from './titleClasses.constants';
+import { TITLE_SIZE } from './titleClasses.constants';
 
 interface TitleProps {
     /**
@@ -54,10 +54,7 @@ export function Title({
     testId,
 }: TitleProps) {
     return (
-        <div
-            className={cx('flex flex-row items-center justify-between', TITLE_PADDINGS[size])}
-            data-testid={testId}
-        >
+        <div className="flex flex-row items-center justify-between" data-testid={testId}>
             <div className="flex flex-row items-center gap-x-xxxs">
                 <div className="flex flex-col justify-start">
                     <div className="title-main-color flex flex-row items-center gap-x-0.5">

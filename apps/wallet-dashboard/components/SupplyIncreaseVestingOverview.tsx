@@ -122,7 +122,9 @@ export function SupplyIncreaseVestingOverview({
     return !isSupplyIncreaseVestingScheduleEmpty || supplyIncreaseVestingStakedMapped.length > 0 ? (
         <div style={{ gridArea: 'vesting' }} className="with-vesting flex grow overflow-hidden">
             <Panel>
-                <Title title="Vesting" />
+                <div className="px-md--rs py-sm--rs">
+                    <Title title="Vesting" />
+                </div>
                 <div className="flex h-full w-full items-center gap-md p-md--rs">
                     <div className="w-1/2">
                         <Card type={CardType.Filled}>

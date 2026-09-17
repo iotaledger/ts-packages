@@ -152,17 +152,19 @@ function StakingDashboardPage(): React.JSX.Element {
             <div className="flex w-full flex-col gap-y-md md:w-3/4">
                 {(delegatedStakeData?.length ?? 0) > 0 ? (
                     <Panel>
-                        <Title
-                            title="Staking"
-                            trailingElement={
-                                <Button
-                                    onClick={() => handleNewStake()}
-                                    size={ButtonSize.Small}
-                                    type={ButtonType.Primary}
-                                    text="Stake"
-                                />
-                            }
-                        />
+                        <div className="px-md--rs py-sm--rs">
+                            <Title
+                                title="Staking"
+                                trailingElement={
+                                    <Button
+                                        onClick={() => handleNewStake()}
+                                        size={ButtonSize.Small}
+                                        type={ButtonType.Primary}
+                                        text="Stake"
+                                    />
+                                }
+                            />
+                        </div>
                         <div className="flex h-full w-full flex-col flex-nowrap gap-md p-md--rs">
                             <div className="flex gap-xs">
                                 <DisplayStats
@@ -262,7 +264,7 @@ function StakingDashboardPage(): React.JSX.Element {
                 )}
                 {hasAvailableVestedStaking && (
                     <Panel bgColor="bg-iota-secondary-90 dark:bg-iota-secondary-10">
-                        <div className="py-sm">
+                        <div className="px-md--rs py-sm">
                             <Title
                                 title="Available Vested Staking"
                                 subtitle="In progress vested staking"

@@ -230,22 +230,20 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                     })}
                 >
                     <div className="flex w-full flex-col flex-wrap items-start justify-between gap-xs sm:min-h-[72px] sm:flex-row sm:items-center md:gap-0">
-                        <div className="-mx-md--rs">
-                            <Title
-                                size={TitleSize.Medium}
-                                title="Assets"
-                                supportingElement={
-                                    <span className="ml-sm">
-                                        <Tooltip text="Total assets owned">
-                                            <Badge
-                                                type={BadgeType.Neutral}
-                                                label={String(totalAssetsCount)}
-                                            />
-                                        </Tooltip>
-                                    </span>
-                                }
-                            />
-                        </div>
+                        <Title
+                            size={TitleSize.Medium}
+                            title="Assets"
+                            supportingElement={
+                                <span className="ml-sm">
+                                    <Tooltip text="Total assets owned">
+                                        <Badge
+                                            type={BadgeType.Neutral}
+                                            label={String(totalAssetsCount)}
+                                        />
+                                    </Tooltip>
+                                </span>
+                            }
+                        />
                         {hasVisualAssets && availableCategories.length > 0 && (
                             <div className="flex flex-col gap-sm sm:flex-row sm:gap-0">
                                 <div className="flex items-center gap-sm">

@@ -29,7 +29,9 @@ export function CurrentEpoch(): JSX.Element {
             onClick={() => ampli.clickedCurrentEpochCard({ epoch: Number(epoch) })}
         >
             <Panel>
-                <Title title={`Epoch ${epoch ?? '--'}`} subtitle={subtitle} />
+                <div className="px-md--rs py-sm--rs">
+                    <Title title={`Epoch ${epoch ?? '--'}`} subtitle={subtitle} />
+                </div>
                 <div className="flex flex-col gap-md p-md--rs">
                     <div className="flex flex-row gap-md">
                         <div className="flex flex-1">

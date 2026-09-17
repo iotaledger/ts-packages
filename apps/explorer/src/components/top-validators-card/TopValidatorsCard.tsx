@@ -66,7 +66,7 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
     return (
         <Panel>
             <div className="relative">
-                <div className="flex w-full flex-row items-center justify-between">
+                <div className="flex w-full flex-row items-center justify-between px-md--rs py-sm--rs">
                     <Title title="Top Validators" />
                     <div className="px-md--rs py-xxs">
                         <Link to="/validators">

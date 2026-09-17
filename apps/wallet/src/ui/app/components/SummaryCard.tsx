@@ -15,7 +15,7 @@ export function SummaryCard({ body, header, footer }: SummaryCardProps) {
     return (
         <div className="flex w-full flex-col flex-nowrap gap-xs rounded-xl bg-iota-neutral-96 pb-md dark:bg-iota-neutral-12">
             {header ? (
-                <div className="flex h-[56px] items-center">
+                <div className="flex h-[56px] items-center px-md">
                     <Title title={header} size={TitleSize.Small} />
                 </div>
             ) : null}

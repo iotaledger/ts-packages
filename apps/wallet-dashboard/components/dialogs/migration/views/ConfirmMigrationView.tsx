@@ -184,11 +184,13 @@ export function ConfirmMigrationView({
                                         <Collapsible
                                             key={title}
                                             render={() => (
-                                                <Title
-                                                    size={TitleSize.Small}
-                                                    title={title}
-                                                    subtitle={subtitle}
-                                                />
+                                                <div className="pl-md">
+                                                    <Title
+                                                        size={TitleSize.Small}
+                                                        title={title}
+                                                        subtitle={subtitle}
+                                                    />
+                                                </div>
                                             )}
                                         >
                                             <div className="flex h-full max-h-[300px] flex-col gap-y-sm pb-sm">
