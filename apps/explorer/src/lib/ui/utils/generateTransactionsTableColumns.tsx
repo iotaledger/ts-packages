@@ -189,7 +189,6 @@ export function generateTransactionsTableColumns(
                             address={address}
                             copyText={address}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            showValidatorImage
                         />
                     </TableCellBase>
                 );

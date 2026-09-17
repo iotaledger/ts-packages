@@ -9,10 +9,10 @@ import {
     IotaClient,
     IotaObjectData,
     IotaTransactionBlockResponse,
-} from '../../typescript/src/client/index.js';
-import { Transaction } from '../../typescript/src/transactions/index.js';
-import { publishPackage, setup, TestToolbox } from '../../typescript/test/e2e/utils/setup';
-import { IotaClientGraphQLTransport } from '../src/transport';
+} from '../../../typescript/src/client/index.js';
+import { Transaction } from '../../../typescript/src/transactions/index.js';
+import { publishPackage, setup, TestToolbox } from '../../../typescript/test/e2e/utils/setup';
+import { IotaClientGraphQLTransport } from '../../src/transport';
 
 const DEFAULT_GRAPHQL_URL = import.meta.env.DEFAULT_GRAPHQL_URL ?? 'http:127.0.0.1:9125';
 const LOCALNET_INDEXER = 'http:127.0.0.1:9124';
@@ -32,7 +32,7 @@ describe('GraphQL IotaClient compatibility', () => {
     beforeAll(async () => {
         toolbox = await setup({ rpcURL: LOCALNET_INDEXER });
 
-        const packagePath = __dirname + '/../../typescript/test/e2e/data/dynamic_fields';
+        const packagePath = __dirname + '/../../../typescript/test/e2e/data/dynamic_fields';
         ({ packageId } = await publishPackage(packagePath, toolbox));
 
         await toolbox.client

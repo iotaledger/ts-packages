@@ -115,12 +115,7 @@ export function ChangePasswordSettings() {
     }
 
     return (
-        <Overlay
-            showModal
-            title="Change Password"
-            closeOverlay={() => navigate('/tokens')}
-            showBackButton
-        >
+        <Overlay showModal title="Change Password" closeOverlay={() => navigate('/tokens')}>
             <Form className="flex h-full flex-col gap-y-md" form={form} onSubmit={handleSubmit}>
                 <Input
                     type={InputType.Password}

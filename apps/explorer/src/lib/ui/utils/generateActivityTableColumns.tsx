@@ -133,7 +133,6 @@ export function generateActivityTableColumns(
                             address={sender}
                             copyText={sender}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            showValidatorImage
                         />
                     </TableCellBase>
                 );
@@ -160,7 +159,6 @@ export function generateActivityTableColumns(
                             address={counterparty}
                             copyText={counterparty}
                             className="[&>div]:max-w-[200px] [&>div]:truncate"
-                            showValidatorImage
                         />
                     </TableCellBase>
                 );
@@ -203,7 +201,7 @@ export function generateActivityTableColumns(
                     <TableCellBase>
                         <div className="flex flex-col">
                             <span
-                                className={`text-label-lg ${getBalanceChangeColorClass(isPositive)}`}
+                                className={`text-body-md ${getBalanceChangeColorClass(isPositive)}`}
                             >
                                 {sign + formatted} IOTA
                             </span>
