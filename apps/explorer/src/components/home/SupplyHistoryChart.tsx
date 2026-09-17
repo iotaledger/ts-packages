@@ -29,7 +29,7 @@ type EpochSupplyPoint = {
 
 function TooltipContent({ data }: { data: EpochSupplyPoint }): JSX.Element {
     const date = formatDate(new Date(Number(data.epochStartTimestamp)), ['day', 'month']);
-    const supply = formatBalance(data.supplyNanos.toString(), IOTA_DECIMALS, CoinFormat.Rounded);
+    const supply = formatBalance(data.supplyNanos.toString(), IOTA_DECIMALS, CoinFormat.Full);
     return (
         <GraphTooltipContent
             overline={`${date}, Epoch ${data.epoch}`}
@@ -68,7 +68,7 @@ export function SupplyHistoryChart(): React.JSX.Element {
     }, [completedEpochs, totalSupply]);
 
     const totalSupplyFormatted = totalSupply?.value
-        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Rounded)
+        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Full)
         : '--';
 
     return (

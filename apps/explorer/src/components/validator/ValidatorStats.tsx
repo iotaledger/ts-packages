@@ -5,6 +5,7 @@
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
 import { CoinFiatValue, getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
+import { CoinFormat } from '@iota/iota-sdk/utils';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -27,9 +28,11 @@ export function ValidatorStats({
 
     const [formattedTotalStakeAmount, totalStakeSymbol] = useFormatCoin({
         balance: totalStake,
+        format: CoinFormat.Full,
     });
     const [formattedRewardsPoolBalance, rewardsPoolBalanceSymbol] = useFormatCoin({
         balance: rewardsPoolBalance,
+        format: CoinFormat.Full,
     });
 
     const votingPower = Number(validatorData.votingPower) / 100;

@@ -20,7 +20,7 @@ function TooltipContent({ data }: { data: CompletedEpochMetrics }): JSX.Element 
     const rewards = formatBalance(
         data.endOfEpochInfo.totalStakeRewardsDistributed,
         IOTA_DECIMALS,
-        CoinFormat.Rounded,
+        CoinFormat.Full,
     );
     return (
         <GraphTooltipContent
@@ -54,7 +54,7 @@ export function StakingRewardsHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Distributed',
-                    text: formatBalance(totalDistributed, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalDistributed, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalDistributed,
                 },

@@ -17,7 +17,7 @@ import {
 
 function TooltipContent({ data }: { data: CompletedEpochMetrics }): JSX.Element {
     const date = formatDate(new Date(Number(data.epochStartTimestamp)), ['day', 'month']);
-    const stake = formatBalance(data.endOfEpochInfo.totalStake, IOTA_DECIMALS, CoinFormat.Rounded);
+    const stake = formatBalance(data.endOfEpochInfo.totalStake, IOTA_DECIMALS, CoinFormat.Full);
     return (
         <GraphTooltipContent
             overline={`${date}, Epoch ${data.epoch}`}
@@ -47,7 +47,7 @@ export function TotalStakeHistoryChart(): JSX.Element {
                     size: LabelTextSize.Large,
                     label: 'Total Staked',
                     text: latestTotalStake
-                        ? formatBalance(latestTotalStake, IOTA_DECIMALS, CoinFormat.Rounded)
+                        ? formatBalance(latestTotalStake, IOTA_DECIMALS, CoinFormat.Full)
                         : '--',
                     supportingLabel: latestTotalStake ? 'IOTA' : undefined,
                     fiatAmount: latestTotalStake,
