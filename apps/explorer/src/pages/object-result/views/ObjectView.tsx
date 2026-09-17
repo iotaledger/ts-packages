@@ -3,7 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
-import { capitalize, resolveNFTMedia, useFormatCoin, useNFTMediaHeaders } from '@iota/core';
+import {
+    capitalize,
+    CoinFiatValue,
+    resolveNFTMedia,
+    useFormatCoin,
+    useNFTMediaHeaders,
+} from '@iota/core';
 import { type IotaObjectResponse, type ObjectOwner } from '@iota/iota-sdk/client';
 import {
     CoinFormat,
@@ -220,8 +226,17 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
     return (
         <DisplayStats
             label="Storage Rebate"
-            value={`-${storageRebateFormatted}`}
-            supportingLabel={symbol}
+            value={
+                <div className="flex min-w-0 flex-col gap-xxs">
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">{`-${storageRebateFormatted}`}</span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {symbol}
+                        </span>
+                    </div>
+                    <CoinFiatValue amount={storageRebate} withParentheses={false} />
+                </div>
+            }
         />
     );
 }

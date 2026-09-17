@@ -5,9 +5,8 @@
 import type { EpochMetrics } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
-import { CheckpointSequenceLink, DateDisplay, EpochLink } from '~/components';
+import { CheckpointSequenceLink, DateDisplay, EpochLink, StakeColumn } from '~/components';
 import { getEpochStorageFundFlow } from '~/lib/utils';
-import { CoinFormat, formatBalance, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
 
 /**
  * Generate table columns renderers for the epochs data.
@@ -51,21 +50,13 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                 const isCurrentEpoch = epochMetrics.epoch === currentEpoch;
                 const totalStakeRewardsDistributed =
                     epochMetrics.endOfEpochInfo?.totalStakeRewardsDistributed;
-                const totalStakeRewardsDistributedFormatted =
-                    isCurrentEpoch || !totalStakeRewardsDistributed
-                        ? '--'
-                        : formatBalance(
-                              Number(totalStakeRewardsDistributed) / Number(NANOS_PER_IOTA),
-                              0,
-                              CoinFormat.Rounded,
-                          );
                 return (
                     <TableCellBase>
-                        <TableCellText
-                            supportingLabel={totalStakeRewardsDistributed ? 'IOTA' : undefined}
-                        >
-                            {totalStakeRewardsDistributedFormatted ?? '0'}
-                        </TableCellText>
+                        {isCurrentEpoch || !totalStakeRewardsDistributed ? (
+                            <TableCellText>--</TableCellText>
+                        ) : (
+                            <StakeColumn stake={totalStakeRewardsDistributed} />
+                        )}
                     </TableCellBase>
                 );
             },
@@ -92,14 +83,13 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
             cell: ({ getValue }) => {
                 const endOfEpochInfo = getValue<EpochMetrics['endOfEpochInfo']>();
                 const storageNetInflow = getEpochStorageFundFlow(endOfEpochInfo).netInflow;
-                const storageNetInflowFormatted = storageNetInflow
-                    ? formatBalance(storageNetInflow / NANOS_PER_IOTA, 0, CoinFormat.Rounded)
-                    : '--';
                 return (
                     <TableCellBase>
-                        <TableCellText supportingLabel={storageNetInflow ? 'IOTA' : undefined}>
-                            {storageNetInflowFormatted}
-                        </TableCellText>
+                        {storageNetInflow === null ? (
+                            <TableCellText>--</TableCellText>
+                        ) : (
+                            <StakeColumn stake={storageNetInflow} />
+                        )}
                     </TableCellBase>
                 );
             },
