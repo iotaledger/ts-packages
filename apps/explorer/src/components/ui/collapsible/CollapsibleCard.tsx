@@ -32,6 +32,7 @@ export interface CollapsibleCardProps {
     rawData?: unknown;
     compactHeader?: boolean;
     isTransparent?: boolean;
+    className?: string;
 }
 
 interface RawJsonToggleProps {
@@ -81,6 +82,7 @@ export function CollapsibleCard({
     isTransparentPanel,
     rawData,
     compactHeader,
+    className,
 }: CollapsibleCardProps) {
     const [open, setOpen] = useState(!initialClose);
     const [showRaw, setShowRaw] = useState(false);
@@ -116,7 +118,7 @@ export function CollapsibleCard({
         />
     );
     return collapsible ? (
-        <div className="relative w-full" data-state={open ? 'open' : 'closed'}>
+        <div className={clsx('relative w-full', className)} data-state={open ? 'open' : 'closed'}>
             <Accordion hideBorder={hideBorder}>
                 <AccordionHeader
                     hideArrow={hideArrow || compactHeader}
