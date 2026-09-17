@@ -127,10 +127,7 @@ export function TransactionBlocksForAddress({
                     </div>
                 </div>
                 <div className="flex flex-col gap-sm p-md--rs">
-                    {isPending ||
-                    isFetching ||
-                    isFetchingNextPage ||
-                    !data?.pages[currentPage].data ? (
+                    {isPending || isFetching || isFetchingNextPage || !data?.pages[currentPage] ? (
                         <PlaceholderTable
                             rowCount={DEFAULT_TRANSACTIONS_LIMIT}
                             rowHeight="16px"
@@ -145,11 +142,15 @@ export function TransactionBlocksForAddress({
                                 type={InfoBoxType.Warning}
                                 style={InfoBoxStyle.Elevated}
                             />
-                            {!!data.pages[currentPage].data.length && (
+                            {data.pages[currentPage].data.length ? (
                                 <TableCard
                                     data={data.pages[currentPage].data}
                                     columns={tableColumns}
                                 />
+                            ) : (
+                                <div className="flex justify-center py-md text-body-md text-iota-neutral-40">
+                                    No transactions found
+                                </div>
                             )}
                         </>
                     )}
