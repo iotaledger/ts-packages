@@ -25,18 +25,26 @@ import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
 import { useBalanceVisibility } from '@/store/balanceVisibility';
-import { ArrowBottomLeft, Copy, Send, VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
+import {
+    ArrowBottomLeft,
+    ArrowTopRight,
+    Copy,
+    Send,
+    VisibilityOff,
+    VisibilityOn,
+} from '@iota/apps-ui-icons';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
     const address = account?.address;
     const [isReceiveDialogOpen, setIsReceiveDialogOpen] = useState(false);
     const { network } = useIotaClientContext();
-    const { id: networkId } = getNetwork(network);
+    const { id: networkId, explorer } = getNetwork(network);
     const fiatBalance = useGetFiatBalance(networkId);
     const { data: coinBalance, isPending } = useBalance(address!);
     const [formatted, symbol] = useFormatCoin({ balance: coinBalance?.totalBalance });
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
+    const explorerLink = `${explorer}/address/${address}`;
     const { data: coinBalances } = useGetAllBalances(account?.address);
     const { isBalanceVisible, toggleBalanceVisible } = useBalanceVisibility();
     const { data: iotaName } = useGetDefaultIotaName(address);
@@ -59,6 +67,11 @@ export function AccountBalance() {
             console.error('Failed to copy:', error);
         }
     }, [address]);
+
+    function onOpenExplorer(): void {
+        const newWindow = window.open(explorerLink, '_blank', 'noopener noreferrer');
+        if (newWindow) newWindow.opener = null;
+    }
 
     const sendTokenCoin = coinBalance?.totalBalance === '0' ? coinBalances?.[0] : coinBalance;
 
@@ -87,6 +100,13 @@ export function AccountBalance() {
                                     aria-label="Copy to clipboard"
                                 >
                                     <Copy className="h-[13px] w-[13px]" />
+                                </ButtonUnstyled>
+                                <ButtonUnstyled
+                                    onClick={onOpenExplorer}
+                                    className="flex flex-none self-center text-[#8892a1] transition-colors hover:text-iota-neutral-90"
+                                    aria-label="Open in explorer"
+                                >
+                                    <ArrowTopRight className="h-[13px] w-[13px]" />
                                 </ButtonUnstyled>
                             </div>
                         )}
