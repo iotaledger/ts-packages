@@ -6368,6 +6368,22 @@ export type GetStakesByIdsQuery = { __typename?: 'Query', objects: { __typename?
 
 export type Rpc_Stake_FieldsFragment = { __typename?: 'StakedIota', principal?: any | null, stakeStatus: StakeStatus, address: any, estimatedReward?: any | null, activatedEpoch?: { __typename?: 'Epoch', epochId: any, referenceGasPrice?: any | null } | null, requestedEpoch?: { __typename?: 'Epoch', epochId: any } | null, contents?: { __typename?: 'MoveValue', json: any } | null };
 
+export type SubscribeEventsSubscriptionVariables = Exact<{
+  filter?: InputMaybe<SubscriptionEventFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type SubscribeEventsSubscription = { __typename?: 'Subscription', events: { __typename: 'Event', json: any, bcs: any, timestamp?: any | null, transactionBlock?: { __typename?: 'TransactionBlock', digest?: string | null } | null, sendingModule?: { __typename?: 'MoveModule', name: string, package: { __typename?: 'MovePackage', address: any } } | null, sender?: { __typename?: 'Address', address: any } | null, type: { __typename?: 'MoveType', repr: string } } | { __typename: 'Lagged', count: number } };
+
+export type SubscribeTransactionsSubscriptionVariables = Exact<{
+  filter?: InputMaybe<SubscriptionTransactionFilter>;
+  startAfter?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type SubscribeTransactionsSubscription = { __typename?: 'Subscription', transactions: { __typename: 'Lagged', count: number } | { __typename: 'TransactionBlock', effects?: { __typename?: 'TransactionBlockEffects', bcs: any } | null } };
+
 export type TransactionBlocksByDigestsQueryVariables = Exact<{
   digests: Array<Scalars['String']['input']> | Scalars['String']['input'];
 }>;
@@ -9000,6 +9016,53 @@ export const GetStakesByIdsDocument = new TypedDocumentString(`
   address
   estimatedReward
 }`) as unknown as TypedDocumentString<GetStakesByIdsQuery, GetStakesByIdsQueryVariables>;
+export const SubscribeEventsDocument = new TypedDocumentString(`
+    subscription subscribeEvents($filter: SubscriptionEventFilter, $startAfter: String) {
+  events(filter: $filter, startAfter: $startAfter) {
+    __typename
+    ... on Event {
+      ...RPC_EVENTS_FIELDS
+      transactionBlock {
+        digest
+      }
+    }
+    ... on Lagged {
+      count
+    }
+  }
+}
+    fragment RPC_EVENTS_FIELDS on Event {
+  sendingModule {
+    package {
+      address
+    }
+    name
+  }
+  sender {
+    address
+  }
+  type {
+    repr
+  }
+  json
+  bcs
+  timestamp
+}`) as unknown as TypedDocumentString<SubscribeEventsSubscription, SubscribeEventsSubscriptionVariables>;
+export const SubscribeTransactionsDocument = new TypedDocumentString(`
+    subscription subscribeTransactions($filter: SubscriptionTransactionFilter, $startAfter: String) {
+  transactions(filter: $filter, startAfter: $startAfter) {
+    __typename
+    ... on TransactionBlock {
+      effects {
+        bcs
+      }
+    }
+    ... on Lagged {
+      count
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<SubscribeTransactionsSubscription, SubscribeTransactionsSubscriptionVariables>;
 export const TransactionBlocksByDigestsDocument = new TypedDocumentString(`
     query TransactionBlocksByDigests($digests: [String!]!) {
   transactionBlocksByDigests(digests: $digests) {
