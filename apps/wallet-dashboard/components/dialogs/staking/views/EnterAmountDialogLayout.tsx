@@ -35,7 +35,7 @@ interface FormValues {
 interface EnterAmountDialogLayoutProps {
     selectedValidator: string;
     senderAddress: string;
-    caption: string;
+    caption: React.ReactNode;
     renderInfo?: React.JSX.Element;
     isLoading: boolean;
     onBack: () => void;

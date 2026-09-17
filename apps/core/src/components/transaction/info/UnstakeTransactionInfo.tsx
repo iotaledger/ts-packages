@@ -9,6 +9,7 @@ import type { GasSummaryType, RenderExplorerLink } from '../../../types';
 import { useFormatCoin } from '../../../hooks';
 import { Divider, KeyValueInfo, Panel, CardType } from '@iota/apps-ui-kit';
 import { GasSummary, getUnstakeDetailsFromEvents, Validator } from '../../..';
+import { CoinFiatValue } from '../../coin';
 
 interface UnstakeTransactionInfoProps {
     activeAddress: string | null;
@@ -43,11 +44,25 @@ export function UnstakeTransactionInfo({
                     <KeyValueInfo
                         keyText="Your Stake"
                         value={`${formatTotalAmountWithoutRewards} ${symbol}`}
+                        supportingLabel={
+                            <CoinFiatValue
+                                amount={unstakeAmount}
+                                coinType={IOTA_TYPE_ARG}
+                                withParentheses={false}
+                            />
+                        }
                         fullwidth
                     />
                     <KeyValueInfo
                         keyText="Rewards Earned"
                         value={`${formatRewards} ${symbol}`}
+                        supportingLabel={
+                            <CoinFiatValue
+                                amount={unstakeRewards || 0}
+                                coinType={IOTA_TYPE_ARG}
+                                withParentheses={false}
+                            />
+                        }
                         fullwidth
                     />
                     <Divider />

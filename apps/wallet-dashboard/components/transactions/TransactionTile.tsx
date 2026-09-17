@@ -25,6 +25,7 @@ import {
     formatDate,
     isMigrationTransaction,
     BALANCE_MASK,
+    AmountWithFiat,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionDetailsLayout } from '../dialogs/transaction/TransactionDetailsLayout';
@@ -122,7 +123,21 @@ export function TransactionTile({ transaction, hideBalance }: TransactionTilePro
                 <CardAction
                     type={CardActionType.SupportingText}
                     title={
-                        txnFailed ? '--' : `${hideBalance ? BALANCE_MASK : formatAmount} ${symbol}`
+                        txnFailed ? (
+                            '--'
+                        ) : hideBalance ? (
+                            `${BALANCE_MASK} ${symbol}`
+                        ) : (
+                            <AmountWithFiat
+                                amount={balance ?? 0}
+                                formatted={formatAmount}
+                                symbol={symbol}
+                                coinType={coinType}
+                                direction="column"
+                                align="end"
+                                showApproxSymbol={false}
+                            />
+                        )
                     }
                 />
             </Card>

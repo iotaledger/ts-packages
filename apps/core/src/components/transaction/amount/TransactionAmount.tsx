@@ -13,6 +13,7 @@ import {
     ImageType,
 } from '@iota/apps-ui-kit';
 import { useFormatCoin } from '../../../hooks';
+import { CoinFiatValue } from '../../coin';
 
 interface TransactionAmountProps {
     amount: string | number | bigint;
@@ -42,7 +43,16 @@ export function TransactionAmount({
                 title={`${approximation ? '~' : ''}${formatAmount} ${symbol}`}
                 subtitle={subtitle}
             />
-            <CardAction type={CardActionType.SupportingText} />
+            <CardAction
+                type={CardActionType.SupportingText}
+                title={
+                    <CoinFiatValue
+                        amount={Math.abs(Number(amount))}
+                        coinType={coinType}
+                        withParentheses={false}
+                    />
+                }
+            />
         </Card>
     ) : null;
 }

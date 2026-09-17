@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { SecondaryText } from '@/components/atoms/secondary-text';
 import { LABEL_CLASSES } from './input.classes';
 import { createElement } from 'react';
+import type { ReactNode } from 'react';
 
 export enum LabelHtmlTag {
     Label = 'label',
@@ -19,7 +20,7 @@ export interface InputWrapperProps {
     /**
      * Shows a caption with the text below the input.
      */
-    caption?: string;
+    caption?: ReactNode;
     /**
      * Error Message. Overrides the caption.
      */

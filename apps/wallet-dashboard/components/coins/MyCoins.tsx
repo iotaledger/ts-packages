@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
-import { useCurrentAccount } from '@iota/dapp-kit';
-import { CoinBalance } from '@iota/iota-sdk/client';
+import { useCurrentAccount, useIotaClientContext } from '@iota/dapp-kit';
+import { CoinBalance, type Network } from '@iota/iota-sdk/client';
 import {
     useSortedCoinsByCategories,
     CoinItem,
     useGetAllBalances,
+    useBalanceInUSD,
     VirtualList,
     NoData,
 } from '@iota/core';
@@ -42,6 +43,29 @@ const TOKEN_CATEGORIES = [
     },
 ];
 
+interface CoinRowProps {
+    coin: CoinBalance;
+    isRecognized: boolean;
+    onClick: () => void;
+}
+
+function CoinRow({ coin, isRecognized, onClick }: CoinRowProps): JSX.Element {
+    const { network } = useIotaClientContext();
+    const usd = useBalanceInUSD(coin.coinType, coin.totalBalance, network as Network);
+
+    return (
+        <CoinItem
+            coinType={coin.coinType}
+            balance={BigInt(coin.totalBalance)}
+            usd={usd ?? undefined}
+            onClick={onClick}
+            icon={
+                isRecognized ? <RecognizedBadge className="h-4 w-4 text-iota-primary-40" /> : null
+            }
+        />
+    );
+}
+
 export function MyCoins(): React.JSX.Element {
     const [selectedTokenCategory, setSelectedTokenCategory] = useState(TokenCategory.All);
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
@@ -62,15 +86,10 @@ export function MyCoins(): React.JSX.Element {
 
     const virtualItem = (isRecognized: boolean, coin: CoinBalance): JSX.Element => {
         return (
-            <CoinItem
-                coinType={coin.coinType}
-                balance={BigInt(coin.totalBalance)}
+            <CoinRow
+                coin={coin}
+                isRecognized={isRecognized}
                 onClick={() => openSendTokenDialog(coin)}
-                icon={
-                    isRecognized ? (
-                        <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
-                    ) : null
-                }
             />
         );
     };

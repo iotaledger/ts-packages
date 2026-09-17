@@ -21,7 +21,7 @@ export async function navigateToStakePage(page: Page) {
         .first()
         .click();
     await page.getByText(/Next/).click();
-    await expect(page.getByText(/IOTA Available/)).toBeVisible({ timeout: SHORT_TIMEOUT });
+    await expect(page.getByText(/IOTA[\s\S]*Available/)).toBeVisible({ timeout: SHORT_TIMEOUT });
 }
 
 export async function submitAndVerifyStaking(page: Page) {
