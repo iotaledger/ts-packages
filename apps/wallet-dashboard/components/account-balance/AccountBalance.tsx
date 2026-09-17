@@ -7,31 +7,39 @@ import {
     useFormatCoin,
     useGetFiatBalance,
     useGetAllBalances,
-    NamedAddress,
+    useGetDefaultIotaName,
     toast,
     BALANCE_MASK,
 } from '@iota/core';
-import { Button, ButtonSize, ButtonType, LoadingIndicator, Panel } from '@iota/apps-ui-kit';
+import {
+    Button,
+    ButtonSize,
+    ButtonType,
+    ButtonUnstyled,
+    LoadingIndicator,
+    Panel,
+} from '@iota/apps-ui-kit';
 import { getNetwork } from '@iota/iota-sdk/client';
+import { formatAddress } from '@iota/iota-sdk/utils';
 import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
 import { useBalanceVisibility } from '@/store/balanceVisibility';
-import { VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
+import { ArrowBottomLeft, Copy, Send, VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
     const address = account?.address;
     const [isReceiveDialogOpen, setIsReceiveDialogOpen] = useState(false);
     const { network } = useIotaClientContext();
-    const { id: networkId, explorer } = getNetwork(network);
+    const { id: networkId } = getNetwork(network);
     const fiatBalance = useGetFiatBalance(networkId);
     const { data: coinBalance, isPending } = useBalance(address!);
     const [formatted, symbol] = useFormatCoin({ balance: coinBalance?.totalBalance });
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
-    const explorerLink = `${explorer}/address/${address}`;
     const { data: coinBalances } = useGetAllBalances(account?.address);
     const { isBalanceVisible, toggleBalanceVisible } = useBalanceVisibility();
+    const { data: iotaName } = useGetDefaultIotaName(address);
 
     function openSendTokenDialog(): void {
         setIsSendTokenDialogOpen(true);
@@ -41,10 +49,16 @@ export function AccountBalance() {
         setIsReceiveDialogOpen(true);
     }
 
-    const onCopySuccess = useCallback(() => {
-        toast('Address copied');
-        trackElementCopied('address');
-    }, []);
+    const onCopyAddress = useCallback(async () => {
+        if (!address || !navigator.clipboard) return;
+        try {
+            await navigator.clipboard.writeText(address);
+            toast('Address copied');
+            trackElementCopied('address');
+        } catch (error) {
+            console.error('Failed to copy:', error);
+        }
+    }, [address]);
 
     const sendTokenCoin = coinBalance?.totalBalance === '0' ? coinBalances?.[0] : coinBalance;
 
@@ -52,74 +66,83 @@ export function AccountBalance() {
         <>
             <Panel>
                 {isPending ? (
-                    <div className="flex h-full w-full items-center justify-center p-2">
+                    <div className="flex h-full w-full items-center justify-center p-lg">
                         <LoadingIndicator />
                     </div>
                 ) : (
-                    <div className="flex h-full flex-col items-center justify-center gap-y-lg p-lg">
-                        <div className="flex flex-col items-center gap-y-xs">
-                            {address && (
-                                <div className="w-full" data-full-address={address} data-amp-mask>
-                                    <NamedAddress
-                                        address={address}
-                                        isCopyable
-                                        copyText={address}
-                                        isExternal
-                                        externalLink={explorerLink}
-                                        onCopySuccess={onCopySuccess}
-                                        addMarginRightToCenter
-                                    />
-                                </div>
-                            )}
-                            <div className="flex items-baseline gap-xs">
-                                <span
-                                    data-testid="balance-amount"
-                                    className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
-                                >
-                                    {isBalanceVisible ? formatted : BALANCE_MASK}
+                    <div className="flex h-full flex-col justify-center gap-y-5 px-6 py-[22px]">
+                        {address && (
+                            <div className="flex min-w-0 items-baseline gap-2.5">
+                                {iotaName && (
+                                    <span className="truncate text-[14px] text-white">
+                                        {iotaName}
+                                    </span>
+                                )}
+                                <span className="flex-none font-mono text-[12px] text-[#8892a1]">
+                                    {formatAddress(address)}
                                 </span>
-                                <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    <span>{symbol}</span>
-                                    <Button
-                                        type={ButtonType.Ghost}
-                                        size={ButtonSize.Small}
+                                <ButtonUnstyled
+                                    onClick={onCopyAddress}
+                                    className="flex flex-none self-center text-[#8892a1] transition-colors hover:text-iota-neutral-90"
+                                    aria-label="Copy to clipboard"
+                                >
+                                    <Copy className="h-[13px] w-[13px]" />
+                                </ButtonUnstyled>
+                            </div>
+                        )}
+                        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+                            <div className="flex min-w-0 flex-col gap-[3px]">
+                                <div className="flex items-baseline gap-[7px]">
+                                    <span
+                                        data-testid="balance-amount"
+                                        className="text-[40px] font-semibold leading-none tracking-[-0.02em] text-white [font-variant-numeric:tabular-nums]"
+                                    >
+                                        {isBalanceVisible ? formatted : BALANCE_MASK}
+                                    </span>
+                                    <span className="text-[14px] font-medium text-[#8892a1]">
+                                        {symbol}
+                                    </span>
+                                    <ButtonUnstyled
                                         onClick={toggleBalanceVisible}
-                                        className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
+                                        className="text-[#8892a1] transition-colors hover:text-iota-neutral-90"
                                         aria-label={
                                             isBalanceVisible ? 'Hide balances' : 'Show balances'
                                         }
-                                        icon={
-                                            isBalanceVisible ? (
-                                                <VisibilityOn className="h-4 w-4" />
-                                            ) : (
-                                                <VisibilityOff className="h-4 w-4" />
-                                            )
-                                        }
+                                    >
+                                        {isBalanceVisible ? (
+                                            <VisibilityOn className="h-[15px] w-[15px]" />
+                                        ) : (
+                                            <VisibilityOff className="h-[15px] w-[15px]" />
+                                        )}
+                                    </ButtonUnstyled>
+                                </div>
+                                {fiatBalance && (
+                                    <span className="text-[13px] text-[#8892a1] [font-variant-numeric:tabular-nums]">
+                                        {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-none items-center gap-2.5">
+                                <div className="flex flex-col items-center gap-1">
+                                    <Button
+                                        onClick={openReceiveTokenDialog}
+                                        type={ButtonType.Secondary}
+                                        icon={<ArrowBottomLeft className="h-5 w-5" />}
+                                        size={ButtonSize.Medium}
+                                        aria-label="Receive"
+                                    />
+                                </div>
+                                <div className="flex flex-col items-center gap-1">
+                                    <Button
+                                        onClick={openSendTokenDialog}
+                                        icon={<Send className="h-5 w-5" />}
+                                        size={ButtonSize.Medium}
+                                        disabled={!address || coinBalances?.length === 0}
+                                        testId="send-coin-button"
+                                        aria-label="Send"
                                     />
                                 </div>
                             </div>
-                            {fiatBalance && (
-                                <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
-                                </div>
-                            )}
-                        </div>
-                        <div className="flex w-full max-w-56 gap-xs">
-                            <Button
-                                onClick={openSendTokenDialog}
-                                text="Send"
-                                size={ButtonSize.Small}
-                                disabled={!address || coinBalances?.length === 0}
-                                testId="send-coin-button"
-                                fullWidth
-                            />
-                            <Button
-                                onClick={openReceiveTokenDialog}
-                                type={ButtonType.Secondary}
-                                text="Receive"
-                                size={ButtonSize.Small}
-                                fullWidth
-                            />
                         </div>
                     </div>
                 )}
