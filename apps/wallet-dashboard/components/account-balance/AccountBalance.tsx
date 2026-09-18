@@ -58,7 +58,11 @@ export function AccountBalance() {
                 ) : (
                     <div className="flex h-full flex-col justify-center gap-y-xs px-6">
                         {address && (
-                            <div className="flex w-full" data-full-address={address} data-amp-mask>
+                            <div
+                                className="flex w-full justify-center md:justify-start"
+                                data-full-address={address}
+                                data-amp-mask
+                            >
                                 <NamedAddress
                                     address={address}
                                     isCopyable
@@ -70,40 +74,44 @@ export function AccountBalance() {
                                 />
                             </div>
                         )}
-                        <div className="flex flex-col items-start justify-between gap-sm md:flex-row md:items-center">
-                            <div className="flex min-w-0 flex-col items-start gap-xxxs">
-                                <div className="flex items-baseline gap-xs">
-                                    <span
-                                        data-testid="balance-amount"
-                                        className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
-                                    >
-                                        {isBalanceVisible ? formatted : BALANCE_MASK}
-                                    </span>
-                                    <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                        <span>{symbol}</span>
-                                        <Button
-                                            type={ButtonType.Ghost}
-                                            size={ButtonSize.Small}
-                                            onClick={toggleBalanceVisible}
-                                            className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
-                                            aria-label={
-                                                isBalanceVisible ? 'Hide balances' : 'Show balances'
-                                            }
-                                            icon={
-                                                isBalanceVisible ? (
-                                                    <VisibilityOn className="h-4 w-4" />
-                                                ) : (
-                                                    <VisibilityOff className="h-4 w-4" />
-                                                )
-                                            }
-                                        />
+                        <div className="flex flex-col items-center justify-center gap-md md:flex-row md:justify-start md:gap-2xl">
+                            <div className="flex min-w-0 flex-col items-start gap-xs">
+                                <div className="flex flex-col items-center gap-xxxs md:items-baseline">
+                                    <div className="flex gap-xxs">
+                                        <span
+                                            data-testid="balance-amount"
+                                            className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+                                        >
+                                            {isBalanceVisible ? formatted : BALANCE_MASK}
+                                        </span>
+                                        <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                            <span>{symbol}</span>
+                                            <Button
+                                                type={ButtonType.Ghost}
+                                                size={ButtonSize.Small}
+                                                onClick={toggleBalanceVisible}
+                                                className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
+                                                aria-label={
+                                                    isBalanceVisible
+                                                        ? 'Hide balances'
+                                                        : 'Show balances'
+                                                }
+                                                icon={
+                                                    isBalanceVisible ? (
+                                                        <VisibilityOn className="h-4 w-4" />
+                                                    ) : (
+                                                        <VisibilityOff className="h-4 w-4" />
+                                                    )
+                                                }
+                                            />
+                                        </div>
                                     </div>
+                                    {fiatBalance && (
+                                        <div className="ites flex text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                            {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                        </div>
+                                    )}
                                 </div>
-                                {fiatBalance && (
-                                    <div className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                        {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
-                                    </div>
-                                )}
                             </div>
                             <div className="flex flex-none items-center gap-sm">
                                 <div className="flex flex-col items-center gap-1">
