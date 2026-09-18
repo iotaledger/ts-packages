@@ -9,6 +9,8 @@ import {
     AddressAlias,
     useGetDefaultIotaName,
     useCopyToClipboard,
+    NameAvatar,
+    NameAvatarSize,
 } from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { formatAddress, formatDigest, formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
@@ -79,7 +81,10 @@ function createInternalLink<T extends string>(
                             name={hasAlias ? undefined : iotaName}
                             address={address}
                         >
-                            <span className="inline-flex max-w-full items-center whitespace-nowrap">
+                            <span className="inline-flex max-w-full items-center gap-x-xs whitespace-nowrap">
+                                {iotaName ? (
+                                    <NameAvatar address={id} size={NameAvatarSize.Xxs} />
+                                ) : null}
                                 <Link
                                     className={clsx(
                                         'min-w-0 text-iota-primary-30 dark:text-iota-primary-80',
