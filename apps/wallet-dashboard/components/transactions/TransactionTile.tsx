@@ -19,49 +19,52 @@ import {
     useFormatCoin,
     getTransactionAction,
     useTransactionSummary,
-    ExtendedTransaction,
-    TransactionState,
     TransactionIcon,
     checkIfIsTimelockedStaking,
     getTransactionAmountForTimelocked,
     formatDate,
     isMigrationTransaction,
+    BALANCE_MASK,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionDetailsLayout } from '../dialogs/transaction/TransactionDetailsLayout';
 import { DialogLayout } from '../dialogs/layout';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 interface TransactionTileProps {
-    transaction: ExtendedTransaction;
+    transaction: IotaTransactionBlockResponse;
+    hideBalance?: boolean;
 }
 
-export function TransactionTile({ transaction }: TransactionTileProps): JSX.Element {
+export function TransactionTile({ transaction, hideBalance }: TransactionTileProps): JSX.Element {
     const account = useCurrentAccount();
     const address = account?.address;
     const [open, setOpen] = useState(false);
 
     const transactionSummary = useTransactionSummary({
-        transaction: transaction.raw,
+        transaction,
         currentAddress: address,
         recognizedPackagesList: [],
     });
 
     const { isTimelockedStaking, isTimelockedUnstaking } = checkIfIsTimelockedStaking(
-        transaction.raw?.events,
+        transaction?.events,
     );
 
     const balanceChanges = transactionSummary?.balanceChanges;
+    const txnFailed = transactionSummary?.status !== 'success';
+    const label = transactionSummary?.label;
 
     const [balance, coinType] = (() => {
-        if ((isTimelockedStaking || isTimelockedUnstaking) && transaction.raw.events) {
+        if ((isTimelockedStaking || isTimelockedUnstaking) && transaction.events) {
             const balance = getTransactionAmountForTimelocked(
-                transaction.raw.events,
+                transaction.events,
                 isTimelockedStaking,
                 isTimelockedUnstaking,
             );
             return [balance, IOTA_TYPE_ARG];
-        } else if (isMigrationTransaction(transaction.raw.transaction)) {
+        } else if (isMigrationTransaction(transaction.transaction)) {
             const balanceChange = balanceChanges?.[address || '']?.find((change) => {
                 return change.coinType === IOTA_TYPE_ARG;
             });
@@ -88,8 +91,14 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
     }
 
     const transactionDate =
-        transaction?.timestamp &&
-        formatDate(Number(transaction?.timestamp), ['day', 'month', 'year', 'hour', 'minute']);
+        transactionSummary?.timestamp &&
+        formatDate(Number(transactionSummary.timestamp), [
+            'day',
+            'month',
+            'year',
+            'hour',
+            'minute',
+        ]);
 
     return (
         <>
@@ -98,28 +107,22 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
                 type={CardType.Default}
                 isHoverable
                 onClick={openDetailsDialog}
-                aria-label={`View ${transaction.action ?? 'transaction'} details`}
+                aria-label={`View ${label ?? 'transaction'} details`}
             >
                 <CardImage type={ImageType.BgSolid} shape={ImageShape.SquareRounded}>
                     <TransactionIcon
-                        variant={getTransactionAction(transaction?.raw, address)}
-                        txnFailed={transaction.state === TransactionState.Failed}
+                        variant={getTransactionAction(transaction, address)}
+                        txnFailed={txnFailed}
                     />
                 </CardImage>
                 <CardBody
-                    title={
-                        transaction.state === TransactionState.Failed
-                            ? `Failed - ${transaction.action ?? 'Unknown'}`
-                            : (transaction.action ?? 'Unknown')
-                    }
+                    title={txnFailed ? `Failed - ${label ?? 'Unknown'}` : (label ?? 'Unknown')}
                     subtitle={transactionDate}
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
                     title={
-                        transaction.state === TransactionState.Failed
-                            ? '--'
-                            : `${formatAmount} ${symbol}`
+                        txnFailed ? '--' : `${hideBalance ? BALANCE_MASK : formatAmount} ${symbol}`
                     }
                 />
             </Card>

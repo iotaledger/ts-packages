@@ -1,4 +1,4 @@
-export const WALLET_CUSTOMRPC_PLACEHOLDER = 'http://localhost:3000/';
+export const WALLET_CUSTOMRPC_INPUT_TEST_ID = 'custom-rpc-url-input';
 export const WALLET_PASSWORD = 'bridgee2etests';
 
 export const THREE_MINUTES = 180_000;

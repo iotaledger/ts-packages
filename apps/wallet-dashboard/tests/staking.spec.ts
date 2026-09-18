@@ -12,6 +12,7 @@ import {
     splitCoinsTransaction,
     submitAndVerifyStaking,
     submitAndVerifyUnstaking,
+    submitAndVerifyPartialUnstaking,
 } from './utils/staking';
 import { LONG_TIMEOUT, SHORT_TIMEOUT } from './constants/timeout.constants';
 
@@ -35,10 +36,41 @@ test.describe('Wallet staking', () => {
 
         await submitAndVerifyStaking(dashboardPage, context);
 
-        await dashboardPage.reload();
         const stakedAmount = await getStakedAmount(dashboardPage);
         expect(stakedAmount).toEqual(STAKE_AMOUNT.toString());
 
+        await submitAndVerifyUnstaking(dashboardPage, context);
+    });
+
+    test('should allow to partially unstake funds', async ({
+        pageWithFreshWallet,
+        context,
+        sharedState,
+    }) => {
+        test.setTimeout(LONG_TIMEOUT);
+        const dashboardPage = await setupWalletWithFunds(
+            pageWithFreshWallet,
+            context,
+            sharedState.extension.name,
+        );
+        await navigateToDashboardStakePage(dashboardPage);
+
+        await dashboardPage.getByLabel('Amount').fill(STAKE_AMOUNT.toString());
+
+        await submitAndVerifyStaking(dashboardPage, context);
+
+        const stakedAmount = await getStakedAmount(dashboardPage);
+        expect(stakedAmount).toEqual(STAKE_AMOUNT.toString());
+
+        // Partial unstake half the amount
+        const partialAmount = (STAKE_AMOUNT / 2).toString();
+        await submitAndVerifyPartialUnstaking(dashboardPage, context, partialAmount);
+
+        // Verify remaining stake
+        const remainingStake = await getStakedAmount(dashboardPage);
+        expect(remainingStake).toEqual(partialAmount);
+
+        // Full unstake the rest
         await submitAndVerifyUnstaking(dashboardPage, context);
     });
 

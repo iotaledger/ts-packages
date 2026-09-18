@@ -8,6 +8,7 @@ function getExplorerUrl(
     path: string,
     network: NetworkId,
     customExplorer: string,
+    customRpc?: string | null,
     getUrlWithDeviceId: (url: URL) => URL = (url) => url,
 ) {
     const networkConfig = getNetwork(network);
@@ -17,7 +18,7 @@ function getExplorerUrl(
     if (explorer) {
         url.searchParams.append(
             'network',
-            network === Network.Custom ? networkConfig?.url : network,
+            network === Network.Custom ? customRpc || networkConfig?.url : network,
         );
     }
 
@@ -29,22 +30,44 @@ export function getObjectUrl(
     network: NetworkId,
     customExplorer: string,
     moduleName?: string | null,
+    customRpc?: string | null,
 ) {
     return getExplorerUrl(
         `/object/${objectID}${moduleName ? `?module=${moduleName}` : ''}`,
         network,
         customExplorer,
+        customRpc,
     );
 }
 
-export function getTransactionUrl(txDigest: string, network: NetworkId, customExplorer: string) {
-    return getExplorerUrl(`/txblock/${encodeURIComponent(txDigest)}`, network, customExplorer);
+export function getTransactionUrl(
+    txDigest: string,
+    network: NetworkId,
+    customExplorer: string,
+    customRpc?: string | null,
+) {
+    return getExplorerUrl(
+        `/txblock/${encodeURIComponent(txDigest)}`,
+        network,
+        customExplorer,
+        customRpc,
+    );
 }
 
-export function getAddressUrl(address: string, network: NetworkId, customExplorer: string) {
-    return getExplorerUrl(`/address/${address}`, network, customExplorer);
+export function getAddressUrl(
+    address: string,
+    network: NetworkId,
+    customExplorer: string,
+    customRpc?: string | null,
+) {
+    return getExplorerUrl(`/address/${address}`, network, customExplorer, customRpc);
 }
 
-export function getValidatorUrl(address: string, network: NetworkId, customExplorer: string) {
-    return getExplorerUrl(`/validator/${address}`, network, customExplorer);
+export function getValidatorUrl(
+    address: string,
+    network: NetworkId,
+    customExplorer: string,
+    customRpc?: string | null,
+) {
+    return getExplorerUrl(`/validator/${address}`, network, customExplorer, customRpc);
 }

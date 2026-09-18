@@ -8,6 +8,7 @@ import {
     Edit,
     Info,
     Link as LinkSvg,
+    Notifications,
     Settings,
     Trade,
     Warning,
@@ -91,6 +92,12 @@ export function getNameMenuOptions(
                 !namePermissions.allowTimeExtension ||
                 isNameGracePeriodExpired,
             isDisabled: !namePermissions.allowTimeExtension,
+            hideBottomBorder: true,
+        },
+        {
+            onClick: () => onOpen(NameDialogId.AddToCalendar),
+            children: <DropdownMenuOption icon={<Notifications />} label="Add to Calendar" />,
+            isHidden: isNameGracePeriodExpired,
             hideBottomBorder: true,
         },
         {

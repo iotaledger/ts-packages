@@ -6,6 +6,7 @@ export * from './header';
 export * from './modal';
 
 export * from './ButtonOrLink';
+export * from './IconBadge';
 export * from './ExpandableList';
 export * from './FilterList';
 export * from './InternalLink';
@@ -13,6 +14,7 @@ export * from './Link';
 export * from './LinkWithQuery';
 export * from './ObjectVideoImage';
 export * from './PageHeader';
+export * from './PageSectionNav';
 export * from './Pagination';
 export * from './PlaceholderTable';
 export * from './PlayPause';

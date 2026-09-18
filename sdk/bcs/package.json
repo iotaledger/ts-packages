@@ -33,7 +33,7 @@
         "lint": "pnpm run eslint:check && pnpm run prettier:check",
         "lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
     },
-    "repository": "https://github.com/iotaledger/iota",
+    "repository": "https://github.com/iotaledger/ts-packages",
     "keywords": [
         "bcs",
         "libra",
@@ -43,7 +43,7 @@
         "serde"
     ],
     "bugs": {
-        "url": "https://github.com/iotaledger/iota/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     },
     "size-limit": [
         {
@@ -55,13 +55,13 @@
             "limit": "10 kB"
         }
     ],
-    "homepage": "https://github.com/iotaledger/iota#readme",
+    "homepage": "https://github.com/iotaledger/ts-packages#readme",
     "devDependencies": {
         "@iota/build-scripts": "workspace:*",
         "@size-limit/preset-small-lib": "^11.1.4",
         "size-limit": "^11.1.4",
         "typescript": "^5.5.3",
-        "vitest": "^3.2.4"
+        "vitest": "^4.1.0"
     },
     "dependencies": {
         "@scure/base": "^1.2.4"

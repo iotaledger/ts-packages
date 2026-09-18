@@ -8,7 +8,7 @@
  * already been called. Only the account object ID is needed.
  */
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { bcs } from '@iota/iota-sdk/bcs';
 import { MoveAuthenticatorBuilder, MoveSigner } from '@iota/iota-sdk/keypairs/move-authenticator';
@@ -16,7 +16,7 @@ import { MoveAuthenticatorBuilder, MoveSigner } from '@iota/iota-sdk/keypairs/mo
 // Replace this with your own.
 const ACCOUNT_ID = '0xf9d1fc0438de7c776210ec6d5ebee054f1f23c8015bcfda5aa7ba71b3e3c3a13';
 
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 
 const authBuilder = new MoveAuthenticatorBuilder(ACCOUNT_ID).addPure(
     bcs.string().serialize('hello').toBytes(),

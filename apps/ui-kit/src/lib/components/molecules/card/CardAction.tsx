@@ -7,7 +7,7 @@ import { Button, ButtonSize, ButtonType } from '@/components/atoms/button';
 
 export type CardActionProps = {
     title?: string;
-    subtitle?: string;
+    subtitle?: string | React.ReactNode;
     type: CardActionType;
     onClick?: () => void;
     icon?: React.ReactNode;

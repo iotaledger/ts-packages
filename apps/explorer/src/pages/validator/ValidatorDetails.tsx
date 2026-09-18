@@ -8,12 +8,14 @@ import {
     useGetValidatorsEvents,
     useFormatCoin,
     useMaxCommitteeSize,
+    useGetCandidateValidators,
+    useGetPendingValidator,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import {
-    InactiveValidators,
     PageLayout,
     ValidatorMeta,
+    ValidatorStakingHistory,
     ValidatorStats,
     ValidatorStatusLegend,
 } from '~/components';
@@ -62,10 +64,16 @@ function ValidatorDetails(): JSX.Element {
     const { data: inactiveValidatorData, isLoading: isInactiveValidatorLoading } =
         useGetInactiveValidator(id || '');
 
-    const numberOfValidators = systemStateData?.activeValidators.length ?? null;
+    const { data: validatorCandidateData, isLoading: isValidatorCandidateLoading } =
+        useGetCandidateValidators(id || '');
+
+    const { data: pendingValidatorData, isLoading: isPendingValidatorLoading } =
+        useGetPendingValidator(id || '');
+
+    const numberOfActiveValidators = systemStateData?.activeValidators.length ?? null;
     const { data: rollingAverageApys, isLoading: isValidatorsApysLoading } = useGetValidatorsApy();
     const { data: validatorEvents, isLoading: isValidatorsEventsLoading } = useGetValidatorsEvents({
-        limit: numberOfValidators,
+        limit: numberOfActiveValidators,
         order: 'descending',
     });
     const epochId = systemStateData?.epoch;
@@ -94,25 +102,46 @@ function ValidatorDetails(): JSX.Element {
         isLoadingSystemState ||
         isValidatorsEventsLoading ||
         isValidatorsApysLoading ||
-        isInactiveValidatorLoading
+        isInactiveValidatorLoading ||
+        isValidatorCandidateLoading ||
+        isPendingValidatorLoading
     ) {
         return <PageLayout content={<LoadingIndicator />} />;
+    }
+
+    if (validatorCandidateData && !activeValidatorData) {
+        return (
+            <PageLayout
+                content={
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={validatorCandidateData} isCandidate />
+                        <ValidatorStatusLegend />
+                    </div>
+                }
+            />
+        );
     }
 
     if (inactiveValidatorData && !activeValidatorData) {
         return (
             <PageLayout
                 content={
-                    <div className="mb-10">
-                        <InfoBox
-                            title="Inactive validator"
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                        {inactiveValidatorData && (
-                            <InactiveValidators validatorData={inactiveValidatorData} />
-                        )}
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={inactiveValidatorData} isInactive />
+                        <ValidatorStatusLegend />
+                    </div>
+                }
+            />
+        );
+    }
+
+    if (pendingValidatorData && !activeValidatorData) {
+        return (
+            <PageLayout
+                content={
+                    <div className="flex flex-col gap-xl">
+                        <ValidatorMeta validatorData={pendingValidatorData} isPending />
+                        <ValidatorStatusLegend />
                     </div>
                 }
             />
@@ -247,6 +276,7 @@ function ValidatorDetails(): JSX.Element {
                         />
                     )}
                     <ValidatorStatusLegend />
+                    <ValidatorStakingHistory validatorAddress={activeValidatorData.iotaAddress} />
                 </div>
             }
         />

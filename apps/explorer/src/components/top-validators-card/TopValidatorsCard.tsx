@@ -17,8 +17,18 @@ import {
 import { ErrorBoundary } from '../error-boundary/ErrorBoundary';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
+import { useGetValidatorsApy, useGetValidatorsEvents, useMaxCommitteeSize } from '@iota/core';
 
-const NUMBER_OF_VALIDATORS = 10;
+const NUMBER_OF_VALIDATORS = 5;
+
+const INCLUDE_COLUMNS = [
+    'Validator',
+    'Stake',
+    'APY',
+    'Effective Commission',
+    'Last Epoch Rewards',
+    'Voting Power',
+];
 
 type TopValidatorsCardProps = {
     limit?: number;
@@ -27,16 +37,31 @@ type TopValidatorsCardProps = {
 
 export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): JSX.Element {
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
+    const { data: validatorsApy } = useGetValidatorsApy();
+    const { data: maxCommitteeSize } = useMaxCommitteeSize();
+    const numberOfValidators = data?.activeValidators?.length ?? 0;
+    const { data: validatorEvents, isPending: eventsLoading } = useGetValidatorsEvents({
+        limit: numberOfValidators,
+        order: 'descending',
+    });
 
     const committeeMembers = data?.committeeMembers || [];
     const atRiskValidators = data?.atRiskValidators || [];
+    const activeValidators = data?.activeValidators || [];
 
     const tableColumns = generateValidatorsTableColumns({
         showValidatorIcon: showIcon,
         committeeMembers: committeeMembers.map((v) => v.iotaAddress),
         atRiskValidators,
-        includeColumns: ['Validator', 'Stake'],
+        maxCommitteeSize,
+        validatorEvents,
+        rollingAverageApys: validatorsApy,
+        includeColumns: INCLUDE_COLUMNS,
+        currentEpoch: data?.epoch,
     });
+
+    const rowCount = limit ?? NUMBER_OF_VALIDATORS;
+    const isLoading = isPending || eventsLoading;
 
     return (
         <Panel>
@@ -56,7 +81,7 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
 
                 <div className="p-md">
                     {isError ? (
-                        !isPending && !data?.committeeMembers.length ? (
+                        !isPending && !data?.activeValidators?.length ? (
                             <InfoBox
                                 title="No validators found"
                                 supportingText="There are currently no validators to display."
@@ -75,23 +100,23 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
                         )
                     ) : null}
 
-                    {isPending && (
+                    {isLoading && (
                         <PlaceholderTable
-                            rowCount={limit || NUMBER_OF_VALIDATORS}
+                            rowCount={rowCount}
                             rowHeight="13px"
-                            colHeadings={['Validator', 'Stake']}
+                            colHeadings={INCLUDE_COLUMNS}
                         />
                     )}
 
-                    {isSuccess && (
+                    {isSuccess && !eventsLoading && (
                         <ErrorBoundary>
                             <TableCard
                                 sortTable
                                 allowManualTableSort={false}
                                 defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
-                                data={committeeMembers}
+                                data={activeValidators}
                                 columns={tableColumns}
-                                rowLimit={NUMBER_OF_VALIDATORS}
+                                rowLimit={rowCount}
                             />
                         </ErrorBoundary>
                     )}

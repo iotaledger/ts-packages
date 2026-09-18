@@ -4,17 +4,18 @@
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionTile } from '@/components';
 import { NoData, VirtualList, useQueryTransactionsByAddress } from '@iota/core';
-import { getExtendedTransaction } from '@/lib/utils/transaction';
 import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 interface TransactionsListProps {
     heightClassName?: string;
     displayImage?: boolean;
+    hideBalance?: boolean;
 }
 
 export function TransactionsList({
     heightClassName,
     displayImage,
+    hideBalance,
 }: TransactionsListProps): JSX.Element {
     const currentAccount = useCurrentAccount();
     const { allTransactions, fetchNextPage, hasNextPage, isFetchingNextPage, error } =
@@ -24,9 +25,8 @@ export function TransactionsList({
         return <div>{error?.message}</div>;
     }
 
-    const virtualItem = (rawTransaction: IotaTransactionBlockResponse): JSX.Element => {
-        const transaction = getExtendedTransaction(rawTransaction, currentAccount?.address || '');
-        return <TransactionTile transaction={transaction} />;
+    const virtualItem = (transaction: IotaTransactionBlockResponse): JSX.Element => {
+        return <TransactionTile transaction={transaction} hideBalance={hideBalance} />;
     };
 
     if (!allTransactions || allTransactions.length === 0) {

@@ -9,6 +9,12 @@ import { useAppSelector } from './useAppSelector';
 export function useExplorerLink(linkConfig: ExplorerLinkConfig) {
     const app = useAppSelector(({ app }) => app);
     const activeAddress = useActiveAddress();
-    const link = useGetExplorerLink(linkConfig, activeAddress, app.network);
+    const link = useGetExplorerLink(
+        linkConfig,
+        activeAddress,
+        app.network,
+        app.customExplorer,
+        app.customRpc,
+    );
     return link;
 }

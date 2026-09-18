@@ -2,14 +2,15 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Feature, useFeatureEnabledByNetwork, useIotaNamesClient } from '@iota/core';
+import {
+    Feature,
+    fetchObjectOrPastObject,
+    useIotaNamesClient,
+    isAuthenticatorFunctionRefV1Key,
+} from '@iota/core';
 import { useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { type IotaNamesClient, isValidIotaName } from '@iota/iota-names-sdk';
-import {
-    getNetwork,
-    type IotaClient,
-    type LatestIotaSystemStateSummary,
-} from '@iota/iota-sdk/client';
+import { type IotaClient, type LatestIotaSystemStateSummary } from '@iota/iota-sdk/client';
 import {
     isValidTransactionDigest,
     isValidIotaAddress,
@@ -17,19 +18,35 @@ import {
     normalizeIotaObjectId,
 } from '@iota/iota-sdk/utils';
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
-import { useNetwork } from './useNetwork';
 import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { useFeatureIsOn } from '@iota/apps-backend-client';
-import {
-    tryGenerateDidFromObjectId,
-    tryDIDParse,
-    tryEncodeDidToUrl,
-} from '~/lib/utils/trust-framework/identity';
-import { useIdentityClient } from '~/contexts';
+import { type NotarizationClientReadOnly } from '@iota/notarization/web';
+import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
+import { useIdentityClient, useNotarizationClient } from '~/contexts';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
 
 type Results = { id: string; label: string; type: string }[];
+
+const getResultsForNotarization = async (
+    notarizationClient: NotarizationClientReadOnly | null,
+    isNotarizationEnabled: boolean,
+    query: string,
+): Promise<Results | null> => {
+    if (notarizationClient == null) return null; // client not available
+    if (!isNotarizationEnabled) return null; // feature flag disabled
+
+    const notarizationChain = await notarizationClient.getNotarizationById(query);
+    if (!notarizationChain) return null;
+
+    return [
+        {
+            id: notarizationChain.id,
+            label: notarizationChain.id,
+            type: 'notarization',
+        },
+    ];
+};
 
 const getResultsForDid = async (
     identityClient: IdentityClientReadOnly | null,
@@ -39,11 +56,23 @@ const getResultsForDid = async (
     if (identityClient == null) return null; // client not available
     if (!isIdentityEnabled) return null; // feature flag disabled
 
+    let didDocument = null;
     const didParsed = await tryDIDParse(query);
-    const did = didParsed ?? (await tryGenerateDidFromObjectId(query, identityClient.network()));
-    if (did == null) return null; // either invalid parsing or invalid objectId
 
-    const didDocument = await identityClient.resolveDid(did!);
+    try {
+        if (didParsed == null) {
+            const identity = await identityClient.getIdentity(query);
+            didDocument = identity.toFullFledged()?.didDocument();
+        } else {
+            didDocument = await identityClient.resolveDid(didParsed);
+        }
+    } catch {
+        // DO NOTHING! We are not interested in this error because the consequence
+        // for it to fail is only not show a selection option in the search result
+    }
+
+    if (didDocument == null) return null; // Nothing to show
+
     const didUrlEncoded = await tryEncodeDidToUrl(didDocument.id());
     if (didUrlEncoded == null) {
         throw new Error(
@@ -76,19 +105,14 @@ const getResultsForTransaction = async (
 };
 
 const getResultsForObject = async (client: IotaClient, query: string): Promise<Results | null> => {
-    const normalized = normalizeIotaObjectId(query);
-    if (!isValidIotaObjectId(normalized)) return null;
+    try {
+        const result = await fetchObjectOrPastObject(client, query);
+        if (!result?.data?.objectId) return null;
 
-    const { data, error } = await client.getObject({ id: normalized });
-    if (!data || error) return null;
-
-    return [
-        {
-            id: data.objectId,
-            label: data.objectId,
-            type: 'object',
-        },
-    ];
+        return [{ id: result.data.objectId, label: result.data.objectId, type: 'object' }];
+    } catch {
+        return null;
+    }
 };
 
 const getResultsForCheckpoint = async (
@@ -139,21 +163,23 @@ const getResultsForEpoch = async (client: IotaClient, query: string): Promise<Re
 const getResultsForAddress = async (
     client: IotaClient,
     query: string,
-    isNamesEnabled: boolean,
     iotaNamesClient: IotaNamesClient | null,
 ): Promise<Results | null> => {
-    if (iotaNamesClient && isNamesEnabled && isValidIotaName(query)) {
+    if (iotaNamesClient && isValidIotaName(query)) {
         const nameRecord = await iotaNamesClient.getNameRecord(query.toLowerCase());
 
         if (!nameRecord || !nameRecord.targetAddress) return null;
 
-        const addrHasActivity = await addressHasActivity(client, nameRecord.targetAddress);
+        const [addrHasActivity, abstractAccountCheck] = await Promise.all([
+            addressHasActivity(client, nameRecord.targetAddress),
+            isAbstractAccount(client, nameRecord.targetAddress),
+        ]);
 
         return [
             {
                 id: nameRecord.targetAddress,
                 label: nameRecord.targetAddress,
-                type: addrHasActivity ? 'address' : 'object',
+                type: abstractAccountCheck ? 'account' : addrHasActivity ? 'address' : 'object',
             },
         ];
     }
@@ -161,29 +187,42 @@ const getResultsForAddress = async (
     const normalized = normalizeIotaObjectId(query);
     if (!isValidIotaAddress(normalized) || isGenesisLibAddress(normalized)) return null;
 
-    const fromOrTo = await client.queryTransactionBlocks({
-        filter: { FromOrToAddress: { addr: normalized } },
-        limit: 1,
-    });
+    const [fromOrTo, abstractAccountCheck] = await Promise.all([
+        client.queryTransactionBlocks({
+            filter: { FromOrToAddress: { addr: normalized } },
+            limit: 1,
+        }),
+        isAbstractAccount(client, normalized),
+    ]);
 
     // Note: we need to query owned objects separately
     // because genesis addresses might not be involved in any transaction yet.
+    // AA accounts are shared objects so they won't appear in getOwnedObjects.
     let ownedObjects = [];
-    if (!fromOrTo.data?.length) {
+    if (!fromOrTo.data?.length && !abstractAccountCheck) {
         const response = await client.getOwnedObjects({ owner: normalized, limit: 1 });
         ownedObjects = response.data;
     }
 
-    if (!fromOrTo.data?.length && !ownedObjects?.length) return null;
+    if (!fromOrTo.data?.length && !ownedObjects?.length && !abstractAccountCheck) return null;
 
     return [
         {
             id: normalized,
             label: normalized,
-            type: 'address',
+            type: abstractAccountCheck ? 'account' : 'address',
         },
     ];
 };
+
+async function isAbstractAccount(client: IotaClient, address: string): Promise<boolean> {
+    try {
+        const { data } = await client.getDynamicFields({ parentId: address });
+        return data.some((field) => isAuthenticatorFunctionRefV1Key(field.name.type));
+    } catch {
+        return false;
+    }
+}
 
 async function addressHasActivity(client: IotaClient, address: string): Promise<boolean> {
     const normalized = normalizeIotaObjectId(address);
@@ -238,12 +277,11 @@ const getResultsForValidatorByPoolIdOrIotaAddress = async (
 export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
     const identityClient = useIdentityClient();
+    const notarizationClient = useNotarizationClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
-    const [networkId] = useNetwork();
-    const network = getNetwork(networkId).id;
 
-    const isNamesEnabled = useFeatureEnabledByNetwork(Feature.IotaNames, network);
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);
+    const isTFNotarizationEnabled = useFeatureIsOn(Feature.ExplorerTFNotarization as string);
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
@@ -255,8 +293,9 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
                     getResultsForTransaction(client, query),
                     getResultsForCheckpoint(client, query),
                     getResultsForEpoch(client, query),
-                    getResultsForAddress(client, query, isNamesEnabled, iotaNamesClient),
+                    getResultsForAddress(client, query, iotaNamesClient),
                     getResultsForDid(identityClient, isTFIdentityEnabled, query),
+                    getResultsForNotarization(notarizationClient, isTFNotarizationEnabled, query),
                     getResultsForObject(client, query),
                     getResultsForValidatorByPoolIdOrIotaAddress(systemStateSummary || null, query),
                 ])

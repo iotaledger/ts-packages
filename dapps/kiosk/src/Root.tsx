@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createNetworkConfig, IotaClientProvider, WalletProvider } from '@iota/dapp-kit';
-import { getFullnodeUrl } from '@iota/iota-sdk/client';
+import { getRpcUrl } from '@iota/iota-sdk/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { Outlet } from 'react-router-dom';
@@ -14,10 +14,10 @@ import { KioskClientProvider } from './context/KioskClientContext';
 const queryClient = new QueryClient();
 
 const { networkConfig } = createNetworkConfig({
-    localnet: { url: getFullnodeUrl('localnet') },
-    devnet: { url: getFullnodeUrl('devnet') },
-    testnet: { url: getFullnodeUrl('testnet') },
-    mainnet: { url: getFullnodeUrl('mainnet') },
+    localnet: { url: getRpcUrl('localnet') },
+    devnet: { url: getRpcUrl('devnet') },
+    testnet: { url: getRpcUrl('testnet') },
+    mainnet: { url: getRpcUrl('mainnet') },
 });
 
 export default function Root() {

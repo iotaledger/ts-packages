@@ -26,7 +26,6 @@ function getObjectIdFromCallArg(callArg: ObjectArg): string {
 }
 
 /**
- * @experimental
  * A Move Authenticator signer for account abstraction.
  * This allows transactions to be authorized via Move functions rather than traditional cryptographic signatures.
  */

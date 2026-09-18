@@ -3,7 +3,7 @@
 
 import { ButtonSegment, SegmentedButton } from '@iota/apps-ui-kit';
 
-export type ValidatorStatus = 'All' | 'Committee' | 'Active' | 'Pending' | 'At Risk';
+export type ValidatorStatus = 'All' | 'Committee' | 'Active' | 'Pending' | 'Candidate' | 'At Risk';
 
 interface ValidatorFiltersProps {
     selectedStatus: ValidatorStatus;
@@ -13,6 +13,7 @@ interface ValidatorFiltersProps {
         committee: number;
         active: number;
         pending: number;
+        candidate: number;
         atRisk: number;
     };
 }
@@ -22,13 +23,16 @@ export function ValidatorFilters({
     onStatusChange,
     validatorCounts,
 }: ValidatorFiltersProps): JSX.Element {
-    const options: { status: ValidatorStatus; count: number }[] = [
-        { status: 'All', count: validatorCounts.all },
-        { status: 'Committee', count: validatorCounts.committee },
-        { status: 'Active', count: validatorCounts.active },
-        { status: 'Pending', count: validatorCounts.pending },
-        { status: 'At Risk', count: validatorCounts.atRisk },
-    ];
+    const options = (
+        [
+            { status: 'All', count: validatorCounts.all },
+            { status: 'Committee', count: validatorCounts.committee },
+            { status: 'Active', count: validatorCounts.active },
+            { status: 'Pending', count: validatorCounts.pending },
+            { status: 'Candidate', count: validatorCounts.candidate },
+            { status: 'At Risk', count: validatorCounts.atRisk },
+        ] as { status: ValidatorStatus; count: number }[]
+    ).filter(({ status, count }) => status === 'All' || count > 0);
 
     return (
         <SegmentedButton>

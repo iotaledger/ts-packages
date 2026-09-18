@@ -57,6 +57,9 @@ jobs:
       packages: write
       id-token: write
 
+    outputs:
+      version: ${{ steps.commit-hash.outputs.version }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -72,9 +75,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get the short commit hash
+        id: commit-hash
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
           echo "VERSION=$COMMIT_HASH" >> $GITHUB_ENV
+          echo "version=$COMMIT_HASH" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
@@ -82,7 +87,7 @@ jobs:
           context: .
           file: ./apps/apps-backend/Dockerfile
           push: true
-          tags: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ env.VERSION }}
+          tags: ghcr.io/iotaledger/ts-packages/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ env.VERSION }}
           build-args: |
             DEPLOY_TYPE=${{ needs.resolve-deploy-type.outputs.deploy_type }}
             STAGING_APPS_BACKEND=${{ secrets.STAGING_APPS_BACKEND }}
@@ -96,3 +101,17 @@ jobs:
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no updater@${{ secrets.UPDATER_SSH_HOST }} "${{ needs.resolve-deploy-type.outputs.deploy_type }} ${{ env.VERSION }}"
+
+  notify:
+    needs: [resolve-deploy-type, build-and-deploy]
+    if: always() && needs.build-and-deploy.result != 'skipped' && (needs.resolve-deploy-type.outputs.deploy_type == 'rc' || needs.resolve-deploy-type.outputs.deploy_type == 'production')
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: ${{ needs.build-and-deploy.result == 'success' && 'success' || 'failure' }}
+      title: "Apps Backend ${{ needs.resolve-deploy-type.outputs.deploy_type }} deploy ${{ needs.build-and-deploy.result }}"
+      message: |
+        Environment: ${{ needs.resolve-deploy-type.outputs.deploy_type }}
+        Image: ghcr.io/iotaledger/iota/apps-backend-${{ needs.resolve-deploy-type.outputs.deploy_type }}:${{ needs.build-and-deploy.outputs.version }}
+        Workflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+

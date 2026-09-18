@@ -27,6 +27,7 @@ import {
     purchaseName,
     renewName,
     requestFaucetTokens,
+    selectDateInDatePicker,
     setAvatar,
 } from '../utils';
 
@@ -148,16 +149,8 @@ test.describe.serial('Name Management Tests', () => {
         await dialog.getByText('Custom', { exact: true }).click();
 
         const targetDate = new Date(record.expirationDate.getTime() - 24 * 60 * 60 * 1000);
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
 
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
+        await selectDateInDatePicker(dialog, targetDate);
 
         await dialog.getByRole('button', { name: 'Create' }).click();
         (await context.waitForEvent('page')).getByRole('button', { name: 'Approve' }).click();
@@ -166,132 +159,6 @@ test.describe.serial('Name Management Tests', () => {
         await expect(page.getByText('Successfully created subname', { exact: false })).toBeVisible({
             timeout: 30_000,
         });
-
-        await page.close();
-    });
-
-    test('Add subname to a subname with custom expiration exceed parent expiration', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('addsubname');
-        const subname = generateRandomSubname('subname', name);
-        const responsePurchase = await purchaseName(name, keypair);
-        expect(responsePurchase.effects?.status.status).toBe('success');
-
-        const record = await iotaNamesClient.getNameRecord(name);
-        if (!record) throw new Error('Name record not found');
-
-        const responsePurchaseSubname = await addSubnameName(
-            subname,
-            record.nftId,
-            record.expirationDate,
-            keypair,
-        );
-        expect(responsePurchaseSubname.effects?.status.status).toBe('success');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(subname, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(subname, 'at') });
-
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Create Subname', { exact: true }).click();
-
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('New Subname')).toBeVisible();
-
-        await dialog.getByPlaceholder('Enter subname').fill('subname');
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const targetDate = new Date(record.expirationDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(
-            dialog.getByText("Must be less than or equal to the parent name's date"),
-        ).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Create' })).toBeDisabled();
-
-        await page.close();
-    });
-
-    test('Add subname to a subname with custom expiration less than allowed', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('addsubname');
-        const subname = generateRandomSubname('subname', name);
-        const responsePurchase = await purchaseName(name, keypair);
-        expect(responsePurchase.effects?.status.status).toBe('success');
-
-        const record = await iotaNamesClient.getNameRecord(name);
-        if (!record) throw new Error('Name record not found');
-
-        const responsePurchaseSubname = await addSubnameName(
-            subname,
-            record.nftId,
-            record.expirationDate,
-            keypair,
-        );
-        expect(responsePurchaseSubname.effects?.status.status).toBe('success');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(subname, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(subname, 'at') });
-
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Create Subname', { exact: true }).click();
-
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('New Subname')).toBeVisible();
-
-        await dialog.getByPlaceholder('Enter subname').fill('subname');
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const today = new Date();
-        const monthName = today.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(today.getDate());
-        const yearNum = String(today.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(dialog.getByText('or later', { exact: false })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Create' })).toBeDisabled();
 
         await page.close();
     });
@@ -428,16 +295,8 @@ test.describe.serial('Name Management Tests', () => {
         await dialog.getByText('Custom', { exact: true }).click();
 
         const targetDate = new Date(record.expirationDate.getTime() - 24 * 60 * 60 * 1000);
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
 
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
+        await selectDateInDatePicker(dialog, targetDate);
 
         await dialog.getByRole('button', { name: 'Create' }).click();
         (await context.waitForEvent('page')).getByRole('button', { name: 'Approve' }).click();
@@ -446,109 +305,6 @@ test.describe.serial('Name Management Tests', () => {
         await expect(page.getByText('Successfully created subname', { exact: false })).toBeVisible({
             timeout: 30_000,
         });
-
-        await page.close();
-    });
-
-    test('Create subname with custom expiration exceed parent expiration', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('subname');
-        const response = await purchaseName(name, keypair);
-        expect(response.effects?.status.status).toBe('success');
-
-        const record = await iotaNamesClient.getNameRecord(name);
-        if (!record) throw new Error('Name record not found');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(name, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(name, 'at') });
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Create Subname', { exact: true }).click();
-
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('New Subname')).toBeVisible();
-
-        await dialog.getByPlaceholder('Enter subname').fill('subname');
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const targetDate = new Date(record.expirationDate.getTime() + 30 * 24 * 60 * 60 * 1000);
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(
-            dialog.getByText("Must be less than or equal to the parent name's date"),
-        ).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Create' })).toBeDisabled();
-
-        await page.close();
-    });
-
-    test('Create subname with custom expiration less than allowed', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('subname');
-        const response = await purchaseName(name, keypair);
-        expect(response.effects?.status.status).toBe('success');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(name, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(name, 'at') });
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Create Subname', { exact: true }).click();
-
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('New Subname')).toBeVisible();
-
-        await dialog.getByPlaceholder('Enter subname').fill('subname');
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const today = new Date();
-        const monthName = today.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(today.getDate());
-        const yearNum = String(today.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(dialog.getByText('or later', { exact: false })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Create' })).toBeDisabled();
 
         await page.close();
     });
@@ -908,16 +664,8 @@ test.describe.serial('Name Management Tests', () => {
         await dialog.getByText('Custom', { exact: true }).click();
 
         const targetDate = new Date(renewedRecord.expirationDate.getTime() - 24 * 60 * 60 * 1000);
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
 
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
+        await selectDateInDatePicker(dialog, targetDate);
 
         await dialog.getByRole('button', { name: 'Renew' }).click();
         (await context.waitForEvent('page')).getByRole('button', { name: 'Approve' }).click();
@@ -926,137 +674,6 @@ test.describe.serial('Name Management Tests', () => {
         await expect(page.getByText('Subname renewed successfully', { exact: false })).toBeVisible({
             timeout: 30_000,
         });
-
-        await page.close();
-    });
-
-    test('Renew subname with custom expiration exceed parent expiration', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('renewsub');
-        const subname = generateRandomSubname('subname', name);
-        const responsePurchase = await purchaseName(name, keypair);
-        expect(responsePurchase.effects?.status.status).toBe('success');
-
-        const record = await iotaNamesClient.getNameRecord(name);
-        if (!record) throw new Error('Name record not found');
-
-        const responsePurchaseSubname = await addSubnameName(
-            subname,
-            record.nftId,
-            record.expirationDate,
-            keypair,
-        );
-        expect(responsePurchaseSubname.effects?.status.status).toBe('success');
-
-        const responseRenew = await renewName(name, record.nftId, keypair);
-        expect(responseRenew.effects?.status.status).toBe('success');
-
-        const renewedRecord = await iotaNamesClient.getNameRecord(name);
-        if (!renewedRecord) throw new Error('Renewed name record not found');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(subname, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(subname, 'at') });
-
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Renew Subname', { exact: true }).click();
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('Renew Subname', { exact: true })).toBeVisible();
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const targetDate = new Date(
-            renewedRecord.expirationDate.getTime() + 30 * 24 * 60 * 60 * 1000,
-        );
-        const monthName = targetDate.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(targetDate.getDate());
-        const yearNum = String(targetDate.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(
-            dialog.getByText("Must be less than or equal to the parent name's date"),
-        ).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Renew' })).toBeDisabled();
-
-        await page.close();
-    });
-
-    test('Renew subname with custom expiration less than allowed', async ({
-        appPage: page,
-        sharedState,
-    }) => {
-        const keypair = Ed25519Keypair.deriveKeypair(sharedState.wallet.mnemonic ?? '');
-        const name = generateRandomName('renewsub');
-        const subname = generateRandomSubname('subname', name);
-        const responsePurchase = await purchaseName(name, keypair);
-        expect(responsePurchase.effects?.status.status).toBe('success');
-
-        const record = await iotaNamesClient.getNameRecord(name);
-        if (!record) throw new Error('Name record not found');
-
-        const responsePurchaseSubname = await addSubnameName(
-            subname,
-            record.nftId,
-            record.expirationDate,
-            keypair,
-        );
-        expect(responsePurchaseSubname.effects?.status.status).toBe('success');
-
-        const responseRenew = await renewName(name, record.nftId, keypair);
-        expect(responseRenew.effects?.status.status).toBe('success');
-
-        await page.goto('/my-names');
-        await expect(
-            page.getByTestId('name-card').filter({ hasText: normalizeIotaName(subname, 'at') }),
-        ).toBeVisible({ timeout: 10_000 });
-
-        const nameCard = page
-            .getByTestId('name-card')
-            .filter({ hasText: normalizeIotaName(subname, 'at') });
-
-        await nameCard.getByTestId('name-card-avatar').hover();
-        const menuButtonLocator = nameCard.getByTestId('menu-button');
-        await expect(menuButtonLocator).toBeVisible();
-        await menuButtonLocator.click();
-
-        await page.getByText('Renew Subname', { exact: true }).click();
-        const dialog = page.getByRole('dialog');
-        await expect(dialog.getByText('Renew Subname', { exact: true })).toBeVisible();
-
-        await dialog.getByText('Custom', { exact: true }).click();
-
-        const today = new Date();
-        const monthName = today.toLocaleString('en-US', { month: 'long' });
-        const dayNum = String(today.getDate());
-        const yearNum = String(today.getFullYear());
-
-        await dialog.getByRole('button', { name: 'Month' }).click();
-        await dialog.getByText(monthName, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Day' }).click();
-        await dialog.getByText(dayNum, { exact: true }).click();
-        await dialog.getByRole('button', { name: 'Year' }).click();
-        await dialog.getByText(yearNum, { exact: true }).click();
-
-        await expect(dialog.getByText('or later', { exact: false })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: 'Renew' })).toBeDisabled();
 
         await page.close();
     });

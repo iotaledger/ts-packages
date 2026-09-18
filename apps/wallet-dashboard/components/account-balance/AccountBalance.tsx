@@ -9,12 +9,15 @@ import {
     useGetAllBalances,
     NamedAddress,
     toast,
+    BALANCE_MASK,
 } from '@iota/core';
 import { Button, ButtonSize, ButtonType, LoadingIndicator, Panel } from '@iota/apps-ui-kit';
 import { getNetwork } from '@iota/iota-sdk/client';
 import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
+import { useBalanceVisibility } from '@/store/balanceVisibility';
+import { VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
@@ -28,6 +31,7 @@ export function AccountBalance() {
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
     const explorerLink = `${explorer}/address/${address}`;
     const { data: coinBalances } = useGetAllBalances(account?.address);
+    const { isBalanceVisible, toggleBalanceVisible } = useBalanceVisibility();
 
     function openSendTokenDialog(): void {
         setIsSendTokenDialogOpen(true);
@@ -67,16 +71,37 @@ export function AccountBalance() {
                                     />
                                 </div>
                             )}
-                            <span
-                                data-testid="balance-amount"
-                                className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
-                            >
-                                {formatted} {symbol}
-                            </span>
-                            {fiatBalance && (
-                                <span className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
-                                    {fiatBalance}
+                            <div className="flex items-baseline gap-xs">
+                                <span
+                                    data-testid="balance-amount"
+                                    className="text-headline-lg text-iota-neutral-10 dark:text-iota-neutral-92"
+                                >
+                                    {isBalanceVisible ? formatted : BALANCE_MASK}
                                 </span>
+                                <div className="flex items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                    <span>{symbol}</span>
+                                    <Button
+                                        type={ButtonType.Ghost}
+                                        size={ButtonSize.Small}
+                                        onClick={toggleBalanceVisible}
+                                        className="flex items-center transition-colors hover:text-iota-neutral-10 dark:hover:text-iota-neutral-92"
+                                        aria-label={
+                                            isBalanceVisible ? 'Hide balances' : 'Show balances'
+                                        }
+                                        icon={
+                                            isBalanceVisible ? (
+                                                <VisibilityOn className="h-4 w-4" />
+                                            ) : (
+                                                <VisibilityOff className="h-4 w-4" />
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            {fiatBalance && (
+                                <div className="text-body-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                                    {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                </div>
                             )}
                         </div>
                         <div className="flex w-full max-w-56 gap-xs">

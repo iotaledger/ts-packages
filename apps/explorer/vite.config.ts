@@ -2,17 +2,28 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-/// <reference types="vitest" />
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
-import { copyFileSync } from 'fs';
 import { defineConfig, loadEnv } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import { configDefaults } from 'vitest/config';
 
 process.env.VITE_VERCEL_ENV = process.env.VERCEL_ENV || 'development';
-const EXPLORER_REV = execSync('git rev-parse HEAD').toString().trim().toString();
+
+function resolveExplorerRev(): string {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) {
+        return process.env.VERCEL_GIT_COMMIT_SHA;
+    }
+
+    try {
+        return execSync('git rev-parse HEAD').toString().trim();
+    } catch {
+        return 'unknown';
+    }
+}
+
+const EXPLORER_REV = resolveExplorerRev();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -36,20 +47,6 @@ export default defineConfig(({ mode }) => {
                     name: EXPLORER_REV,
                 },
             }),
-            {
-                name: 'copy-wasm-files',
-                buildStart() {
-                    // Copy WASM files to public directory
-                    try {
-                        copyFileSync(
-                            'node_modules/@iota/identity-wasm/web/identity_wasm_bg.wasm',
-                            'public/identity_wasm_bg.wasm',
-                        );
-                    } catch (error) {
-                        console.warn('Could not copy WASM files:', error);
-                    }
-                },
-            },
         ],
         test: {
             // Omit end-to-end tests:

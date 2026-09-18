@@ -2,9 +2,8 @@
     "name": "@iota/iota-names-sdk",
     "author": "IOTA Foundation <info@iota.org>",
     "description": "IOTA-Names SDK",
-    "version": "0.7.0",
+    "version": "2.0.1",
     "license": "Apache-2.0",
-    "private": false,
     "main": "./dist/cjs/index.js",
     "module": "./dist/esm/index.js",
     "types": "./dist/cjs/index.d.ts",
@@ -50,17 +49,16 @@
         "@iota/graphql-transport": "workspace:^",
         "@iota/iota-sdk": "workspace:^",
         "@types/tmp": "^0.2.6",
-        "ts-retry-promise": "^0.8.1",
-        "tsx": "^3.12.7",
+        "tsx": "^4.8.1",
         "typescript": "^5.5.3",
-        "vite": "^5.4.12",
-        "vitest": "^3.2.4"
+        "vite": "^8.0.1",
+        "vitest": "^4.1.0"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/iotaledger/iota-names.git"
+        "url": "git+https://github.com/iotaledger/ts-packages.git"
     },
     "bugs": {
-        "url": "https://github.com/iotaledger/iota-names/issues"
+        "url": "https://github.com/iotaledger/ts-packages/issues"
     }
 }

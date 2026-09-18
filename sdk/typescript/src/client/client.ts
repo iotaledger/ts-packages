@@ -726,6 +726,8 @@ export class IotaClient {
         input: SubscribeEventParams & {
             /** function to run when we receive a notification of a new event matching the filter */
             onMessage: (event: IotaEvent) => void;
+            /** function to run when the subscription ends for a reason other than unsubscribing */
+            onError?: (error: Error) => void;
         },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
@@ -733,6 +735,7 @@ export class IotaClient {
             unsubscribe: 'iotax_unsubscribeEvent',
             params: [input.filter],
             onMessage: input.onMessage,
+            onError: input.onError,
             signal: input.signal,
         });
     }
@@ -744,6 +747,8 @@ export class IotaClient {
         input: SubscribeTransactionParams & {
             /** function to run when we receive a notification of a new event matching the filter */
             onMessage: (event: TransactionEffects) => void;
+            /** function to run when the subscription ends for a reason other than unsubscribing */
+            onError?: (error: Error) => void;
         },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
@@ -751,6 +756,7 @@ export class IotaClient {
             unsubscribe: 'iotax_unsubscribeTransaction',
             params: [input.filter],
             onMessage: input.onMessage,
+            onError: input.onError,
             signal: input.signal,
         });
     }

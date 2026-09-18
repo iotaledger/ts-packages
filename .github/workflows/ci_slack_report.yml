@@ -7,14 +7,11 @@ on:
 
 jobs:
   on-failure:
-    runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'failure' || github.event.workflow_run.conclusion == 'timed_out'
-    steps:
-      - uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
-        with:
-          status: ${{ github.event.workflow_run.conclusion }}
-          notification_title: " ${{github.event.workflow_run.name}} - ${{github.event.workflow_run.conclusion}} on ${{github.event.workflow_run.head_branch}}"
-          message_format: ":fire: *${{github.event.workflow_run.name}}* ${{github.event.workflow_run.conclusion}} <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.event.workflow_run.id}}|View Failure> author: ${{ github.event.workflow_run.head_commit.author.name }}"
-          footer: "${{ github.event.workflow_run.display_title }} \n<${{github.server_url}}/${{github.repository}}/commit/${{github.event.workflow_run.head_commit.id}}>"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CI_SLACK_WEBHOOK }}
+    uses: ./.github/workflows/_slack_notify.yml
+    secrets: inherit
+    with:
+      status: failure
+      title: "${{ github.event.workflow_run.name }} ${{ github.event.workflow_run.conclusion }} on ${{ github.event.workflow_run.head_branch }}"
+      message: ":fire: ${{ github.event.workflow_run.name }} ${{ github.event.workflow_run.conclusion }}. Author: ${{ github.event.workflow_run.head_commit.author.name }}. View failure: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+      footer: "${{ github.event.workflow_run.display_title }} ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.event.workflow_run.head_commit.id }}"

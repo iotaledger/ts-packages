@@ -101,6 +101,7 @@ dev-tools/iota-data-ingestion/*/output/
 
 # generated-documentation
 docs/generated-docs/**
+generated-docs/
 
 # https://github.com/wclr/yalc
 .yalc
@@ -114,3 +115,6 @@ crates/iota-aws-orchestrator/assets/logs/
 
 # ignore explorer files
 apps/explorer/public/*.wasm
+
+# mcp folders
+.playwright-mcp/

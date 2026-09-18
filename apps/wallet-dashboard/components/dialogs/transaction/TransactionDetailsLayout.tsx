@@ -2,31 +2,43 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ExplorerLink } from '@/components';
-import { Header, LoadingIndicator } from '@iota/apps-ui-kit';
+import { Header, LoadingIndicator, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
+import { Warning } from '@iota/apps-ui-icons';
 import {
     useTransactionSummary,
+    useGetTransaction,
     ViewTxnOnExplorerButton,
     ExplorerLinkType,
     TransactionReceipt,
     useRecognizedPackages,
-    ExtendedTransaction,
     OutlinedCopyButton,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
+import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { DialogLayoutBody, DialogLayoutFooter } from '../layout';
 import { trackElementCopied } from '@/lib/utils';
 import { useCallback } from 'react';
 
-interface TransactionDialogDetailsProps {
-    transaction: ExtendedTransaction;
+interface TransactionDetailsLayoutProps {
     onClose: () => void;
+    transaction?: IotaTransactionBlockResponse;
+    digest?: string | null;
 }
-export function TransactionDetailsLayout({ transaction, onClose }: TransactionDialogDetailsProps) {
-    const address = useCurrentAccount()?.address ?? '';
 
+export function TransactionDetailsLayout({
+    onClose,
+    transaction: txProp,
+    digest,
+}: TransactionDetailsLayoutProps) {
+    const address = useCurrentAccount()?.address ?? '';
     const recognizedPackagesList = useRecognizedPackages();
+
+    const { data: fetchedTransaction, isError, error } = useGetTransaction(digest ?? '');
+
+    const transaction = txProp ?? fetchedTransaction;
+
     const summary = useTransactionSummary({
-        transaction: transaction.raw,
+        transaction,
         currentAddress: address,
         recognizedPackagesList,
     });
@@ -35,14 +47,34 @@ export function TransactionDetailsLayout({ transaction, onClose }: TransactionDi
         trackElementCopied('transaction-digest');
     }, []);
 
-    if (!summary) return <LoadingIndicator />;
+    if (!txProp && isError) {
+        return (
+            <InfoBox
+                type={InfoBoxType.Error}
+                title="Error getting transaction info"
+                supportingText={
+                    error?.message ?? 'An error occurred when getting the transaction info'
+                }
+                icon={<Warning />}
+                style={InfoBoxStyle.Default}
+            />
+        );
+    }
+
+    if (!transaction || !summary) {
+        return (
+            <div className="flex h-full w-full justify-center">
+                <LoadingIndicator />
+            </div>
+        );
+    }
 
     return (
         <>
             <Header title="Transaction" onClose={onClose} />
             <DialogLayoutBody>
                 <TransactionReceipt
-                    txn={transaction.raw}
+                    txn={transaction}
                     activeAddress={address}
                     summary={summary}
                     renderExplorerLink={ExplorerLink}
@@ -53,14 +85,14 @@ export function TransactionDetailsLayout({ transaction, onClose }: TransactionDi
                     <div className="flex w-full [&_a]:w-full">
                         <ExplorerLink
                             type={ExplorerLinkType.Transaction}
-                            transactionID={transaction.raw.digest}
+                            transactionID={transaction.digest}
                         >
-                            <ViewTxnOnExplorerButton digest={transaction.raw.digest} />
+                            <ViewTxnOnExplorerButton digest={transaction.digest} />
                         </ExplorerLink>
                     </div>
                     <div className="self-center">
                         <OutlinedCopyButton
-                            textToCopy={transaction.raw.digest ?? ''}
+                            textToCopy={transaction.digest ?? ''}
                             onCopySuccess={onCopySuccess}
                             successMessage="Transaction digest copied to clipboard"
                         />

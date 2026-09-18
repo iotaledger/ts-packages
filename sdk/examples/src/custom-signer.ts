@@ -7,7 +7,7 @@ import { Signer } from '@iota/iota-sdk/cryptography';
 import type { SignatureScheme } from '@iota/iota-sdk/cryptography';
 import { Ed25519PublicKey } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { getFaucetHost, requestIotaFromFaucetV1 } from '@iota/iota-sdk/faucet';
 
 /**
@@ -45,7 +45,7 @@ class MyEd25519Signer extends Signer {
 }
 
 // Create a client connected to devnet
-const client = new IotaClient({ url: getFullnodeUrl('devnet') });
+const client = new IotaClient({ url: getRpcUrl('devnet') });
 
 // Generate a random 32-byte secret key (in a real app this would come from
 // your own key-management system, HSM, KMS, etc.)

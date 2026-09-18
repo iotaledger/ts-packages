@@ -10,4 +10,5 @@ export enum NameDialogId {
     SetPermissions = 'set-permissions',
     ConnectToAddress = 'connect-to-address',
     EditMetadata = 'edit-metadata',
+    AddToCalendar = 'add-to-calendar',
 }

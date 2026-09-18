@@ -8,21 +8,14 @@ import { tmpdir } from 'os';
 import path from 'path';
 import { IotaClientGraphQLTransport } from '@iota/graphql-transport';
 import { getNetwork, IotaClient } from '@iota/iota-sdk/client';
-import {
-    FaucetRateLimitError,
-    getFaucetHost,
-    requestIotaFromFaucetV0,
-} from '@iota/iota-sdk/faucet';
+import { getFaucetHost, requestIotaFromFaucet } from '@iota/iota-sdk/faucet';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
-import { retry } from 'ts-retry-promise';
+import { retryUntil } from './retry.js';
 
-// @ts-expect-error vite
 export const IOTA_BIN = process.env.VITE_IOTA_BIN ?? `iota`;
 
-// @ts-expect-error vite
 const DEFAULT_FAUCET_URL = process.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
-// @ts-expect-error vite
 const DEFAULT_GRAPHQL_URL = process.env.VITE_GRAPHQL_URL ?? getNetwork('localnet').graphql!;
 
 export class TestToolbox {
@@ -62,28 +55,22 @@ export async function setupIotaClient() {
     const keypair = Ed25519Keypair.generate();
     const address = keypair.getPublicKey().toIotaAddress();
     const client = getClient();
-    await retry(() => requestIotaFromFaucetV0({ host: DEFAULT_FAUCET_URL, recipient: address }), {
-        backoff: 'EXPONENTIAL',
-        // overall timeout in 60 seconds
-        timeout: 1000 * 60,
-        // skip retry if we hit the rate-limit error
-        retryIf: (error: any) => !(error instanceof FaucetRateLimitError),
-        logger: (msg) => console.warn('Retrying requesting from faucet: ' + msg),
-    });
+    await requestIotaFromFaucet({ host: DEFAULT_FAUCET_URL, recipient: address });
 
-    const b = await retry(
+    const balance = await retryUntil(
         () =>
             client.getBalance({
                 owner: address,
             }),
         {
-            retries: 100,
-            delay: 50,
-            logger: (msg) => console.warn('Retrying getting balance: ' + msg),
-            retryIf: (error: any) => error.message.includes('Missing response data'),
+            until: ({ totalBalance }) => BigInt(totalBalance ?? 0) > 0n,
+            timeoutMs: 4_000,
+            delayMs: 150,
+            maxDelayMs: 150,
+            onRetry: (msg) => console.warn('Retrying getting balance: ' + msg),
         },
     );
-    console.log(`Balance for ${address}: ${b.totalBalance} IOTA`);
+    console.log(`Balance for ${address}: ${balance.totalBalance} IOTA`);
 
     const tmpDirPath = path.join(tmpdir(), 'config-');
     const tmpDir = await mkdtemp(tmpDirPath);

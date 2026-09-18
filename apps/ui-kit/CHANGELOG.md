@@ -1,5 +1,35 @@
 # @iota/apps-ui-kit
 
+## 0.11.0
+
+### Minor Changes
+
+-   bf352b1: Add `actionLeft` and `actionRight` props to `TableHeaderCell` to render content (e.g. a tooltip icon) alongside the header label.
+
+### Patch Changes
+
+-   140abe4: Add actionLeft and actionRight to TableHeaderCell
+-   b9462f0: Accept `ReactNode` in `KeyValueInfo` `supportingLabel` and `CardAction` `subtitle`, and fix `InfoBox` elevated-style left padding when no icon is provided.
+-   b656aef: Align card body title and subtitle text to the start.
+
+## 0.10.1
+
+### Patch Changes
+
+-   e3f680f: update storybook version
+
+## 0.10.0
+
+### Minor Changes
+
+-   c1b33e9: add date picker component
+
+### Patch Changes
+
+-   e5a945f: Allow react components to be passed to LabelText
+-   1ac779f: Add outlined type badge
+-   5942eac: Tooltip can have links in text prop
+
 ## 0.9.5
 
 ### Patch Changes
