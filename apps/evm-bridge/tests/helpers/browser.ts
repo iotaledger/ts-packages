@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { Page, type BrowserContext } from '@playwright/test';
 
 export async function getExtensionUrl(browserContext: BrowserContext): Promise<string> {

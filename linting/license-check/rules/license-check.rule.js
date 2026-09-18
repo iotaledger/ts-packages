@@ -25,7 +25,7 @@ const licenseHeader = `// Copyright (c) ${CURRENT_YEAR} IOTA Stiftung\n// ${LICE
 const modificationsComment = `// Modifications Copyright (c) ${CURRENT_YEAR} IOTA Stiftung`;
 
 function checkHeader(node, context) {
-    const sourceCode = context.getSourceCode();
+    const sourceCode = context.sourceCode;
     const comments = sourceCode.getAllComments();
     const firstComment = comments?.[0]?.value;
 

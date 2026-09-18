@@ -27,10 +27,10 @@
  */
 
 import {
-  formatAddress,
-  isValidIotaAddress,
-  isValidIotaObjectId,
-  NANOS_PER_IOTA,
+    formatAddress,
+    isValidIotaAddress,
+    isValidIotaObjectId,
+    NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
 import { bcs } from '@iota/iota-sdk/bcs';
 import { program } from 'commander';
@@ -48,113 +48,113 @@ const KNOWN_TYPES = {};
 const client = new IotaClient({ url: getFullnodeUrl(Network.Testnet) });
 
 const kioskClient = new KioskClient({
-  client,
-  network: Network.Testnet,
+    client,
+    network: Network.Testnet,
 });
 
 /**
  * Create the signer instance from the mnemonic.
  */
 const keypair = (function (mnemonic) {
-  if (!mnemonic) {
-    console.log('Requires MNEMONIC; set with `export MNEMONIC="..."`');
-    process.exit(1);
-  }
+    if (!mnemonic) {
+        console.log('Requires MNEMONIC; set with `export MNEMONIC="..."`');
+        process.exit(1);
+    }
 
-  return Ed25519Keypair.deriveKeypair(process.env.MNEMONIC);
+    return Ed25519Keypair.deriveKeypair(process.env.MNEMONIC);
 })(process.env.MNEMONIC);
 
 program
-  .name('kiosk-cli')
-  .description(
-    'Simple CLI to interact with Kiosk smart contracts. \nRequires MNEMONIC environment variable.',
-  )
-  .version('0.0.1');
+    .name('kiosk-cli')
+    .description(
+        'Simple CLI to interact with Kiosk smart contracts. \nRequires MNEMONIC environment variable.',
+    )
+    .version('0.0.1');
 
 program
-  .command('new')
-  .description('create and share a Kiosk; send OwnerCap to sender')
-  .action(newKiosk);
+    .command('new')
+    .description('create and share a Kiosk; send OwnerCap to sender')
+    .action(newKiosk);
 
 program
-  .command('inventory')
-  .description('view the inventory of the sender')
-  .option('-a, --address <address>', "Fetch another user's inventory")
-  .option('--cursor', 'Fetch inventory starting from this cursor')
-  .option('--only-display', 'Only show items that have Display')
-  .option('-f, --filter <type>', 'Filter by type')
-  .action(showInventory);
+    .command('inventory')
+    .description('view the inventory of the sender')
+    .option('-a, --address <address>', "Fetch another user's inventory")
+    .option('--cursor', 'Fetch inventory starting from this cursor')
+    .option('--only-display', 'Only show items that have Display')
+    .option('-f, --filter <type>', 'Filter by type')
+    .action(showInventory);
 
 program
-  .command('contents')
-  .description('list all Items and Listings in the Kiosk owned by the sender')
-  .option('--id <id>', 'The ID of the Kiosk to look up')
-  .option('--address <address>', 'The address of the Kiosk owner')
-  .action(showKioskContents);
+    .command('contents')
+    .description('list all Items and Listings in the Kiosk owned by the sender')
+    .option('--id <id>', 'The ID of the Kiosk to look up')
+    .option('--address <address>', 'The address of the Kiosk owner')
+    .action(showKioskContents);
 
 program
-  .command('place')
-  .description("place an item from the sender's inventory into the Kiosk")
-  .argument('<item ID>', 'The ID of the item to place')
-  .action(placeItem);
+    .command('place')
+    .description("place an item from the sender's inventory into the Kiosk")
+    .argument('<item ID>', 'The ID of the item to place')
+    .action(placeItem);
 
 program
-  .command('lock')
-  .description('lock an item in the user Kiosk (requires TransferPolicy)')
-  .argument('<item ID>', 'The ID of the item to place')
-  .action(lockItem);
+    .command('lock')
+    .description('lock an item in the user Kiosk (requires TransferPolicy)')
+    .argument('<item ID>', 'The ID of the item to place')
+    .action(lockItem);
 
 program
-  .command('take')
-  .description('Take an item from the Kiosk and transfer to sender or to <address>')
-  .argument('<item ID>', 'The ID of the item to take')
-  .option('-a, --address <address>')
-  .action(takeItem);
+    .command('take')
+    .description('Take an item from the Kiosk and transfer to sender or to <address>')
+    .argument('<item ID>', 'The ID of the item to take')
+    .option('-a, --address <address>')
+    .action(takeItem);
 
 program
-  .command('list')
-  .description('list an item in the Kiosk for the specified amount of IOTA')
-  .argument('<item ID>', 'The ID of the item to list')
-  .argument('<amount NANOS>', 'The amount of IOTA to list the item for')
-  .action(listItem);
+    .command('list')
+    .description('list an item in the Kiosk for the specified amount of IOTA')
+    .argument('<item ID>', 'The ID of the item to list')
+    .argument('<amount NANOS>', 'The amount of IOTA to list the item for')
+    .action(listItem);
 
 program
-  .command('delist')
-  .description('delist an item from the Kiosk')
-  .argument('<item ID>', 'The ID of the item to delist')
-  .action(delistItem);
+    .command('delist')
+    .description('delist an item from the Kiosk')
+    .argument('<item ID>', 'The ID of the item to delist')
+    .action(delistItem);
 
 program
-  .command('purchase')
-  .description('purchase an item from the specified Kiosk')
-  .argument('<item ID>', 'The ID of the item to purchase')
-  .option(
-    '--kiosk <ID>',
-    'The ID of the Kiosk to purchase from (speeds up purchase by skipping search)',
-  )
-  .action(purchaseItem);
+    .command('purchase')
+    .description('purchase an item from the specified Kiosk')
+    .argument('<item ID>', 'The ID of the item to purchase')
+    .option(
+        '--kiosk <ID>',
+        'The ID of the Kiosk to purchase from (speeds up purchase by skipping search)',
+    )
+    .action(purchaseItem);
 
 program
-  .command('search')
-  .description('search open listings in Kiosks')
-  .argument('<type>', 'The type of the item to search for. \nAvailable aliases: "test"')
-  .action(searchType);
+    .command('search')
+    .description('search open listings in Kiosks')
+    .argument('<type>', 'The type of the item to search for. \nAvailable aliases: "test"')
+    .action(searchType);
 
 program
-  .command('policy')
-  .description('search for a TransferPolicy for the specified type')
-  .argument('<type>', 'The type of the item to search for. \nAvailable aliases: "test"')
-  .action(searchPolicy);
+    .command('policy')
+    .description('search for a TransferPolicy for the specified type')
+    .argument('<type>', 'The type of the item to search for. \nAvailable aliases: "test"')
+    .action(searchPolicy);
 
 program
-  .command('withdraw')
-  .description('Withdraw all profits from the Kiosk to the Kiosk Owner')
-  .action(withdrawAll);
+    .command('withdraw')
+    .description('Withdraw all profits from the Kiosk to the Kiosk Owner')
+    .action(withdrawAll);
 
 program
-  .command('publisher')
-  .description('View the Publisher objects owned by the user')
-  .action(showPublisher);
+    .command('publisher')
+    .description('View the Publisher objects owned by the user')
+    .action(showPublisher);
 
 program.parse(process.argv);
 
@@ -163,21 +163,21 @@ program.parse(process.argv);
  * Description: creates and shares a Kiosk
  */
 async function newKiosk() {
-  const sender = keypair.getPublicKey().toIotaAddress();
-  const kioskCap = await findKioskCap().catch(() => null);
+    const sender = keypair.getPublicKey().toIotaAddress();
+    const kioskCap = await findKioskCap().catch(() => null);
 
-  if (kioskCap !== null) {
-    throw new Error(`Kiosk already exists for ${sender}`);
-  }
+    if (kioskCap !== null) {
+        throw new Error(`Kiosk already exists for ${sender}`);
+    }
 
-  const tx = new Transaction();
+    const tx = new Transaction();
 
-  new KioskTransaction({ transaction: tx, kioskClient })
-    .create()
-    .shareAndTransferCap(sender)
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient })
+        .create()
+        .shareAndTransferCap(sender)
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -185,47 +185,47 @@ async function newKiosk() {
  * Description: view the inventory of the sender (or a specified address)
  */
 async function showInventory({ address, onlyDisplay, cursor, filter }) {
-  const owner = address || keypair.getPublicKey().toIotaAddress();
+    const owner = address || keypair.getPublicKey().toIotaAddress();
 
-  if (!isValidIotaAddress(owner)) {
-    throw new Error(`Invalid IOTA address: "${owner}"`);
-  }
+    if (!isValidIotaAddress(owner)) {
+        throw new Error(`Invalid IOTA address: "${owner}"`);
+    }
 
-  const options = {
-    owner,
-    cursor,
-    options: {
-      showType: true,
-      showDisplay: true,
-    },
-  };
+    const options = {
+        owner,
+        cursor,
+        options: {
+            showType: true,
+            showDisplay: true,
+        },
+    };
 
-  if (filter) {
-    options.filter = { StructType: KNOWN_TYPES[filter] || filter };
-  }
+    if (filter) {
+        options.filter = { StructType: KNOWN_TYPES[filter] || filter };
+    }
 
-  const { data, nextCursor, hasNextPage } = await client.getOwnedObjects(options);
+    const { data, nextCursor, hasNextPage } = await client.getOwnedObjects(options);
 
-  if (hasNextPage) {
-    console.log('Showing first page of results. Use `--cursor` to get the next page.');
-    console.log('Next cursor: %s', nextCursor);
-  }
+    if (hasNextPage) {
+        console.log('Showing first page of results. Use `--cursor` to get the next page.');
+        console.log('Next cursor: %s', nextCursor);
+    }
 
-  const list = data
-    .filter(({ data, error }) => !error && data)
-    .sort((a, b) => a.data.type.localeCompare(b.data.type))
-    .map(({ data }) => ({
-      objectId: data.objectId,
-      type: formatType(data.type),
-      hasDisplay: !!data.display.data,
-    }));
+    const list = data
+        .filter(({ data, error }) => !error && data)
+        .sort((a, b) => a.data.type.localeCompare(b.data.type))
+        .map(({ data }) => ({
+            objectId: data.objectId,
+            type: formatType(data.type),
+            hasDisplay: !!data.display.data,
+        }));
 
-  console.log('- Owner %s', owner);
-  if (onlyDisplay) {
-    console.table(list.filter(({ hasDisplay }) => hasDisplay));
-  } else {
-    console.table(list);
-  }
+    console.log('- Owner %s', owner);
+    if (onlyDisplay) {
+        console.table(list.filter(({ hasDisplay }) => hasDisplay));
+    } else {
+        console.table(list);
+    }
 }
 
 /**
@@ -234,64 +234,64 @@ async function showInventory({ address, onlyDisplay, cursor, filter }) {
  * specified address) or directly by the specified Kiosk ID
  */
 async function showKioskContents({ id, address }) {
-  let kioskId = null;
+    let kioskId = null;
 
-  if (id) {
-    if (!isValidIotaObjectId(id)) {
-      throw new Error(`Invalid Kiosk ID: "${id}"`);
+    if (id) {
+        if (!isValidIotaObjectId(id)) {
+            throw new Error(`Invalid Kiosk ID: "${id}"`);
+        }
+
+        kioskId = id;
+    } else {
+        const sender = address || keypair.getPublicKey().toIotaAddress();
+
+        if (!isValidIotaAddress(sender)) {
+            throw new Error(`Invalid IOTA address: "${sender}"`);
+        }
+
+        const kioskCap = await findKioskCap(sender).catch(() => null);
+        if (kioskCap == null) {
+            throw new Error(`No Kiosk found for ${sender}`);
+        }
+        kioskId = kioskCap.kioskId;
     }
 
-    kioskId = id;
-  } else {
-    const sender = address || keypair.getPublicKey().toIotaAddress();
+    const {
+        items,
+        kiosk,
+        // data: { items, kiosk },
+        hasNextPage,
+        nextCursor,
+    } = await kioskClient.getKiosk({
+        id: kioskId,
+        options: {
+            withListingPrices: true,
+            withKioskFields: true,
+        },
+    });
 
-    if (!isValidIotaAddress(sender)) {
-      throw new Error(`Invalid IOTA address: "${sender}"`);
+    if (hasNextPage) {
+        console.log('Next cursor:   %s', nextCursor);
     }
 
-    const kioskCap = await findKioskCap(sender).catch(() => null);
-    if (kioskCap == null) {
-      throw new Error(`No Kiosk found for ${sender}`);
-    }
-    kioskId = kioskCap.kioskId;
-  }
+    console.log('Description');
+    console.log('- Kiosk ID:    %s', kioskId);
+    console.log('- Profits:     %s', kiosk.profits);
+    console.log('- UID Exposed: %s', kiosk.allowExtensions);
+    console.log('- Item Count:  %s', kiosk.itemCount);
 
-  const {
-    items,
-    kiosk,
-    // data: { items, kiosk },
-    hasNextPage,
-    nextCursor,
-  } = await kioskClient.getKiosk({
-    id: kioskId,
-    options: {
-      withListingPrices: true,
-      withKioskFields: true,
-    },
-  });
+    const tabledItems = items
+        .map((item) => ({
+            objectId: item.objectId,
+            type: formatType(item.type),
+            isLocked: item.isLocked,
+            listed: !!item.listing,
+            isPublic: (item.listing && !item.listing.isExclusive) || false,
+            'price (IOTA)': item.listing ? formatAmount(item.listing.price) : 'N/A',
+        }))
+        .sort((a, b) => a.listed - b.listed);
 
-  if (hasNextPage) {
-    console.log('Next cursor:   %s', nextCursor);
-  }
-
-  console.log('Description');
-  console.log('- Kiosk ID:    %s', kioskId);
-  console.log('- Profits:     %s', kiosk.profits);
-  console.log('- UID Exposed: %s', kiosk.allowExtensions);
-  console.log('- Item Count:  %s', kiosk.itemCount);
-
-  const tabledItems = items
-    .map((item) => ({
-      objectId: item.objectId,
-      type: formatType(item.type),
-      isLocked: item.isLocked,
-      listed: !!item.listing,
-      isPublic: (item.listing && !item.listing.isExclusive) || false,
-      'price (IOTA)': item.listing ? formatAmount(item.listing.price) : 'N/A',
-    }))
-    .sort((a, b) => a.listed - b.listed);
-
-  console.table(tabledItems);
+    console.table(tabledItems);
 }
 
 /**
@@ -299,41 +299,43 @@ async function showKioskContents({ id, address }) {
  * Description: Place an item into the Kiosk owned by the sender
  */
 async function placeItem(itemId) {
-  const kioskCap = await findKioskCap().catch(() => null);
-  const owner = keypair.getPublicKey().toIotaAddress();
+    const kioskCap = await findKioskCap().catch(() => null);
+    const owner = keypair.getPublicKey().toIotaAddress();
 
-  if (kioskCap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    if (kioskCap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
+    }
 
-  const item = await client.getObject({
-    id: itemId,
-    options: { showType: true, showOwner: true },
-  });
+    const item = await client.getObject({
+        id: itemId,
+        options: { showType: true, showOwner: true },
+    });
 
-  if ('error' in item || !item.data) {
-    throw new Error(`Item ${itemId} not found; error: ` + item.error);
-  }
+    if ('error' in item || !item.data) {
+        throw new Error(`Item ${itemId} not found; error: ` + item.error);
+    }
 
-  if (!('AddressOwner' in item.data.owner) || item.data.owner.AddressOwner !== owner) {
-    throw new Error(`Item ${itemId} is not owned by ${owner}; use \`inventory\` to see your items`);
-  }
+    if (!('AddressOwner' in item.data.owner) || item.data.owner.AddressOwner !== owner) {
+        throw new Error(
+            `Item ${itemId} is not owned by ${owner}; use \`inventory\` to see your items`,
+        );
+    }
 
-  const tx = new Transaction();
-  const itemArg = tx.objectRef({ ...item.data });
+    const tx = new Transaction();
+    const itemArg = tx.objectRef({ ...item.data });
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap })
-    .place({
-      type: item.data.type,
-      item: itemArg,
-    })
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap })
+        .place({
+            type: item.data.type,
+            item: itemArg,
+        })
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -341,48 +343,52 @@ async function placeItem(itemId) {
  * Description: Lock an item in the Kiosk owned by the sender (requires TransferPolicy)
  */
 async function lockItem(itemId) {
-  const cap = await findKioskCap().catch(() => null);
-  const owner = keypair.getPublicKey().toIotaAddress();
+    const cap = await findKioskCap().catch(() => null);
+    const owner = keypair.getPublicKey().toIotaAddress();
 
-  if (cap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    if (cap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
+    }
 
-  const item = await client.getObject({
-    id: itemId,
-    options: { showType: true, showOwner: true },
-  });
+    const item = await client.getObject({
+        id: itemId,
+        options: { showType: true, showOwner: true },
+    });
 
-  if ('error' in item || !item.data) {
-    throw new Error(`Item ${itemId} not found; error: ` + item.error);
-  }
+    if ('error' in item || !item.data) {
+        throw new Error(`Item ${itemId} not found; error: ` + item.error);
+    }
 
-  if (!('AddressOwner' in item.data.owner) || item.data.owner.AddressOwner !== owner) {
-    throw new Error(`Item ${itemId} is not owned by ${owner}; use \`inventory\` to see your items`);
-  }
+    if (!('AddressOwner' in item.data.owner) || item.data.owner.AddressOwner !== owner) {
+        throw new Error(
+            `Item ${itemId} is not owned by ${owner}; use \`inventory\` to see your items`,
+        );
+    }
 
-  const [policy] = await kioskClient.getTransferPolicies({ type: item.data.type });
+    const [policy] = await kioskClient.getTransferPolicies({ type: item.data.type });
 
-  if (!policy) {
-    throw new Error(`Item ${itemId} with type ${item.data.type} does not have a TransferPolicy`);
-  }
+    if (!policy) {
+        throw new Error(
+            `Item ${itemId} with type ${item.data.type} does not have a TransferPolicy`,
+        );
+    }
 
-  const tx = new Transaction();
-  const itemArg = tx.objectRef({ ...item.data });
+    const tx = new Transaction();
+    const itemArg = tx.objectRef({ ...item.data });
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
-    .lock({
-      itemType: item.data.type,
-      itemId: itemArg,
-      policy: policy.id,
-    })
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
+        .lock({
+            itemType: item.data.type,
+            itemId: itemArg,
+            policy: policy.id,
+        })
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -391,38 +397,38 @@ async function lockItem(itemId) {
  * --address <address>)
  */
 async function takeItem(itemId, { address }) {
-  const cap = await findKioskCap().catch(() => null);
-  const receiver = address || keypair.getPublicKey().toIotaAddress();
+    const cap = await findKioskCap().catch(() => null);
+    const receiver = address || keypair.getPublicKey().toIotaAddress();
 
-  if (!isValidIotaAddress(receiver)) {
-    throw new Error('Invalid receiver address: "%s"', receiver);
-  }
+    if (!isValidIotaAddress(receiver)) {
+        throw new Error('Invalid receiver address: "%s"', receiver);
+    }
 
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
+    }
 
-  if (cap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    if (cap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  const item = await client.getObject({ id: itemId, options: { showType: true } });
+    const item = await client.getObject({ id: itemId, options: { showType: true } });
 
-  if ('error' in item || !item.data) {
-    throw new Error(`Item ${itemId} not found; error: ` + item.error);
-  }
+    if ('error' in item || !item.data) {
+        throw new Error(`Item ${itemId} not found; error: ` + item.error);
+    }
 
-  const tx = new Transaction();
+    const tx = new Transaction();
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
-    .transfer({
-      itemType: item.data.type,
-      itemId,
-      address: receiver,
-    })
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
+        .transfer({
+            itemType: item.data.type,
+            itemId,
+            address: receiver,
+        })
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -430,33 +436,33 @@ async function takeItem(itemId, { address }) {
  * Description: Lists an item in the Kiosk for the specified amount of IOTA
  */
 async function listItem(itemId, price) {
-  const cap = await findKioskCap().catch(() => null);
+    const cap = await findKioskCap().catch(() => null);
 
-  if (cap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    if (cap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
+    }
 
-  const item = await client.getObject({ id: itemId, options: { showType: true } });
+    const item = await client.getObject({ id: itemId, options: { showType: true } });
 
-  if ('error' in item || !item.data) {
-    throw new Error(`Item ${itemId} not found; error: ` + item.error);
-  }
+    if ('error' in item || !item.data) {
+        throw new Error(`Item ${itemId} not found; error: ` + item.error);
+    }
 
-  const tx = new Transaction();
+    const tx = new Transaction();
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
-    .list({
-      itemType: item.data.type,
-      itemId,
-      price,
-    })
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
+        .list({
+            itemType: item.data.type,
+            itemId,
+            price,
+        })
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -464,32 +470,32 @@ async function listItem(itemId, price) {
  * Description: Delists an active listing in the Kiosk
  */
 async function delistItem(itemId) {
-  const cap = await findKioskCap().catch(() => null);
+    const cap = await findKioskCap().catch(() => null);
 
-  if (cap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    if (cap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
+    }
 
-  const item = await client.getObject({ id: itemId, options: { showType: true } });
+    const item = await client.getObject({ id: itemId, options: { showType: true } });
 
-  if ('error' in item || !item.data) {
-    throw new Error(`Item ${itemId} not found; error: ` + item.error);
-  }
+    if ('error' in item || !item.data) {
+        throw new Error(`Item ${itemId} not found; error: ` + item.error);
+    }
 
-  const tx = new Transaction();
+    const tx = new Transaction();
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
-    .delist({
-      itemType: item.data.type,
-      itemId,
-    })
-    .finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
+        .delist({
+            itemType: item.data.type,
+            itemId,
+        })
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -500,88 +506,88 @@ async function delistItem(itemId) {
  * - add destination "kiosk" or "user" (kiosk by default)
  */
 async function purchaseItem(itemId, opts) {
-  const { kiosk: inputKioskId } = opts;
+    const { kiosk: inputKioskId } = opts;
 
-  if (inputKioskId && !isValidIotaObjectId(inputKioskId)) {
-    throw new Error('Invalid Kiosk ID: "%s"', inputKioskId);
-  }
-
-  if (!isValidIotaObjectId(itemId)) {
-    throw new Error('Invalid Item ID: "%s"', itemId);
-  }
-
-  let kioskId = inputKioskId;
-
-  const itemInfo = await client.getObject({
-    id: itemId,
-    options: { showType: true, showOwner: true },
-  });
-
-  if ('error' in itemInfo || !itemInfo.data) {
-    throw new Error(`Item ${itemId} not found; ${itemInfo.error}`);
-  }
-
-  if (!('ObjectOwner' in itemInfo.data.owner)) {
-    throw new Error(`Item ${itemId} is not owned by an object`);
-  }
-
-  if (!kioskId) {
-    const itemKeyId = itemInfo.data.owner.ObjectOwner;
-    const itemKey = await client.getObject({ id: itemKeyId, options: { showOwner: true } });
-
-    if ('error' in itemKey || !itemKey.data) {
-      throw new Error(`Dynamic Field ${itemId} key not found; ${itemKey.error}`);
+    if (inputKioskId && !isValidIotaObjectId(inputKioskId)) {
+        throw new Error('Invalid Kiosk ID: "%s"', inputKioskId);
     }
 
-    if (!('ObjectOwner' in itemKey.data.owner)) {
-      throw new Error(`Dynamic Field ${itemId} key is not owned by an object`);
+    if (!isValidIotaObjectId(itemId)) {
+        throw new Error('Invalid Item ID: "%s"', itemId);
     }
 
-    kioskId = itemKey.data.owner.ObjectOwner;
-  }
+    let kioskId = inputKioskId;
 
-  const [kiosk, listing] = await Promise.all([
-    client.getObject({ id: kioskId, options: { showOwner: true } }),
-    client.getDynamicFieldObject({
-      parentId: kioskId,
-      name: { type: KIOSK_LISTING, value: { id: itemId, is_exclusive: false } },
-    }),
-  ]);
+    const itemInfo = await client.getObject({
+        id: itemId,
+        options: { showType: true, showOwner: true },
+    });
 
-  if ('error' in listing || !listing.data) {
-    throw new Error(`Item ${itemId} not listed in Kiosk ${kioskId}`);
-  }
+    if ('error' in itemInfo || !itemInfo.data) {
+        throw new Error(`Item ${itemId} not found; ${itemInfo.error}`);
+    }
 
-  if ('error' in kiosk || !kiosk.data) {
-    throw new Error(`Kiosk ${kioskId} not found`);
-  }
+    if (!('ObjectOwner' in itemInfo.data.owner)) {
+        throw new Error(`Item ${itemId} is not owned by an object`);
+    }
 
-  if ('error' in itemInfo || !itemInfo.data) {
-    throw new Error(`Item ${itemId} not found`);
-  }
+    if (!kioskId) {
+        const itemKeyId = itemInfo.data.owner.ObjectOwner;
+        const itemKey = await client.getObject({ id: itemKeyId, options: { showOwner: true } });
 
-  const price = listing.data.content.fields.value;
-  const tx = new Transaction();
-  const fromKioskArg = tx.object(kiosk.data.objectId);
-  const cap = await findKioskCap().catch(() => null);
+        if ('error' in itemKey || !itemKey.data) {
+            throw new Error(`Dynamic Field ${itemId} key not found; ${itemKey.error}`);
+        }
 
-  if (cap === null) {
-    throw new Error(
-      'No Kiosk found for sender; use `new` to create one; cannot place item to Kiosk',
-    );
-  }
-  const kioskTx = new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap });
+        if (!('ObjectOwner' in itemKey.data.owner)) {
+            throw new Error(`Dynamic Field ${itemId} key is not owned by an object`);
+        }
 
-  (
-    await kioskTx.purchaseAndResolve({
-      itemType: itemInfo.data.type,
-      itemId: itemInfo.data.objectId,
-      price,
-      sellerKiosk: fromKioskArg,
-    })
-  ).finalize();
+        kioskId = itemKey.data.owner.ObjectOwner;
+    }
 
-  return sendTx(tx);
+    const [kiosk, listing] = await Promise.all([
+        client.getObject({ id: kioskId, options: { showOwner: true } }),
+        client.getDynamicFieldObject({
+            parentId: kioskId,
+            name: { type: KIOSK_LISTING, value: { id: itemId, is_exclusive: false } },
+        }),
+    ]);
+
+    if ('error' in listing || !listing.data) {
+        throw new Error(`Item ${itemId} not listed in Kiosk ${kioskId}`);
+    }
+
+    if ('error' in kiosk || !kiosk.data) {
+        throw new Error(`Kiosk ${kioskId} not found`);
+    }
+
+    if ('error' in itemInfo || !itemInfo.data) {
+        throw new Error(`Item ${itemId} not found`);
+    }
+
+    const price = listing.data.content.fields.value;
+    const tx = new Transaction();
+    const fromKioskArg = tx.object(kiosk.data.objectId);
+    const cap = await findKioskCap().catch(() => null);
+
+    if (cap === null) {
+        throw new Error(
+            'No Kiosk found for sender; use `new` to create one; cannot place item to Kiosk',
+        );
+    }
+    const kioskTx = new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap });
+
+    (
+        await kioskTx.purchaseAndResolve({
+            itemType: itemInfo.data.type,
+            itemId: itemInfo.data.objectId,
+            price,
+            sellerKiosk: fromKioskArg,
+        })
+    ).finalize();
+
+    return sendTx(tx);
 }
 
 /**
@@ -589,68 +595,70 @@ async function purchaseItem(itemId, opts) {
  * Description: Searches for items of the specified type
  */
 async function searchType(type) {
-  // use known types if available;
-  type = KNOWN_TYPES[type] || type;
+    // use known types if available;
+    type = KNOWN_TYPES[type] || type;
 
-  const [{ data: listed }, { data: delisted }, { data: purchased }] = await Promise.all([
-    client.queryEvents({
-      query: { MoveEventType: `0x2::kiosk::ItemListed<${type}>` },
-      limit: 1000,
-    }),
-    client.queryEvents({
-      query: { MoveEventType: `0x2::kiosk::ItemDelisted<${type}>` },
-      limit: 1000,
-    }),
-    client.queryEvents({
-      query: { MoveEventType: `0x2::kiosk::ItemPurchased<${type}>` },
-      limit: 1000,
-    }),
-  ]);
+    const [{ data: listed }, { data: delisted }, { data: purchased }] = await Promise.all([
+        client.queryEvents({
+            query: { MoveEventType: `0x2::kiosk::ItemListed<${type}>` },
+            limit: 1000,
+        }),
+        client.queryEvents({
+            query: { MoveEventType: `0x2::kiosk::ItemDelisted<${type}>` },
+            limit: 1000,
+        }),
+        client.queryEvents({
+            query: { MoveEventType: `0x2::kiosk::ItemPurchased<${type}>` },
+            limit: 1000,
+        }),
+    ]);
 
-  const listings = listed
-    .filter((e) => {
-      const { id: itemId } = e.parsedJson;
-      const timestamp = e.timestampMs;
-      return !delisted.some((item) => itemId == item.parsedJson.id && timestamp < item.timestampMs);
-    })
-    .filter((e) => {
-      const { id: itemId } = e.parsedJson;
-      const timestamp = e.timestampMs;
-      return !purchased.some(
-        (item) => itemId == item.parsedJson.id && timestamp < item.timestampMs,
-      );
-    });
+    const listings = listed
+        .filter((e) => {
+            const { id: itemId } = e.parsedJson;
+            const timestamp = e.timestampMs;
+            return !delisted.some(
+                (item) => itemId == item.parsedJson.id && timestamp < item.timestampMs,
+            );
+        })
+        .filter((e) => {
+            const { id: itemId } = e.parsedJson;
+            const timestamp = e.timestampMs;
+            return !purchased.some(
+                (item) => itemId == item.parsedJson.id && timestamp < item.timestampMs,
+            );
+        });
 
-  console.log('- Type:', type);
-  console.table(
-    listings.map((e) => ({
-      objectId: e.parsedJson.id,
-      kiosk: formatAddress(e.parsedJson.kiosk),
-      price: e.parsedJson.price,
-    })),
-  );
+    console.log('- Type:', type);
+    console.table(
+        listings.map((e) => ({
+            objectId: e.parsedJson.id,
+            kiosk: formatAddress(e.parsedJson.kiosk),
+            price: e.parsedJson.price,
+        })),
+    );
 }
 
 async function searchPolicy(type) {
-  // use known types if available;
-  type = KNOWN_TYPES[type] || type;
+    // use known types if available;
+    type = KNOWN_TYPES[type] || type;
 
-  const policies = await kioskClient.getTransferPolicies({ type });
+    const policies = await kioskClient.getTransferPolicies({ type });
 
-  if (policies.length === 0) {
-    console.log(`No transfer policy found for type ${type}`);
-    process.exit(0);
-  }
+    if (policies.length === 0) {
+        console.log(`No transfer policy found for type ${type}`);
+        process.exit(0);
+    }
 
-  console.log('- Type: %s', formatType(type));
-  console.table(
-    policies.map((policy) => ({
-      id: policy.id,
-      owner: 'Shared' in policy.owner ? 'Shared' : 'Owned',
-      rules: policy.rules.map((rule) => rule.split('::').slice(1).join('::')),
-      balance: policy.balance,
-    })),
-  );
+    console.log('- Type: %s', formatType(type));
+    console.table(
+        policies.map((policy) => ({
+            id: policy.id,
+            owner: 'Shared' in policy.owner ? 'Shared' : 'Owned',
+            rules: policy.rules.map((rule) => rule.split('::').slice(1).join('::')),
+            balance: policy.balance,
+        })),
+    );
 }
 
 /**
@@ -658,17 +666,19 @@ async function searchPolicy(type) {
  * Description: Withdraws funds from the Kiosk and send them to sender.
  */
 async function withdrawAll() {
-  const sender = keypair.getPublicKey().toIotaAddress();
-  const cap = await findKioskCap(sender).catch(() => null);
-  if (cap === null) {
-    throw new Error('No Kiosk found for sender; use `new` to create one');
-  }
+    const sender = keypair.getPublicKey().toIotaAddress();
+    const cap = await findKioskCap(sender).catch(() => null);
+    if (cap === null) {
+        throw new Error('No Kiosk found for sender; use `new` to create one');
+    }
 
-  const tx = new Transaction();
+    const tx = new Transaction();
 
-  new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap }).withdraw(sender).finalize();
+    new KioskTransaction({ transaction: tx, kioskClient, kioskCap: cap })
+        .withdraw(sender)
+        .finalize();
 
-  return sendTx(tx);
+    return sendTx(tx);
 }
 
 /**
@@ -676,34 +686,34 @@ async function withdrawAll() {
  * Description: Shows the Publisher objects of the current user.
  */
 async function showPublisher() {
-  const sender = keypair.getPublicKey().toIotaAddress();
-  const result = await client.getOwnedObjects({
-    owner: sender,
-    filter: { StructType: '0x2::package::Publisher' },
-    options: { showBcs: true },
-  });
+    const sender = keypair.getPublicKey().toIotaAddress();
+    const result = await client.getOwnedObjects({
+        owner: sender,
+        filter: { StructType: '0x2::package::Publisher' },
+        options: { showBcs: true },
+    });
 
-  if ('error' in result || !result.data) {
-    throw new Error(`Error fetching Publisher result: ${result.error}`);
-  }
+    if ('error' in result || !result.data) {
+        throw new Error(`Error fetching Publisher result: ${result.error}`);
+    }
 
-  if (result.data && result.data.length === 0) {
-    return console.log('No Publisher objects found for sender');
-  }
+    if (result.data && result.data.length === 0) {
+        return console.log('No Publisher objects found for sender');
+    }
 
-  console.table(
-    result.data.map((o) =>
-      bcs.de(
-        {
-          id: 'address',
-          package: 'string',
-          module_name: 'string',
-        },
-        o.data.bcs.bcsBytes,
-        'base64',
-      ),
-    ),
-  );
+    console.table(
+        result.data.map((o) =>
+            bcs.de(
+                {
+                    id: 'address',
+                    package: 'string',
+                    module_name: 'string',
+                },
+                o.data.bcs.bcsBytes,
+                'base64',
+            ),
+        ),
+    );
 }
 
 /**
@@ -711,19 +721,19 @@ async function showPublisher() {
  * and sets it on the kioskClient instance.
  */
 async function findKioskCap(address) {
-  const sender = address || keypair.getPublicKey().toIotaAddress();
+    const sender = address || keypair.getPublicKey().toIotaAddress();
 
-  if (!isValidIotaAddress(sender)) {
-    throw new Error(`Invalid address "${sender}"`);
-  }
+    if (!isValidIotaAddress(sender)) {
+        throw new Error(`Invalid address "${sender}"`);
+    }
 
-  const { kioskOwnerCaps } = await kioskClient.getOwnedKiosks({ address: sender });
+    const { kioskOwnerCaps } = await kioskClient.getOwnedKiosks({ address: sender });
 
-  if (kioskOwnerCaps.length === 0) {
-    throw new Error(`No Kiosk found for "${sender}"`);
-  }
+    if (kioskOwnerCaps.length === 0) {
+        throw new Error(`No Kiosk found for "${sender}"`);
+    }
 
-  return kioskOwnerCaps[0];
+    return kioskOwnerCaps[0];
 }
 
 /**
@@ -731,83 +741,84 @@ async function findKioskCap(address) {
  * If there are errors, print them.
  */
 async function sendTx(tx) {
-  return client
-    .signAndExecuteTransaction({
-      signer: keypair,
-      transaction: tx,
-      options: {
-        showEffects: true,
-        showObjectChanges: true,
-      },
-    })
-    .then((result) => {
-      if ('errors' in result) {
-        console.error('Errors found: %s', result.errors);
-      } else {
-        console.table(
-          result.objectChanges.map((change) => ({
-            objectId: change.objectId,
-            type: change.type,
-            sender: formatAddress(change.sender),
-            objectType: formatType(change.objectType),
-          })),
-        );
-      }
-      let gas = result.effects.gasUsed;
-      let total = BigInt(gas.computationCost) + BigInt(gas.storageCost) - BigInt(gas.storageRebate);
+    return client
+        .signAndExecuteTransaction({
+            signer: keypair,
+            transaction: tx,
+            options: {
+                showEffects: true,
+                showObjectChanges: true,
+            },
+        })
+        .then((result) => {
+            if ('errors' in result) {
+                console.error('Errors found: %s', result.errors);
+            } else {
+                console.table(
+                    result.objectChanges.map((change) => ({
+                        objectId: change.objectId,
+                        type: change.type,
+                        sender: formatAddress(change.sender),
+                        objectType: formatType(change.objectType),
+                    })),
+                );
+            }
+            let gas = result.effects.gasUsed;
+            let total =
+                BigInt(gas.computationCost) + BigInt(gas.storageCost) - BigInt(gas.storageRebate);
 
-      console.log('Computation cost:          %s', gas.computationCost);
-      console.log('Storage cost:              %s', gas.storageCost);
-      console.log('Storage rebate:            %s', gas.storageRebate);
-      console.log('NonRefundable Storage Fee: %s', gas.nonRefundableStorageFee);
-      console.log(
-        'Total Gas:                 %s IOTA (%s NANOS)',
-        formatAmount(total),
-        total.toString(),
-      );
-    });
+            console.log('Computation cost:          %s', gas.computationCost);
+            console.log('Storage cost:              %s', gas.storageCost);
+            console.log('Storage rebate:            %s', gas.storageRebate);
+            console.log('NonRefundable Storage Fee: %s', gas.nonRefundableStorageFee);
+            console.log(
+                'Total Gas:                 %s IOTA (%s NANOS)',
+                formatAmount(total),
+                total.toString(),
+            );
+        });
 }
 
 /**
  * Shortens the type (currently, a little messy).
  */
 function formatType(type) {
-  let knownIdx = Object.values(KNOWN_TYPES).indexOf(type);
-  if (knownIdx !== -1) {
-    return Object.keys(KNOWN_TYPES)[knownIdx];
-  }
+    let knownIdx = Object.values(KNOWN_TYPES).indexOf(type);
+    if (knownIdx !== -1) {
+        return Object.keys(KNOWN_TYPES)[knownIdx];
+    }
 
-  type = type.replace('0x2', '2');
+    type = type.replace('0x2', '2');
 
-  while (type.includes('0x')) {
-    let pos = type.indexOf('0x');
-    let addr = formatAddress(type.slice(pos, pos + 66)).replace('0x', '');
-    type = type.replace(type.slice(pos, pos + 66), addr);
-  }
+    while (type.includes('0x')) {
+        let pos = type.indexOf('0x');
+        let addr = formatAddress(type.slice(pos, pos + 66)).replace('0x', '');
+        type = type.replace(type.slice(pos, pos + 66), addr);
+    }
 
-  return '0x' + type;
+    return '0x' + type;
 }
 
 /**
  * Formats the NANOS into IOTA.
  */
 function formatAmount(amount) {
-  if (!amount) {
-    return null;
-  }
+    if (!amount) {
+        return null;
+    }
 
-  if (amount <= NANOS_PER_IOTA) {
-    return Number(amount) / Number(NANOS_PER_IOTA);
-  }
+    if (amount <= NANOS_PER_IOTA) {
+        return Number(amount) / Number(NANOS_PER_IOTA);
+    }
 
-  let len = amount.toString().length;
-  let lhs = amount.toString().slice(0, len - 9);
-  let rhs = amount.toString().slice(-9);
+    let len = amount.toString().length;
+    let lhs = amount.toString().slice(0, len - 9);
+    let rhs = amount.toString().slice(-9);
 
-  return Number(`${lhs}.${rhs}`);
+    return Number(`${lhs}.${rhs}`);
 }
 
 process.on('uncaughtException', (err) => {
-  console.error(err);
-  process.exit(1);
+    console.error(err);
+    process.exit(1);
 });

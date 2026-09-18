@@ -36,15 +36,14 @@ tooling:
           linting/**
           .husky/**
           .changeset/**
-          .eslintrc.js
+          .oxlintrc.json
           .lintstagedrc.json
           .npmrc
-          .prettierignore
           graphql.config.ts
           package.json
           pnpm-lock.yaml
           pnpm-workspace.yaml
-          prettier.config.js
+          .oxfmtrc.json
           turbo.json
           vercel.json
 iota-names:

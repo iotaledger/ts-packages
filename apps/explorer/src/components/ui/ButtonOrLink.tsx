@@ -6,11 +6,10 @@ import { type ComponentProps, forwardRef } from 'react';
 
 import { LinkWithQuery, type RouterLinkProps } from './LinkWithQuery';
 
-export interface ButtonOrLinkProps
-    extends Omit<
-        Partial<RouterLinkProps> & ComponentProps<'a'> & ComponentProps<'button'>,
-        'ref'
-    > {}
+export interface ButtonOrLinkProps extends Omit<
+    Partial<RouterLinkProps> & ComponentProps<'a'> & ComponentProps<'button'>,
+    'ref'
+> {}
 
 export const ButtonOrLink = forwardRef<HTMLAnchorElement | HTMLButtonElement, ButtonOrLinkProps>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

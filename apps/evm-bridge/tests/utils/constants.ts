@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 export const WALLET_CUSTOMRPC_INPUT_TEST_ID = 'custom-rpc-url-input';
 export const WALLET_PASSWORD = 'bridgee2etests';
 

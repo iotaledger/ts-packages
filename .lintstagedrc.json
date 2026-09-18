@@ -1,4 +1,4 @@
 {
-    "{sdk,apps}/**/*.{ts,js,mjs,tsx}": "eslint -c ./linting/.eslintrc.precommit.js --fix",
-    "{sdk,apps}/**/*.{ts,js,mjs,tsx,scss,css}": "prettier --write"
+    "{sdk,apps,dapps}/**/*.{ts,tsx,js,jsx,mjs,cjs}": "oxlint --fix",
+    "{sdk,apps,dapps}/**/*.{ts,tsx,js,jsx,mjs,cjs,json,css,scss}": "oxfmt"
 }

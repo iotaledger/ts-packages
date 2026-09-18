@@ -317,10 +317,10 @@ export type IotaEventFilter =
     | {
           Package: string;
       } /**
-     * Return events emitted in a specified Move module. If the event is defined in Module A but emitted in
-     * a tx with Module B, query `MoveModule` by module B returns the event. Query `MoveEventModule` by
-     * module A returns the event too.
-     */
+       * Return events emitted in a specified Move module. If the event is defined in Module A but emitted in
+       * a tx with Module B, query `MoveModule` by module B returns the event. Query `MoveEventModule` by
+       * module A returns the event too.
+       */
     | {
           MoveModule: {
               /** the module name */
@@ -329,16 +329,16 @@ export type IotaEventFilter =
               package: string;
           };
       } /**
-     * Return events with the given Move event struct name (struct tag). For example, if the event is
-     * defined in `0xabcd::MyModule`, and named `Foo`, then the struct tag is `0xabcd::MyModule::Foo`.
-     */
+       * Return events with the given Move event struct name (struct tag). For example, if the event is
+       * defined in `0xabcd::MyModule`, and named `Foo`, then the struct tag is `0xabcd::MyModule::Foo`.
+       */
     | {
           MoveEventType: string;
       } /**
-     * Return events with the given Move module name where the event struct is defined. If the event is
-     * defined in Module A but emitted in a tx with Module B, query `MoveEventModule` by module A returns
-     * the event. Query `MoveModule` by module B returns the event too.
-     */
+       * Return events with the given Move module name where the event struct is defined. If the event is
+       * defined in Module A but emitted in a tx with Module B, query `MoveEventModule` by module A returns
+       * the event. Query `MoveModule` by module B returns the event too.
+       */
     | {
           MoveEventModule: {
               /** the module name */
@@ -454,9 +454,9 @@ export type IotaArgument =
     | {
           Result: number;
       } /**
-     * Like a `Result` but it accesses a nested result. Currently, the only usage of this is to access a
-     * value from a Move call with multiple return values.
-     */
+       * Like a `Result` but it accesses a nested result. Currently, the only usage of this is to access a
+       * value from a Move call with multiple return values.
+       */
     | {
           NestedResult: [number, number];
       };
@@ -942,34 +942,34 @@ export type IotaTransaction =
     | {
           MoveCall: MoveCallIotaTransaction;
       } /**
-     * `(Vec<forall T:key+store. T>, address)` It sends n-objects to the specified address. These objects
-     * must have store (public transfer) and either the previous owner must be an address or the object
-     * must be newly created.
-     */
+       * `(Vec<forall T:key+store. T>, address)` It sends n-objects to the specified address. These objects
+       * must have store (public transfer) and either the previous owner must be an address or the object
+       * must be newly created.
+       */
     | {
           TransferObjects: [IotaArgument[], IotaArgument];
       } /**
-     * `(&mut Coin<T>, Vec<u64>)` -> `Vec<Coin<T>>` It splits off some amounts into a new coins with those
-     * amounts
-     */
+       * `(&mut Coin<T>, Vec<u64>)` -> `Vec<Coin<T>>` It splits off some amounts into a new coins with those
+       * amounts
+       */
     | {
           SplitCoins: [IotaArgument, IotaArgument[]];
       } /** `(&mut Coin<T>, Vec<Coin<T>>)` It merges n-coins into the first coin */
     | {
           MergeCoins: [IotaArgument, IotaArgument[]];
       } /**
-     * Publishes a Move package. It takes the package bytes and a list of the package's transitive
-     * dependencies to link against on-chain.
-     */
+       * Publishes a Move package. It takes the package bytes and a list of the package's transitive
+       * dependencies to link against on-chain.
+       */
     | {
           Publish: string[];
       } /** Upgrades a Move package */
     | {
           Upgrade: [string[], string, IotaArgument];
       } /**
-     * `forall T: Vec<T> -> vector<T>` Given n-values of the same type, it constructs a vector. For non
-     * objects or an empty vector, the type tag must be specified.
-     */
+       * `forall T: Vec<T> -> vector<T>` Given n-values of the same type, it constructs a vector. For non
+       * objects or an empty vector, the type tag must be specified.
+       */
     | {
           MakeMoveVec: [string | null, IotaArgument[]];
       };
@@ -1322,9 +1322,9 @@ export type ObjectOwner =
     | {
           AddressOwner: string;
       } /**
-     * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
-     * Address as Address is universal.
-     */
+       * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
+       * Address as Address is universal.
+       */
     | {
           ObjectOwner: string;
       } /** Object is shared, can be used by any address, and is mutable. */
@@ -1760,9 +1760,9 @@ export type TransactionFilterV2 =
     | {
           ChangedObject: string;
       } /**
-     * Query transactions that wrapped or deleted the specified object. Includes transactions that either
-     * created and immediately wrapped the object or unwrapped and immediately deleted it.
-     */
+       * Query transactions that wrapped or deleted the specified object. Includes transactions that either
+       * created and immediately wrapped the object or unwrapped and immediately deleted it.
+       */
     | {
           WrappedOrDeletedObject: string;
       } /** Query by sender address. */

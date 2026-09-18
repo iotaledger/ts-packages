@@ -4,11 +4,10 @@
 
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { format } from 'prettier';
+import { format } from 'oxfmt';
 import ts from 'typescript';
 
-// @ts-expect-error for prettier config declaration file
-import prettierConfig from '../../../prettier.config.js';
+import oxfmtConfig from '../../../.oxfmtrc.json' with { type: 'json' };
 import type {
     OpenRpcMethod,
     OpenRpcParam,
@@ -16,6 +15,8 @@ import type {
     OpenRpcType,
     OpenRpcTypeRef,
 } from './open-rpc.js';
+
+const { $schema, ignorePatterns, overrides, ...formatOptions } = oxfmtConfig;
 
 const packageRoot = path.resolve(import.meta.url.slice(5), '../..');
 const openRpcSpec: OpenRpcSpec = JSON.parse(
@@ -246,10 +247,9 @@ export class FileGenerator {
 
         const result = printer.printList(ts.ListFormat.SourceFileStatements, nodes, sourcefile);
 
-        return `${LICENSE_HEADER}\n\n${await format(result, {
-            ...prettierConfig,
-            parser: 'typescript',
-        })}`;
+        const formatted = await format('generated.ts', result, formatOptions);
+
+        return `${LICENSE_HEADER}\n\n${formatted.code}`;
     }
 }
 
@@ -744,9 +744,7 @@ async function generateUnionType(
 }
 
 async function formatComment(text: string) {
-    const lines = (
-        await format(text, { ...prettierConfig, parser: 'markdown', proseWrap: 'always' })
-    )
+    const lines = (await format('comment.md', text, { ...formatOptions, proseWrap: 'always' })).code
         .trim()
         .split('\n');
 

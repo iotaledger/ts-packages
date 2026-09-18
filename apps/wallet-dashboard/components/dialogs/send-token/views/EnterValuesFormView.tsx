@@ -48,7 +48,7 @@ interface EnterValuesFormProps {
 export function EnterValuesFormView({
     coin,
     activeAddress,
-    onCoinSelect: onCoinSelect,
+    onCoinSelect,
     onNext,
     onClose,
     sendCoinTransactionQuery,
