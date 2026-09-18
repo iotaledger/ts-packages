@@ -1,18 +1,20 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type AuditTrailHandle, type OnChainAuditTrail, type Record } from '@iota/audit-trails/web';
-import { useInfiniteQuery, useQuery, type UseQueryResult } from '@tanstack/react-query';
+import {
+    type AuditTrailHandle,
+    type OnChainAuditTrail,
+    type PaginatedRecord,
+} from '@iota/audit-trails/web';
+import {
+    type InfiniteData,
+    type QueryKey,
+    useInfiniteQuery,
+    useQuery,
+    type UseQueryResult,
+} from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAuditTrailClient } from '~/contexts';
-
-// NOTE: These are placeholder types based on the specification.
-// They will be replaced with the actual types from '@iota/audit-trail'.
-
-type ListPageResponse = {
-    records: Record[];
-    cursor?: bigint;
-};
 
 /**
  * A React hook that resolves an Object ID to its corresponding Audit Trail document on chain.
@@ -56,21 +58,23 @@ export function usePaginatedAuditTrailRecords({
     pageSize,
 }: UsePaginatedAuditTrailRecordsParams) {
     const { data, error, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isLoading } =
-        useInfiniteQuery<ListPageResponse>({
+        useInfiniteQuery<
+            PaginatedRecord,
+            Error,
+            InfiniteData<PaginatedRecord>,
+            QueryKey,
+            bigint | null
+        >({
             queryKey: ['paginatedRecords', objectId, auditTrail, pageSize],
-            queryFn: async ({ pageParam = 0n }) => {
+            queryFn: async ({ pageParam }) => {
                 if (!auditTrail) {
-                    return { records: [], cursor: undefined };
+                    throw new Error('Audit trail is not available');
                 }
 
-                const response = await auditTrail.records().listPage(pageParam as bigint, pageSize);
-
-                // This is a temporary hack because the wasm bindings do not return the correct type.
-                // This should be removed once the bindings are fixed.
-                return response as unknown as ListPageResponse;
+                return auditTrail.records().listPage(pageParam, pageSize);
             },
-            initialPageParam: 0n,
-            getNextPageParam: (lastPage) => lastPage.cursor,
+            initialPageParam: null,
+            getNextPageParam: ({ hasNextPage, nextCursor }) => (hasNextPage ? nextCursor : null),
             enabled: Boolean(auditTrail),
         });
 

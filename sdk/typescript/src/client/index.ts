@@ -20,6 +20,7 @@ export {
     getAllNetworks,
     getNetwork,
     getDefaultNetwork,
+    getRpcUrl,
     getFullnodeUrl,
     getGraphQLUrl,
 } from './network.js';

@@ -38,7 +38,7 @@ import {
 } from './lib/utils/index.ts';
 import { AppsBackendClientProvider } from '@iota/apps-backend-client';
 import { getNetwork } from '@iota/iota-sdk/client';
-import { metaMaskWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { metaMaskWallet, rabbyWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { LEGAL_LINKS } from './lib/constants/routes.constants.ts';
 import { Link } from './components/link/Link.tsx';
 import { initAmplitude } from './shared/analytics';
@@ -63,7 +63,7 @@ const wagmiConfig = getDefaultConfig({
     wallets: [
         {
             groupName: 'Suggested',
-            wallets: [metaMaskWallet, walletConnectWallet],
+            wallets: [metaMaskWallet, rabbyWallet, walletConnectWallet],
         },
     ],
 });

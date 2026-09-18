@@ -20,7 +20,7 @@ import type { Transaction } from '../../transactions/index.js';
  */
 export interface DevInspectTransactionBlockParams {
     sender: string;
-    /** BCS encoded TransactionKind(as opposed to TransactionData, which include gasBudget and gasPrice) */
+    /** BCS encoded TransactionKind(as opposed to Transaction, which include gasBudget and gasPrice) */
     transactionBlock: Transaction | Uint8Array | string;
     /** Gas is not charged, but gas usage is still calculated. Default to use reference gas price */
     gasPrice?: bigint | number | null | undefined;
@@ -45,8 +45,7 @@ export interface DryRunTransactionBlockParams {
  * the transaction locally before returning the client. The local execution makes sure this node is
  * aware of this transaction when client fires subsequent queries. However if the node fails to execute
  * the transaction locally in a timely manner, a bool type in the response is set to false to indicated
- * the case. request_type is default to be `WaitForEffectsCert` unless options.show_events or
- * options.show_effects is true
+ * the case. request_type defaults to `WaitForEffectsCert` when omitted.
  */
 export interface ExecuteTransactionBlockParams {
     /** BCS serialized transaction data bytes without its type tag, as base-64 encoded string. */
@@ -210,11 +209,11 @@ export interface TryMultiGetPastObjectsParams {
     options?: RpcTypes.IotaObjectDataOptions | null | undefined;
     signal?: AbortSignal;
 }
-/** Calls a move view function. */
+/** Calls a Move view function. The function must be declared with the `#[view]` attribute. */
 export interface ViewParams {
     /**
-     * The fully qualified function name `<package_id>::<module_name>::<function_name>`. E.g.
-     * `0x3::iota_system::get_total_iota_supply`.
+     * The fully qualified function name `<package_id>::<module_name>::<function_name>`, where the function
+     * is declared with the `#[view]` attribute. E.g. `0x1234::counter::value`.
      */
     functionName: string;
     typeArgs?: string[] | null | undefined;

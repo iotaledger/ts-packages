@@ -15,6 +15,10 @@ interface KeyValueProps {
      */
     keyText: string;
     /**
+     * An icon shown next to the key text (optional).
+     */
+    keyIcon?: ReactNode;
+    /**
      * The value of the KeyValue.
      */
     value: ReactNode;
@@ -29,7 +33,7 @@ interface KeyValueProps {
     /**
      * The supporting label of the KeyValue (optional).
      */
-    supportingLabel?: string;
+    supportingLabel?: string | ReactNode;
     /**
      * The size of the value (optional).
      */
@@ -59,6 +63,11 @@ interface KeyValueProps {
      */
     isReverse?: boolean;
     /**
+     * Use a receipt-style row with a dotted leader and right-aligned value.
+     * This is opt-in so existing KeyValueInfo layouts remain unchanged.
+     */
+    layout?: 'default' | 'receipt';
+    /**
      * Text shown on value hover.
      */
     valueHoverTitle?: string;
@@ -66,6 +75,7 @@ interface KeyValueProps {
 
 export function KeyValueInfo({
     keyText,
+    keyIcon,
     value,
     tooltipPosition,
     tooltipText,
@@ -77,9 +87,11 @@ export function KeyValueInfo({
     onCopyError,
     fullwidth,
     isReverse = false,
+    layout = 'default',
     valueHoverTitle,
 }: KeyValueProps): React.JSX.Element {
     const flexDirectionClass = isReverse ? 'flex-row-reverse' : 'flex-row';
+    const isReceiptLayout = layout === 'receipt';
     async function handleCopyClick(event: React.MouseEvent<HTMLButtonElement>) {
         if (!navigator.clipboard) {
             return;
@@ -102,32 +114,44 @@ export function KeyValueInfo({
                 'flex w-full items-baseline gap-xs py-xxs font-inter',
                 flexDirectionClass,
                 {
-                    'justify-between': fullwidth,
+                    'flex-wrap justify-between': fullwidth,
                 },
             )}
         >
             <div
                 className={cx('flex shrink-0 flex-row items-center gap-x-0.5', {
-                    'w-1/4': !fullwidth,
+                    'w-1/4': !fullwidth && !isReceiptLayout,
                 })}
             >
-                <span className="key-value-key-text-color text-body-md">{keyText}</span>
+                {keyIcon}
+                <span className="key-value-key-text-color break-normal text-body-md">
+                    {keyText}
+                </span>
                 {tooltipText && (
                     <Tooltip text={tooltipText} position={tooltipPosition}>
                         <Info className="key-supporting-text-color" />
                     </Tooltip>
                 )}
             </div>
+            {isReceiptLayout && !fullwidth && (
+                <span
+                    aria-hidden="true"
+                    className="mb-1 min-w-[0.5rem] flex-1 border-b border-dotted border-iota-neutral-80 opacity-60 dark:border-iota-neutral-20"
+                />
+            )}
             <div
-                className={cx('flex flex-row items-baseline gap-1 break-all', {
-                    'w-3/4': !fullwidth,
+                className={cx('flex min-w-0 flex-row items-baseline gap-1 break-all', {
+                    'w-3/4': !fullwidth && !isReceiptLayout,
+                    'max-w-[60%] justify-end text-right': !fullwidth && isReceiptLayout,
+                    'flex-wrap': fullwidth,
+                    'justify-end text-right': fullwidth && isReceiptLayout,
                     truncate: isTruncated,
                 })}
             >
                 <span
                     title={valueHoverTitle}
                     className={cx(
-                        'key-value-hover-text-color',
+                        'key-value-hover-text-color min-w-0',
                         size === ValueSize.Medium ? 'text-body-lg' : 'text-body-md',
                         { truncate: isTruncated },
                     )}

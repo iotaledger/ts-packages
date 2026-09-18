@@ -3,7 +3,7 @@
 
 import { KeyValueInfo, TooltipPosition } from '@iota/apps-ui-kit';
 import { useCopyToClipboard } from '@iota/core';
-import { isString, onCopySuccess } from '~/lib';
+import { isString } from '~/lib';
 
 /**
  * Defines the structure of a single metadata item.
@@ -52,7 +52,7 @@ interface MetaItemKVProps {
 }
 
 function MetaItemKV({ item }: MetaItemKVProps) {
-    const copyToClipboard = useCopyToClipboard(onCopySuccess);
+    const copyToClipboard = useCopyToClipboard();
 
     return (
         <>

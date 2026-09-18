@@ -38,7 +38,7 @@ export function ImportPassphrasePage() {
 
     const BUTTON_ICON_CLASSES = 'w-5 h-5 text-iota-neutral-10 dark:text-iota-neutral-92';
     return (
-        <PageTemplate title="Import Mnemonic" isTitleCentered showBackButton>
+        <PageTemplate title="Import Mnemonic" isTitleCentered>
             <div className="flex h-full flex-col gap-md">
                 <div className="flex w-full flex-col items-end">
                     <Button

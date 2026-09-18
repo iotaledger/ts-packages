@@ -10,10 +10,11 @@ import { generateObjectListColumns } from '~/lib/ui/utils/generateObjectListColu
 interface ListViewProps {
     data?: IotaObjectResponse[];
     loading?: boolean;
+    hideAssetColumn?: boolean;
 }
 
-export function ListView({ data, loading }: ListViewProps): JSX.Element {
-    const tableColumns = generateObjectListColumns();
+export function ListView({ data, loading, hideAssetColumn }: ListViewProps): JSX.Element {
+    const tableColumns = generateObjectListColumns({ hideAssetColumn });
 
     return (
         <div className="h-full w-full">

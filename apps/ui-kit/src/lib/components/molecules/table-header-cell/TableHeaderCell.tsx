@@ -60,6 +60,8 @@ export interface TableHeaderCellProps extends React.AriaAttributes {
 export function TableHeaderCell({
     label,
     columnKey,
+    actionLeft,
+    actionRight,
     hasSort,
     hasCheckbox,
     isChecked,
@@ -136,15 +138,19 @@ export function TableHeaderCell({
                         onCheckedChange={onCheckboxChange}
                     />
                 ) : (
-                    <span
-                        className={cx({
-                            'text-left': !isContentCentered,
-                        })}
-                    >
-                        {label}
-                    </span>
+                    <>
+                        {actionLeft}
+                        <span
+                            className={cx({
+                                'text-left': !isContentCentered,
+                            })}
+                        >
+                            {label}
+                        </span>
+                    </>
                 )}
                 {sortElement}
+                {actionRight}
             </div>
         </th>
     );

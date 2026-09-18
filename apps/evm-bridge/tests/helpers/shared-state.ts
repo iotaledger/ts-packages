@@ -1,3 +1,6 @@
+// Copyright (c) 2026 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import { STATE_FILE } from './paths';
 import { TestWalletData } from '../utils/utils';

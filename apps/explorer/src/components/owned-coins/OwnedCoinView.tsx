@@ -2,22 +2,14 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFormatCoin, ImageIconSize, CoinIcon } from '@iota/core';
-import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { CoinItem, useBalanceInUSD } from '@iota/core';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { type Network } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { type CoinBalanceVerified, type SortField, type SortOrder } from './OwnedCoins';
 import { CoinsPanel } from './OwnedCoinsPanel';
-import {
-    Card,
-    CardAction,
-    CardActionType,
-    CardBody,
-    CardImage,
-    Divider,
-    ImageType,
-} from '@iota/apps-ui-kit';
-import { ArrowUp, RecognizedBadge } from '@iota/apps-ui-icons';
+import { ArrowUp } from '@iota/apps-ui-icons';
 
 type OwnedCoinViewProps = {
     coin: CoinBalanceVerified;
@@ -27,57 +19,52 @@ type OwnedCoinViewProps = {
 };
 
 export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewProps): JSX.Element {
-    const isIotaCoin = coin.coinType === IOTA_TYPE_ARG;
-    const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(isIotaCoin);
-    const [formattedTotalBalance, symbol] = useFormatCoin({
-        balance: coin.totalBalance,
-        coinType: coin.coinType,
-    });
+    const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(false);
+    const { network } = useIotaClientContext();
+    const usd = useBalanceInUSD(coin.coinType, coin.totalBalance, network as Network);
 
-    const CARD_BODY: React.ComponentProps<typeof CardBody> = {
-        title: symbol,
-        subtitle: `${formattedTotalBalance} ${symbol}`,
-        icon: coin.isRecognized && <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />,
-    };
     return (
-        <div
-            data-testid="ownedcoinlabel"
-            className={clsx(
-                'rounded-xl border',
-                areCoinDetailsOpen ? 'border-shader-neutral-light-8' : 'border-transparent',
-            )}
-        >
-            <Card onClick={() => setAreCoinDetailsOpen((prev) => !prev)}>
-                <CardImage type={ImageType.Placeholder}>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-shader-neutral-light-8 text-iota-neutral-10">
-                        <CoinIcon coinType={coin.coinType} size={ImageIconSize.Small} />
-                    </div>
-                </CardImage>
-                <CardBody {...CARD_BODY} isTextTruncated />
-                <CardAction
-                    type={CardActionType.Button}
-                    onClick={() => setAreCoinDetailsOpen((prev) => !prev)}
-                    title={`${coin.coinObjectCount} Object` + (coin.coinObjectCount > 1 ? 's' : '')}
-                    icon={<ArrowUp className={clsx({ 'rotate-180': !areCoinDetailsOpen })} />}
-                    iconAfterText
+        <div data-testid="ownedcoinlabel" className="flex flex-col gap-y-xs py-xxs">
+            <button
+                type="button"
+                aria-expanded={areCoinDetailsOpen}
+                onClick={() => setAreCoinDetailsOpen((prev) => !prev)}
+                className={clsx(
+                    'flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
+                )}
+            >
+                <CoinItem
+                    coinType={coin.coinType}
+                    balance={BigInt(coin.totalBalance)}
+                    usd={usd ?? undefined}
                 />
-            </Card>
+
+                <div
+                    className={clsx(
+                        'flex shrink-0 items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60',
+                    )}
+                >
+                    <span className="sr-only">
+                        {coin.coinObjectCount} Object{coin.coinObjectCount > 1 ? 's' : ''}
+                    </span>
+                    <span aria-hidden="true" className="shrink-0">
+                        {coin.coinObjectCount} Object{coin.coinObjectCount > 1 ? 's' : ''}
+                    </span>
+                    <ArrowUp
+                        aria-hidden="true"
+                        className={clsx('h-4 w-4 shrink-0', { 'rotate-180': !areCoinDetailsOpen })}
+                    />
+                </div>
+            </button>
             {areCoinDetailsOpen && (
-                <>
-                    <div className="flex justify-center">
-                        <div className="w-9/12">
-                            <Divider />
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-xs px-md--rs pb-md--rs pt-sm--rs">
-                        <CoinsPanel
-                            id={id}
-                            coinType={coin.coinType}
-                            sortField={sortField}
-                            sortOrder={sortOrder}
-                        />
-                    </div>
-                </>
+                <div className="rounded-lg bg-iota-neutral-96 p-xxs sm:p-sm dark:bg-iota-neutral-10">
+                    <CoinsPanel
+                        id={id}
+                        coinType={coin.coinType}
+                        sortField={sortField}
+                        sortOrder={sortOrder}
+                    />
+                </div>
             )}
         </div>
     );

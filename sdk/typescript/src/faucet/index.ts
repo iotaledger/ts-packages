@@ -8,5 +8,6 @@ export {
     requestIotaFromFaucet,
     getFaucetRequestStatus,
     getFaucetHost,
+    getFaucetWebsiteUrl,
     FaucetRateLimitError,
 } from './faucet.js';

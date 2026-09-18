@@ -24,6 +24,7 @@ import {
     getTransactionAmountForTimelocked,
     formatDate,
     isMigrationTransaction,
+    BALANCE_MASK,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionDetailsLayout } from '../dialogs/transaction/TransactionDetailsLayout';
@@ -33,9 +34,10 @@ import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 interface TransactionTileProps {
     transaction: IotaTransactionBlockResponse;
+    hideBalance?: boolean;
 }
 
-export function TransactionTile({ transaction }: TransactionTileProps): JSX.Element {
+export function TransactionTile({ transaction, hideBalance }: TransactionTileProps): JSX.Element {
     const account = useCurrentAccount();
     const address = account?.address;
     const [open, setOpen] = useState(false);
@@ -119,7 +121,9 @@ export function TransactionTile({ transaction }: TransactionTileProps): JSX.Elem
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
-                    title={txnFailed ? '--' : `${formatAmount} ${symbol}`}
+                    title={
+                        txnFailed ? '--' : `${hideBalance ? BALANCE_MASK : formatAmount} ${symbol}`
+                    }
                 />
             </Card>
             <Dialog open={open} onOpenChange={setOpen}>

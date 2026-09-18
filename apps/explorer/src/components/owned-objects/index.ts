@@ -3,5 +3,4 @@
 
 export * from './ListView';
 export * from './OwnedObjects';
-export * from './SmallThumbnailsView';
 export * from './ThumbnailsView';

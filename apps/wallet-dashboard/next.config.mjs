@@ -4,8 +4,18 @@
 import { SENTRY_ORG_NAME, SENTRY_PROJECT_NAME } from './sentry.common.config.mjs';
 import { withSentryConfig } from '@sentry/nextjs';
 import { execSync } from 'child_process';
-const NEXT_PUBLIC_DASHBOARD_REV = execSync('git rev-parse HEAD').toString().trim().toString();
+let NEXT_PUBLIC_DASHBOARD_REV = 'development';
 const NEXT_PUBLIC_BUILD_ENV = process.env.BUILD_ENV;
+
+try {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) {
+        NEXT_PUBLIC_DASHBOARD_REV = process.env.VERCEL_GIT_COMMIT_SHA;
+    } else {
+        NEXT_PUBLIC_DASHBOARD_REV = execSync('git rev-parse HEAD').toString().trim();
+    }
+} catch (error) {
+    console.warn('Could not get git revision, using default');
+}
 const APPS_BACKEND = process.env.APPS_BACKEND;
 
 /** @type {import('next').NextConfig} */

@@ -4,7 +4,7 @@
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
 import { PageHeader, PageLayout } from '~/components';
-import { onCopySuccess } from '~/lib';
+import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
 import { useNotarizationPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
 import {
@@ -44,6 +44,22 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
+    if (objectResult?.isHistoryUnavailable) {
+        return (
+            <PageLayout
+                content={
+                    <InfoBox
+                        title="Notarization No Longer Available"
+                        supportingText={getHistoryUnavailableMessage(`Notarization ${objectId}`)}
+                        icon={<Warning />}
+                        type={InfoBoxType.Warning}
+                        style={InfoBoxStyle.Elevated}
+                    />
+                }
+            />
+        );
+    }
+
     if (notarizationDocument == null) {
         return (
             <PageLayout
@@ -60,7 +76,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (objectResult == null) {
+    if (objectResult == null || objectResult.data == null) {
         return (
             <PageLayout
                 content={

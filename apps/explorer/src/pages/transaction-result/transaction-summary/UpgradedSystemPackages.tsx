@@ -19,7 +19,7 @@ export function UpgradedSystemPackages({ data }: { data: OwnedObjectRef[] }): JS
     if (!data?.length) return null;
 
     return (
-        <CollapsibleCard title="Changes">
+        <CollapsibleCard title="Upgraded System Packages">
             <div className="px-md--rs pb-lg pt-xs">
                 <Accordion>
                     <AccordionHeader

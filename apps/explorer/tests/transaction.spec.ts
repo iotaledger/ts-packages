@@ -27,9 +27,13 @@ test('displays inputs', async ({ page }) => {
 
     const programmableTxn = tx.transaction!.data.transaction as ProgrammableTransaction;
     const actualInputsCount = programmableTxn.inputs.length;
-    const inputTextRender = actualInputsCount > 1 ? 'Inputs' : 'Input';
 
-    await expect(page.getByText(`${actualInputsCount} ${inputTextRender}`)).toBeVisible();
+    await expect(
+        page.getByTestId('inputs-card').getByRole('heading', { name: 'Inputs' }),
+    ).toBeVisible();
+    await expect(page.getByTestId('inputs-card').getByTestId('inputs-card-content')).toHaveCount(
+        actualInputsCount,
+    );
 });
 
 test('displays transactions card', async ({ page }) => {
@@ -43,9 +47,11 @@ test('displays transactions card', async ({ page }) => {
 
     const programmableTxn = tx.transaction!.data.transaction as ProgrammableTransaction;
     const actualTransactionsCount = programmableTxn.transactions.length;
-    const transactionTextRender = actualTransactionsCount > 1 ? 'Transactions' : 'Transaction';
 
     await expect(
-        page.getByText(`${actualTransactionsCount} ${transactionTextRender}`),
+        page.getByTestId('transactions-card').getByRole('heading', { name: 'Transactions' }),
     ).toBeVisible();
+    await expect(
+        page.getByTestId('transactions-card').getByTestId('transactions-card-content'),
+    ).toHaveCount(actualTransactionsCount);
 });

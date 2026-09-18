@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type CoinBalance } from '@iota/iota-sdk/client';
+import { MILLISECONDS_PER_SECOND } from '@iota/core';
 
 export interface AddressFromFinder {
     publicKey: string;
@@ -39,4 +40,16 @@ export class AccountTooManyAttemptsError extends Error {
     static is(error: Error) {
         return error.message === 'too-many-attempts';
     }
+}
+
+export function getTooManyAttemptsMessage(remainingTimeMs: number) {
+    const remainingSeconds = Math.ceil(remainingTimeMs / MILLISECONDS_PER_SECOND);
+    return `Too many failed attempts. Please try again in ${remainingSeconds} ${remainingSeconds === 1 ? 'second' : 'seconds'}.`;
+}
+
+export function getIncorrectPasswordMessage(
+    remainingAttempts: number,
+    reason = 'Incorrect password',
+) {
+    return `${reason}. You have ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} left.`;
 }

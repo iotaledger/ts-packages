@@ -105,7 +105,7 @@ export function AppsPlayGround() {
                                 permissionID={linkToPermissionID.get(
                                     prepareLinkToCompare(app.link),
                                 )}
-                                displayType="card"
+                                displayType="full"
                                 openAppSite
                             />
                         ))}

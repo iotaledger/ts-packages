@@ -27,7 +27,6 @@ export function ImportPasskeyPage() {
         <PageTemplate
             title="Import Passkey Account"
             isTitleCentered
-            showBackButton
             onBack={() => navigate('/accounts/import-existing')}
         >
             {accountID ? (

@@ -22,7 +22,8 @@
             "@/*": ["./src/*"],
             "@components/*": ["./src/components/*"],
             "@hooks/*": ["./src/hooks/*"],
-            "@legal/*": ["./src/legal/*"]
+            "@legal/*": ["./src/legal/*"],
+            "@iota/core/api/*": ["./../core/src/api/*"]
         }
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -69,7 +69,6 @@ import {
     PaginateTransactionBlockListsDocument,
     QueryEventsDocument,
     QueryTransactionBlocksDocument,
-    TransactionBlockKindInput,
     TryGetPastObjectDocument,
     ViewDocument,
 } from './generated/queries.js';
@@ -84,7 +83,7 @@ import {
 import { mapGraphQLMoveObjectToRpcObject, mapGraphQLObjectToRpcObject } from './mappers/object.js';
 import { mapGraphQLStakeToRpcStake } from './mappers/stakes.js';
 import { mapGraphQLTransactionBlockToRpcTransactionBlock } from './mappers/transaction-block.js';
-import { isNumericString, toShortTypeString } from './mappers/util.js';
+import { isNumericString, toGraphQLTransactionKind, toShortTypeString } from './mappers/util.js';
 import { mapGraphQlValidatorToRpcValidator } from './mappers/validator.js';
 import type { IotaClientGraphQLTransport } from './transport.js';
 
@@ -645,31 +644,10 @@ export const RPC_METHODS: {
             }
         }
 
-        // Map transaction kind filter from jsonRPC to graphql
-        let graphqlTransactionKindFilter: TransactionBlockKindInput | undefined;
-        if ('TransactionKind' in filter) {
-            switch (filter.TransactionKind as IotaTransactionKind) {
-                case 'ProgrammableTransaction':
-                    graphqlTransactionKindFilter = TransactionBlockKindInput.ProgrammableTx;
-                    break;
-                case 'Genesis':
-                    graphqlTransactionKindFilter = TransactionBlockKindInput.Genesis;
-                    break;
-                case 'ConsensusCommitPrologueV1':
-                    graphqlTransactionKindFilter =
-                        TransactionBlockKindInput.ConsensusCommitPrologueV1;
-                    break;
-                case 'RandomnessStateUpdate':
-                    graphqlTransactionKindFilter = TransactionBlockKindInput.RandomnessStateUpdate;
-                    break;
-                case 'EndOfEpochTransaction':
-                    graphqlTransactionKindFilter = TransactionBlockKindInput.EndOfEpochTx;
-                    break;
-                case 'SystemTransaction':
-                    graphqlTransactionKindFilter = TransactionBlockKindInput.SystemTx;
-                    break;
-            }
-        }
+        const graphqlTransactionKindFilter =
+            'TransactionKind' in filter
+                ? toGraphQLTransactionKind(filter.TransactionKind as IotaTransactionKind)
+                : undefined;
 
         const { nodes: transactionBlocks, pageInfo } = await transport.graphqlQuery(
             {
@@ -696,7 +674,7 @@ export const RPC_METHODS: {
                               inputObject: 'InputObject' in filter ? filter.InputObject : undefined,
                               changedObject:
                                   'ChangedObject' in filter ? filter.ChangedObject : undefined,
-                              signAddress: 'FromAddress' in filter ? filter.FromAddress : undefined,
+                              sentAddress: 'FromAddress' in filter ? filter.FromAddress : undefined,
                               recvAddress: 'ToAddress' in filter ? filter.ToAddress : undefined,
                               kind: graphqlTransactionKindFilter,
                           }

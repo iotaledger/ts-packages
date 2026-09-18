@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { useIotaClientQueries } from '../../src/hooks/useIotaClientQueries.js';
@@ -21,7 +21,7 @@ const MOCK_QUERY_TRANSACTION_BLOCK_RESULT_DATA = {
 };
 
 describe('useIotaClientQueries', () => {
-    const iotaClient = new IotaClient({ url: getFullnodeUrl('mainnet') });
+    const iotaClient = new IotaClient({ url: getRpcUrl('mainnet') });
     const wrapper = createWalletProviderContextWrapper({}, iotaClient);
     test('should fetch data', async () => {
         const getAllBalances = vi.spyOn(iotaClient, 'getAllBalances');
