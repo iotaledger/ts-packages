@@ -21,4 +21,5 @@ export enum Feature {
     ValidatorAddressAlias = 'validator-address-alias',
     ExplorerTFIdentity = 'explorer-trust-framework-identity',
     ExplorerTFNotarization = 'explorer-trust-framework-notarization',
+    ExplorerTFAuditTrail = 'explorer-trust-framework-audittrail',
 }
