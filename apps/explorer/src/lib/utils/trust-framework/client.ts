@@ -135,7 +135,7 @@ export const createAuditTrailClientReadOnly = async (
     }
 
     throw new Error(
-        'Failed to create a AuditTrailClientReadOnly; declare IOTA_AUDIT_TRAIL_PKG_ID  and IOTA_TF_COMPONENTS_PKG_ID environment if running on a custom network.',
+        'Failed to create a AuditTrailClientReadOnly. Declare IOTA_AUDIT_TRAIL_PKG_ID and IOTA_TF_COMPONENTS_PKG_ID environment variables if running on a custom network.',
     );
 };
 
