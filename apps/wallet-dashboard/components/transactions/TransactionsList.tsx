@@ -9,11 +9,13 @@ import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 interface TransactionsListProps {
     heightClassName?: string;
     displayImage?: boolean;
+    hideBalance?: boolean;
 }
 
 export function TransactionsList({
     heightClassName,
     displayImage,
+    hideBalance,
 }: TransactionsListProps): JSX.Element {
     const currentAccount = useCurrentAccount();
     const { allTransactions, fetchNextPage, hasNextPage, isFetchingNextPage, error } =
@@ -24,7 +26,7 @@ export function TransactionsList({
     }
 
     const virtualItem = (transaction: IotaTransactionBlockResponse): JSX.Element => {
-        return <TransactionTile transaction={transaction} />;
+        return <TransactionTile transaction={transaction} hideBalance={hideBalance} />;
     };
 
     if (!allTransactions || allTransactions.length === 0) {

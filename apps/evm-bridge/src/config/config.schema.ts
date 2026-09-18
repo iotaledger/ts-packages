@@ -11,6 +11,7 @@ export const envSchema = z.record(
             networkName: z.string(),
             rpcUrl: z.string().url(),
             faucetUrl: z.string().url().optional(),
+            faucetWebsiteUrl: z.string().url().optional(),
             chainId: z.string(),
             packageId: z.string(),
         }),

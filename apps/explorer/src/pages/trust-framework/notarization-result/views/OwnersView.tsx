@@ -27,6 +27,7 @@ import {
     ObjectLink,
     TransactionLink,
 } from '~/components';
+import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import {
     useGetNotarizationOwnerHistory,
     type OwnerEntry,
@@ -42,14 +43,13 @@ interface OwnersViewProps {
 }
 
 export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
-    const {
-        data: owners,
-        isPending,
-        isError,
-        hasNextPage,
-        isFetchingNextPage,
-        fetchNextPage,
-    } = useGetNotarizationOwnerHistory(objectId);
+    const { data, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
+        useGetNotarizationOwnerHistory(objectId);
+
+    const owners = data?.owners;
+    // Show the retention notice whenever we can't prove the full history is
+    // available: no data yet, or the fetched pages never reached the creation tx.
+    const showRetentionNotice = !hasNextPage && !(owners?.length && data?.hasCreationEntry);
 
     return (
         <ErrorBoundary>
@@ -71,6 +71,15 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
                             supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
                             icon={<Warning />}
                             type={InfoBoxType.Error}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )}
+                    {owners && showRetentionNotice && (
+                        <InfoBox
+                            title={RETENTION_BANNER_TITLE}
+                            supportingText={RETENTION_BANNER_TEXT}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
                             style={InfoBoxStyle.Elevated}
                         />
                     )}

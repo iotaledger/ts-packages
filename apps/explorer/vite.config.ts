@@ -10,7 +10,20 @@ import svgr from 'vite-plugin-svgr';
 import { configDefaults } from 'vitest/config';
 
 process.env.VITE_VERCEL_ENV = process.env.VERCEL_ENV || 'development';
-const EXPLORER_REV = execSync('git rev-parse HEAD').toString().trim().toString();
+
+function resolveExplorerRev(): string {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) {
+        return process.env.VERCEL_GIT_COMMIT_SHA;
+    }
+
+    try {
+        return execSync('git rev-parse HEAD').toString().trim();
+    } catch {
+        return 'unknown';
+    }
+}
+
+const EXPLORER_REV = resolveExplorerRev();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {

@@ -30,6 +30,13 @@ export interface AccordionHeaderProps {
      * Flag for hiding border.
      */
     hideBorder?: boolean;
+
+    /**
+     * Disable the header state layer while an interactive child is active.
+     * This keeps the parent hover treatment from competing with child links
+     * and controls.
+     */
+    disableStateLayer?: boolean;
 }
 
 interface AccordionContentProps {
@@ -44,6 +51,7 @@ export function AccordionHeader({
     children,
     isExpanded,
     hideArrow,
+    disableStateLayer = false,
 }: PropsWithChildren<AccordionHeaderProps>) {
     return (
         <div
@@ -51,7 +59,8 @@ export function AccordionHeader({
             role="button"
             aria-expanded={isExpanded}
             className={cx(
-                'state-layer relative flex cursor-pointer items-center justify-between gap-md overflow-hidden rounded-xl py-sm--rs',
+                'relative flex cursor-pointer items-center justify-between gap-md overflow-hidden rounded-xl py-sm--rs',
+                !disableStateLayer && 'state-layer',
                 {
                     'pr-md--rs': !hideArrow,
                 },

@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { createContext, ReactNode, useContext } from 'react';
 
 export type Network = 'mainnet' | 'testnet' | 'devnet' | 'localnet';
@@ -23,7 +23,7 @@ export const DryRunProvider = ({
 }) => {
     return (
         <DryRunContext.Provider
-            value={{ network, client: new IotaClient({ url: getFullnodeUrl(network) }) }}
+            value={{ network, client: new IotaClient({ url: getRpcUrl(network) }) }}
         >
             {children}
         </DryRunContext.Provider>

@@ -8,7 +8,7 @@ import '@fontsource-variable/inter';
 import '@fontsource-variable/red-hat-mono';
 
 import { IotaClientProvider, WalletProvider } from '@iota/dapp-kit';
-import { getFullnodeUrl } from '@iota/iota-sdk/client';
+import { getRpcUrl } from '@iota/iota-sdk/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -23,9 +23,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             <IotaClientProvider
                 defaultNetwork="iota:mainnet"
                 networks={{
-                    'iota:testnet': { url: getFullnodeUrl('testnet') },
-                    'iota:mainnet': { url: getFullnodeUrl('mainnet') },
-                    'iota:devnet': { url: getFullnodeUrl('devnet') },
+                    'iota:testnet': { url: getRpcUrl('testnet') },
+                    'iota:mainnet': { url: getRpcUrl('mainnet') },
+                    'iota:devnet': { url: getRpcUrl('devnet') },
                 }}
             >
                 <WalletProvider>

@@ -4,8 +4,34 @@
 
 import colors from 'tailwindcss/colors';
 import { type Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 // Note: exception for the tailwind preset import
 import uiKitResponsivePreset from '../../apps/ui-kit/src/lib/tailwind/responsive.presets';
+import { pxToRem } from '../../apps/ui-kit/src/lib/tailwind/helpers';
+
+const CONTAINER_BREAKPOINTS = {
+    tablet: 1024,
+    desktop: 1280,
+    ultrawide: 1920,
+};
+
+const CONTAINER_MAX_WIDTH = 1600;
+
+const fluidContainer = {
+    width: '100%',
+    maxWidth: pxToRem(CONTAINER_MAX_WIDTH),
+    marginInline: 'auto',
+    paddingInline: pxToRem(20),
+    [`@media (min-width: ${CONTAINER_BREAKPOINTS.tablet}px)`]: {
+        paddingInline: pxToRem(32),
+    },
+    [`@media (min-width: ${CONTAINER_BREAKPOINTS.desktop}px)`]: {
+        paddingInline: pxToRem(48),
+    },
+    [`@media (min-width: ${CONTAINER_BREAKPOINTS.ultrawide}px)`]: {
+        paddingInline: pxToRem(64),
+    },
+};
 
 export default {
     presets: [uiKitResponsivePreset],
@@ -15,6 +41,9 @@ export default {
         './../core/src/components/**/*.{ts,jsx,tsx}',
     ],
     darkMode: 'selector',
+    corePlugins: {
+        container: false,
+    },
     theme: {
         extend: {
             colors: {
@@ -29,4 +58,9 @@ export default {
             },
         },
     },
+    plugins: [
+        plugin(({ addComponents }) => {
+            addComponents({ '.container': fluidContainer });
+        }),
+    ],
 } satisfies Partial<Config>;
