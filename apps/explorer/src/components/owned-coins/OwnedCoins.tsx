@@ -6,9 +6,12 @@ import { getCoinSymbol, useGetAllBalances, useRecognizedPackages } from '@iota/c
 import { type CoinBalance } from '@iota/iota-sdk/client';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { FilterList, Warning, SortByDown, SortByUp, SortByDefault } from '@iota/apps-ui-icons';
+import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { OwnedCoinView } from './OwnedCoinView';
 import {
+    Badge,
+    BadgeType,
     Button,
     ButtonType,
     Dropdown,
@@ -21,6 +24,7 @@ import {
     Select,
     SelectSize,
     Title,
+    Tooltip,
 } from '@iota/apps-ui-kit';
 import { Pagination } from '../ui';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
@@ -142,12 +146,17 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
 
     const hasCoinsBalance = balances.allBalances.length > 0;
     const displayedBalances = useMemo(() => balances[filterValue], [balances, filterValue]);
-    const coinBalanceHeader =
-        `${displayedBalances.length ?? 0} Coin` + (displayedBalances.length !== 1 ? 's' : '');
+    const coinCountBadge = (
+        <span className="ml-sm">
+            <Tooltip text="Total coins owned">
+                <Badge type={BadgeType.Neutral} label={String(displayedBalances.length ?? 0)} />
+            </Tooltip>
+        </span>
+    );
 
     if (isError) {
         return (
-            <div className="p-sm--rs">
+            <div className="py-sm--rs">
                 <InfoBox
                     title="Error"
                     supportingText="Failed to load Coins"
@@ -169,12 +178,13 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                 </div>
             ) : (
                 <div className="flex h-full flex-col">
-                    <div className="flex flex-col justify-center sm:min-h-[72px]">
+                    <div className="-mx-md--rs flex flex-col justify-center sm:min-h-[72px] [&_h4]:whitespace-nowrap">
                         <Title
-                            title={coinBalanceHeader}
+                            title="Coins"
+                            supportingElement={coinCountBadge}
                             trailingElement={
                                 hasCoinsBalance && (
-                                    <div className="flex items-center gap-xs">
+                                    <div className="flex items-center gap-xs whitespace-nowrap">
                                         <SortDropdown
                                             sortField={sortField}
                                             sortOrder={sortOrder}
@@ -188,11 +198,12 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                     </div>
                     {hasCoinsBalance ? (
                         <>
-                            <div className="relative overflow-y-auto p-sm--rs pt-0">
+                            <div className="relative overflow-y-auto pb-sm--rs">
                                 {filterValue === CoinFilter.Unrecognized && (
                                     <div className="sticky top-0 z-[1] bg-iota-neutral-100 p-sm dark:bg-iota-neutral-10">
                                         <InfoBox
                                             icon={<Warning />}
+                                            title="Unrecognized Coins"
                                             supportingText="These coins have not been recognized by the IOTA Foundation."
                                             type={InfoBoxType.Warning}
                                             style={InfoBoxStyle.Default}
@@ -208,7 +219,7 @@ export function OwnedCoins({ id }: OwnerCoinsProps): JSX.Element {
                             </div>
 
                             {displayedBalances.length > limit && (
-                                <div className="flex flex-row flex-wrap items-center justify-between gap-xs px-sm--rs py-sm--rs">
+                                <div className="flex flex-row flex-wrap items-center justify-between gap-xs py-sm--rs">
                                     <Pagination
                                         hasFirst={currentSlice !== 1}
                                         onNext={() => setCurrentSlice(currentSlice + 1)}
@@ -412,7 +423,13 @@ interface CoinListProps {
 
 function CoinList({ coins, id, sortField, sortOrder }: CoinListProps) {
     return (
-        <div className="flex max-h-[400px] w-full flex-col gap-xxs md:max-h-[650px]">
+        <div
+            className={clsx(
+                'flex max-h-[400px] w-full flex-col divide-y divide-shader-neutral-light-8 md:max-h-[650px] dark:divide-shader-neutral-dark-8',
+                coins.length === 1 &&
+                    'border-b border-shader-neutral-light-8 dark:border-shader-neutral-dark-8',
+            )}
+        >
             {coins.map((coin, index) => (
                 <OwnedCoinView
                     key={`${coin.coinType}-${index}`}

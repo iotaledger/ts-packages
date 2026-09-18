@@ -2,6 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { useGetObject } from '@iota/core';
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
 import { SyntaxHighlighter } from '~/components';
 import { AddressLink, Link, ObjectLink } from '~/components/ui';
@@ -11,16 +12,17 @@ interface FieldItemProps {
     value: string | number | object | boolean;
     type: IotaMoveNormalizedType | '';
     objectType: string;
+    name?: string;
     truncate?: boolean;
 }
 
 const TYPE_ADDRESS = 'Address';
 const TYPE_URL = '0x2::url::Url';
-const TYPE_OBJECT_ID = ['0x2::object::UID', '0x2::object::ID'];
 
 export function FieldItem({
     value,
     type,
+    name,
     truncate = false,
     objectType,
 }: FieldItemProps): JSX.Element {
@@ -43,14 +45,19 @@ export function FieldItem({
         );
     }
 
-    if (normalizedType === 'string' && TYPE_OBJECT_ID.includes(normalizedType)) {
+    const isNameId = name
+        ?.toLowerCase()
+        .split(/[_\s-]/)
+        .some((part) => part === 'id' || part === 'uid');
+
+    const objectId = isNameId && typeof value === 'string' ? value : null;
+
+    const { data: objectData } = useGetObject(objectId);
+
+    if (objectId && objectData?.data) {
         return (
             <div className="break-all">
-                <ObjectLink
-                    objectId={value.toString()}
-                    noTruncate={!truncate}
-                    copyText={value.toString()}
-                />
+                <ObjectLink objectId={objectId} noTruncate={!truncate} copyText={objectId} />
             </div>
         );
     }

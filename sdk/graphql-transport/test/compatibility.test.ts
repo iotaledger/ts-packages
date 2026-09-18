@@ -5,7 +5,7 @@
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import {
-    getFullnodeUrl,
+    getRpcUrl,
     IotaClient,
     IotaObjectData,
     IotaTransactionBlockResponse,
@@ -66,8 +66,11 @@ describe('GraphQL IotaClient compatibility', () => {
     test('getRpcApiVersion', async () => {
         const version = await graphQLClient!.getRpcApiVersion();
 
-        // testing-no-sha is used for testing scenarios where we do not know the SHA
-        expect(version?.match(/^\d+.\d+.\d+-(testing-no-sha|[a-z0-9]{40})$/)).not.toBeNull();
+        // testing-no-sha is used for testing scenarios where we do not know the SHA.
+        // Builds cut from develop carry a pre-release tag before the sha, as in 1.31.0-alpha-be9e8ce950f8.
+        expect(
+            version?.match(/^\d+.\d+.\d+(-[a-z]+)?-(testing-no-sha|[a-z0-9]{7,40})$/),
+        ).not.toBeNull();
     });
 
     test('getCoins', async () => {
@@ -293,7 +296,7 @@ describe('GraphQL IotaClient compatibility', () => {
             data: [{ coinObjectId: id, version }],
         } = await toolbox.getGasObjectsOwnedByAddress();
         const fullNodeClient = new IotaClient({
-            url: getFullnodeUrl('localnet'),
+            url: getRpcUrl('localnet'),
         });
 
         const rpcObject = await fullNodeClient.tryGetPastObject({

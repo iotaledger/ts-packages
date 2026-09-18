@@ -39,12 +39,12 @@ cryptographic operations.
 import Transport from '@ledgerhq/hw-transport-node-hid';
 import IotaLedgerClient from '@iota/ledgerjs-hw-app-iota';
 import { LedgerSigner } from '@iota/signers/ledger';
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { Transaction } from '@iota/iota-sdk/transactions';
 
 const transport = await Transport.open(undefined);
 const ledgerClient = new IotaLedgerClient(transport);
-const iotaClient = new IotaClient({ url: getFullnodeUrl('testnet') });
+const iotaClient = new IotaClient({ url: getRpcUrl('testnet') });
 
 const signer = await LedgerSigner.fromDerivationPath(
 	"m/44'/4218'/0'/0'/0'",

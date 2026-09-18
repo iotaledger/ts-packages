@@ -1,0 +1,50 @@
+name: Check Affected Package
+description: Reports whether a workspace package or any of its dependencies changed in the pushed commits
+inputs:
+  package:
+    description: Workspace package name, as declared in its package.json
+    required: true
+outputs:
+  affected:
+    description: "true when the package or one of its dependencies changed"
+    value: ${{ steps.query.outputs.affected }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      with:
+        fetch-depth: 0
+    - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+    - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      with:
+        node-version: "24"
+        cache: "pnpm"
+    - id: query
+      shell: bash
+      env:
+        TURBO_DAEMON: false
+        PUSH_BASE_SHA: ${{ github.event.before }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${PUSH_BASE_SHA:-}" ] || ! git merge-base --is-ancestor "$PUSH_BASE_SHA" HEAD 2>/dev/null; then
+          echo "No trustworthy diff base (before=${PUSH_BASE_SHA:-none}), treating as affected"
+          echo "affected=true" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+
+        TURBO_VERSION="$(node -p "require('./package.json').devDependencies.turbo.replace(/[^0-9.]/g, '')")"
+
+        STATUS=0
+        pnpm dlx "turbo@${TURBO_VERSION}" query affected \
+          --packages "${{ inputs.package }}" --base="$PUSH_BASE_SHA" --head=HEAD --exit-code || STATUS=$?
+
+        # turbo exits 1 when the package is affected, 0 when it is not and 2 on failure
+        case "$STATUS" in
+          1) AFFECTED=true ;;
+          0) AFFECTED=false ;;
+          *) echo "turbo query failed with $STATUS, treating as affected"; AFFECTED=true ;;
+        esac
+
+        echo "${{ inputs.package }} affected: $AFFECTED"
+        echo "affected=$AFFECTED" >> "$GITHUB_OUTPUT"

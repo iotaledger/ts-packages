@@ -5,6 +5,7 @@ export * from './DAppInfoCard';
 export * from './DAppPermissionList';
 export * from './HideShowDisplayBox';
 export * from './Overlay';
+export { NavigationStackProvider } from './NavigationStackProvider';
 export * from './PageTemplate';
 export * from './SectionHeader';
 export * from './SummaryCard';

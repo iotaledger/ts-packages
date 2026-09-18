@@ -4,7 +4,7 @@
 
 import 'tsconfig-paths/register';
 
-import { IotaClient, getFullnodeUrl } from '@iota/iota-sdk/client';
+import { IotaClient, getRpcUrl } from '@iota/iota-sdk/client';
 import { type Keypair } from '@iota/iota-sdk/cryptography';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
@@ -16,7 +16,7 @@ export async function split_coin(address: string) {
     if (!keypair) {
         throw new Error('missing keypair');
     }
-    const client = new IotaClient({ url: getFullnodeUrl('localnet') });
+    const client = new IotaClient({ url: getRpcUrl('localnet') });
 
     const coins = await client.getCoins({ owner: address });
     const coin_id = coins.data[0].coinObjectId;

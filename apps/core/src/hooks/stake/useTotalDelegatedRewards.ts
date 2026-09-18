@@ -3,8 +3,11 @@
 
 import { useMemo } from 'react';
 import { type ExtendedDelegatedStake } from '../../utils/stake';
+import { type ExtendedDelegatedTimelockedStake } from '../../interfaces';
 
-export function useTotalDelegatedRewards(delegatedStake: ExtendedDelegatedStake[]) {
+export function useTotalDelegatedRewards(
+    delegatedStake: ExtendedDelegatedStake[] | ExtendedDelegatedTimelockedStake[],
+) {
     return useMemo(() => {
         if (!delegatedStake) return 0n;
         return delegatedStake.reduce((acc, curr) => {

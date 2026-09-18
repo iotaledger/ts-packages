@@ -112,6 +112,7 @@ type MethodPayloads = {
         data: PasswordRecoveryData;
     };
     removeAccount: { accountID: string };
+    changePassword: { currentPassword: string; newPassword: string };
 };
 
 type Methods = keyof MethodPayloads;

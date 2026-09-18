@@ -7,6 +7,7 @@ export interface UpgradePolicyInfo {
     label: string;
     description: string;
     isImmutable: boolean;
+    isIndeterminate?: boolean;
 }
 
 export const UPGRADE_DOCS_URL =

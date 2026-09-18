@@ -198,3 +198,18 @@ export function getFaucetHost(network: NetworkId): string {
 
     return requestedNetwork.faucet;
 }
+
+/**
+ * Build the URL of a faucet website, optionally prefilling the recipient address
+ * through the `address` query param. Used for networks where the faucet is a
+ * website instead of an API endpoint (e.g. testnet, devnet).
+ */
+export function getFaucetWebsiteUrl(faucetWebsite: string, address?: string): string {
+    const url = new URL(faucetWebsite);
+
+    if (address) {
+        url.searchParams.set('address', address);
+    }
+
+    return url.toString();
+}

@@ -12,7 +12,7 @@ export function ConnectedAppsCard() {
     const { connectedApps, loading } = useConnectedApps();
 
     return (
-        <PageTemplate title="Connected Apps" isTitleCentered showBackButton>
+        <PageTemplate title="Connected Apps" isTitleCentered>
             <Loading loading={loading}>
                 <div
                     className={cn('flex flex-1 flex-col gap-md', {

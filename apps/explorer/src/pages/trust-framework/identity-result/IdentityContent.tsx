@@ -6,7 +6,7 @@ import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iot
 import type { IotaDID } from '@iota/identity-wasm/web';
 import { PageHeader, PageLayout } from '~/components';
 import { useResolveDid } from '~/hooks/useResolveDid';
-import { onCopySuccess } from '~/lib';
+import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
 import { useIdentityPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
 import { getIdentityType, getLegacyMetadata, MetadataBuilder } from '../headerMetadataHelper';
@@ -34,6 +34,22 @@ export function IdentityContent({ did }: IdentityContentProps) {
     const isPending = isDidDocumentPending || isObjectPending;
     if (isPending) {
         return <PageLayout loading loadingText="Loading DID Document and Object..." content={[]} />;
+    }
+
+    if (objectResult?.isHistoryUnavailable) {
+        return (
+            <PageLayout
+                content={
+                    <InfoBox
+                        title="DID No Longer Available"
+                        supportingText={getHistoryUnavailableMessage(`DID Object ${did.tag()}`)}
+                        icon={<Warning />}
+                        type={InfoBoxType.Warning}
+                        style={InfoBoxStyle.Elevated}
+                    />
+                }
+            />
+        );
     }
 
     if (didDocument == null) {

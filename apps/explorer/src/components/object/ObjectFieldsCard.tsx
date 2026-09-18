@@ -209,6 +209,7 @@ export function ObjectFieldsCard({
                                                 value={fieldsData[name]}
                                                 objectType={objectType}
                                                 type={type}
+                                                name={name}
                                             />
                                         </div>
                                     </AccordionContent>

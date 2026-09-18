@@ -19,6 +19,7 @@ import { Link, type LinkProps } from '~/components/ui';
 
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
+    hideAlias?: boolean;
     noTruncate?: boolean;
     label?: string | ReactNode;
     renderAddressAlias?: (alias: string) => ReactNode;
@@ -41,6 +42,7 @@ function createInternalLink<T extends string>(
         onCopyError,
         renderAddressAlias,
         showAddressAlias = ['address', 'object', 'validator'].includes(base),
+        hideAlias = false,
         className,
         ...props
     }: BaseInternalLinkProps & Record<T, string>) => {
@@ -71,19 +73,27 @@ function createInternalLink<T extends string>(
                     onCopy={copyText ? handleCopyClick : undefined}
                     noTruncate={noTruncate}
                     truncateUnknown={!noTruncate}
-                    renderAddress={(address) => (
-                        <NamedAddressTooltip name={iotaName} address={address}>
-                            <Link
-                                className={clsx(
-                                    'text-iota-primary-30 dark:text-iota-primary-80',
-                                    className,
-                                )}
-                                variant="mono"
-                                to={to}
-                                {...props}
-                            >
-                                {iotaName || label || address}
-                            </Link>
+                    hideAlias={hideAlias}
+                    renderAddress={(address, copyButton, hasAlias) => (
+                        <NamedAddressTooltip
+                            name={hasAlias ? undefined : iotaName}
+                            address={address}
+                        >
+                            <span className="inline-flex max-w-full items-center whitespace-nowrap">
+                                <Link
+                                    className={clsx(
+                                        'min-w-0 text-iota-primary-30 dark:text-iota-primary-80',
+                                        className,
+                                    )}
+                                    variant="mono"
+                                    size={hasAlias ? 'sm' : undefined}
+                                    to={to}
+                                    {...props}
+                                >
+                                    {hasAlias ? label || address : iotaName || label || address}
+                                </Link>
+                                {copyButton}
+                            </span>
                         </NamedAddressTooltip>
                     )}
                     renderAlias={renderAddressAlias}

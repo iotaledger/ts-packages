@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, IotaClient } from '@iota/iota-sdk/client';
+import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
 import { parseSerializedSignature } from '@iota/iota-sdk/cryptography';
 import { useMutation } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
@@ -23,7 +23,7 @@ export default function ExecuteTransaction() {
     const [transaction, setTransaction] = useState('');
     const [signature, setSignature] = useState('');
 
-    const rpcUrl = getFullnodeUrl(network);
+    const rpcUrl = getRpcUrl(network);
     const client = new IotaClient({
         url: rpcUrl,
     });

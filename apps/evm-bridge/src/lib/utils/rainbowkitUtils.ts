@@ -33,7 +33,7 @@ interface EIP6963AnnounceProviderEvent extends CustomEvent {
 }
 
 // Only allow these wallets to be discovered via EIP-6963
-const ALLOWED_WALLET_RDNS = ['io.metamask'];
+const ALLOWED_WALLET_RDNS = ['io.metamask', 'io.rabby'];
 
 export function interceptProviderAnnouncements() {
     if (typeof window !== 'undefined') {

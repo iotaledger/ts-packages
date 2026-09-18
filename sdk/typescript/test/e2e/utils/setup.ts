@@ -12,7 +12,7 @@ import { expect } from 'vitest';
 import { WebSocket } from 'ws';
 
 import type { IotaObjectChangePublished } from '../../../src/client/index.js';
-import { getFullnodeUrl, IotaClient, IotaHTTPTransport } from '../../../src/client/index.js';
+import { getRpcUrl, IotaClient, IotaHTTPTransport } from '../../../src/client/index.js';
 import type { Keypair } from '../../../src/cryptography/index.js';
 import { getFaucetHost, requestIotaFromFaucet } from '../../../src/faucet/index.js';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519/index.js';
@@ -20,7 +20,7 @@ import { Transaction, UpgradePolicy } from '../../../src/transactions/index.js';
 import { IOTA_TYPE_ARG } from '../../../src/utils/index.js';
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
-const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
+const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getRpcUrl('localnet');
 
 const CONFIG_DATA = `
 ---

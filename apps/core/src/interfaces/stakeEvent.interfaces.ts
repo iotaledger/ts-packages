@@ -4,6 +4,8 @@
 export interface StakeEventJson {
     amount: string;
     validator_address: string;
+    staker_address?: string;
+    pool_id?: string;
     epoch: string;
 }
 
@@ -11,4 +13,8 @@ export interface UnstakeEventJson {
     principal_amount?: string;
     reward_amount?: string;
     validator_address?: string;
+    staker_address?: string;
+    pool_id?: string;
+    stake_activation_epoch?: string;
+    unstaking_epoch?: string;
 }

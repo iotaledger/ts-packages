@@ -162,10 +162,11 @@ export type Address = IOwner & {
    * defaults to `SENT`.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -184,6 +185,10 @@ export type Address = IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   transactionBlocks: TransactionBlockConnection;
 };
@@ -313,22 +318,20 @@ export type AddressOwner = {
   owner?: Maybe<Owner>;
 };
 
-/** The possible relationship types for a transaction block: sent or received. */
+/**
+ * The possible relationship types for a transaction block: sent, received,
+ * or affected.
+ */
 export enum AddressTransactionBlockRelationship {
+  /**
+   * Transactions that affected this address (the address is the sender,
+   * a recipient, or the owner of the gas payment).
+   */
+  Affected = 'AFFECTED',
   /** Transactions that sent objects to this address. */
   Recv = 'RECV',
   /** Transactions this address has sent. */
-  Sent = 'SENT',
-  /**
-   * Transactions this address has sent. NOTE: this input filter has been
-   * deprecated in favor of `SENT` which behaves identically but is named
-   * more clearly. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `SENT` instead. This will be removed with the 1.24.0 release.
-   */
-  Sign = 'SIGN'
+  Sent = 'SENT'
 }
 
 /**
@@ -538,6 +541,15 @@ export type ChangeEpochTransactionV2SystemPackagesArgs = {
 export type Checkpoint = {
   __typename?: 'Checkpoint';
   /**
+   * The Base64-encoded BCS serialization of this checkpoint's
+   * `CheckpointSummary`.
+   *
+   * # Note
+   * For older checkpoints, where this data was not recorded, `null` is
+   * returned.
+   */
+  bcs?: Maybe<Scalars['Base64']['output']>;
+  /**
    * A 32-byte hash that uniquely identifies the checkpoint contents, encoded
    * in Base58. This hash can be used to verify checkpoint contents by
    * checking signatures against the committee, Hashing contents to match
@@ -575,10 +587,11 @@ export type Checkpoint = {
    * Transactions in this checkpoint.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -595,6 +608,10 @@ export type Checkpoint = {
    *
    * By default, the scanning range consists of all transactions in this
    * checkpoint.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   transactionBlocks: TransactionBlockConnection;
   /**
@@ -732,10 +749,11 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -754,6 +772,10 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The `0x3::staking_pool::StakedIota` objects owned by this object. */
@@ -765,8 +787,6 @@ export type Coin = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -979,10 +999,11 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -1001,6 +1022,10 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The `0x3::staking_pool::StakedIota` objects owned by this object. */
@@ -1012,8 +1037,6 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -1299,7 +1322,7 @@ export type EndOfEpochTransactionTransactionsArgs = {
   last?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type EndOfEpochTransactionKind = ChangeEpochTransaction | ChangeEpochTransactionV2;
+export type EndOfEpochTransactionKind = ChangeEpochTransaction | ChangeEpochTransactionV2 | TransactionDenyRulesCreateTransaction;
 
 export type EndOfEpochTransactionKindConnection = {
   __typename?: 'EndOfEpochTransactionKindConnection';
@@ -1411,10 +1434,11 @@ export type Epoch = {
    * The epoch's corresponding transaction blocks.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -1431,6 +1455,10 @@ export type Epoch = {
    *
    * By default, the scanning range consists of all transactions in this
    * epoch.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   transactionBlocks: TransactionBlockConnection;
   /**
@@ -1849,8 +1877,6 @@ export type IObject = {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   storageRebate?: Maybe<Scalars['BigInt']['output']>;
@@ -2508,10 +2534,11 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -2530,6 +2557,10 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The `0x3::staking_pool::StakedIota` objects owned by this object. */
@@ -2541,8 +2572,6 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -2814,10 +2843,11 @@ export type MovePackage = IObject & IOwner & {
    * Note that objects that have been sent to a package become inaccessible.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -2836,6 +2866,10 @@ export type MovePackage = IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /**
@@ -2852,8 +2886,6 @@ export type MovePackage = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -2974,7 +3006,7 @@ export type MovePackageObjectsArgs = {
  * definitions, functions, and dependencies.
  */
 export type MovePackagePackageAtVersionArgs = {
-  version: Scalars['Int']['input'];
+  version: Scalars['UInt53']['input'];
 };
 
 
@@ -3122,15 +3154,9 @@ export type MoveStructTypeParameter = {
 /** Represents concrete types (no type parameters, no references). */
 export type MoveType = {
   __typename?: 'MoveType';
-  /**
-   * The abilities this concrete type has. Returns no abilities if the type
-   * is invalid.
-   */
+  /** The abilities this concrete type has. */
   abilities: Array<MoveAbility>;
-  /**
-   * Structured representation of the "shape" of values that match this type.
-   * May return MoveTypeLayout::InvalidType for malformed types.
-   */
+  /** Structured representation of the "shape" of values that match this type. */
   layout: Scalars['MoveTypeLayout']['output'];
   /** Flat representation of the type signature, as a displayable string. */
   repr: Scalars['String']['output'];
@@ -3205,8 +3231,8 @@ export type Mutation = {
   /**
    * Execute a transaction, committing its effects on chain.
    *
-   * - `txBytes` is a `TransactionData` struct that has been BCS-encoded and
-   * then Base64-encoded.
+   * - `txBytes` is a `Transaction` struct that has been BCS-encoded and then
+   * Base64-encoded.
    * - `signatures` are a list of `flag || signature || pubkey` bytes,
    * Base64-encoded.
    *
@@ -3330,10 +3356,11 @@ export type NameRegistration = IMoveObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -3352,6 +3379,10 @@ export type NameRegistration = IMoveObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The `0x3::staking_pool::StakedIota` objects owned by this object. */
@@ -3363,8 +3394,6 @@ export type NameRegistration = IMoveObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3565,10 +3594,11 @@ export type Object = IObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -3587,6 +3617,10 @@ export type Object = IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The `0x3::staking_pool::StakedIota` objects owned by this object. */
@@ -3598,8 +3632,6 @@ export type Object = IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -3852,12 +3884,7 @@ export enum ObjectKind {
    * The object is loaded from serialized data, such as the contents of a
    * transaction that hasn't been indexed yet.
    */
-  NotIndexed = 'NOT_INDEXED',
-  /**
-   * The object is deleted or wrapped and only partial information can be
-   * loaded from the indexer.
-   */
-  WrappedOrDeleted = 'WRAPPED_OR_DELETED'
+  NotIndexed = 'NOT_INDEXED'
 }
 
 /** The object's owner type: Immutable, Shared, Parent, or Address. */
@@ -4310,14 +4337,14 @@ export type Query = {
    * Simulate running a transaction to inspect its effects without
    * committing to them on-chain.
    *
-   * `txBytes` either a `TransactionData` struct or a `TransactionKind`
+   * `txBytes` either a `Transaction` struct or a `TransactionKind`
    * struct, BCS-encoded and then Base64-encoded.  The expected
    * type is controlled by the presence or absence of `txMeta`: If
    * present, `txBytes` is assumed to be a `TransactionKind`, if
-   * absent, then `TransactionData`.
+   * absent, then `Transaction`.
    *
    * `txMeta` the data that is missing from a `TransactionKind` to make
-   * a `TransactionData` (sender address and gas information).  All
+   * a `Transaction` (sender address and gas information).  All
    * its fields are nullable.
    *
    * `skipChecks` optional flag to disable the usual verification
@@ -4425,10 +4452,11 @@ export type Query = {
    * The transaction blocks that exist in the network.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -4448,13 +4476,30 @@ export type Query = {
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters. Transactions that don't have a checkpoint yet
    * are always omitted.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   transactionBlocks: TransactionBlockConnection;
   /**
    * Fetch multiple transaction blocks by their digests.
    * This includes all transactions, even if they are not checkpointed yet.
+   * @deprecated Use `transactionsByDigests` instead. Will be removed in v1.38.
    */
   transactionBlocksByDigests: Array<Maybe<TransactionBlock>>;
+  /**
+   * Fetch multiple transaction blocks by their digests.
+   *
+   * Unlike `transactionBlocks(filter: { transactionIds })`, this includes
+   * all transactions, even if they are not checkpointed yet.
+   *
+   * Pages keep the order of the `digests` argument and hold one node per
+   * digest, null when the transaction was not found. Only forward
+   * pagination is supported: `limit` caps the page size and `cursor`
+   * resumes after an entry of a previous page.
+   */
+  transactionsByDigests: TransactionsByDigestsPage;
   /**
    * Fetch a structured representation of a concrete type, including its
    * layout information. Fails if the type is malformed.
@@ -4606,6 +4651,13 @@ export type QueryTransactionBlocksArgs = {
 
 export type QueryTransactionBlocksByDigestsArgs = {
   digests: Array<Scalars['String']['input']>;
+};
+
+
+export type QueryTransactionsByDigestsArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  digests: Array<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -4988,10 +5040,11 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * The transaction blocks that sent objects to this object.
    *
    * `scanLimit` restricts the number of candidate transactions scanned when
-   * gathering a page of results. It is required for queries that apply
-   * more than two complex filters (on function, kind, sender, recipient,
-   * input object, changed object, or ids), and can be at most
-   * `serviceConfig.maxScanLimit`.
+   * gathering a page of results. It is required for queries that apply two
+   * or more complex filters (on function, affected address, recipient, input
+   * object, changed object, or wrapped or deleted object), and can be at
+   * most `serviceConfig.maxScanLimit`. A `kind` filter cannot be
+   * combined with any of them.
    *
    * When the scan limit is reached the page will be returned even if it has
    * fewer than `first` results when paginating forward (`last` when
@@ -5010,6 +5063,10 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * GraphQL, but it can be restricted by the `after` and `before`
    * cursors, and the `beforeCheckpoint`, `afterCheckpoint` and
    * `atCheckpoint` filters.
+   *
+   * DEPRECATION NOTICE: Support for the combination of two or more complex
+   * filters as discussed above will stop with the v1.38 release. `scanLimit`
+   * will thus become obsolete and will be removed as well.
    */
   receivedTransactionBlocks: TransactionBlockConnection;
   /** The epoch at which this object was requested to join a stake pool. */
@@ -5025,8 +5082,6 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    * contents of a genesis or system package upgrade transaction.
    * - INDEXED: The object is retrieved from the off-chain index and
    * represents the most recent or historical state of the object.
-   * - WRAPPED_OR_DELETED: The object is deleted or wrapped and only partial
-   * information can be loaded.
    */
   status: ObjectKind;
   /**
@@ -5279,8 +5334,8 @@ export type TransactionArgument = GasCoin | Input | Result;
 export type TransactionBlock = {
   __typename?: 'TransactionBlock';
   /**
-   * Serialized form of this transaction's `SenderSignedData`, BCS serialized
-   * and Base64 encoded.
+   * Serialized form of this transaction's `SenderSignedTransaction`, BCS
+   * serialized and Base64 encoded.
    */
   bcs?: Maybe<Scalars['Base64']['output']>;
   /**
@@ -5462,6 +5517,11 @@ export type TransactionBlockEffectsUnchangedSharedObjectsArgs = {
 
 /** Represents optional available filters for transaction blocks. */
 export type TransactionBlockFilter = {
+  /**
+   * Limit to transactions that affected the given address (the address is
+   * the sender, a recipient, or the owner of the gas payment).
+   */
+  affectedAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Limit to transactions that occurred strictly after the given checkpoint. */
   afterCheckpoint?: InputMaybe<Scalars['UInt53']['input']>;
   /** Limit to transactions in the given checkpoint. */
@@ -5488,16 +5548,6 @@ export type TransactionBlockFilter = {
   recvAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Limit to transactions that were sent by the given address. */
   sentAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
-  /**
-   * Limit to transactions that were sent by the given address. NOTE: this
-   * input filter has been deprecated in favor of `sentAddress` which has
-   * clearer semantics. Both filters restrict transactions by their sender,
-   * only, not signers in general.
-   *
-   * This filter will be removed after 6 months with the 1.24.0 release.
-   * @deprecated Misleading semantics. Use `sentAddress` instead. This will be removed with the 1.24.0 release.
-   */
-  signAddress?: InputMaybe<Scalars['IotaAddress']['input']>;
   /** Select transactions by their digest. */
   transactionIds?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Limit to transactions that wrapped or deleted the given object. */
@@ -5508,7 +5558,7 @@ export type TransactionBlockFilter = {
  * The kind of transaction block, either a programmable transaction or a system
  * transaction.
  */
-export type TransactionBlockKind = ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction;
+export type TransactionBlockKind = ConsensusCommitPrologueTransaction | EndOfEpochTransaction | GenesisTransaction | ProgrammableTransactionBlock | RandomnessStateUpdateTransaction | TransactionDenyRulesUpdateTransaction;
 
 /** An input filter selecting for either system or programmable transactions. */
 export enum TransactionBlockKindInput {
@@ -5538,6 +5588,50 @@ export enum TransactionBlockKindInput {
  * number of lost payloads.
  */
 export type TransactionBlockSubscriptionPayload = Lagged | TransactionBlock;
+
+export type TransactionDenyRulesCreateTransaction = {
+  __typename?: 'TransactionDenyRulesCreateTransaction';
+  /** A workaround to define an empty variant of a GraphQL union. */
+  dummy?: Maybe<Scalars['Boolean']['output']>;
+};
+
+/**
+ * System transaction that applies an add/remove delta to the on-chain
+ * transaction deny rules; the switch states are absolute.
+ */
+export type TransactionDenyRulesUpdateTransaction = {
+  __typename?: 'TransactionDenyRulesUpdateTransaction';
+  /** Addresses added to the sender-or-sponsor deny list. */
+  addedAddresses: Array<Scalars['IotaAddress']['output']>;
+  /** Objects added to the input-or-receiving deny list. */
+  addedObjects: Array<Scalars['IotaAddress']['output']>;
+  /** Packages added to the dependency deny list. */
+  addedPackages: Array<Scalars['IotaAddress']['output']>;
+  /** The initial version the deny rules object was shared at. */
+  denyRulesObjInitialSharedVersion: Scalars['UInt53']['output'];
+  /** Epoch of the deny rules update transaction. */
+  epoch?: Maybe<Epoch>;
+  /** Whether transactions signed with a Move authenticator are denied. */
+  moveAuthenticatorDisabled: Scalars['Boolean']['output'];
+  /** Whether all package publishing is denied. */
+  packagePublishDisabled: Scalars['Boolean']['output'];
+  /** Whether all package upgrades are denied. */
+  packageUpgradeDisabled: Scalars['Boolean']['output'];
+  /** Whether transactions that contain receiving objects are denied. */
+  receivingObjectsDisabled: Scalars['Boolean']['output'];
+  /** Addresses removed from the sender-or-sponsor deny list. */
+  removedAddresses: Array<Scalars['IotaAddress']['output']>;
+  /** Objects removed from the input-or-receiving deny list. */
+  removedObjects: Array<Scalars['IotaAddress']['output']>;
+  /** Packages removed from the dependency deny list. */
+  removedPackages: Array<Scalars['IotaAddress']['output']>;
+  /** Consensus round of the update. */
+  round: Scalars['UInt53']['output'];
+  /** Whether transactions that use shared objects as inputs are denied. */
+  sharedObjectDisabled: Scalars['Boolean']['output'];
+  /** Whether all user transactions are denied. */
+  userTransactionDisabled: Scalars['Boolean']['output'];
+};
 
 export type TransactionInput = OwnedOrImmutable | Pure | Receiving | SharedInput;
 
@@ -5573,6 +5667,23 @@ export type TransactionMetadata = {
   gasPrice?: InputMaybe<Scalars['UInt53']['input']>;
   gasSponsor?: InputMaybe<Scalars['IotaAddress']['input']>;
   sender?: InputMaybe<Scalars['IotaAddress']['input']>;
+};
+
+/** A page of the `transactionsByDigests` query. */
+export type TransactionsByDigestsPage = {
+  __typename?: 'TransactionsByDigestsPage';
+  /**
+   * Cursor of the last entry of this page; pass it as `cursor` to get the
+   * next page.
+   */
+  endCursor?: Maybe<Scalars['String']['output']>;
+  /** Whether there are more entries after this page. */
+  hasNextPage: Scalars['Boolean']['output'];
+  /**
+   * One entry per digest of the page, in the order of the `digests`
+   * argument, null when the transaction was not found.
+   */
+  nodes: Array<Maybe<TransactionBlock>>;
 };
 
 /**
@@ -5858,7 +5969,7 @@ export type GetCheckpointQueryVariables = Exact<{
 }>;
 
 
-export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } } | null };
+export type GetCheckpointQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } } | null };
 
 export type GetCheckpointsQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -5868,7 +5979,7 @@ export type GetCheckpointsQueryVariables = Exact<{
 }>;
 
 
-export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } }> } };
+export type GetCheckpointsQuery = { __typename?: 'Query', checkpoints: { __typename?: 'CheckpointConnection', pageInfo: { __typename?: 'PageInfo', startCursor?: string | null, endCursor?: string | null, hasNextPage: boolean, hasPreviousPage: boolean }, nodes: Array<{ __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } }> } };
 
 export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
   id?: InputMaybe<CheckpointId>;
@@ -5878,7 +5989,7 @@ export type PaginateCheckpointTransactionBlocksQueryVariables = Exact<{
 
 export type PaginateCheckpointTransactionBlocksQuery = { __typename?: 'Query', checkpoint?: { __typename?: 'Checkpoint', transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> } } | null };
 
-export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | null }> } };
+export type Rpc_Checkpoint_FieldsFragment = { __typename?: 'Checkpoint', digest: string, networkTotalTransactions?: any | null, previousCheckpointDigest?: string | null, sequenceNumber: any, timestamp: any, validatorSignatures: any, epoch?: { __typename?: 'Epoch', epochId: any } | null, rollingGasSummary?: { __typename?: 'GasCostSummary', computationCost?: any | null, computationCostBurned?: any | null, storageCost?: any | null, storageRebate?: any | null, nonRefundableStorageFee?: any | null } | null, transactionBlocks: { __typename?: 'TransactionBlockConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'TransactionBlock', digest?: string | null }> }, endOfEpoch: { __typename?: 'TransactionBlockConnection', nodes: Array<{ __typename?: 'TransactionBlock', kind?: { __typename: 'ConsensusCommitPrologueTransaction' } | { __typename: 'EndOfEpochTransaction', transactions: { __typename?: 'EndOfEpochTransactionKindConnection', nodes: Array<{ __typename: 'ChangeEpochTransaction' } | { __typename: 'ChangeEpochTransactionV2', epoch?: { __typename?: 'Epoch', epochId: any, validatorSet?: { __typename?: 'ValidatorSet', activeValidators: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> }, committeeMembers: { __typename?: 'ValidatorConnection', pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, endCursor?: string | null }, nodes: Array<{ __typename?: 'Validator', votingPower?: number | null, credentials?: { __typename?: 'ValidatorCredentials', authorityPubKey?: any | null } | null }> } } | null, protocolConfigs: { __typename?: 'ProtocolConfigs', protocolVersion: any } } | null } | { __typename: 'TransactionDenyRulesCreateTransaction' }> } } | { __typename: 'GenesisTransaction' } | { __typename: 'ProgrammableTransactionBlock' } | { __typename: 'RandomnessStateUpdateTransaction' } | { __typename: 'TransactionDenyRulesUpdateTransaction' } | null }> } };
 
 export type DevInspectTransactionBlockQueryVariables = Exact<{
   txBytes: Scalars['String']['input'];
