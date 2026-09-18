@@ -18,6 +18,11 @@ import {
     useResolveOnChainAuditTrail,
 } from '~/hooks/useResolveAuditTrail';
 import { TransactionsView } from '../common/TransactionsView';
+import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
+import { MetadataView } from './views/MetadataView';
+import { TagsView } from './views/TagsView';
+import { RecordsView } from './views/RecordsView';
+import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 
 interface AuditTrailContentProps {
     objectId: string;
@@ -107,6 +112,20 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                             .addItem(getAuditTrailType(objectResult.data!, iotaAuditTrailPackage))
                             .addItem(getAuditTrailRecordsSize(auditTrailObject))
                             .build()}
+                    />
+                    <AuditTrailSummaryView
+                        auditTrailObject={auditTrailObject}
+                        objectData={objectResult.data!}
+                    />
+                    <SideBySidePanels
+                        firstPanel={<p>Replace with LockLifecycleView</p>}
+                        secondPanel={<MetadataView auditTrail={auditTrailObject} />}
+                    />
+                    <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
+                    <SideBySidePanels
+                        ratio="66-34"
+                        firstPanel={<p>Replace with RolesView</p>}
+                        secondPanel={<TagsView tags={auditTrailObject.tags} />}
                     />
                     <TransactionsView objectId={objectId} />
                 </div>
