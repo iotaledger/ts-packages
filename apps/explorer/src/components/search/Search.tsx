@@ -55,20 +55,22 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
 
     const handleInputKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>) => {
-            event.preventDefault();
-
             if (!results?.length) {
                 if (event.key === 'Tab' || event.key === 'ArrowDown') {
+                    event.preventDefault();
                     recentPillsRef?.current?.focus();
                 }
                 return;
             }
 
             if (event.key === 'ArrowDown') {
+                event.preventDefault();
                 setActiveIndex((index) => (index + 1) % results.length);
             } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
                 setActiveIndex((index) => (index - 1 + results.length) % results.length);
             } else if (event.key === 'Enter') {
+                event.preventDefault();
                 const result = results[Math.min(activeIndex, results.length - 1)];
                 if (result) handleClickResult(result);
             }
