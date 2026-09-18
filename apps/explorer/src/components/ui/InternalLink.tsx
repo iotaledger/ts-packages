@@ -9,8 +9,6 @@ import {
     AddressAlias,
     useGetDefaultIotaName,
     useCopyToClipboard,
-    ImageIcon,
-    ImageIconSize,
     NameAvatar,
     NameAvatarSize,
 } from '@iota/core';
