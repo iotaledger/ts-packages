@@ -25,7 +25,8 @@
         "dev": "pnpm build --watch",
         "build": "build-package",
         "codegen": "buf generate",
-        "test": "vitest run",
+        "test": "vitest run unit",
+        "test:e2e": "vitest run e2e",
         "prettier:check": "prettier -c --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
         "prettier:fix": "prettier -w --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
         "eslint:check": "eslint --max-warnings=0 .",
@@ -46,6 +47,8 @@
         "vitest": "^4.1.0"
     },
     "dependencies": {
-        "@bufbuild/protobuf": "^2.15.0"
+        "@bufbuild/protobuf": "^2.15.0",
+        "@connectrpc/connect": "^2.2.0",
+        "@connectrpc/connect-node": "^2.2.0"
     }
 }
