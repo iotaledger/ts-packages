@@ -2,10 +2,10 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { forwardRef, useCallback, useEffect, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import cx from 'clsx';
 
-import { useNavigateWithQuery } from '~/components/ui';
+import { LinkWithQuery, useNavigateWithQuery } from '~/components/ui';
 import { Badge, BadgeSize, BadgeType, LoadingIndicator, type Suggestion } from '@iota/apps-ui-kit';
 import { Close, Search as SearchIcon } from '@iota/apps-ui-icons';
 import { formatAddress, isValidIotaAddress } from '@iota/iota-sdk/utils';
@@ -20,10 +20,7 @@ interface SearchProps {
     autoFocus?: boolean;
 }
 
-export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
-    { onSelectResult, autoFocus },
-    ref,
-) {
+export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element {
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const trimmedQuery = query.trim();
@@ -34,8 +31,10 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
 
     const isLoading = !!debouncedQuery && (isPending || debouncedQuery !== trimmedQuery);
     const hasResults = !!results?.length;
+    const inputRef = useRef<HTMLInputElement>(null);
+    const recentPillsRef = useRef<HTMLButtonElement | null>(null);
 
-    const handleSelectResult = useCallback(
+    const handleClickResult = useCallback(
         (result: Suggestion) => {
             if (result) {
                 ampli.clickedSearchResult({
@@ -51,34 +50,36 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                 onSelectResult?.();
             }
         },
-        [addRecentSearch, navigate, onSelectResult, query],
+        [addRecentSearch, onSelectResult, query],
     );
 
     const handleInputKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>) => {
-            if (!results?.length) return;
+            event.preventDefault();
+
+            if (!results?.length) {
+                if (event.key === 'Tab' || event.key === 'ArrowDown') {
+                    recentPillsRef?.current?.focus();
+                }
+                return;
+            }
+
             if (event.key === 'ArrowDown') {
-                event.preventDefault();
                 setActiveIndex((index) => (index + 1) % results.length);
             } else if (event.key === 'ArrowUp') {
-                event.preventDefault();
                 setActiveIndex((index) => (index - 1 + results.length) % results.length);
             } else if (event.key === 'Enter') {
-                event.preventDefault();
                 const result = results[Math.min(activeIndex, results.length - 1)];
-                if (result) handleSelectResult(result);
+                if (result) handleClickResult(result);
             }
         },
-        [results, activeIndex, handleSelectResult],
+        [results, activeIndex, handleClickResult, debouncedQuery],
     );
-
-    useEffect(() => {
-        setActiveIndex(0);
-    }, [results]);
 
     useEffect(() => {
         if (debouncedQuery) {
             ampli.completedSearch({ searchQuery: debouncedQuery });
+            setActiveIndex(0);
         }
     }, [debouncedQuery]);
 
@@ -87,7 +88,7 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
             <div className="flex h-14 items-center gap-sm rounded-full border border-shader-neutral-light-16 bg-shader-neutral-light-8 px-lg dark:border-shader-neutral-dark-16 dark:bg-shader-neutral-dark-8">
                 <SearchIcon className="h-6 w-6 shrink-0 text-iota-neutral-40" />
                 <input
-                    ref={ref}
+                    ref={inputRef}
                     type="text"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
@@ -115,30 +116,35 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                     <LoadingIndicator />
                 </div>
             ) : hasResults ? (
-                <div className="flex flex-col gap-xs">
-                    {results.map((result, index) => (
-                        <button
-                            key={`${result.type}-${result.id}`}
-                            type="button"
-                            onClick={() => handleSelectResult(result)}
-                            onMouseEnter={() => setActiveIndex(index)}
-                            className={cx(
-                                'state-layer relative flex items-center justify-between gap-md rounded-2xl px-lg py-md text-start',
-                                index === activeIndex
-                                    ? 'bg-shader-neutral-light-16 dark:bg-shader-neutral-dark-16'
-                                    : 'bg-shader-neutral-light-8 dark:bg-shader-neutral-dark-8',
-                            )}
-                        >
-                            <span className="truncate text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
-                                {result.label}
-                            </span>
-                            <Badge
-                                type={BadgeType.Neutral}
-                                size={BadgeSize.Small}
-                                label={result.type.toUpperCase()}
-                            />
-                        </button>
-                    ))}
+                <div className="flex w-full flex-col gap-xs">
+                    {results.map((result, index) => {
+                        const url = `/${result.type}/${encodeURIComponent(trimAuditTrailNotalizationSuffix(result.id))}`;
+                        return (
+                            <LinkWithQuery
+                                key={url}
+                                to={url}
+                                onClick={() => handleClickResult(result)}
+                                onMouseEnter={() => setActiveIndex(index)}
+                                className={cx(
+                                    'state-layer relative flex w-full items-center justify-between gap-md rounded-2xl px-lg py-md text-start',
+                                    index === activeIndex
+                                        ? 'bg-shader-neutral-light-16 dark:bg-shader-neutral-dark-16'
+                                        : 'bg-shader-neutral-light-8 dark:bg-shader-neutral-dark-8',
+                                )}
+                            >
+                                <span className="truncate text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+                                    {result.label}
+                                </span>
+                                <span className="whitespace-nowrap">
+                                    <Badge
+                                        type={BadgeType.Neutral}
+                                        size={BadgeSize.Small}
+                                        label={result.type.toUpperCase()}
+                                    />
+                                </span>
+                            </LinkWithQuery>
+                        );
+                    })}
                 </div>
             ) : debouncedQuery ? (
                 <div className="py-md text-center text-body-md text-iota-neutral-40">
@@ -148,11 +154,15 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
                 <div className="flex flex-col gap-sm">
                     <span className="text-label-lg text-iota-neutral-40">Recent</span>
                     <div className="flex flex-wrap gap-xs">
-                        {recentSearches.map((recent) => (
+                        {recentSearches.map((recent, index) => (
                             <button
+                                ref={index === 0 ? recentPillsRef : null}
                                 key={recent}
                                 type="button"
-                                onClick={() => setQuery(recent)}
+                                onClick={() => {
+                                    setQuery(recent);
+                                    inputRef.current?.focus();
+                                }}
                                 className="state-layer relative max-w-[220px] truncate rounded-full border border-shader-neutral-light-16 px-md py-xs text-body-md text-iota-neutral-10 dark:border-shader-neutral-dark-16 dark:text-iota-neutral-92"
                             >
                                 {isValidIotaAddress(recent) ? formatAddress(recent) : recent}
@@ -163,4 +173,4 @@ export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
             ) : null}
         </div>
     );
-});
+}
