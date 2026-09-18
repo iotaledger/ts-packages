@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { createIotaGrpcClient, createNodeTransport } from '../../src/index.js';
 
 describe('LedgerService', () => {
-    it('responde a getServiceInfo contra mainnet', async () => {
+    it('returns service info from mainnet', async () => {
         const client = createIotaGrpcClient(
             createNodeTransport({ baseUrl: 'https://grpc.mainnet.iota.cafe' }),
         );
