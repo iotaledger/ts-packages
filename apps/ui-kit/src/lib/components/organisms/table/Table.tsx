@@ -147,7 +147,7 @@ export function Table({
                                     />
                                 </>
                             )}
-                            {action && action}
+                            {action}
                         </div>
                     )}
                     {supportingLabel || pageSizeSelector ? (

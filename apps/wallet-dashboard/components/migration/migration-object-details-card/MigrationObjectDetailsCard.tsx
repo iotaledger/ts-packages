@@ -32,7 +32,7 @@ interface MigrationObjectDetailsCardProps {
 }
 export function MigrationObjectDetailsCard({
     migrationObject: { unlockConditionTimestamp, ...migrationObject },
-    isTimelocked: isTimelocked,
+    isTimelocked,
 }: MigrationObjectDetailsCardProps) {
     const coinType = 'coinType' in migrationObject ? migrationObject.coinType : IOTA_TYPE_ARG;
     const [balance, token] = useFormatCoin({ balance: migrationObject.balance, coinType });
@@ -114,7 +114,7 @@ interface UnlockConditionLabelProps {
     groupKey: string;
     isTimelocked: boolean;
 }
-function UnlockConditionLabel({ groupKey, isTimelocked: isTimelocked }: UnlockConditionLabelProps) {
+function UnlockConditionLabel({ groupKey, isTimelocked }: UnlockConditionLabelProps) {
     const { data: currentEpochStartTimestampMs, isLoading: isLoadingEpochStart } =
         useGetCurrentEpochStartTimestamp();
     const { data: currentEpochEndTimestampMs, isLoading: isLoadingEpochEnd } =

@@ -137,9 +137,6 @@ export function TableCard<DataType extends object>({
                                                 desc: sortOrder === TableHeaderCellSortOrder.Desc,
                                             },
                                         ]);
-                                        column.columnDef.enableSorting
-                                            ? column.getToggleSortingHandler()
-                                            : undefined;
                                     }}
                                     isContentCentered={areHeadersCentered}
                                     actionRight={

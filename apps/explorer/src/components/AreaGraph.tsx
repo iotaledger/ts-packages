@@ -60,7 +60,7 @@ export function AreaGraph<D>({
     const graphTop = 1;
     const graphBottom = Math.max(0, height - 30);
     const graphLeft = 0;
-    const graphRight = Math.max(0, width - 0);
+    const graphRight = Math.max(0, Number(width));
     const [fillGradientID] = useState(() => getID('areaGraph_fillGradient'));
     const [patternID] = useState(() => getID('areaGraph_pattern'));
     const { TooltipInPortal, containerRef } = useTooltipInPortal({

@@ -29,7 +29,7 @@ export function ImportPrivateKeyPage() {
 
     return (
         <PageTemplate title="Import Private Key" isTitleCentered>
-            <div className="flex h-full w-full flex-col items-center ">
+            <div className="flex h-full w-full flex-col items-center">
                 <div className="w-full grow">
                     <ImportPrivateKeyForm onSubmit={handleOnSubmit} />
                 </div>

@@ -54,7 +54,7 @@ export function AccountItem({ icon, accountID, hideExplorerLink, hideCopy }: Acc
 
 function AccountAvatar({ icon }: { icon?: ReactNode }) {
     return (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full [&_svg]:h-5 [&_svg]:w-5 ">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full [&_svg]:h-5 [&_svg]:w-5">
             {icon}
         </div>
     );

@@ -59,14 +59,14 @@ export function AccountsFinderIntroPage() {
                             Balance Finder
                         </span>
                         <div className="flex flex-col gap-y-xs text-start text-body-md">
-                            <span className=" text-iota-neutral-40 dark:text-iota-neutral-60">
+                            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">
                                 <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                                     Run multiple searches{' '}
                                 </span>
                                 to ensure all assets are located. Some funds and addresses may not
                                 appear immediately.
                             </span>
-                            <span className=" text-iota-neutral-40 dark:text-iota-neutral-60">
+                            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">
                                 <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                                     Missing funds{' '}
                                 </span>
