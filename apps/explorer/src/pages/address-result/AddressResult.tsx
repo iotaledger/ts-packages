@@ -19,10 +19,11 @@ import {
     useAddressAliasLookup,
     useCopyToClipboard,
     useGetDefaultIotaName,
+    useIotaNameAvatar,
 } from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
-import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
+import { useAbstractAccountData, useValidatorByAddress } from '~/hooks';
 import { Badge, BadgeSize, BadgeType, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { cx } from 'class-variance-authority';
 
@@ -47,7 +48,7 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
             <Warning className="h-8 w-8 text-iota-warning-40 dark:text-iota-warning-60" />
         </div>
     ) : identityImageUrl ? (
-        <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
+        <div className="h-20 w-20 overflow-hidden rounded-full ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-full">
             <ImageIcon
                 src={identityImageUrl}
                 label={identityLabel ?? ''}
@@ -57,7 +58,7 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
             />
         </div>
     ) : knownAddress ? (
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
             <IotaLogoMark className="h-1/2 w-1/2 text-iota-neutral-10 dark:text-iota-neutral-92" />
         </div>
     ) : undefined;

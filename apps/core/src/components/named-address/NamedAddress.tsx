@@ -6,6 +6,7 @@ import { useGetDefaultIotaName } from '../../hooks';
 import clsx from 'clsx';
 import { truncateString } from '../../utils';
 import { formatAddress } from '@iota/iota-sdk/utils';
+import { NameAvatar, NameAvatarSize } from '../icon';
 
 interface NamedAddressProps extends Omit<React.ComponentProps<typeof Address>, 'text'> {
     address: string;
@@ -34,7 +35,8 @@ export function NamedAddress({
             )}
         >
             {iotaName ? (
-                <span className="text-label-md dark:text-iota-neutral-92 text-iota-neutral-10 -ml-xl">
+                <span className="flex items-center gap-xs text-label-md dark:text-iota-neutral-92 text-iota-neutral-10 -ml-xl">
+                    <NameAvatar address={address} size={NameAvatarSize.Xxs} />
                     {truncateString(iotaName, 12)}
                 </span>
             ) : null}

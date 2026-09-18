@@ -13,8 +13,11 @@ import {
 } from '@iota/apps-ui-kit';
 import {
     AddressAlias,
+    ImageIcon,
+    ImageIconSize,
     useCopyToClipboard,
     useGetDefaultIotaName,
+    useIotaNameAvatar,
     useGetObjectOrPastObject,
     isOfficialAuthenticator,
 } from '@iota/core';
@@ -34,6 +37,7 @@ export function AbstractAccountResultPage(): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
     const { data: defaultName, isLoading: isLoadingName } = useGetDefaultIotaName(accountId);
+    const { imageUrl: nameAvatarImageUrl } = useIotaNameAvatar(accountId);
     const {
         data: accountObjectData,
         isPending: isObjectPending,
@@ -148,6 +152,20 @@ export function AbstractAccountResultPage(): JSX.Element {
                 <div className="flex flex-col gap-2xl">
                     <PageHeader
                         type="Abstract Account"
+                        leading={
+                            nameAvatarImageUrl ? (
+                                <div className="h-20 w-20 overflow-hidden rounded-full ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-full">
+                                    <ImageIcon
+                                        src={nameAvatarImageUrl}
+                                        label={defaultName ?? ''}
+                                        fallback={defaultName ?? ''}
+                                        size={ImageIconSize.Full}
+                                        fallbackSize={ImageIconSize.Large}
+                                        rounded
+                                    />
+                                </div>
+                            ) : undefined
+                        }
                         title={
                             <div className="flex flex-col gap-xs">
                                 <AddressAlias

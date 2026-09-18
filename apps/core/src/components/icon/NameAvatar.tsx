@@ -3,9 +3,10 @@
 
 import cn from 'clsx';
 import { type ReactNode, useEffect, useState } from 'react';
-import { useGetIotaNameAvatar } from '../../hooks/useGetIotaNameAvatar';
+import { useIotaNameAvatar } from '../../hooks/useIotaNameAvatar';
 
 export enum NameAvatarSize {
+    Xxs = 'h-5 w-5',
     Xs = 'h-8 w-8',
     Small = 'h-10 w-10',
     Medium = 'h-12 w-12',
@@ -18,7 +19,6 @@ interface NameAvatarProps {
     fallback?: ReactNode;
     className?: string;
     size?: NameAvatarSize;
-    showFallback?: boolean;
 }
 
 export function NameAvatar({
@@ -26,19 +26,18 @@ export function NameAvatar({
     fallback,
     className,
     size = NameAvatarSize.Full,
-    showFallback = false,
 }: NameAvatarProps) {
-    const { data: avatarUrl, isLoading } = useGetIotaNameAvatar(address);
+    const { imageUrl } = useIotaNameAvatar(address);
     const [imgError, setImgError] = useState(false);
 
     useEffect(() => {
         setImgError(false);
-    }, [avatarUrl]);
+    }, [imageUrl]);
 
-    if (!isLoading && avatarUrl && !imgError) {
+    if (imageUrl && !imgError) {
         return (
             <img
-                src={avatarUrl}
+                src={imageUrl}
                 alt="name avatar"
                 className={cn('rounded-full object-cover', size, className)}
                 onError={() => setImgError(true)}
@@ -46,13 +45,13 @@ export function NameAvatar({
         );
     }
 
-    if (!isLoading && showFallback && fallback) {
-        return (
-            <div className={cn('flex items-center justify-center rounded-full', size, className)}>
-                {fallback}
-            </div>
-        );
+    if (!fallback) {
+        return null;
     }
 
-    return null;
+    return (
+        <div className={cn('flex items-center justify-center rounded-full', size, className)}>
+            {fallback}
+        </div>
+    );
 }

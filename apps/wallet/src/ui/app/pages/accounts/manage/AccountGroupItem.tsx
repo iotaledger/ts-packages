@@ -206,13 +206,8 @@ function AccountAvatar({ account }: { account: SerializedUIAccount }) {
         logo = <IotaLogoMark />;
     }
     return (
-        <div className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-iota-neutral-100">
-            <NameAvatar
-                address={account.address}
-                fallback={logo}
-                size={NameAvatarSize.Xs}
-                showFallback
-            />
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-iota-neutral-100">
+            <NameAvatar address={account.address} fallback={logo} size={NameAvatarSize.Xs} />
         </div>
     );
 }

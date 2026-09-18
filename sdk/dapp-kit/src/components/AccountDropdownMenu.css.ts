@@ -17,7 +17,7 @@ export const menuContainer = style({
 export const menuContent = style({
     display: 'flex',
     flexDirection: 'column',
-    width: 180,
+    width: 220,
     maxHeight: 300,
     marginTop: 4,
     padding: 8,
@@ -51,6 +51,15 @@ export const switchAccountMenuItem = style({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 8,
+});
+
+export const accountIdentity = style({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    minWidth: 0,
+    overflow: 'hidden',
 });
 
 export const separator = style({

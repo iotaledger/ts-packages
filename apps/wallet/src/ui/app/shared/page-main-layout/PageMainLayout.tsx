@@ -92,7 +92,7 @@ function LeftContent({ account }: { account: SerializedUIAccount | null }) {
             className="flex flex-row items-center gap-sm p-xs text-pink-200 no-underline"
             data-testid="accounts-manage"
         >
-            <div className="flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-white">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-iota-primary-30 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-white">
                 <NameAvatar
                     address={account?.address}
                     fallback={
@@ -107,7 +107,6 @@ function LeftContent({ account }: { account: SerializedUIAccount | null }) {
                         )
                     }
                     size={NameAvatarSize.Xs}
-                    showFallback
                 />
             </div>
             <div className="flex flex-col items-start">

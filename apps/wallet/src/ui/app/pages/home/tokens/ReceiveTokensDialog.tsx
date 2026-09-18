@@ -12,7 +12,7 @@ import {
     Panel,
 } from '@iota/apps-ui-kit';
 import { useCopyToClipboard, useActiveAccount } from '_hooks';
-import { QR, toast, useGetDefaultIotaName } from '@iota/core';
+import { NameAvatar, NameAvatarSize, QR, toast, useGetDefaultIotaName } from '@iota/core';
 import { useIotaLedgerClient } from '_src/ui/app/components';
 import {
     isLedgerAccountSerializedUI,
@@ -75,7 +75,8 @@ export function ReceiveTokensDialog({ address, open, setOpen }: ReceiveTokensDia
                         <div className="flex flex-col gap-xs">
                             {iotaName && (
                                 <Panel bgColor="bg-iota-neutral-96 dark:bg-iota-neutral-12">
-                                    <div className="break-words px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
+                                    <div className="flex items-center justify-center gap-xs break-words px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
+                                        <NameAvatar address={address} size={NameAvatarSize.Xs} />
                                         {iotaName}
                                     </div>
                                 </Panel>

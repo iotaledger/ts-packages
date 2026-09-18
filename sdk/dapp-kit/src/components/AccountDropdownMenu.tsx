@@ -97,7 +97,10 @@ export function AccountDropdownMenuItem({
             className={clsx(styles.menuItem, styles.switchAccountMenuItem)}
             onSelect={() => switchAccount({ account })}
         >
-            <Text mono>{displayAccount}</Text>
+            <div className={styles.accountIdentity}>
+                <IotaNameNftImage address={account.address} iotaNamesEnabled={iotaNamesEnabled} />
+                <Text mono>{displayAccount}</Text>
+            </div>
             {active ? <CheckIcon /> : null}
         </DropdownMenu.Item>
     );

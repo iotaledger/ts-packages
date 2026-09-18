@@ -1,14 +1,12 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    useGetAllOwnedObjects,
-    useGetDefaultIotaName,
-    useGetIotaNameRecord,
-    useIotaNamesClient,
-} from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { getSubnameRegistrationType, isSubname, normalizeIotaName } from '@iota/iota-names-sdk';
+import { useIotaNamesClient } from '../contexts';
+import { useGetAllOwnedObjects } from './useGetAllOwnedObjects';
+import { useGetDefaultIotaName } from './useGetDefaultIotaName';
+import { useGetIotaNameRecord } from './useGetIotaNameRecord';
 
 interface UseIotaNameAvatarResult {
     name: string | null | undefined;
@@ -26,14 +24,17 @@ function getSubnameType(iotaNamesClient: ReturnType<typeof useIotaNamesClient>['
 }
 
 export function useIotaNameAvatar(
-    address: string | undefined,
+    address: string | null | undefined,
     enabled: boolean = true,
 ): UseIotaNameAvatarResult {
+    const { iotaNamesClient } = useIotaNamesClient();
+
+    const isEnabled = enabled && !!iotaNamesClient?.config && !!address;
+
     const { data: name, isLoading: isLoadingName } = useGetDefaultIotaName(
-        enabled ? address : undefined,
+        isEnabled ? address : undefined,
     );
     const { data: record, isLoading: isLoadingNameRecord } = useGetIotaNameRecord(name);
-    const { iotaNamesClient } = useIotaNamesClient();
 
     const isNameSubname = !!name && isSubname(name);
     const subnameType = isNameSubname ? getSubnameType(iotaNamesClient) : undefined;
@@ -64,11 +65,12 @@ export function useIotaNameAvatar(
 
     return {
         name,
-        imageUrl: avatarObject?.data?.display?.data?.image_url,
+        imageUrl: avatarObject?.data?.display?.data?.image_url ?? undefined,
         isLoading:
-            isLoadingName ||
-            isLoadingNameRecord ||
-            (!!subnameType && isLoadingOwnedSubnames) ||
-            (!!avatarObjectId && isLoadingAvatarObject),
+            isEnabled &&
+            (isLoadingName ||
+                isLoadingNameRecord ||
+                (!!subnameType && isLoadingOwnedSubnames) ||
+                (!!avatarObjectId && isLoadingAvatarObject)),
     };
 }

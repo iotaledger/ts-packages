@@ -10,7 +10,13 @@ import {
     Header,
     Panel,
 } from '@iota/apps-ui-kit';
-import { QR, useGetDefaultIotaName, useCopyToClipboard } from '@iota/core';
+import {
+    NameAvatar,
+    NameAvatarSize,
+    QR,
+    useGetDefaultIotaName,
+    useCopyToClipboard,
+} from '@iota/core';
 import { trackElementCopied } from '@/lib/utils';
 import { useCallback } from 'react';
 
@@ -51,7 +57,8 @@ export function ReceiveFundsDialog({
                         <div className="flex flex-col gap-xs">
                             {iotaName && (
                                 <Panel bgColor="bg-iota-neutral-96 dark:bg-iota-neutral-12">
-                                    <div className="break-words px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
+                                    <div className="flex items-center justify-center gap-xs break-words px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
+                                        <NameAvatar address={address} size={NameAvatarSize.Xs} />
                                         {iotaName}
                                     </div>
                                 </Panel>
