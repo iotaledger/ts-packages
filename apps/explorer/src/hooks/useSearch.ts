@@ -42,7 +42,7 @@ const getResultsForAuditTrail = async (
 
     return [
         {
-            id: `${auditTrailChain.id}-audittrail`,
+            id: auditTrailChain.id,
             label: auditTrailChain.id,
             type: 'audit-trail',
         },
@@ -62,7 +62,7 @@ const getResultsForNotarization = async (
 
     return [
         {
-            id: `${notarizationChain.id}-notarization`,
+            id: notarizationChain.id,
             label: notarizationChain.id,
             type: 'notarization',
         },

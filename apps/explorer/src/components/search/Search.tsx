@@ -13,7 +13,6 @@ import { useDebouncedValue } from '~/hooks/useDebouncedValue';
 import { useRecentSearches } from '~/hooks/useRecentSearches';
 import { useSearch } from '~/hooks/useSearch';
 import { ampli } from '~/lib/utils';
-import { trimAuditTrailNotalizationSuffix } from './utils';
 
 interface SearchProps {
     onSelectResult?: () => void;
@@ -42,10 +41,7 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
                     searchCategory: result.type,
                 });
                 addRecentSearch(query);
-                navigate(
-                    `/${result.type}/${encodeURIComponent(trimAuditTrailNotalizationSuffix(result.id))}`,
-                    {},
-                );
+                navigate(`/${result.type}/${encodeURIComponent(result.id)}`, {});
                 setQuery('');
                 onSelectResult?.();
             }
@@ -120,7 +116,7 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
             ) : hasResults ? (
                 <div className="flex w-full flex-col gap-xs">
                     {results.map((result, index) => {
-                        const url = `/${result.type}/${encodeURIComponent(trimAuditTrailNotalizationSuffix(result.id))}`;
+                        const url = `/${result.type}/${encodeURIComponent(result.id)}`;
                         return (
                             <LinkWithQuery
                                 key={url}
