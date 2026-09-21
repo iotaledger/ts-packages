@@ -2,9 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { CoinItem, useBalanceInUSD } from '@iota/core';
-import { useIotaClientContext } from '@iota/dapp-kit';
-import { type Network } from '@iota/iota-sdk/client';
+import { CoinItem } from '@iota/core';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { type CoinBalanceVerified, type SortField, type SortOrder } from './OwnedCoins';
@@ -20,8 +18,6 @@ type OwnedCoinViewProps = {
 
 export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewProps): JSX.Element {
     const [areCoinDetailsOpen, setAreCoinDetailsOpen] = useState<boolean>(false);
-    const { network } = useIotaClientContext();
-    const usd = useBalanceInUSD(coin.coinType, coin.totalBalance, network as Network);
 
     return (
         <div data-testid="ownedcoinlabel" className="flex flex-col gap-y-xs py-xxs">
@@ -33,11 +29,7 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     'flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
                 )}
             >
-                <CoinItem
-                    coinType={coin.coinType}
-                    balance={BigInt(coin.totalBalance)}
-                    usd={usd ?? undefined}
-                />
+                <CoinItem coinType={coin.coinType} balance={BigInt(coin.totalBalance)} />
 
                 <div
                     className={clsx(
