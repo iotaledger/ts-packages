@@ -28,3 +28,4 @@ out/
 generated/
 playwright-report/
 storybook-static/
+/sdk/grpc/src/proto
