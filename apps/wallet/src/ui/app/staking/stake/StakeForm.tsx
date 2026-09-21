@@ -250,7 +250,7 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                                                 formatted={availableBalanceFormatted}
                                                 symbol={symbol}
                                             />
-                                            <span>Available</span>
+                                            <span>&nbsp;Available</span>
                                         </span>
                                     ) : (
                                         '--'
@@ -258,6 +258,14 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                                 }
                                 suffix={' ' + symbol}
                                 errorMessage={amount && meta.error ? meta.error : undefined}
+                                supportingValue={
+                                    !meta.error ? (
+                                        <AmountWithFiat
+                                            amount={amountWithoutDecimals}
+                                            coinType={IOTA_TYPE_ARG}
+                                        />
+                                    ) : undefined
+                                }
                                 label="Amount"
                                 trailingElement={
                                     <ButtonPill onClick={setMaxAmount} disabled={!availableBalance}>

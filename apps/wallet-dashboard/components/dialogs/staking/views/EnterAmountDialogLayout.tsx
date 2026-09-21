@@ -36,6 +36,7 @@ interface EnterAmountDialogLayoutProps {
     selectedValidator: string;
     senderAddress: string;
     caption: React.ReactNode;
+    supportingValue?: React.ReactNode;
     renderInfo?: React.JSX.Element;
     isLoading: boolean;
     onBack: () => void;
@@ -52,6 +53,7 @@ export function EnterAmountDialogLayout({
     totalGas,
     senderAddress,
     caption,
+    supportingValue,
     renderInfo,
     isLoading,
     isStakeDisabled,
@@ -105,6 +107,9 @@ export function EnterAmountDialogLayout({
                                             placeholder="Enter amount to stake"
                                             errorMessage={
                                                 values.amount && meta.error ? meta.error : undefined
+                                            }
+                                            supportingValue={
+                                                !meta.error ? supportingValue : undefined
                                             }
                                             caption={caption}
                                             trailingElement={renderInputAction}

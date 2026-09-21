@@ -10,7 +10,6 @@ import {
     CardType,
     CardImage,
     ImageType,
-    CardBody,
     CardAction,
     CardActionType,
     KeyValueInfo,
@@ -27,6 +26,8 @@ import {
     useCoinMetadata,
     useGetIotaNameRecord,
     NamedAddressTooltip,
+    CoinFiatValue,
+    AmountWithFiat,
 } from '@iota/core';
 import { Loader } from '@iota/apps-ui-icons';
 import { ExplorerLink } from '@/components';
@@ -68,6 +69,7 @@ export function ReviewValuesFormView({
         balance: totalGas,
         format: CoinFormat.Full,
     });
+    const totalGasAmount = totalGas ?? 0;
 
     return (
         <>
@@ -79,10 +81,29 @@ export function ReviewValuesFormView({
                             <CardImage type={ImageType.BgSolid}>
                                 <CoinIcon coinType={coinType} rounded size={ImageIconSize.Small} />
                             </CardImage>
-                            <CardBody
-                                title={`${isPayAllIota ? '~' : ''}${roundedAmount} ${symbol}`}
-                                subtitle="Amount"
-                            />
+                            <div className="flex w-full flex-col">
+                                <div className="flex flex-row items-center gap-x-xxs">
+                                    <div className="card-body-title-color flex items-baseline gap-1 text-start font-inter text-title-md">
+                                        <span>
+                                            {isPayAllIota ? '~' : ''}
+                                            {roundedAmount} {symbol}
+                                        </span>
+                                        <span className="flex items-baseline gap-0.5">
+                                            <span className="key-supporting-text-color text-body-sm">
+                                                ~
+                                            </span>
+                                            <CoinFiatValue
+                                                amount={amountWithoutDecimals}
+                                                coinType={coinType}
+                                                withParentheses={false}
+                                            />
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="card-body-subtitle-color text-start font-inter text-body-md">
+                                    Amount
+                                </div>
+                            </div>
                             <CardAction type={CardActionType.SupportingText} />
                         </Card>
                     ) : null}
@@ -124,8 +145,17 @@ export function ReviewValuesFormView({
                         <Divider />
                         <KeyValueInfo
                             keyText={'Est. Gas Fees'}
-                            value={gasFormatted}
-                            supportingLabel={gasSymbol}
+                            value={
+                                gasFormatted ? (
+                                    <AmountWithFiat
+                                        amount={totalGasAmount}
+                                        formatted={gasFormatted}
+                                        symbol={gasSymbol}
+                                    />
+                                ) : (
+                                    '-'
+                                )
+                            }
                             fullwidth
                         />
                     </div>

@@ -122,7 +122,6 @@ export function ValidatorsCard() {
                             formatted={totalDelegatedStakeFormatted}
                             symbol={symbol}
                             direction="column"
-                            showApproxSymbol={false}
                         />
                     }
                 />
@@ -134,7 +133,6 @@ export function ValidatorsCard() {
                             formatted={totalDelegatedRewardsFormatted}
                             symbol={symbol}
                             direction="column"
-                            showApproxSymbol={false}
                         />
                     }
                 />

@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ButtonPill, Input, InputType } from '@iota/apps-ui-kit';
-import { CoinMetadata, CoinStruct, type Network } from '@iota/iota-sdk/client';
-import { IOTA_COIN_METADATA, useBalanceInUSD, useFormatCoin } from '../../hooks';
+import { CoinMetadata, CoinStruct } from '@iota/iota-sdk/client';
+import { IOTA_COIN_METADATA, useFormatCoin } from '../../hooks';
 import { useField, useFormikContext } from 'formik';
 import { TokenForm } from '../../forms';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
-import { useIotaClientContext } from '@iota/dapp-kit';
-import { formatBalanceToUSD } from '../../utils';
+import { AmountWithFiat } from '../coin';
 
 export interface SendTokenInputProps {
     coins: CoinStruct[];
@@ -30,18 +29,11 @@ export function SendTokenFormInput({
     coinMetadata,
 }: SendTokenInputProps) {
     const { values, isSubmitting, validateField } = useFormikContext<TokenForm>();
-    const { network } = useIotaClientContext();
 
     const coinDecimals = coinMetadata?.decimals ?? 0;
     const symbol = coinMetadata?.symbol ?? IOTA_COIN_METADATA.symbol;
 
     const parsedAmount = parseAmount(values.amount, coinDecimals);
-    const amountInUSD = useBalanceInUSD(coinType, parsedAmount, network as Network);
-    const hasFiatValue =
-        parsedAmount > 0n &&
-        amountInUSD !== null &&
-        amountInUSD !== undefined &&
-        Math.abs(amountInUSD) >= 0.005;
 
     const [formattedGasBudgetEstimation, gasToken] = useFormatCoin({
         balance: totalGas,
@@ -78,9 +70,9 @@ export function SendTokenFormInput({
             errorMessage={errorMessage}
             amountCounter={!errorMessage ? (coins ? gasAmount : '--') : undefined}
             supportingValue={
-                !errorMessage && hasFiatValue
-                    ? `~ ${formatBalanceToUSD(amountInUSD as number)}`
-                    : undefined
+                !errorMessage ? (
+                    <AmountWithFiat amount={parsedAmount} coinType={coinType} />
+                ) : undefined
             }
             trailingElement={
                 <ButtonPill disabled={isActionButtonDisabled} onClick={onActionClick}>

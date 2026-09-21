@@ -47,7 +47,7 @@ export interface BaseInputProps extends InputWrapperProps {
     /**
      * Text that is shown below the value of the input.
      */
-    supportingValue?: string | null;
+    supportingValue?: React.ReactNode;
     /**
      * Default value of the input
      */

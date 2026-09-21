@@ -15,7 +15,7 @@ import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { type ReactNode } from 'react';
 import { useFormatCoin } from '../../hooks';
 import { BALANCE_MASK, useBalanceVisible } from '../../contexts/BalanceVisibilityContext';
-import { formatBalanceToUSD } from '../../utils';
+import { CoinFiatValue } from './CoinFiatValue';
 
 interface CoinItemProps {
     coinType: string;
@@ -23,7 +23,6 @@ interface CoinItemProps {
     onClick?: () => void;
     icon?: ReactNode;
     clickableAction?: ReactNode;
-    usd?: number;
     format?: CoinFormat;
     hideMask?: boolean;
 }
@@ -34,7 +33,6 @@ export function CoinItem({
     onClick,
     icon,
     clickableAction,
-    usd,
     format,
     hideMask,
 }: CoinItemProps): React.JSX.Element {
@@ -59,7 +57,16 @@ export function CoinItem({
                 type={CardActionType.SupportingText}
                 title={`${isBalanceVisible ? formatted : BALANCE_MASK} ${symbol}`}
                 subtitle={
-                    isBalanceVisible && usd !== undefined ? formatBalanceToUSD(usd) : undefined
+                    isBalanceVisible ? (
+                        <span className="flex flex-row items-baseline gap-1">
+                            <span className="key-supporting-text-color text-body-sm">~</span>
+                            <CoinFiatValue
+                                amount={balance}
+                                coinType={coinType}
+                                withParentheses={false}
+                            />
+                        </span>
+                    ) : undefined
                 }
             />
         </Card>

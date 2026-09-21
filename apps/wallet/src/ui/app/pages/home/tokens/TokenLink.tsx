@@ -2,13 +2,13 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { CoinItem, useBalanceInUSD } from '@iota/core';
+import { CoinItem } from '@iota/core';
 import { ampli } from '_src/shared/analytics/ampli';
 import { type CoinBalance } from '@iota/iota-sdk/client';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector, useShouldOpenInNewTab } from '_src/ui/app/hooks';
+import { useShouldOpenInNewTab } from '_src/ui/app/hooks';
 
 type TokenLinkProps = {
     coinBalance: CoinBalance;
@@ -18,8 +18,6 @@ type TokenLinkProps = {
 
 export function TokenLink({ coinBalance, clickableAction, icon }: TokenLinkProps) {
     const shouldOpenNewTab = useShouldOpenInNewTab();
-    const network = useAppSelector((state) => state.app.network);
-    const usd = useBalanceInUSD(coinBalance.coinType, coinBalance.totalBalance, network);
     const url = `/send?type=${encodeURIComponent(coinBalance.coinType)}`;
     const linkProps = shouldOpenNewTab ? { target: '_blank', rel: 'noreferrer' } : {};
     return (
@@ -38,7 +36,6 @@ export function TokenLink({ coinBalance, clickableAction, icon }: TokenLinkProps
             <CoinItem
                 coinType={coinBalance.coinType}
                 balance={BigInt(coinBalance.totalBalance)}
-                usd={usd ?? undefined}
                 clickableAction={clickableAction}
                 icon={icon}
             />

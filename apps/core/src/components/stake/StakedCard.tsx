@@ -103,7 +103,6 @@ export function StakedCard({
                             formatted={rewardsFormatted}
                             symbol={rewardsSymbol}
                             direction="column"
-                            showApproxSymbol={false}
                             align="end"
                         />
                     ) : (

@@ -9,7 +9,7 @@ import { CoinFiatValue } from './CoinFiatValue';
 
 export interface AmountWithFiatProps {
     amount: bigint | string | number;
-    formatted: string;
+    formatted?: string;
     symbol?: string;
     coinType?: string;
     direction?: 'row' | 'column';
@@ -19,7 +19,7 @@ export interface AmountWithFiatProps {
 
 export function AmountWithFiat({
     amount,
-    formatted,
+    formatted = '',
     symbol,
     coinType = IOTA_TYPE_ARG,
     direction = 'row',

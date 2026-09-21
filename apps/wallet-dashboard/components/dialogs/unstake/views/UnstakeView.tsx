@@ -25,8 +25,9 @@ import {
     useUnstakeForm,
     UnstakeBreakdown,
     MIN_PARTIAL_UNSTAKE_MESSAGE,
+    AmountWithFiat,
 } from '@iota/core';
-import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
 import { ValidatorStakingData } from '@/components';
@@ -69,6 +70,7 @@ export function UnstakeView({
         activeUnstakeData,
         activeIsError,
         activeIsLoading: activeIsPending,
+        gasAmount,
         gasFormatted,
         isInvalidPartialAmount,
         isNotEnoughGas,
@@ -81,6 +83,8 @@ export function UnstakeView({
 
     const { mutateAsync: signAndExecuteTransaction, isPending: isTransactionPending } =
         useSignAndExecuteTransaction();
+
+    const partialUnstakeAmount = parseAmount(values.amount, IOTA_DECIMALS);
 
     const { systemDataResult, delegatedStakeDataResult } = useGetStakingValidatorDetails({
         accountAddress: activeAddress,
@@ -216,6 +220,14 @@ export function UnstakeView({
                                                             ? meta.error
                                                             : undefined
                                                     }
+                                                    supportingValue={
+                                                        !meta.error ? (
+                                                            <AmountWithFiat
+                                                                amount={partialUnstakeAmount}
+                                                                coinType={IOTA_TYPE_ARG}
+                                                            />
+                                                        ) : undefined
+                                                    }
                                                 />
                                             )}
                                         </Field>
@@ -240,8 +252,17 @@ export function UnstakeView({
                             <div className="flex flex-col gap-y-sm p-md">
                                 <KeyValueInfo
                                     keyText="Gas Fees"
-                                    value={gasFormatted || '-'}
-                                    supportingLabel={GAS_SYMBOL}
+                                    value={
+                                        gasFormatted ? (
+                                            <AmountWithFiat
+                                                amount={gasAmount ?? 0}
+                                                formatted={gasFormatted}
+                                                symbol={GAS_SYMBOL}
+                                            />
+                                        ) : (
+                                            '-'
+                                        )
+                                    }
                                     fullwidth
                                 />
                             </div>

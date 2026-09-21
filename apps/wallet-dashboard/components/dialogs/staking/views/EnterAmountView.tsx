@@ -146,6 +146,7 @@ export function EnterAmountView({
             totalGas={gasSummary?.totalGas}
             senderAddress={senderAddress}
             caption={caption}
+            supportingValue={<AmountWithFiat amount={amount} coinType={IOTA_TYPE_ARG} />}
             renderInfo={
                 isUnsafeAmount ? (
                     <InfoBox

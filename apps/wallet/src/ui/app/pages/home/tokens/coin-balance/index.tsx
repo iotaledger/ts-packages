@@ -28,7 +28,7 @@ function WalletBalanceUsd({ amount: walletBalance, coinType, isVisible }: Wallet
     }
 
     return (
-        <div className="flex items-center gap-1 text-label-md text-iota-neutral-40 dark:text-iota-neutral-60 [&>span]:!text-label-md">
+        <div className="key-supporting-text-color flex items-center gap-1 text-label-md [&>span]:!text-label-md">
             {isVisible ? (
                 <>
                     <span>~</span>

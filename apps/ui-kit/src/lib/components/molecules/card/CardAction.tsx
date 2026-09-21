@@ -64,7 +64,7 @@ export function CardAction({
                 <Button
                     type={buttonType || ButtonType.Outlined}
                     size={ButtonSize.Small}
-                    text={title as string}
+                    text={title}
                     onClick={handleActionClick}
                     icon={icon}
                     iconAfterText={iconAfterText}

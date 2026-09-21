@@ -28,7 +28,7 @@ export function CoinFiatValue({
     const formattedValue = formatBalanceToUSD(value);
 
     return (
-        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
+        <span className="key-supporting-text-color text-body-sm">
             {withParentheses ? `(${formattedValue})` : formattedValue}
         </span>
     );
