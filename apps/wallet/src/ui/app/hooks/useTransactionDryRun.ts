@@ -17,7 +17,7 @@ export function useTransactionDryRun(
     const { data: account } = useAccountByAddress(sender);
     const signer = useSigner(account || null);
     const response = useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['dryRunTransaction', sender, chain, transaction.getData()],
         queryFn: () => {
             return signer!.dryRunTransactionBlock({ transactionBlock: transaction, chain });

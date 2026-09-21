@@ -40,7 +40,7 @@ export interface IotaTransportRequestOptions {
     signal?: AbortSignal;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// oxlint-disable-next-line @typescript-eslint/ban-types
 
 export interface IotaTransportSubscribeOptions<T> {
     method: string;

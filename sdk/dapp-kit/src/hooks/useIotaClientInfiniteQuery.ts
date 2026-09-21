@@ -29,7 +29,7 @@ export type IotaRpcPaginatedMethods = {
     [K in IotaRpcPaginatedMethodName]: IotaClient[K] extends (
         input: infer Params,
     ) => Promise<
-        infer Result extends { hasNextPage?: boolean | null; nextCursor?: infer Cursor | null }
+        infer Result extends { hasNextPage?: boolean | null; nextCursor?: (infer Cursor) | null }
     >
         ? {
               name: K;

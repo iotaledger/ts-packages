@@ -22,7 +22,7 @@ export function useNamesPurchaseMode() {
     const auctionType = `${authKeyType}<${auctionPackageId}::auction::AuctionAuth>`;
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...queryKey.purchaseConfig(paymentType, auctionType)],
         queryFn: async () => {
             if (!iotaNamesClient || !iotaClient) {

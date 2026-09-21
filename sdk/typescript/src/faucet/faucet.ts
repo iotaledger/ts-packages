@@ -36,7 +36,7 @@ type BatchStatusFaucetResponse = {
 type FaucetRequest = {
     host: string;
     path: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     body?: Record<string, any>;
     headers?: HeadersInit;
     method: 'GET' | 'POST';

@@ -11,7 +11,7 @@ export function useNewUnstakeTransaction(senderAddress: string, unstakeIotaId: s
     const client = useIotaClient();
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['unstake-transaction', unstakeIotaId, senderAddress],
         queryFn: async () => {
             const transaction = createUnstakeTransaction(unstakeIotaId);

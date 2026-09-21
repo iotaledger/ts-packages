@@ -103,9 +103,9 @@ export function isTransaction(obj: unknown): obj is Transaction {
 export type TransactionObjectInput = string | CallArg | TransactionObjectArgument;
 
 interface TransactionPluginRegistry {
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // oxlint-disable-next-line @typescript-eslint/ban-types
     buildPlugins: Map<string | Function, TransactionPlugin>;
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // oxlint-disable-next-line @typescript-eslint/ban-types
     serializationPlugins: Map<string | Function, TransactionPlugin>;
 }
 
@@ -387,7 +387,7 @@ export class Transaction {
     }
 
     #normalizeTransactionArgument(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         arg: TransactionArgument | SerializedBcs<any>,
     ) {
         if (isSerializedBcs(arg)) {
@@ -474,7 +474,7 @@ export class Transaction {
         );
     }
     moveCall({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         arguments: args,
         ...input
     }:
@@ -499,7 +499,7 @@ export class Transaction {
     }
     transferObjects(
         objects: (TransactionObjectArgument | string)[],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         address: TransactionArgument | SerializedBcs<any> | string,
     ) {
         return this.add(

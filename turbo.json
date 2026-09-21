@@ -6,9 +6,6 @@
 		"lint:fix": {
 			"dependsOn": ["^build"]
 		},
-		"prettier:fix": {
-			"cache": false
-		},
 		"test": {
 			"dependsOn": ["^build", "build"],
 			"outputs": ["coverage/**"]
@@ -121,9 +118,8 @@
 		"VITE_EVM_BRIDGE_DEFAULT_NETWORK"
 	],
 	"globalDependencies": [
-		".eslintrc.js",
-		"prettier.config.js",
-		".prettierignore",
+		".oxlintrc.json",
+		".oxfmtrc.json",
 		"sdk/.env",
 		"sdk/.env.defaults"
 	]

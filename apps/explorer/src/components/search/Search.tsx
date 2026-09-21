@@ -19,6 +19,7 @@ interface SearchProps {
     autoFocus?: boolean;
 }
 
+// oxlint-disable-next-line react/function-component-definition
 export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
     { onSelectResult, autoFocus },
     ref,

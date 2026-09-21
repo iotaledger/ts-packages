@@ -28,7 +28,7 @@ export function PageSectionNav({ sections }: PageSectionNavProps): JSX.Element |
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         function onScroll() {
             const spyLine =

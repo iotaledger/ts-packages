@@ -21,7 +21,7 @@ export function useClaimAuctionTransaction(
     const iotaClient = useIotaClient();
 
     return useMutation({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         mutationKey: [...queryKey.claimAuction(name, address)],
         mutationFn: async () => {
             if (!auctionHouseData?.auctionHouseId) {

@@ -27,7 +27,7 @@ export function useGroupedStardustObjects(
     const epochEndMs = currentEpochEndTimestampMs ? currentEpochEndTimestampMs : 0;
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'grouped-migration-objects',
             objects,

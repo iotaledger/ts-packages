@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import { existsSync } from 'fs';
 import { STATE_FILE } from '../helpers/paths';

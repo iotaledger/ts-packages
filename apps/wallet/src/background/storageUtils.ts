@@ -32,7 +32,7 @@ async function setToStorage<T>(
     return await storage.set({ [key]: value });
 }
 
-//eslint-disable-next-line @typescript-eslint/no-explicit-any
+//oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type OmitFirst<T extends any[]> = T extends [any, ...infer R] ? R : never;
 type GetParams<T> = OmitFirst<Parameters<typeof getFromStorage<T>>>;
 type SetParams<T> = OmitFirst<Parameters<typeof setToStorage<T>>>;

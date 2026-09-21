@@ -11,7 +11,7 @@ export function useTimelockedUnstakeTransaction(
 ) {
     const client = useIotaClient();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['timelocked-unstake-transaction', timelockedStakedObjectIds, senderAddress],
         queryFn: async () => {
             const transaction = createTimelockedUnstakeTransaction(timelockedStakedObjectIds);

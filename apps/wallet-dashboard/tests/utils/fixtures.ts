@@ -1,7 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable no-empty-pattern */
+/* oxlint-disable no-empty-pattern */
 
 import path from 'path';
 import os from 'os';

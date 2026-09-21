@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-// eslint-disable-next-line react/no-typos
+// oxlint-disable-next-line react/no-typos
 import 'react';
 
 declare module 'react' {

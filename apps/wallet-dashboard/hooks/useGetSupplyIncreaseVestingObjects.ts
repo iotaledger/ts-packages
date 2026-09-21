@@ -289,7 +289,7 @@ export function useGetSupplyIncreaseVestingObjects(address: string): SupplyIncre
         return () => {
             isTransactionAborted = true;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [dryRunKey, iotaClient]);
 
     const isSupplyIncreaseVestingScheduleEmpty =
@@ -314,7 +314,7 @@ export function useGetSupplyIncreaseVestingObjects(address: string): SupplyIncre
             setIsMaxTransactionSizeError(true);
             setReductionSize((prev) => prev + REDUCTION_STEP_SIZE);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isUnlockError, unlockError]);
 
     return {

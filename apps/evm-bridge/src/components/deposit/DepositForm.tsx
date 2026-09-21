@@ -133,9 +133,9 @@ export function DepositForm({
             ? `${formattedAvailableBalance} ${symbol} Available`
             : '--';
     const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line @typescript-eslint/no-unused-vars
         onBlur: _onBlur,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line @typescript-eslint/no-unused-vars
         onChange: _onChange,
         ...registerDepositAmount
     } = register(BridgeFormInputName.DepositAmount);

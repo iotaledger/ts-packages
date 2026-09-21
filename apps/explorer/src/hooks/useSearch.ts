@@ -285,7 +285,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['search', query],
         queryFn: async () => {
             const results = (

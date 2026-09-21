@@ -19,7 +19,7 @@ export function useIsAssetTransferable(obj: IotaObjectData | null | undefined) {
     const [packageId, moduleName, functionName] = getObjectTypeParams(obj);
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['is-asset-transferable', packageId, moduleName, functionName],
         queryFn: async () => {
             if (!packageId || !moduleName || !functionName) {

@@ -86,7 +86,7 @@ async function recoverAccount(
 
     // Isolated search for no address rotation
     if (!addressGapLimit) {
-        const { addresses, isBalanceExists: isBalanceExists } = await searchBalances({
+        const { addresses, isBalanceExists } = await searchBalances({
             accountIndex,
             addressIndex: addressStartIndex,
             changeIndexes,

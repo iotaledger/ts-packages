@@ -22,7 +22,7 @@ export function useMigrationTransaction(
     const { data: maxSizeBytes = Infinity } = useMaxTransactionSizeBytes();
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['migration-transaction', address, basicOutputObjectsIds, nftOutputObjectsIds],
         queryFn: async () => {
             const transaction = await createMigrationTransaction(

@@ -275,7 +275,7 @@ export function parseTransferPolicyCapObject(
 
     return {
         policyId: policy,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+        // oxlint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         policyCapId: item.data?.objectId!,
         type: objectType,
     };

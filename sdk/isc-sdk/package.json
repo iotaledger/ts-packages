@@ -18,12 +18,8 @@
     "scripts": {
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
         "build": "build-package",
-        "eslint:check": "eslint --max-warnings=0 \"./src/**/*.{js,ts}\" \"./tests/**/*.{js,ts}\"",
-        "eslint:fix": "pnpm eslint:check --fix",
-        "prettier:check": "prettier -c --ignore-unknown --ignore-path=.prettierignore .",
-        "prettier:fix": "prettier -w --ignore-unknown --ignore-path=.prettierignore .",
-        "lint": "pnpm eslint:check && pnpm prettier:check",
-        "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
+        "lint": "oxlint --deny-warnings && oxfmt --check",
+        "lint:fix": "oxlint --fix && oxfmt",
         "run:example": "tsx",
         "test": "vitest"
     },
@@ -45,12 +41,12 @@
     },
     "lint-staged": {
         "src/**/*.{ts,js,mjs}": [
-            "eslint --fix",
-            "prettier --write"
+            "oxlint --fix",
+            "oxfmt"
         ],
         "examples/**/*.{ts,js,mjs}": [
-            "eslint --fix",
-            "prettier --write"
+            "oxlint --fix",
+            "oxfmt"
         ]
     }
 }

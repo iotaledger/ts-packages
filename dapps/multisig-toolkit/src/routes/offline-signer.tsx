@@ -47,7 +47,7 @@ export default function OfflineSigner() {
                 : currentAccount.chains[0]
         ) as Network;
         setDryRunNetwork(activeNetwork);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [currentAccount]);
 
     // runs a dry-run for the transaction based on the connected wallet.

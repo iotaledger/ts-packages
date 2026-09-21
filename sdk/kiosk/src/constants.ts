@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-// eslint-disable-next-line import/no-cycle
+// oxlint-disable-next-line import/no-cycle
 import type { KioskConfiguration } from '@iota/iota-sdk/client';
 import { getAllNetworks } from '@iota/iota-sdk/client';
 import {
