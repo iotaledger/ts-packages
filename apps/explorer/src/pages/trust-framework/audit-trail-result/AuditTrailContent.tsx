@@ -6,7 +6,6 @@ import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iot
 import { PageHeader, PageLayout } from '~/components';
 import { onCopySuccess } from '~/lib';
 import { useAuditTrailPkgId } from '~/contexts';
-import { useMemo } from 'react';
 import { Warning } from '@iota/apps-ui-icons';
 import {
     getAuditTrailRecordsSize,
@@ -24,24 +23,20 @@ interface AuditTrailContentProps {
 }
 
 export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
-    const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
-    const { data: auditTrailObject, isPending: isAuditTrailObjectPending } =
+    const { data: objectResult, isLoading: isObjectLoading } = useGetObjectOrPastObject(objectId);
+    const { data: auditTrailObject, isLoading: isAuditTrailObjectLoading } =
         useResolveOnChainAuditTrail(objectId);
-    const { data: auditTrailHandle, isPending: isAuditTrailHandlePending } =
+    const { data: auditTrailHandle, isLoading: isAuditTrailHandleLoading } =
         useResolveAuditTrailHandle(objectId);
 
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaAuditTrailPackage = useAuditTrailPkgId();
 
-    const isPending = useMemo(
-        () => isAuditTrailObjectPending || isObjectPending || isAuditTrailHandlePending,
-        [isAuditTrailObjectPending, isObjectPending, isAuditTrailHandlePending],
-    );
-    if (isPending) {
+    if (isAuditTrailObjectLoading || isObjectLoading || isAuditTrailHandleLoading) {
         return <PageLayout loading loadingText="Loading Audit Trail Object..." content={[]} />;
     }
 
-    if (auditTrailObject == null || auditTrailHandle == null) {
+    if (!auditTrailObject || !auditTrailHandle) {
         return (
             <PageLayout
                 content={
@@ -57,7 +52,7 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
         );
     }
 
-    if (objectResult == null) {
+    if (!objectResult) {
         return (
             <PageLayout
                 content={
@@ -73,7 +68,7 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
         );
     }
 
-    if (iotaAuditTrailPackage == null) {
+    if (!iotaAuditTrailPackage) {
         // The activation of this branch is a symptom of Notarization WASM Web module not loaded.
         return (
             <PageLayout
