@@ -2,21 +2,27 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { TitleSize } from '@iota/apps-ui-kit';
-import { ImageIcon, ImageIconSize, useAddressAliasLookup, useGetObject } from '@iota/core';
-import { IotaLogoMark } from '@iota/apps-ui-icons';
-import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
+import { useState } from 'react';
 import {
-    ProgrammableTxnBlockCard,
-    AddressLink,
-    ObjectLink,
-    ObjectVideoImage,
-    CollapsibleCard,
-} from '~/components';
+    Badge,
+    BadgeType,
+    BadgeSize,
+    Table,
+    TableHeader,
+    TableRow,
+    TableHeaderCell,
+    TableBody,
+    Tooltip,
+} from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
+import { useGetObject } from '@iota/core';
+import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
+import { formatDigest } from '@iota/iota-sdk/utils';
+import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
-import { StackedField } from './Field';
-import { decodeVectorU8Value, getCommandArguments } from './utils';
-import { HighlightableRef, usePtbHighlight } from './PtbHighlight';
+import { CopyButton } from './Field';
+import { decodeVectorU8Value, pureValueHex, truncateHex } from './utils';
+import { usePtbHighlight } from './PtbHighlight';
 
 const REGEX_NUMBER = /^\d+$/;
 
@@ -25,213 +31,279 @@ interface InputsCardProps {
     transactions: IotaTransaction[];
 }
 
-interface InputConsumer {
-    commandIndex: number;
-    type: string;
-}
-
-function getUsedByCommands(inputIndex: number, transactions: IotaTransaction[]): InputConsumer[] {
-    return transactions.reduce<InputConsumer[]>((usedBy, transaction, commandIndex) => {
-        const [[type, data]] = Object.entries(transaction);
-        const args = getCommandArguments(type, data);
-        const usesInput = args.some(
-            (arg) => typeof arg === 'object' && 'Input' in arg && arg.Input === inputIndex,
-        );
-
-        if (usesInput) {
-            usedBy.push({ commandIndex, type });
-        }
-
-        return usedBy;
-    }, []);
-}
-
-function getInputAddress(input: IotaCallArg): string | undefined {
-    if (input.type === 'object' && 'objectId' in input) {
-        return input.objectId;
-    }
-
-    if (input.type === 'pure' && 'valueType' in input && input.valueType === 'address') {
-        return String(input.value);
-    }
-
-    return undefined;
-}
-
-function ObjectInputSupportingElement({ objectId }: { objectId: string }): JSX.Element {
-    const { data } = useGetObject(objectId);
-    const display = data?.data?.display?.data;
+function IndexCell({
+    index,
+    onSelfHoverChange,
+}: {
+    index: number;
+    onSelfHoverChange: (hovered: boolean) => void;
+}): JSX.Element {
+    const { onMouseEnter, onMouseLeave } = usePtbHighlight(`input-${index}`);
 
     return (
-        <div
-            className="ml-xs flex min-w-0 items-center gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
-            onClick={(event) => event.stopPropagation()}
+        <span
+            onMouseEnter={() => {
+                onSelfHoverChange(true);
+                onMouseEnter();
+            }}
+            onMouseLeave={() => {
+                onSelfHoverChange(false);
+                onMouseLeave();
+            }}
+            className="cursor-pointer select-none text-label-sm text-iota-neutral-60 dark:text-iota-neutral-40"
         >
-            {display?.name ? (
-                <>
-                    {display.image_url && (
-                        <ObjectVideoImage
-                            variant="xxs"
-                            rounded="md"
-                            title={display.name}
-                            subtitle=""
-                            src={display.image_url}
-                            disablePreview
-                        />
-                    )}
-                    <span className="truncate">{display.name}</span>
-                </>
-            ) : (
-                <div className="[&>div]:flex-row [&>div]:items-center [&>div]:gap-xs">
-                    <ObjectLink objectId={objectId} copyText={objectId} className="text-label-md" />
-                </div>
-            )}
-        </div>
+            {index}
+        </span>
     );
 }
 
-function AddressInputSupportingElement({ address }: { address: string }): JSX.Element {
-    const getAddressAlias = useAddressAliasLookup();
-    const addressAlias = getAddressAlias(address);
+function InputTypeBadge({ input }: { input: IotaCallArg }): JSX.Element {
+    if (input.type === 'pure') {
+        return <Badge type={BadgeType.Neutral} label="pure" size={BadgeSize.Small} />;
+    }
 
-    if (addressAlias) {
+    if (input.objectType === 'sharedObject') {
         return (
-            <div className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                {addressAlias.imageUrl ? (
-                    <ImageIcon
-                        src={addressAlias.imageUrl}
-                        label={addressAlias.alias}
-                        fallback={addressAlias.alias}
-                        size={ImageIconSize.Small}
-                        rounded
+            <Badge
+                type={input.mutable ? BadgeType.Warning : BadgeType.Neutral}
+                label={input.objectType}
+                size={BadgeSize.Small}
+            />
+        );
+    }
+
+    if (input.objectType === 'receiving') {
+        return <Badge type={BadgeType.Outlined} label={input.objectType} size={BadgeSize.Small} />;
+    }
+
+    return <Badge type={BadgeType.PrimarySoft} label={input.objectType} size={BadgeSize.Small} />;
+}
+
+function ObjectInputValue({ objectId }: { objectId: string }): JSX.Element {
+    const { data } = useGetObject(objectId);
+    const display = data?.data?.display?.data;
+
+    if (display?.name) {
+        return (
+            <div className="flex min-w-0 items-center gap-xs">
+                {display.image_url && (
+                    <ObjectVideoImage
+                        variant="xxs"
+                        rounded="md"
+                        title={display.name}
+                        subtitle=""
+                        src={display.image_url}
+                        disablePreview
                     />
-                ) : (
-                    <IotaLogoMark className="h-3 w-3 shrink-0" />
                 )}
-                <span className="truncate">{addressAlias.alias}</span>
+                <span className="truncate">{display.name}</span>
+                <ObjectLink objectId={objectId} copyText={objectId} className="text-label-md" />
+            </div>
+        );
+    }
+
+    return <ObjectLink objectId={objectId} copyText={objectId} />;
+}
+
+function ValueTypeLabel({ valueType }: { valueType?: string | null }): JSX.Element | null {
+    if (!valueType) {
+        return null;
+    }
+
+    return (
+        <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+            {valueType}
+        </span>
+    );
+}
+
+function PureRawBytes({
+    valueType,
+    value,
+}: {
+    valueType?: string | null;
+    value: unknown;
+}): JSX.Element | null {
+    if (!valueType) {
+        return null;
+    }
+
+    const hex = pureValueHex(valueType, value);
+    if (!hex) {
+        return null;
+    }
+
+    return (
+        <span className="flex items-center gap-xxs text-body-sm">
+            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">
+                {hex.length / 2}B
+            </span>
+            <span className="text-iota-neutral-10 dark:text-iota-neutral-100">
+                0x{truncateHex(hex)}
+            </span>
+            <CopyButton text={`0x${hex}`} />
+        </span>
+    );
+}
+
+function DecodedPureValue({
+    input,
+}: {
+    input: Extract<IotaCallArg, { type: 'pure' }>;
+}): JSX.Element {
+    const stringValue = String(input.value);
+
+    if (input.valueType === 'address') {
+        return <AddressLink address={stringValue} copyText={stringValue} />;
+    }
+
+    if (input.valueType === 'vector<u8>') {
+        return (
+            <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+                <ExpandableValue value={decodeVectorU8Value(input.value)} align="start" />
+            </span>
+        );
+    }
+
+    if (REGEX_NUMBER.test(stringValue)) {
+        return (
+            <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+                {BigInt(stringValue).toLocaleString()}
+            </span>
+        );
+    }
+
+    return (
+        <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+            <ExpandableValue value={stringValue} align="start" />
+        </span>
+    );
+}
+
+function InputValueCell({ input }: { input: IotaCallArg }): JSX.Element {
+    if (input.type === 'object') {
+        return (
+            <div className="flex flex-wrap items-center gap-xs">
+                <ObjectInputValue objectId={input.objectId} />
+                {'version' in input && (
+                    <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        v{input.version}
+                    </span>
+                )}
+                {'initialSharedVersion' in input && (
+                    <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        shared@{input.initialSharedVersion}
+                    </span>
+                )}
+                {'digest' in input && (
+                    <span
+                        className="flex items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60"
+                        title={input.digest}
+                    >
+                        <span>digest</span>
+                        <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+                            {formatDigest(input.digest)}
+                        </span>
+                        <CopyButton text={input.digest} />
+                    </span>
+                )}
             </div>
         );
     }
 
     return (
-        <div
-            className="ml-xs flex min-w-0 items-baseline gap-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60"
-            onClick={(event) => event.stopPropagation()}
-        >
-            <AddressLink address={address} copyText={address} className="text-label-md" />
+        <div className="flex flex-col gap-xxs">
+            <PureRawBytes valueType={input.valueType} value={input.value} />
+            <div className="flex flex-wrap items-center gap-xs">
+                <Tooltip text="Decoded from the raw BCS bytes using this input's declared type.">
+                    <span className="flex items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        decoded
+                        <Info className="h-3.5 w-3.5" />
+                    </span>
+                </Tooltip>
+                <ValueTypeLabel valueType={input.valueType} />
+                <DecodedPureValue input={input} />
+            </div>
         </div>
     );
 }
 
-function InputSupportingElement({ input }: { input: IotaCallArg }): JSX.Element | null {
-    const address = getInputAddress(input);
+const VISIBLE_INPUTS_LIMIT = 6;
 
-    if (!address) {
-        return null;
-    }
-
-    return input.type === 'object' ? (
-        <ObjectInputSupportingElement objectId={address} />
-    ) : (
-        <AddressInputSupportingElement address={address} />
+function HighlightCell({
+    highlighted,
+    children,
+}: {
+    highlighted: boolean;
+    children: React.ReactNode;
+}): JSX.Element {
+    return (
+        <td
+            className={
+                highlighted
+                    ? 'h-14 border-b border-transparent bg-iota-neutral-92 px-md dark:bg-iota-neutral-12'
+                    : 'table-cell-border-color h-14 border-b px-md'
+            }
+        >
+            {children}
+        </td>
     );
 }
 
-export function InputsCard({ inputs, transactions }: InputsCardProps): JSX.Element | null {
+function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.Element {
+    const { isHighlighted } = usePtbHighlight(`input-${index}`);
+    const [isSelfHovered, setIsSelfHovered] = useState(false);
+    const showRowHighlight = isHighlighted && !isSelfHovered;
+
+    return (
+        <tr>
+            <HighlightCell highlighted={showRowHighlight}>
+                <IndexCell index={index} onSelfHoverChange={setIsSelfHovered} />
+            </HighlightCell>
+            <HighlightCell highlighted={showRowHighlight}>
+                <InputTypeBadge input={input} />
+            </HighlightCell>
+            <HighlightCell highlighted={showRowHighlight}>
+                <InputValueCell input={input} />
+            </HighlightCell>
+        </tr>
+    );
+}
+
+const MAX_VISIBLE_TABLE_HEIGHT = (VISIBLE_INPUTS_LIMIT + 1) * 56;
+
+export function InputsTable({ inputs }: InputsCardProps): JSX.Element | null {
     if (!inputs?.length) {
         return null;
     }
 
-    const expandableItems = inputs.map((input, index) => {
-        const usedByCommands = getUsedByCommands(index, transactions);
-        const refId = `input-${index}` as const;
-        const { isHighlighted } = usePtbHighlight(refId);
-
-        return (
-            <CollapsibleCard
-                key={index}
-                title={`Input ${index}`}
-                supportingTitleElement={<InputSupportingElement input={input} />}
-                collapsible
-                compactHeader
-                initialClose
-                titleSize={TitleSize.Small}
-                className={
-                    isHighlighted
-                        ? 'rounded-xl ring-1 ring-iota-primary-30 dark:ring-iota-primary-80'
-                        : undefined
-                }
-            >
-                <div
-                    data-testid="inputs-card-content"
-                    className="mx-auto flex w-full max-w-5xl flex-col divide-y divide-iota-neutral-92 px-lg pb-lg pt-xs dark:divide-iota-neutral-12"
-                >
-                    {usedByCommands.length > 0 && (
-                        <StackedField
-                            keyText="Used by"
-                            value={
-                                <span className="flex flex-wrap gap-x-xxs">
-                                    {usedByCommands.map(({ commandIndex, type }, usedByIndex) => (
-                                        <HighlightableRef
-                                            key={commandIndex}
-                                            refId={`command-${commandIndex}`}
-                                        >
-                                            Command #{commandIndex} ({type})
-                                            {usedByIndex < usedByCommands.length - 1 ? ',' : ''}
-                                        </HighlightableRef>
-                                    ))}
-                                </span>
-                            }
-                        />
-                    )}
-                    {Object.entries(input).map(([key, value]) => {
-                        let renderValue;
-                        const stringValue = String(value);
-
-                        if (key === 'mutable') {
-                            renderValue = String(value);
-                        } else if (key === 'objectId') {
-                            renderValue = (
-                                <ObjectLink objectId={stringValue} copyText={stringValue} />
-                            );
-                        } else if (
-                            'valueType' in input &&
-                            'value' in input &&
-                            input.valueType === 'address' &&
-                            key === 'value'
-                        ) {
-                            renderValue = (
-                                <AddressLink address={stringValue} copyText={stringValue} />
-                            );
-                        } else if (REGEX_NUMBER.test(stringValue)) {
-                            const bigNumber = BigInt(stringValue);
-                            renderValue = bigNumber.toLocaleString();
-                        } else if (
-                            'valueType' in input &&
-                            'value' in input &&
-                            input.valueType === 'vector<u8>' &&
-                            key === 'value'
-                        ) {
-                            renderValue = decodeVectorU8Value(value);
-                        } else {
-                            renderValue = stringValue;
-                        }
-
-                        const displayedValue =
-                            typeof renderValue === 'string' ? (
-                                <ExpandableValue value={renderValue} align="start" />
-                            ) : (
-                                renderValue
-                            );
-
-                        return <StackedField key={key} keyText={key} value={displayedValue} />;
-                    })}
-                </div>
-            </CollapsibleCard>
-        );
-    });
+    const canScroll = inputs.length > VISIBLE_INPUTS_LIMIT;
 
     return (
-        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Inputs" rawData={inputs} />
+        <div data-testid="inputs-card-content">
+            <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                <Info className="h-3.5 w-3.5" />
+                Hover the input number to highlight every place it appears
+            </div>
+            <div
+                style={canScroll ? { maxHeight: MAX_VISIBLE_TABLE_HEIGHT } : undefined}
+                className={canScroll ? 'overflow-y-auto' : undefined}
+            >
+                <Table rowIndexes={inputs.map((_, index) => index)}>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHeaderCell columnKey="index" label="#" />
+                            <TableHeaderCell columnKey="type" label="Type" />
+                            <TableHeaderCell columnKey="value" label="Value" />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {inputs.map((input, index) => (
+                            <InputRow key={index} index={index} input={input} />
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
     );
 }
