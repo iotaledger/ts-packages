@@ -122,21 +122,24 @@ export const createAuditTrailClientReadOnly = async (
 ): Promise<auditTrail.AuditTrailClientReadOnly> => {
     // If IOTA_AUDIT_TRAIL_PKG_ID is declared it has precedence
     await initAuditTrailWasmWeb();
-    if (IOTA_AUDIT_TRAIL_PKG_ID != null || IOTA_TF_COMPONENTS_PKG_ID != null) {
+
+    const isKnownNetwork = regularNetworks.has(network as Network);
+    const hasOverrides = !!IOTA_AUDIT_TRAIL_PKG_ID || !!IOTA_TF_COMPONENTS_PKG_ID;
+
+    if (!isKnownNetwork && !hasOverrides) {
+        throw new Error(
+            'Failed to create a AuditTrailClientReadOnly. Declare IOTA_AUDIT_TRAIL_PKG_ID and IOTA_TF_COMPONENTS_PKG_ID environment variables if running on a custom network.',
+        );
+    }
+
+    if (hasOverrides) {
         return await auditTrail.AuditTrailClientReadOnly.createWithPackageOverrides(
             iotaClient,
             new auditTrail.PackageOverrides(IOTA_AUDIT_TRAIL_PKG_ID, IOTA_TF_COMPONENTS_PKG_ID),
         );
     }
 
-    // Well-known networks have well-known notarization package id
-    if (regularNetworks.has(network as Network)) {
-        return await auditTrail.AuditTrailClientReadOnly.create(iotaClient);
-    }
-
-    throw new Error(
-        'Failed to create a AuditTrailClientReadOnly. Declare IOTA_AUDIT_TRAIL_PKG_ID and IOTA_TF_COMPONENTS_PKG_ID environment variables if running on a custom network.',
-    );
+    return await auditTrail.AuditTrailClientReadOnly.create(iotaClient);
 };
 
 export async function tryDIDParse(didCandidate: string): Promise<identity.IotaDID | null> {
