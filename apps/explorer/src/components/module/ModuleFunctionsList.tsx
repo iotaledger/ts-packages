@@ -79,8 +79,8 @@ export function ModuleFunctionsList({
 
     return (
         <Panel hasBorder>
-            <Title size={TitleSize.Small} title="Functions" />
-            <div>
+            <div className="panel-bg sticky top-0 z-10 rounded-t-xl">
+                <Title size={TitleSize.Small} title="Functions" />
                 <SegmentedButton
                     type={SegmentedButtonType.Transparent}
                     shape={ButtonSegmentType.Underlined}

@@ -75,8 +75,8 @@ export function PkgModulesWrapper({ id, modules }: PkgModulesWrapperProps): JSX.
     }));
 
     return (
-        <div className="flex h-full flex-col items-stretch gap-md--rs md:flex-row md:flex-nowrap">
-            <div className="flex w-full flex-col md:min-h-[560px] md:w-1/5">
+        <div className="flex flex-col items-stretch gap-md--rs md:h-[70vh] md:flex-row md:flex-nowrap">
+            <div className="flex w-full flex-col md:h-full md:w-1/5">
                 <div className="relative z-[1]">
                     <Search
                         searchValue={query}
@@ -104,7 +104,7 @@ export function PkgModulesWrapper({ id, modules }: PkgModulesWrapperProps): JSX.
                         )}
                     />
                 </div>
-                <div className="max-h-[560px] flex-1 overflow-auto pt-sm">
+                <div className="max-h-[320px] min-h-0 flex-1 overflow-auto pt-sm md:max-h-none">
                     <VerticalList>
                         <div className="flex flex-col gap-sm">
                             {moduleNames.map((name) => (
@@ -123,7 +123,7 @@ export function PkgModulesWrapper({ id, modules }: PkgModulesWrapperProps): JSX.
             <div className="block pt-sm md:hidden">
                 <Divider />
             </div>
-            <div className="w-full md:w-4/5">
+            <div className="w-full md:h-full md:min-h-0 md:w-4/5 md:overflow-auto">
                 <ModuleContent
                     key={`${id}-${selectedModuleName}`}
                     packageId={id}
