@@ -10,13 +10,13 @@ import { AuditTrailContent } from './AuditTrailContent';
 export function AuditTrailResult() {
     const { id: auditTrailId } = useParams();
 
-    if (auditTrailId == null) {
+    if (!auditTrailId) {
         return (
             <PageLayout
                 content={
                     <InfoBox
-                        title="Audit Trail not implemented yet!"
-                        supportingText="Wait for the Audit Trail implementation."
+                        title="Missing Audit Trail ID"
+                        supportingText="The path is missing an Audit Trail ID to parse."
                         icon={<Warning />}
                         type={InfoBoxType.Error}
                         style={InfoBoxStyle.Elevated}

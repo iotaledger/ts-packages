@@ -27,30 +27,29 @@ export function TrustFrameworkProvider({ children }: PropsWithChildren) {
     );
     const [auditTrailClient, setAuditTrailClient] = useState<AuditTrailClientReadOnly | null>(null);
 
+    async function tryInstantiateClient<T>(
+        createClient: (client: typeof iotaClient, network: string) => Promise<T>,
+        setClientState: (state: Awaited<T> | null) => void,
+    ) {
+        try {
+            setClientState(await createClient(iotaClient, network));
+        } catch (e) {
+            console.error(e);
+            setClientState(null);
+        }
+    }
+
     useEffect(() => {
         if (!iotaClient) return;
 
-        const instantiateIdentityClient = async () => {
-            const _identityClient = await createIdentityClientReadOnly(iotaClient, network);
-            setIdentityClient(_identityClient);
-        };
-        instantiateIdentityClient();
-
-        const instantiateNotarizationClient = async () => {
-            const _notarizationClient = await createNotarizationClientReadOnly(iotaClient, network);
-            setNotarizationClient(_notarizationClient);
-        };
-        instantiateNotarizationClient();
+        void tryInstantiateClient(createIdentityClientReadOnly, setIdentityClient);
+        void tryInstantiateClient(createNotarizationClientReadOnly, setNotarizationClient);
     }, [iotaClient, network]);
 
     useEffect(() => {
         if (!iotaClient || !isAuditTrailEnabled) return;
 
-        const instantiateAuditTrailClient = async () => {
-            const _auditTrailClient = await createAuditTrailClientReadOnly(iotaClient, network);
-            setAuditTrailClient(_auditTrailClient);
-        };
-        instantiateAuditTrailClient();
+        void tryInstantiateClient(createAuditTrailClientReadOnly, setAuditTrailClient);
     }, [iotaClient, network, isAuditTrailEnabled]);
 
     const ctx = useMemo(
