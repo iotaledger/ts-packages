@@ -6,10 +6,10 @@ export class GrpcError extends Error {}
 /** The server responded with an error for this item. */
 export class ServerError extends GrpcError {
     constructor(
-        message: string,
         readonly code: number,
+        readonly detail: string,
     ) {
-        super(message);
+        super(`server error (code ${code}): ${detail}`);
     }
 }
 
@@ -42,10 +42,18 @@ export class UnexpectedEndOfStreamError extends GrpcError {
 }
 
 /** Network or gRPC transport failure. The message comes from the failure itself. */
-export class TransportError extends GrpcError {}
+export class TransportError extends GrpcError {
+    constructor(detail: string) {
+        super(`grpc error: ${detail}`);
+    }
+}
 
 /** The server answered something that does not match the contract. Base of a family. */
-export class ProtocolError extends GrpcError {}
+export class ProtocolError extends GrpcError {
+    constructor(message: string) {
+        super(`protocol error: ${message}`);
+    }
+}
 
 export class UnexpectedResultCountError extends ProtocolError {
     constructor(
@@ -89,7 +97,11 @@ export class EmptyResponseFieldError extends ProtocolError {
 }
 
 /** Failures while reassembling a checkpoint stream. Base of a family. */
-export class CheckpointStreamError extends ProtocolError {}
+export class CheckpointStreamError extends ProtocolError {
+    constructor(message: string) {
+        super(`checkpoint stream error: ${message}`);
+    }
+}
 
 export class DataBeforeHeaderError extends CheckpointStreamError {
     constructor(readonly dataKind: string) {
