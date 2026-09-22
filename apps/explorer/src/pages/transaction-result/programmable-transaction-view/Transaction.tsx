@@ -7,8 +7,10 @@ import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink, AddressLink } from '~/components/ui';
-import { decodeVectorU8Value, pureValueHex } from './utils';
+import { decodeVectorU8ValueDetailed, pureValueHex } from './utils';
 import { HighlightableRef, type PtbRefId } from './PtbHighlight';
+
+const REGEX_NUMBER = /^\d+$/;
 
 function truncateMiddle(value: string, max = 40): string {
     if (value.length <= max) {
@@ -18,6 +20,14 @@ function truncateMiddle(value: string, max = 40): string {
     const head = Math.ceil((max - 1) / 2);
     const tail = Math.floor((max - 1) / 2);
     return `${value.slice(0, head)}…${value.slice(-tail)}`;
+}
+
+function truncateEnd(value: string, max = 40): string {
+    if (value.length <= max) {
+        return value;
+    }
+
+    return `${value.slice(0, max - 1)}…`;
 }
 
 function ResultPill({ children }: { children: React.ReactNode }): JSX.Element {
@@ -89,12 +99,15 @@ function InlineInputValue({
         : 'text-iota-tertiary-40 dark:text-iota-tertiary-70';
 
     if (input.type === 'pure' && input.valueType === 'vector<u8>') {
-        const decoded = decodeVectorU8Value(input.value);
-        return <span className={clsx('break-all', valueColor)}>{truncateMiddle(decoded)}</span>;
+        const { value: decoded, isPlainText } = decodeVectorU8ValueDetailed(input.value);
+        const truncated = isPlainText ? truncateEnd(decoded) : truncateMiddle(decoded);
+        return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
     }
 
     const stringValue = String(input.value);
-    return <span className={clsx('break-all', valueColor)}>{truncateMiddle(stringValue)}</span>;
+    const isNumber = REGEX_NUMBER.test(stringValue);
+    const truncated = isNumber ? truncateMiddle(stringValue) : truncateEnd(stringValue);
+    return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
 }
 
 function InputIndexLabel({ index }: { index: number }): JSX.Element {

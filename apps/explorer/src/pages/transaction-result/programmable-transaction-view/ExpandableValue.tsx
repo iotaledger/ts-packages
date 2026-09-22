@@ -29,7 +29,7 @@ export function ExpandableValue({
     return (
         <span
             className={clsx(
-                'flex max-w-full flex-col gap-xxs',
+                'flex max-w-full flex-col gap-xs pb-xxs',
                 align === 'end' ? 'items-end text-right' : 'items-start text-left',
             )}
         >

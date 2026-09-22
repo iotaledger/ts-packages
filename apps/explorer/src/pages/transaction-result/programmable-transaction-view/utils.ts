@@ -96,7 +96,12 @@ export function flattenIotaArguments(data: (IotaArgument | IotaArgument[])[]): s
         .join(', ');
 }
 
-export function decodeVectorU8Value(value: unknown): string {
+export interface DecodedVectorU8Value {
+    value: string;
+    isPlainText: boolean;
+}
+
+export function decodeVectorU8ValueDetailed(value: unknown): DecodedVectorU8Value {
     const stringValue = String(value);
 
     let parsedVector: Array<number> | null = null;
@@ -131,12 +136,16 @@ export function decodeVectorU8Value(value: unknown): string {
     }
 
     if (parsedUtf) {
-        return parsedUtf;
+        return { value: parsedUtf, isPlainText: true };
     } else if (parsedAddress) {
-        return parsedAddress;
+        return { value: parsedAddress, isPlainText: false };
     }
 
-    return stringValue;
+    return { value: stringValue, isPlainText: false };
+}
+
+export function decodeVectorU8Value(value: unknown): string {
+    return decodeVectorU8ValueDetailed(value).value;
 }
 
 export interface ResultConsumer {

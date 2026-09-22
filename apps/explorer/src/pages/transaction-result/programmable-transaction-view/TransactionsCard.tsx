@@ -164,12 +164,18 @@ function CommandRow({
     data,
     args,
     inputs,
+    showPackage,
+    showModule,
+    showFunction,
 }: {
     index: number;
     type: string;
     data: unknown;
     args: ReturnType<typeof getCommandArguments>;
     inputs: IotaCallArg[];
+    showPackage: boolean;
+    showModule: boolean;
+    showFunction: boolean;
 }): JSX.Element {
     const { isHighlighted } = usePtbHighlight(`command-${index}`);
 
@@ -181,15 +187,21 @@ function CommandRow({
             <HighlightCell highlighted={isHighlighted}>
                 <Badge type={BadgeType.PrimarySoft} label={type} size={BadgeSize.Small} />
             </HighlightCell>
-            <HighlightCell highlighted={isHighlighted}>
-                <PackageCell type={type} data={data} muted />
-            </HighlightCell>
-            <HighlightCell highlighted={isHighlighted}>
-                <ModuleCell type={type} data={data} muted />
-            </HighlightCell>
-            <HighlightCell highlighted={isHighlighted}>
-                <FunctionCell type={type} data={data} muted />
-            </HighlightCell>
+            {showPackage && (
+                <HighlightCell highlighted={isHighlighted}>
+                    <PackageCell type={type} data={data} muted />
+                </HighlightCell>
+            )}
+            {showModule && (
+                <HighlightCell highlighted={isHighlighted}>
+                    <ModuleCell type={type} data={data} muted />
+                </HighlightCell>
+            )}
+            {showFunction && (
+                <HighlightCell highlighted={isHighlighted}>
+                    <FunctionCell type={type} data={data} muted />
+                </HighlightCell>
+            )}
             <HighlightCell highlighted={isHighlighted}>
                 <div className="text-body-sm">
                     <ArgCommaList args={args} inputs={inputs} muted />
@@ -322,6 +334,11 @@ export function TransactionsTable({
         return null;
     }
 
+    const types = transactions.map((transaction) => Object.keys(transaction)[0]);
+    const showPackage = types.some((type) => type === 'MoveCall' || type === 'Upgrade');
+    const showModule = types.some((type) => type === 'MoveCall');
+    const showFunction = showModule;
+
     return (
         <div data-testid="transactions-card-content">
             <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
@@ -333,9 +350,9 @@ export function TransactionsTable({
                     <TableRow>
                         <TableHeaderCell columnKey="index" label="#" />
                         <TableHeaderCell columnKey="type" label="Type" />
-                        <TableHeaderCell columnKey="package" label="Package" />
-                        <TableHeaderCell columnKey="module" label="Module" />
-                        <TableHeaderCell columnKey="function" label="Function" />
+                        {showPackage && <TableHeaderCell columnKey="package" label="Package" />}
+                        {showModule && <TableHeaderCell columnKey="module" label="Module" />}
+                        {showFunction && <TableHeaderCell columnKey="function" label="Function" />}
                         <TableHeaderCell columnKey="arguments" label="Arguments" />
                     </TableRow>
                 </TableHeader>
@@ -352,6 +369,9 @@ export function TransactionsTable({
                                 data={data}
                                 args={args}
                                 inputs={inputs}
+                                showPackage={showPackage}
+                                showModule={showModule}
+                                showFunction={showFunction}
                             />
                         );
                     })}
