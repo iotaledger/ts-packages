@@ -17,13 +17,18 @@ interface NonIotaCoinProps {
 function NonIotaCoin({ coinType, size = ImageIconSize.Full, rounded }: NonIotaCoinProps) {
     const { data: coinMeta } = useCoinMetadata(coinType);
     return (
-        <div className="flex h-full w-full items-center justify-center rounded-full bg-iota-neutral-96 dark:bg-iota-neutral-12">
+        <div
+            className={cx(
+                size,
+                'flex items-center justify-center rounded-full bg-iota-neutral-96 dark:bg-iota-neutral-12',
+            )}
+        >
             <ImageIcon
                 key={coinMeta?.iconUrl}
                 src={coinMeta?.iconUrl}
                 label={coinMeta?.name || coinType}
                 fallback={coinMeta?.name || coinType}
-                size={coinMeta?.iconUrl ? ImageIconSize.Full : size}
+                size={size}
                 fallbackSize={size}
                 rounded={rounded}
             />
