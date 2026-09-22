@@ -13,6 +13,13 @@ import {
     isIotaGrpcClient,
 } from '../../src/index.js';
 
+/** `ledger` is protected so callers cannot skip reassembly. Tests widen it back. */
+class IotaGrpcTestClient extends IotaGrpcClient {
+    override get ledger() {
+        return super.ledger;
+    }
+}
+
 describe('IotaGrpcClient', () => {
     it('defaults to the size the server chunks at', () => {
         expect(new IotaGrpcClient({ network: 'mainnet' }).maxMessageSizeBytes).toBe(
@@ -39,14 +46,14 @@ describe('IotaGrpcClient', () => {
     });
 
     it('builds each service once and keeps it', () => {
-        const client = new IotaGrpcClient({ network: 'devnet' });
+        const client = new IotaGrpcTestClient({ network: 'devnet' });
 
         expect(client.ledger).toBe(client.ledger);
     });
 
     it('takes a url instead of a network', () => {
         expect(
-            new IotaGrpcClient({ url: 'http://localhost:50051' }).ledger.getServiceInfo,
+            new IotaGrpcTestClient({ url: 'http://localhost:50051' }).ledger.getServiceInfo,
         ).toBeTypeOf('function');
     });
 
