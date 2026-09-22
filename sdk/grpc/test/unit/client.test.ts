@@ -12,13 +12,7 @@ import {
     getGrpcUrl,
     isIotaGrpcClient,
 } from '../../src/index.js';
-
-/** `ledger` is protected so callers cannot skip reassembly. Tests widen it back. */
-class IotaGrpcTestClient extends IotaGrpcClient {
-    override get ledger() {
-        return super.ledger;
-    }
-}
+import { IotaGrpcTestClient } from '../test-client.js';
 
 describe('IotaGrpcClient', () => {
     it('defaults to the size the server chunks at', () => {
