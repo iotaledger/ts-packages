@@ -2,23 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type RecordTagEntry } from '@iota/audit-trails/web';
-import {
-    Panel,
-    Title,
-    KeyValueInfo,
-    ButtonUnstyled,
-    InfoBox,
-    InfoBoxType,
-    InfoBoxStyle,
-} from '@iota/apps-ui-kit';
+import { Panel, Title, KeyValueInfo, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { Info } from '@iota/apps-ui-icons';
 
 interface TagsCardProps {
     tags: RecordTagEntry[];
-    onFieldsNameClick?: (tag: string) => void;
 }
 
-export function TagsView({ tags, onFieldsNameClick }: TagsCardProps) {
+export function TagsView({ tags }: TagsCardProps) {
     return (
         <Panel>
             <div className="flex flex-col gap-md">
@@ -37,17 +28,13 @@ export function TagsView({ tags, onFieldsNameClick }: TagsCardProps) {
                 ) : (
                     <div className="flex max-h-44 flex-col overflow-y-auto md:max-h-96">
                         {tags.map(({ tag, usageCount }) => (
-                            <ButtonUnstyled
-                                key={tag}
-                                className="rounded-lg p-xs hover:bg-iota-primary-80/20"
-                                onClick={() => onFieldsNameClick && onFieldsNameClick(tag)}
-                            >
+                            <div key={tag} className="p-xs">
                                 <KeyValueInfo
                                     keyText={tag}
                                     value={usageCount.toString()}
                                     fullwidth
                                 />
-                            </ButtonUnstyled>
+                            </div>
                         ))}
                     </div>
                 )}

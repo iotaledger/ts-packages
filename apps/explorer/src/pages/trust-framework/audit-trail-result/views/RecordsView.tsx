@@ -43,7 +43,7 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
             <Title title="Records" />
 
             <div className="flex flex-col gap-sm p-md--rs">
-                {isLoading || isFetchingNextPage ? (
+                {isLoading ? (
                     <PlaceholderTable
                         rowCount={PAGE_SIZE}
                         rowHeight="16px"
@@ -61,9 +61,11 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
                 )}
                 {hasNextPage && (
                     <div className="flex justify-center">
-                        <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                            Load More
-                        </Button>
+                        <Button
+                            onClick={() => fetchNextPage()}
+                            disabled={isFetchingNextPage}
+                            text={isFetchingNextPage ? 'Loading...' : 'Load More'}
+                        />
                     </div>
                 )}
             </div>
