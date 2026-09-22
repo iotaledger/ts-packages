@@ -6,8 +6,7 @@ import {
     type ProgrammableTransaction,
     type IotaTransactionBlockResponse,
 } from '@iota/iota-sdk/client';
-import { InputsCard } from '~/pages/transaction-result/programmable-transaction-view/InputsCard';
-import { TransactionsCard } from '~/pages/transaction-result/programmable-transaction-view/TransactionsCard';
+import { ProgrammableTransactionCard } from '~/pages/transaction-result/programmable-transaction-view/ProgrammableTransactionCard';
 import { PtbHighlightProvider } from '~/pages/transaction-result/programmable-transaction-view/PtbHighlight';
 import { Events } from '~/pages/transaction-result/Events';
 import { PAGE_SECTION_SCROLL_MARGIN } from '~/components/ui';
@@ -29,28 +28,12 @@ export function TransactionData({ transaction }: TransactionDataProps): JSX.Elem
         <div className="flex w-full flex-col gap-3 md:gap-6">
             {isProgrammableTransaction && (
                 <PtbHighlightProvider>
-                    <section className="flex w-full flex-1 flex-col gap-3 md:gap-6">
-                        <div
-                            data-testid="inputs-card"
-                            id={PageSection.Inputs}
-                            className={PAGE_SECTION_SCROLL_MARGIN}
-                        >
-                            <InputsCard
-                                inputs={programmableTxn.inputs}
-                                transactions={programmableTxn.transactions}
-                            />
-                        </div>
-                        <div
-                            data-testid="transactions-card"
-                            id={PageSection.Transactions}
-                            className={PAGE_SECTION_SCROLL_MARGIN}
-                        >
-                            <TransactionsCard
-                                transactions={programmableTxn.transactions}
-                                inputs={programmableTxn.inputs}
-                            />
-                        </div>
-                    </section>
+                    <div id={PageSection.ProgrammableTx} className={PAGE_SECTION_SCROLL_MARGIN}>
+                        <ProgrammableTransactionCard
+                            inputs={programmableTxn.inputs}
+                            transactions={programmableTxn.transactions}
+                        />
+                    </div>
                 </PtbHighlightProvider>
             )}
             {hasEvents && (

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+import { pureBcsSchemaFromTypeName, type PureTypeName } from '@iota/iota-sdk/bcs';
 import {
     type IotaArgument,
     type IotaTransaction,
@@ -8,6 +9,31 @@ import {
 } from '@iota/iota-sdk/client';
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
+
+function toBcsPureType(valueType: string): string {
+    if (/::string::String$/.test(valueType)) {
+        return 'string';
+    }
+
+    return valueType;
+}
+
+export function pureValueHex(valueType: string, value: unknown): string | null {
+    try {
+        const schema = pureBcsSchemaFromTypeName(toBcsPureType(valueType) as PureTypeName);
+        return toHex(schema.serialize(value as never).toBytes());
+    } catch {
+        return null;
+    }
+}
+
+export function truncateHex(hex: string, head = 8, tail = 6): string {
+    if (hex.length <= head + tail) {
+        return hex;
+    }
+
+    return `${hex.slice(0, head)}…${hex.slice(-tail)}`;
+}
 
 /** Extracts the `IotaArgument`s referenced by a single PTB command, regardless of its shape. */
 export function getCommandArguments(type: string, data: unknown): IotaArgument[] {
@@ -70,7 +96,12 @@ export function flattenIotaArguments(data: (IotaArgument | IotaArgument[])[]): s
         .join(', ');
 }
 
-export function decodeVectorU8Value(value: unknown): string {
+export interface DecodedVectorU8Value {
+    value: string;
+    isPlainText: boolean;
+}
+
+export function decodeVectorU8ValueDetailed(value: unknown): DecodedVectorU8Value {
     const stringValue = String(value);
 
     let parsedVector: Array<number> | null = null;
@@ -82,9 +113,12 @@ export function decodeVectorU8Value(value: unknown): string {
 
     let parsedUtf: string | null = null;
     try {
-        parsedUtf = new TextDecoder('utf-8', {
+        const decoded = new TextDecoder('utf-8', {
             fatal: true,
         }).decode(new Uint8Array(parsedVector ?? []));
+        // eslint-disable-next-line no-control-regex
+        const hasControlCharacters = /[\x00-\x08\x0e-\x1f\x7f]/.test(decoded);
+        parsedUtf = decoded.length > 0 && !hasControlCharacters ? decoded : null;
     } catch (_) {
         parsedUtf = null;
     }
@@ -102,12 +136,16 @@ export function decodeVectorU8Value(value: unknown): string {
     }
 
     if (parsedUtf) {
-        return parsedUtf;
+        return { value: parsedUtf, isPlainText: true };
     } else if (parsedAddress) {
-        return parsedAddress;
+        return { value: parsedAddress, isPlainText: false };
     }
 
-    return stringValue;
+    return { value: stringValue, isPlainText: false };
+}
+
+export function decodeVectorU8Value(value: unknown): string {
+    return decodeVectorU8ValueDetailed(value).value;
 }
 
 export interface ResultConsumer {

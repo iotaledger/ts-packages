@@ -2,57 +2,38 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ReactNode } from 'react';
-import {
-    type IotaArgument,
-    type IotaCallArg,
-    type MoveCallIotaTransaction,
-} from '@iota/iota-sdk/client';
-import { useGetObject } from '@iota/core';
-import { ErrorBoundary } from '~/components';
-import { ObjectLink, AddressLink } from '~/components/ui';
+import { Tooltip } from '@iota/apps-ui-kit';
+import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
-import { ExpandableValue } from './ExpandableValue';
-import { ArgumentsBlock, StackedField, type ArgumentRow } from './Field';
-import { decodeVectorU8Value } from './utils';
+import clsx from 'clsx';
+import { ObjectLink, AddressLink } from '~/components/ui';
+import { decodeVectorU8ValueDetailed, pureValueHex } from './utils';
 import { HighlightableRef, type PtbRefId } from './PtbHighlight';
 
-interface TransactionProps<T> {
-    type: string;
-    data: T;
-    inputs: IotaCallArg[];
+const REGEX_NUMBER = /^\d+$/;
+
+function truncateMiddle(value: string, max = 40): string {
+    if (value.length <= max) {
+        return value;
+    }
+
+    const head = Math.ceil((max - 1) / 2);
+    const tail = Math.floor((max - 1) / 2);
+    return `${value.slice(0, head)}…${value.slice(-tail)}`;
 }
 
-interface CommandProps<T> {
-    data: T;
-    inputs: IotaCallArg[];
+function truncateEnd(value: string, max = 40): string {
+    if (value.length <= max) {
+        return value;
+    }
+
+    return `${value.slice(0, max - 1)}…`;
 }
 
-function Arg({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX.Element {
-    if (arg === 'GasCoin') {
-        return (
-            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                Gas Coin
-            </span>
-        );
-    }
-
-    if ('Input' in arg) {
-        return <InputArg input={inputs[arg.Input]} />;
-    }
-
-    if ('Result' in arg) {
-        return (
-            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                Result of Command #{arg.Result}
-            </span>
-        );
-    }
-
-    const [commandIndex, resultIndex] = arg.NestedResult;
+function ResultPill({ children }: { children: React.ReactNode }): JSX.Element {
     return (
-        <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            Result of Command #{commandIndex}[{resultIndex}]
+        <span className="whitespace-nowrap rounded-full bg-iota-neutral-92 px-xs py-[1px] text-label-sm text-iota-neutral-40 dark:bg-iota-neutral-12 dark:text-iota-neutral-60">
+            {children}
         </span>
     );
 }
@@ -73,250 +54,165 @@ function argRefId(arg: IotaArgument): PtbRefId | undefined {
     return `command-${arg.NestedResult[0]}`;
 }
 
-function RefValue({ arg, inputs }: { arg: IotaArgument; inputs: IotaCallArg[] }): JSX.Element {
+const TRANSACTION_ARGUMENT_VALUE_COLOR = '!text-iota-tertiary-40 dark:!text-iota-tertiary-70';
+
+function ObjectInputArg({ objectId, muted }: { objectId: string; muted: boolean }): JSX.Element {
     return (
-        <HighlightableRef refId={argRefId(arg)}>
-            <Arg arg={arg} inputs={inputs} />
-        </HighlightableRef>
+        <ObjectLink
+            objectId={objectId}
+            label={formatAddress(objectId)}
+            copyText={objectId}
+            className={muted ? undefined : TRANSACTION_ARGUMENT_VALUE_COLOR}
+        />
     );
 }
 
-function ObjectInputArg({ objectId }: { objectId: string }): JSX.Element {
-    const { data } = useGetObject(objectId);
-    const objectNotFound = data?.error != null;
-
-    if (objectNotFound) {
-        return (
-            <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                {formatAddress(objectId)}
-            </span>
-        );
-    }
-
-    return <ObjectLink objectId={objectId} label={formatAddress(objectId)} copyText={objectId} />;
-}
-
-function InputArg({ input }: { input?: IotaCallArg }): JSX.Element {
+function InlineInputValue({
+    input,
+    muted = false,
+}: {
+    input?: IotaCallArg;
+    muted?: boolean;
+}): JSX.Element {
     if (!input) {
-        return (
-            <span className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">—</span>
-        );
+        return <span className="text-iota-neutral-40 dark:text-iota-neutral-60">—</span>;
     }
 
     if (input.type === 'object') {
-        return <ObjectInputArg objectId={input.objectId} />;
+        return <ObjectInputArg objectId={input.objectId} muted={muted} />;
     }
 
     if (input.type === 'pure' && input.valueType === 'address') {
         const address = String(input.value);
-        return <AddressLink address={address} label={formatAddress(address)} copyText={address} />;
-    }
-
-    if (input.type === 'pure' && input.valueType === 'vector<u8>') {
         return (
-            <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                <ExpandableValue value={decodeVectorU8Value(input.value)} align="start" />
-            </span>
+            <AddressLink
+                address={address}
+                label={formatAddress(address)}
+                copyText={address}
+                className={muted ? undefined : TRANSACTION_ARGUMENT_VALUE_COLOR}
+            />
         );
     }
 
+    const valueColor = muted
+        ? 'text-iota-neutral-10 dark:text-iota-neutral-92'
+        : 'text-iota-tertiary-40 dark:text-iota-tertiary-70';
+
+    if (input.type === 'pure' && input.valueType === 'vector<u8>') {
+        const { value: decoded, isPlainText } = decodeVectorU8ValueDetailed(input.value);
+        const truncated = isPlainText ? truncateEnd(decoded) : truncateMiddle(decoded);
+        return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
+    }
+
+    const stringValue = String(input.value);
+    const isNumber = REGEX_NUMBER.test(stringValue);
+    const truncated = isNumber ? truncateMiddle(stringValue) : truncateEnd(stringValue);
+    return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
+}
+
+function InputIndexLabel({ index }: { index: number }): JSX.Element {
     return (
-        <span className="break-all text-body-md text-iota-neutral-40 dark:text-iota-neutral-60">
-            <ExpandableValue value={String(input.value)} align="start" />
+        <span className="text-[10px] leading-none text-iota-neutral-40 dark:text-iota-neutral-60">
+            #{index}
         </span>
     );
 }
 
-function argRows(args: IotaArgument[], inputs: IotaCallArg[]): ArgumentRow[] {
-    return args.map((arg, index) => ({
-        node: <Arg key={index} arg={arg} inputs={inputs} />,
-        refId: argRefId(arg),
-    }));
-}
-
-function packageIdRows(packageIds: string[]): ArgumentRow[] {
-    return packageIds.map((packageId) => ({
-        node: (
-            <ObjectLink
-                key={packageId}
-                objectId={packageId}
-                label={formatAddress(packageId)}
-                copyText={packageId}
-            />
-        ),
-    }));
-}
-
-function Field({ keyText, value }: { keyText: string; value: ReactNode }): JSX.Element {
-    return <StackedField keyText={keyText} value={value} />;
-}
-
-function MoveCall({ data, inputs }: CommandProps<MoveCallIotaTransaction>): JSX.Element {
-    const {
-        module,
-        package: movePackage,
-        function: func,
-        arguments: args,
-        type_arguments: typeArgs,
-    } = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field
-                keyText="Package"
-                value={
-                    <ObjectLink
-                        objectId={movePackage}
-                        label={formatAddress(movePackage)}
-                        copyText={movePackage}
-                    />
-                }
-            />
-            <Field
-                keyText="Module"
-                value={
-                    <ObjectLink
-                        objectId={`${movePackage}?module=${module}`}
-                        label={module}
-                        showAddressAlias={false}
-                    />
-                }
-            />
-            <Field keyText="Function" value={func} />
-            {args && <ArgumentsBlock label="Arguments" rows={argRows(args, inputs)} />}
-            {typeArgs && <Field keyText="Type Arguments" value={typeArgs.join(', ')} />}
-        </div>
-    );
-}
-
-function TransferObjects({
-    data,
-    inputs,
-}: CommandProps<[IotaArgument[], IotaArgument]>): JSX.Element {
-    const [objects, recipient] = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <ArgumentsBlock label="Objects" rows={argRows(objects, inputs)} />
-            <Field keyText="Recipient" value={<RefValue arg={recipient} inputs={inputs} />} />
-        </div>
-    );
-}
-
-function SplitCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]]>): JSX.Element {
-    const [coin, amounts] = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Coin" value={<RefValue arg={coin} inputs={inputs} />} />
-            <ArgumentsBlock label="Amounts" rows={argRows(amounts, inputs)} />
-        </div>
-    );
-}
-
-function MergeCoins({ data, inputs }: CommandProps<[IotaArgument, IotaArgument[]]>): JSX.Element {
-    const [destinationCoin, coins] = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Into Coin" value={<RefValue arg={destinationCoin} inputs={inputs} />} />
-            <ArgumentsBlock label="Coins" rows={argRows(coins, inputs)} />
-        </div>
-    );
-}
-
-function MakeMoveVec({ data, inputs }: CommandProps<[string | null, IotaArgument[]]>): JSX.Element {
-    const [type, elements] = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Type" value={type ?? 'Inferred'} />
-            <ArgumentsBlock label="Elements" rows={argRows(elements, inputs)} />
-        </div>
-    );
-}
-
-function Publish({ data }: CommandProps<string[]>): JSX.Element {
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field keyText="Modules" value={data.length} />
-            <ArgumentsBlock label="Dependencies" rows={packageIdRows(data)} />
-        </div>
-    );
-}
-
-function Upgrade({ data, inputs }: CommandProps<[string[], string, IotaArgument]>): JSX.Element {
-    const [dependencies, packageId, ticket] = data;
-
-    return (
-        <div className="flex flex-col divide-y divide-iota-neutral-92 dark:divide-iota-neutral-12">
-            <Field
-                keyText="Package"
-                value={
-                    <ObjectLink
-                        objectId={packageId}
-                        label={formatAddress(packageId)}
-                        copyText={packageId}
-                    />
-                }
-            />
-            <Field keyText="Upgrade Ticket" value={<RefValue arg={ticket} inputs={inputs} />} />
-            <Field keyText="Dependencies" value={dependencies.length} />
-            {dependencies.length > 0 && (
-                <ArgumentsBlock label="Dependency Packages" rows={packageIdRows(dependencies)} />
-            )}
-        </div>
-    );
-}
-
-export function Transaction({ type, data, inputs }: TransactionProps<unknown>): JSX.Element | null {
-    switch (type) {
-        case 'MoveCall':
-            return (
-                <ErrorBoundary>
-                    <MoveCall data={data as MoveCallIotaTransaction} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        case 'TransferObjects':
-            return (
-                <ErrorBoundary>
-                    <TransferObjects
-                        data={data as [IotaArgument[], IotaArgument]}
-                        inputs={inputs}
-                    />
-                </ErrorBoundary>
-            );
-        case 'SplitCoins':
-            return (
-                <ErrorBoundary>
-                    <SplitCoins data={data as [IotaArgument, IotaArgument[]]} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        case 'MergeCoins':
-            return (
-                <ErrorBoundary>
-                    <MergeCoins data={data as [IotaArgument, IotaArgument[]]} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        case 'MakeMoveVec':
-            return (
-                <ErrorBoundary>
-                    <MakeMoveVec data={data as [string | null, IotaArgument[]]} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        case 'Publish':
-            return (
-                <ErrorBoundary>
-                    <Publish data={data as string[]} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        case 'Upgrade':
-            return (
-                <ErrorBoundary>
-                    <Upgrade data={data as [string[], string, IotaArgument]} inputs={inputs} />
-                </ErrorBoundary>
-            );
-        default:
-            return null;
+function inputTooltipText(input: IotaCallArg | undefined, index: number): string | undefined {
+    if (!input) {
+        return undefined;
     }
+
+    if (input.type === 'object') {
+        return `Input #${index} · ${input.objectType}`;
+    }
+
+    const hex = input.valueType ? pureValueHex(input.valueType, input.value) : null;
+    return hex ? `Input #${index} · pure · 0x${hex}` : `Input #${index} · pure`;
+}
+
+export function Arg({
+    arg,
+    inputs,
+    showInputIndex = false,
+    muted = false,
+}: {
+    arg: IotaArgument;
+    inputs: IotaCallArg[];
+    showInputIndex?: boolean;
+    muted?: boolean;
+}): JSX.Element {
+    if (arg === 'GasCoin') {
+        return <ResultPill>Gas</ResultPill>;
+    }
+
+    if ('Result' in arg) {
+        return (
+            <HighlightableRef refId={argRefId(arg)}>
+                <ResultPill>result of #{arg.Result}</ResultPill>
+            </HighlightableRef>
+        );
+    }
+
+    if ('NestedResult' in arg) {
+        const [commandIndex, resultIndex] = arg.NestedResult;
+        return (
+            <HighlightableRef refId={argRefId(arg)}>
+                <ResultPill>
+                    result of #{commandIndex}[{resultIndex}]
+                </ResultPill>
+            </HighlightableRef>
+        );
+    }
+
+    const input = inputs[arg.Input];
+    const tooltipText = muted ? undefined : inputTooltipText(input, arg.Input);
+    const value = (
+        <HighlightableRef refId={argRefId(arg)}>
+            <span className="inline-flex items-baseline gap-[3px]">
+                {showInputIndex && <InputIndexLabel index={arg.Input} />}
+                <InlineInputValue input={input} muted={muted} />
+            </span>
+        </HighlightableRef>
+    );
+
+    return tooltipText ? <Tooltip text={tooltipText}>{value}</Tooltip> : value;
+}
+
+export function ArgCommaList({
+    args,
+    inputs,
+    nowrap = false,
+    showInputIndex = false,
+    muted = false,
+}: {
+    args: IotaArgument[];
+    inputs: IotaCallArg[];
+    nowrap?: boolean;
+    showInputIndex?: boolean;
+    muted?: boolean;
+}): JSX.Element {
+    if (args.length === 0) {
+        return <span className="text-iota-neutral-40 dark:text-iota-neutral-60">—</span>;
+    }
+
+    return (
+        <div
+            className={clsx(
+                'flex items-baseline',
+                nowrap ? 'w-max flex-nowrap whitespace-nowrap' : 'w-full flex-wrap gap-y-xxs',
+            )}
+        >
+            {args.map((arg, index) => (
+                <div key={index} className="flex items-center">
+                    {index > 0 && (
+                        <span className="mr-xs text-iota-neutral-40 dark:text-iota-neutral-60">
+                            ,
+                        </span>
+                    )}
+                    <Arg arg={arg} inputs={inputs} showInputIndex={showInputIndex} muted={muted} />
+                </div>
+            ))}
+        </div>
+    );
 }

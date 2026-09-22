@@ -47,8 +47,10 @@ export function usePtbHighlight(refId: PtbRefId | null): {
     };
 }
 
-const HIGHLIGHT_CLASSES =
-    'rounded transition-colors bg-iota-primary-90/60 dark:bg-iota-primary-70/10';
+const HIGHLIGHT_BOX_CLASSES =
+    'inline-flex items-start rounded border border-transparent px-xxs -mx-xxs py-[2px] -my-[2px] transition-colors';
+const HIGHLIGHT_BG_CLASSES =
+    'border-iota-primary-80/60 bg-iota-primary-90/60 dark:border-iota-primary-70/60 dark:bg-iota-primary-70/20';
 
 export function HighlightableRef({
     refId,
@@ -74,7 +76,8 @@ export function HighlightableRef({
             onMouseLeave={onMouseLeave}
             className={clsx(
                 'cursor-pointer select-none',
-                isHighlighted && HIGHLIGHT_CLASSES,
+                HIGHLIGHT_BOX_CLASSES,
+                isHighlighted && HIGHLIGHT_BG_CLASSES,
                 className,
             )}
         >
