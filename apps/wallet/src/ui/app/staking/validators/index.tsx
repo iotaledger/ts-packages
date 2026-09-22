@@ -35,10 +35,8 @@ export function Validators() {
     return (
         <Overlay
             showModal
-            showBackButton
             title={isPending ? 'Loading' : pageTitle}
             closeOverlay={() => navigate('/')}
-            onBack={() => navigate('/')}
         >
             <Loading loading={isPending}>
                 <div className="flex min-h-full flex-1 flex-col">

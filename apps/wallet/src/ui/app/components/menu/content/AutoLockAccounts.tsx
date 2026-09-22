@@ -51,7 +51,6 @@ export function AutoLockAccounts() {
             showModal={true}
             title="Auto Lock Profile"
             closeOverlay={() => navigate('/tokens')}
-            showBackButton
         >
             <Loading loading={autoLock.isPending}>
                 <Form className="flex h-full flex-col" form={form} onSubmit={handleSave}>

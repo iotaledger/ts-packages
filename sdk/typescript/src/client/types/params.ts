@@ -45,8 +45,7 @@ export interface DryRunTransactionBlockParams {
  * the transaction locally before returning the client. The local execution makes sure this node is
  * aware of this transaction when client fires subsequent queries. However if the node fails to execute
  * the transaction locally in a timely manner, a bool type in the response is set to false to indicated
- * the case. request_type is default to be `WaitForEffectsCert` unless options.show_events or
- * options.show_effects is true
+ * the case. request_type defaults to `WaitForEffectsCert` when omitted.
  */
 export interface ExecuteTransactionBlockParams {
     /** BCS serialized transaction data bytes without its type tag, as base-64 encoded string. */

@@ -66,27 +66,12 @@ export const RECOGNIZED_DAPPS: RecognizedDapp[] = [
         tags: ['DeFi', 'DEX'],
     },
     {
-        name: 'Cyberperp',
-        link: 'https://cyberperp.io/',
-        description: 'The First Decentralized Perpetual Exchange on Iota EVM',
-        icon: 'https://files.iota.org/media/tooling/dapps/cyberperp-logo.png',
-        tags: ['DeFi', 'EVM', 'DEX'],
-    },
-    {
         name: 'Houdini Swap',
         link: 'https://houdiniswap.com/',
         description:
             'Crypto’s best compliant privacy. Swap non-custodially across 100+ chains. Transact Freely. Stay Private',
         icon: 'https://files.iota.org/media/tooling/dapps/houdiniswap-logo.svg',
         tags: ['DeFi', 'DEX'],
-    },
-    {
-        name: 'Tradeport',
-        link: 'https://tradeport.xyz/',
-        description:
-            'TradePort is the leading NFT marketplace and developer platform on Sui, Movement, Aptos, Supra, NEAR, and Stacks. Trade and create NFTs, or build  apps with our API and SDKs',
-        icon: 'https://files.iota.org/media/tooling/dapps/tradeport-logo.svg',
-        tags: ['NFT'],
     },
     {
         name: 'Stargate',

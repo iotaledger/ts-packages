@@ -90,7 +90,7 @@ export function ImportKeystone() {
     const disableFinish = step.type === 'select-accounts' && step.selectedAccounts.size === 0;
 
     return (
-        <PageTemplate title="Import Keystone" isTitleCentered showBackButton>
+        <PageTemplate title="Import Keystone" isTitleCentered>
             <div className="flex h-full w-full flex-col items-center">
                 <div className="w-full grow">
                     <div className="flex h-full flex-col justify-between gap-1">

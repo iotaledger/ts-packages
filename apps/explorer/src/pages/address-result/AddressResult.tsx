@@ -11,7 +11,7 @@ import {
     ValidatorAddressHeader,
 } from '~/components';
 import { PageHeader } from '~/components/ui';
-import { IotaLogoMark } from '@iota/apps-ui-icons';
+import { IotaLogoMark, Warning } from '@iota/apps-ui-icons';
 import {
     AddressAlias,
     ImageIcon,
@@ -23,6 +23,8 @@ import {
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
 import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
+import { Badge, BadgeSize, BadgeType, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
+import { cx } from 'class-variance-authority';
 
 function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
@@ -40,7 +42,11 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
         ? validator.imageUrl
         : (nameAvatarImageUrl ?? knownAddress?.imageUrl);
 
-    const leading = identityImageUrl ? (
+    const leading = knownAddress?.isScam ? (
+        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8">
+            <Warning className="h-8 w-8 text-iota-warning-40 dark:text-iota-warning-60" />
+        </div>
+    ) : identityImageUrl ? (
         <div className="h-20 w-20 overflow-hidden rounded-md ring-1 ring-shader-neutral-light-8 sm:h-24 sm:w-24 dark:ring-shader-neutral-dark-8 [&>img]:!rounded-md">
             <ImageIcon
                 src={identityImageUrl}
@@ -58,6 +64,15 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
 
     return (
         <>
+            {knownAddress?.isScam && (
+                <InfoBox
+                    title="Suspicious Activity Detected"
+                    supportingText="This account has been associated with activity that may be fraudulent. Please exercise caution when interacting with this user."
+                    icon={<Warning />}
+                    type={InfoBoxType.Warning}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
             <PageHeader
                 type="Address"
                 leading={leading}
@@ -68,9 +83,25 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                         ) : name ? (
                             <IotaNameAddressHeader name={name} />
                         ) : knownAddress ? (
-                            <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                                {knownAddress.alias}
-                            </span>
+                            <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
+                                <span
+                                    className={cx(
+                                        'break-all text-headline-sm',
+                                        knownAddress.isScam
+                                            ? 'text-iota-neutral-40 dark:text-iota-neutral-60'
+                                            : 'text-iota-neutral-10 dark:text-iota-neutral-92',
+                                    )}
+                                >
+                                    {knownAddress.alias}
+                                </span>
+                                {!knownAddress.isScam && (
+                                    <Badge
+                                        type={BadgeType.Outlined}
+                                        label="Address"
+                                        size={BadgeSize.Small}
+                                    />
+                                )}
+                            </div>
                         ) : null}
                         <AddressAlias
                             address={address}

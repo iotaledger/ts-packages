@@ -47,6 +47,11 @@ export interface IotaTransportSubscribeOptions<T> {
     unsubscribe: string;
     params: unknown[];
     onMessage: (event: T) => void;
+    /**
+     * Called when the subscription ends without the caller unsubscribing. No further messages
+     * arrive after it, so a caller that wants to keep receiving must subscribe again.
+     */
+    onError?: (error: Error) => void;
     signal?: AbortSignal;
 }
 

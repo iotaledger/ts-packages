@@ -9,6 +9,7 @@ import { useIotaClientQuery } from '@iota/dapp-kit';
 export interface KnownAddress {
     name: string;
     logo?: string;
+    isScam?: boolean;
 }
 
 const ADDRESSES_ALIAS_FALLBACK: KnownAddressAliasesFeature = {
@@ -24,6 +25,7 @@ type KnownAddressAliasesFeature = {
 };
 
 export interface ResolvedAddressAlias {
+    isScam?: boolean;
     alias: string;
     imageUrl?: string;
 }
@@ -46,7 +48,11 @@ export function useAddressAliasLookup() {
     const knownAddressAliases: Record<string, ResolvedAddressAlias> = Object.fromEntries(
         Object.entries(knownAddresses.addresses).map(([address, knownAddress]) => [
             address,
-            { alias: knownAddress.name, imageUrl: knownAddress.logo },
+            {
+                alias: knownAddress.name,
+                imageUrl: knownAddress.logo,
+                isScam: knownAddress.isScam,
+            },
         ]),
     );
 
