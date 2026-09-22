@@ -9,13 +9,17 @@ import {
     TableCellBase,
     TableCellText,
     Button,
-    ButtonType,
-    ButtonSize,
+    ButtonUnstyled,
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
 } from '@iota/apps-ui-kit';
+import { Info, Warning } from '@iota/apps-ui-icons';
 import { TableCard, PlaceholderTable } from '~/components/ui';
+import { DateDisplay } from '~/components';
 import { type ColumnDef } from '@tanstack/react-table';
-import { formatDate } from '@iota/core';
 import { useState } from 'react';
+import clsx from 'clsx';
 import { formatAddress, toHex } from '@iota/iota-sdk/utils';
 
 type AuditTrailRecordsProps = {
@@ -24,9 +28,10 @@ type AuditTrailRecordsProps = {
 };
 
 const PAGE_SIZE = 15;
+const PREVIEW_LENGTH = 50;
 
 export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
-    const { records, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    const { records, error, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
         usePaginatedAuditTrailRecords({
             objectId,
             auditTrail,
@@ -35,9 +40,8 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
 
     return (
         <Panel>
-            <div className="flex w-full flex-col justify-between gap-xxs p-md--rs sm:flex-row md:items-center">
-                <Title title="Records" />
-            </div>
+            <Title title="Records" />
+
             <div className="flex flex-col gap-sm p-md--rs">
                 {isLoading || isFetchingNextPage ? (
                     <PlaceholderTable
@@ -53,7 +57,7 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
                         ]}
                     />
                 ) : (
-                    <RecordsTable records={records} />
+                    <RecordsContent records={records} error={error} />
                 )}
                 {hasNextPage && (
                     <div className="flex justify-center">
@@ -67,7 +71,36 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
     );
 }
 
-function RecordsTable({ records }: { records: Record[] }) {
+interface RecordsContentProps {
+    records: Record[];
+    error: Error | null;
+}
+
+function RecordsContent({ records, error }: RecordsContentProps) {
+    if (error) {
+        return (
+            <InfoBox
+                title="Failed to load records"
+                supportingText={error.message}
+                type={InfoBoxType.Error}
+                style={InfoBoxStyle.Elevated}
+                icon={<Warning />}
+            />
+        );
+    }
+
+    if (records.length === 0) {
+        return (
+            <InfoBox
+                title="No records found"
+                supportingText="This audit trail has no records yet."
+                type={InfoBoxType.Default}
+                style={InfoBoxStyle.Elevated}
+                icon={<Info />}
+            />
+        );
+    }
+
     return <TableCard data={records} columns={generateRecordsTableColumns()} />;
 }
 
@@ -83,7 +116,7 @@ function DataPreviewCell({ data }: { data: Data }) {
     const dataString = formatDataPreview(data);
     const dataTitle = isBinary ? 'Binary data encoded as hexadecimal' : undefined;
 
-    if (dataString.length <= 50) {
+    if (dataString.length <= PREVIEW_LENGTH) {
         return (
             <TableCellBase>
                 <TableCellText>
@@ -93,25 +126,28 @@ function DataPreviewCell({ data }: { data: Data }) {
         );
     }
 
-    const preview = isExpanded ? dataString : `${dataString.slice(0, 50)}...`;
-
     return (
         <TableCellBase>
-            <div className="group relative flex w-full flex-col">
-                <TableCellText>
-                    <div className="whitespace-pre-wrap break-all" title={dataTitle}>
-                        {preview}
-                    </div>
-                </TableCellText>
-                <div className="visible absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px] md:invisible md:group-focus-within:visible md:group-hover:visible dark:bg-black/60">
-                    <Button
-                        type={ButtonType.Outlined}
-                        size={ButtonSize.Small}
-                        text={isExpanded ? 'Show less' : 'Show more'}
+            <TableCellText>
+                <span className="flex flex-col items-start gap-xxs">
+                    <span
+                        className={clsx(
+                            'whitespace-pre-wrap break-all',
+                            isExpanded &&
+                                'max-h-[300px] overflow-y-auto rounded-md border border-iota-neutral-92 p-xs dark:border-iota-neutral-12',
+                        )}
+                        title={dataTitle}
+                    >
+                        {isExpanded ? dataString : `${dataString.slice(0, PREVIEW_LENGTH)}...`}
+                    </span>
+                    <ButtonUnstyled
+                        className="shrink-0 text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
                         onClick={() => setIsExpanded(!isExpanded)}
-                    />
-                </div>
-            </div>
+                    >
+                        {isExpanded ? 'Show Less' : 'Show More'}
+                    </ButtonUnstyled>
+                </span>
+            </TableCellText>
         </TableCellBase>
     );
 }
@@ -156,13 +192,7 @@ export function generateRecordsTableColumns(): ColumnDef<Record>[] {
             cell: ({ getValue }) => (
                 <TableCellBase>
                     <TableCellText>
-                        {formatDate(Number(getValue<bigint>()), [
-                            'year',
-                            'month',
-                            'day',
-                            'hour',
-                            'minute',
-                        ])}
+                        <DateDisplay timestamp={Number(getValue<bigint>())} />
                     </TableCellText>
                 </TableCellBase>
             ),

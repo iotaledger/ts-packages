@@ -42,7 +42,7 @@ export function ServiceView({ didDocument }: ServiceViewProps) {
         <div className="flex w-full flex-col gap-sm">
             <Title
                 title="Domain Linkage"
-                tooltipPosition={TooltipPosition.Left}
+                tooltipPosition={TooltipPosition.Top}
                 tooltipText="A verified, bidirectional connection between this Identity and a web domain. Proves that the Identity controller owns the linked domain."
             />
             <div className="flex flex-wrap gap-2">

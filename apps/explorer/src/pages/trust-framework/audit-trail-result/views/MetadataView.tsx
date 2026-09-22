@@ -44,7 +44,7 @@ function ImmutableMetadataPanel({ metadata }: { metadata?: ImmutableMetadata }) 
             <div className="flex w-full flex-col gap-sm">
                 <Title
                     title="Immutable Metadata"
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The immutable metadata of this Audit Trail. This data cannot be changed."
                 />
                 <div className="flex flex-col gap-y-md">
@@ -70,7 +70,7 @@ function UpdatableMetadataPanel({ metadata }: { metadata?: string }) {
             <div className="flex w-full flex-col gap-sm">
                 <Title
                     title="Updatable Metadata"
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The updatable metadata of this Audit Trail. This data can be changed by authorized actors."
                 />
                 <LabelledSyntaxHighlighter

@@ -5,13 +5,8 @@ import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
 import { PageHeader, PageLayout } from '~/components';
 import { onCopySuccess } from '~/lib';
-import { useAuditTrailPkgId } from '~/contexts';
+import { useAuditTrailClient, useAuditTrailPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
-import {
-    getAuditTrailRecordsSize,
-    getAuditTrailType,
-    MetadataBuilder,
-} from '../headerMetadataHelper';
 import {
     useResolveAuditTrailHandle,
     useResolveOnChainAuditTrail,
@@ -21,23 +16,34 @@ import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
 import { TagsView } from './views/TagsView';
 import { RecordsView } from './views/RecordsView';
+import { RolesView } from './views/RolesView';
 import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
+import { LockLifecycleView } from '../notarization-result/views/LockLifecycleView';
+import { toAuditTrailLocks } from './lockEntries';
 
 interface AuditTrailContentProps {
     objectId: string;
 }
 
 export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
+    const { status: auditTrailClientStatus } = useAuditTrailClient();
     const { data: objectResult, isLoading: isObjectLoading } = useGetObjectOrPastObject(objectId);
     const { data: auditTrailObject, isLoading: isAuditTrailObjectLoading } =
         useResolveOnChainAuditTrail(objectId);
     const { data: auditTrailHandle, isLoading: isAuditTrailHandleLoading } =
         useResolveAuditTrailHandle(objectId);
 
+    const isLoading = Boolean(
+        isAuditTrailObjectLoading ||
+            isObjectLoading ||
+            isAuditTrailHandleLoading ||
+            auditTrailClientStatus === 'pending',
+    );
+
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaAuditTrailPackage = useAuditTrailPkgId();
 
-    if (isAuditTrailObjectLoading || isObjectLoading || isAuditTrailHandleLoading) {
+    if (isLoading) {
         return <PageLayout loading loadingText="Loading Audit Trail Object..." content={[]} />;
     }
 
@@ -74,7 +80,6 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
     }
 
     if (!iotaAuditTrailPackage) {
-        // The activation of this branch is a symptom of Notarization WASM Web module not loaded.
         return (
             <PageLayout
                 content={
@@ -103,23 +108,23 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                             />
                         }
                         showCopyButton={false}
-                        metaItems={MetadataBuilder.create()
-                            .addItem(getAuditTrailType(objectResult.data!, iotaAuditTrailPackage))
-                            .addItem(getAuditTrailRecordsSize(auditTrailObject))
-                            .build()}
                     />
                     <AuditTrailSummaryView
                         auditTrailObject={auditTrailObject}
                         objectData={objectResult.data!}
                     />
                     <SideBySidePanels
-                        firstPanel={<p>Replace with LockLifecycleView</p>}
+                        firstPanel={
+                            <LockLifecycleView
+                                locks={toAuditTrailLocks(auditTrailObject.lockingConfig)}
+                            />
+                        }
                         secondPanel={<MetadataView auditTrail={auditTrailObject} />}
                     />
                     <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
                     <SideBySidePanels
                         ratio="66-34"
-                        firstPanel={<p>Replace with RolesView</p>}
+                        firstPanel={<RolesView roles={auditTrailObject.roles} />}
                         secondPanel={<TagsView tags={auditTrailObject.tags} />}
                     />
                     <TransactionsView objectId={objectId} />

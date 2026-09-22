@@ -35,7 +35,7 @@ export function ControllerView({ objectData }: ControllerViewProps) {
         <div className="flex w-full flex-col gap-sm">
             <Title
                 title="Controller"
-                tooltipPosition={TooltipPosition.Left}
+                tooltipPosition={TooltipPosition.Top}
                 tooltipText="The entity or entities authorized to modify this Identity. An Identity can have multiple controllers with shared authority"
             />
             <div className="flex flex-col">
@@ -120,7 +120,7 @@ export function ControllerCardFooter({
                     keyText="Weight"
                     value={[`${weight}`, threshold && ` of ${threshold}`]}
                     fullwidth
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="This controller's voting power in a multi-controller setup."
                 />
             </div>
@@ -150,7 +150,7 @@ export function ControllerCardFooter({
                         </>
                     }
                     fullwidth
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The IOTA address that holds control of this Identity, authorized to update or delete the document and to transfer control."
                 />
             </div>

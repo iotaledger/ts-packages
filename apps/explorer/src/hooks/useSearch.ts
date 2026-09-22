@@ -34,8 +34,8 @@ const getResultsForAuditTrail = async (
     isAuditTrailEnabled: boolean,
     query: string,
 ): Promise<Results | null> => {
-    if (auditTrailClient == null) return null; // client not available
-    if (!isAuditTrailEnabled) return null; // feature flag disabled
+    if (!auditTrailClient) return null;
+    if (!isAuditTrailEnabled) return null;
 
     const auditTrailChain = await auditTrailClient.trail(query).get();
     if (!auditTrailChain) return null;
@@ -54,8 +54,8 @@ const getResultsForNotarization = async (
     isNotarizationEnabled: boolean,
     query: string,
 ): Promise<Results | null> => {
-    if (notarizationClient == null) return null; // client not available
-    if (!isNotarizationEnabled) return null; // feature flag disabled
+    if (!notarizationClient) return null;
+    if (!isNotarizationEnabled) return null;
 
     const notarizationChain = await notarizationClient.getNotarizationById(query);
     if (!notarizationChain) return null;
@@ -74,14 +74,14 @@ const getResultsForDid = async (
     isIdentityEnabled: boolean,
     query: string,
 ): Promise<Results | null> => {
-    if (identityClient == null) return null; // client not available
-    if (!isIdentityEnabled) return null; // feature flag disabled
+    if (!identityClient) return null;
+    if (!isIdentityEnabled) return null;
 
     let didDocument = null;
     const didParsed = await tryDIDParse(query);
 
     try {
-        if (didParsed == null) {
+        if (!didParsed) {
             const identity = await identityClient.getIdentity(query);
             didDocument = identity.toFullFledged()?.didDocument();
         } else {
@@ -92,7 +92,7 @@ const getResultsForDid = async (
         // for it to fail is only not show a selection option in the search result
     }
 
-    if (didDocument == null) return null; // Nothing to show
+    if (!didDocument) return null;
 
     const didUrlEncoded = await tryEncodeDidToUrl(didDocument.id());
     if (didUrlEncoded == null) {

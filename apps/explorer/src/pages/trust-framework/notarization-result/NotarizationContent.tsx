@@ -5,16 +5,12 @@ import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
 import { PageHeader, PageLayout } from '~/components';
 import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
-import { useNotarizationPkgId } from '~/contexts';
+import { useNotarizationClient, useNotarizationPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
-import {
-    getNotarizationMethod,
-    getNotarizationType,
-    MetadataBuilder,
-} from '../headerMetadataHelper';
 import { useResolveNotarization } from '~/hooks/useResolveNotarization';
 import { NotarizationSummaryView } from './views/NotarizationSummaryView';
 import { LockLifecycleView } from './views/LockLifecycleView';
+import { toNotarizationLocks } from './lockEntries';
 import { OwnersView } from './views/OwnersView';
 import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 import { TransactionsView } from '../common/TransactionsView';
@@ -26,15 +22,19 @@ interface NotarizationContentProps {
 }
 
 export function NotarizationContent({ objectId }: NotarizationContentProps) {
-    const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
-    const { data: notarizationDocument, isPending: isNotarizationPending } =
+    const { data: objectResult, isLoading: isObjectLoading } = useGetObjectOrPastObject(objectId);
+    const { data: notarizationDocument, isLoading: isNotarizationLoading } =
         useResolveNotarization(objectId);
+    const { status: notarizationClientStatus } = useNotarizationClient();
 
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaNotarizationPackage = useNotarizationPkgId();
 
-    const isPending = isNotarizationPending || isObjectPending;
-    if (isPending) {
+    const isLoading = Boolean(
+        isNotarizationLoading || isObjectLoading || notarizationClientStatus === 'pending',
+    );
+
+    if (isLoading) {
         return (
             <PageLayout
                 loading
@@ -60,7 +60,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (notarizationDocument == null) {
+    if (!notarizationDocument) {
         return (
             <PageLayout
                 content={
@@ -76,7 +76,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (objectResult == null || objectResult.data == null) {
+    if (!objectResult || !objectResult.data) {
         return (
             <PageLayout
                 content={
@@ -92,8 +92,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (iotaNotarizationPackage == null) {
-        // The activation of this branch is a symptom of Notarization WASM Web module not loaded.
+    if (!iotaNotarizationPackage) {
         return (
             <PageLayout
                 content={
@@ -122,15 +121,6 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                             />
                         }
                         showCopyButton={false}
-                        metaItems={MetadataBuilder.create()
-                            .addItem(
-                                getNotarizationType(
-                                    objectResult.data || null,
-                                    iotaNotarizationPackage,
-                                ),
-                            )
-                            .addItem(getNotarizationMethod(notarizationDocument))
-                            .build()}
                     />
                     <NotarizationSummaryView
                         objectData={objectResult.data!}
@@ -139,7 +129,9 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                     <SideBySidePanels
                         firstPanel={
                             <LockLifecycleView
-                                locking={notarizationDocument.immutableMetadata.locking}
+                                locks={toNotarizationLocks(
+                                    notarizationDocument.immutableMetadata.locking,
+                                )}
                             />
                         }
                         secondPanel={<OwnersView objectId={objectId} />}

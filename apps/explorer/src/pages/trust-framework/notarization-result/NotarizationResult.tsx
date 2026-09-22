@@ -10,7 +10,7 @@ import { NotarizationContent } from './NotarizationContent';
 export function NotarizationResult() {
     const { id: notarizationId } = useParams();
 
-    if (notarizationId == null) {
+    if (!notarizationId) {
         return (
             <PageLayout
                 content={

@@ -9,7 +9,6 @@ import { useResolveDid } from '~/hooks/useResolveDid';
 import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
 import { useIdentityPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
-import { getIdentityType, getLegacyMetadata, MetadataBuilder } from '../headerMetadataHelper';
 import { ControllerView } from './views/ControllerView';
 import { ServiceView } from './views/ServiceView';
 import { IdentitySummaryView } from './views/IdentitySummaryView';
@@ -52,7 +51,7 @@ export function IdentityContent({ did }: IdentityContentProps) {
         );
     }
 
-    if (didDocument == null) {
+    if (!didDocument) {
         return (
             <PageLayout
                 content={
@@ -68,7 +67,7 @@ export function IdentityContent({ did }: IdentityContentProps) {
         );
     }
 
-    if (didObject == null) {
+    if (!didObject) {
         return (
             <PageLayout
                 content={
@@ -84,7 +83,7 @@ export function IdentityContent({ did }: IdentityContentProps) {
         );
     }
 
-    if (didDocFromObject == null) {
+    if (!didDocFromObject) {
         return (
             <PageLayout
                 content={
@@ -100,8 +99,7 @@ export function IdentityContent({ did }: IdentityContentProps) {
         );
     }
 
-    if (iotaIdentityPackage == null) {
-        // The activation of this branch is a symptom of Identity WASM Web module not loaded.
+    if (!iotaIdentityPackage) {
         return (
             <PageLayout
                 content={
@@ -130,10 +128,6 @@ export function IdentityContent({ did }: IdentityContentProps) {
                             />
                         }
                         showCopyButton={false}
-                        metaItems={MetadataBuilder.create()
-                            .addItem(getIdentityType(didObject, iotaIdentityPackage))
-                            .addItem(getLegacyMetadata(didObject))
-                            .build()}
                     />
                     <IdentitySummaryView objectData={didObject} didDocument={didDocument} />
                     <SideBySidePanels

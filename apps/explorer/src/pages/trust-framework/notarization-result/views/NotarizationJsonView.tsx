@@ -20,7 +20,7 @@ export function NotarizationJsonView({ notarization }: NotarizationJsonViewProps
                         <div className="flex w-full flex-col gap-sm">
                             <Title
                                 title="Notarization"
-                                tooltipPosition={TooltipPosition.Left}
+                                tooltipPosition={TooltipPosition.Top}
                                 tooltipText="The raw JSON representation of the On-Chain Notarization. This includes the state, metadata, and other properties of the notarization."
                             />
                             <div className="flex flex-col">

@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
-import { formatDate, useFormatCoin } from '@iota/core';
+import { useFormatCoin } from '@iota/core';
 import { type IotaObjectData } from '@iota/iota-sdk/client';
-import { CoinFormat, formatDigest } from '@iota/iota-sdk/utils';
-import clsx from 'clsx';
+import { CoinFormat, formatDigest, parseStructTag } from '@iota/iota-sdk/utils';
 import { ObjectLink, TransactionLink } from '~/components/ui';
 import { onCopySuccess } from '~/lib/utils';
-import { ErrorBoundary } from '~/components';
+import { DateDisplay, ErrorBoundary } from '~/components';
 import { type OnChainAuditTrail } from '@iota/audit-trails/web';
+import { getAuditTrailRecordsSize, getAuditTrailType } from '../../headerMetadataHelper';
+import { useAuditTrailPkgId } from '~/contexts';
 
 interface AuditTrailSummaryViewProps {
     auditTrailObject: OnChainAuditTrail;
@@ -24,66 +25,79 @@ export function AuditTrailSummaryView({
     const storageRebate = objectData?.storageRebate;
     const version = `v${auditTrailObject.version}`;
     const sequenceNumber = `${auditTrailObject.sequenceNumber}`;
+    const iotaAuditTrailPackage = useAuditTrailPkgId();
 
-    const dateFormat = (timestamp: bigint): string =>
-        // Convert seconds to milliseconds for Date constructor
-        formatDate(new Date(Number(timestamp)), ['year', 'month', 'day', 'hour', 'minute']);
-    const createdAt = dateFormat(auditTrailObject.createdAt);
+    const auditTrailType = iotaAuditTrailPackage
+        ? getAuditTrailType(objectData, iotaAuditTrailPackage)
+        : undefined;
+    const auditTrailRecordsSize = getAuditTrailRecordsSize(auditTrailObject);
+
     const lastTransactionBlockDigest = objectData?.previousTransaction;
 
     return (
         <ErrorBoundary>
             <div className="flex flex-col gap-md">
-                <div className={clsx('address-grid-container-top', 'no-image', 'no-description')}>
+                <div className="grid grid-cols-2 gap-sm">
+                    {auditTrailType && <AuditTrailTypeCard auditTrailType={auditTrailType} />}
                     {objectId && (
-                        <div>
-                            <ObjectIdCard objectId={objectId} />
-                        </div>
+                        <DisplayStats
+                            label="Object ID"
+                            value={
+                                <div className="flex flex-col gap-xs">
+                                    <ObjectLink objectId={objectId} copyText={objectId} />
+                                </div>
+                            }
+                            tooltipPosition={TooltipPosition.Top}
+                            tooltipText="The unique onchain identifier of the Move object storing this audit trail's state."
+                        />
                     )}
-
+                </div>
+                <div className="grid grid-cols-2 gap-sm md:grid-cols-3">
+                    {auditTrailRecordsSize && (
+                        <DisplayStats
+                            label="Records Size"
+                            value={auditTrailRecordsSize}
+                            tooltipPosition={TooltipPosition.Top}
+                        />
+                    )}
                     {version && (
-                        <div>
-                            <DisplayStats
-                                label="Version"
-                                value={version}
-                                tooltipPosition={TooltipPosition.Left}
-                                tooltipText="Version of object in a progressive sequence."
-                            />
-                        </div>
+                        <DisplayStats
+                            label="Version"
+                            value={version}
+                            tooltipPosition={TooltipPosition.Top}
+                            tooltipText="Version of object in a progressive sequence."
+                        />
                     )}
-
-                    {storageRebate && (
-                        <div>
-                            <StorageRebateCard storageRebate={storageRebate} />
-                        </div>
+                    {storageRebate && <StorageRebateCard storageRebate={storageRebate} />}
+                    {auditTrailObject.createdAt > 0n && (
+                        <DisplayStats
+                            label="Created at"
+                            value={<DateDisplay timestamp={Number(auditTrailObject.createdAt)} />}
+                            tooltipPosition={TooltipPosition.Top}
+                            tooltipText="Timestamp of the transaction that first published this audit trail onchain."
+                        />
                     )}
-
-                    {createdAt && (
-                        <div>
-                            <DisplayStats
-                                label="Created at"
-                                value={createdAt}
-                                tooltipPosition={TooltipPosition.Left}
-                                tooltipText="Timestamp of the transaction that first published this audit trail onchain."
-                            />
-                        </div>
-                    )}
-
                     {sequenceNumber && (
-                        <div>
-                            <DisplayStats
-                                label="Sequence"
-                                value={sequenceNumber}
-                                tooltipPosition={TooltipPosition.Left}
-                                tooltipText="Version of state change in a progressive sequence."
-                            />
-                        </div>
+                        <DisplayStats
+                            label="Sequence"
+                            value={sequenceNumber}
+                            tooltipPosition={TooltipPosition.Top}
+                            tooltipText="Version of state change in a progressive sequence."
+                        />
                     )}
-
                     {lastTransactionBlockDigest && (
-                        <div>
-                            <LastTxBlockCard digest={lastTransactionBlockDigest} />
-                        </div>
+                        <DisplayStats
+                            label="Last Transaction Block Digest"
+                            value={
+                                <TransactionLink digest={lastTransactionBlockDigest}>
+                                    {formatDigest(lastTransactionBlockDigest)}
+                                </TransactionLink>
+                            }
+                            copyText={lastTransactionBlockDigest}
+                            onCopySuccess={onCopySuccess}
+                            tooltipPosition={TooltipPosition.Top}
+                            tooltipText="Hash of the most recent transaction that modified this audit trail. Use it to inspect transaction details on the explorer."
+                        />
                     )}
                 </div>
             </div>
@@ -91,38 +105,24 @@ export function AuditTrailSummaryView({
     );
 }
 
-interface ObjectIdCardProps {
-    objectId: string;
+interface AuditTrailTypeCardProps {
+    auditTrailType: NonNullable<ReturnType<typeof getAuditTrailType>>;
 }
+function AuditTrailTypeCard({ auditTrailType }: AuditTrailTypeCardProps) {
+    const { address, module } = parseStructTag(auditTrailType.structTag);
 
-function ObjectIdCard({ objectId }: ObjectIdCardProps): JSX.Element {
     return (
         <DisplayStats
-            label="Object ID"
+            label={auditTrailType.label}
             value={
-                <div className="flex flex-col gap-xs">
-                    <ObjectLink objectId={objectId} copyText={objectId} />
-                </div>
+                <ObjectLink objectId={`${address}?module=${module}`} label={auditTrailType.value}>
+                    {auditTrailType.value}
+                </ObjectLink>
             }
-            tooltipPosition={TooltipPosition.Left}
-            tooltipText="The unique onchain identifier of the Move object storing this audit trail's state."
-        />
-    );
-}
-
-interface LastTxBlockCardProps {
-    digest: string;
-}
-
-function LastTxBlockCard({ digest }: LastTxBlockCardProps): JSX.Element {
-    return (
-        <DisplayStats
-            label="Last Transaction Block Digest"
-            value={<TransactionLink digest={digest}>{formatDigest(digest)}</TransactionLink>}
-            copyText={digest}
+            copyText={auditTrailType.structTag}
+            tooltipPosition={TooltipPosition.Top}
+            tooltipText={auditTrailType.tooltipText}
             onCopySuccess={onCopySuccess}
-            tooltipPosition={TooltipPosition.Left}
-            tooltipText="Hash of the most recent transaction that modified this audit trail. Use it to inspect transaction details on the explorer."
         />
     );
 }
@@ -142,7 +142,7 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
             label="Storage Rebate"
             value={`-${storageRebateFormatted}`}
             supportingLabel={symbol}
-            tooltipPosition={TooltipPosition.Left}
+            tooltipPosition={TooltipPosition.Top}
             tooltipText="IOTA tokens locked as a storage deposit for this object. Partially refundable when the object is deleted or reduced in size."
         />
     );

@@ -21,10 +21,9 @@ interface TagsCardProps {
 export function TagsView({ tags, onFieldsNameClick }: TagsCardProps) {
     return (
         <Panel>
-            <div className="flex flex-col gap-md p-xs">
-                <div className="flex w-full flex-col justify-between gap-xxs p-md--rs sm:flex-row md:items-center">
-                    <Title title="Tags" />
-                </div>
+            <div className="flex flex-col gap-md">
+                <Title title="Tags" />
+
                 {tags.length === 0 ? (
                     <div className="p-md--rs pt-0">
                         <InfoBox

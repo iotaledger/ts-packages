@@ -19,7 +19,7 @@ export function IdentityDocumentJsonView({ didDocument }: IdentityDocumentJsonVi
                         <div className="flex w-full flex-col gap-sm">
                             <Title
                                 title="DID Document"
-                                tooltipPosition={TooltipPosition.Left}
+                                tooltipPosition={TooltipPosition.Top}
                                 tooltipText="The core data structure of this Identity. Contains public keys, authentication rules, and service endpoints needed to interact with or verify this Identity."
                             />
                             <div className="flex flex-col">

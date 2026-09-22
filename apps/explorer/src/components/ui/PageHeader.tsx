@@ -13,7 +13,6 @@ import {
 import { CheckmarkFilled, Copy, Warning } from '@iota/apps-ui-icons';
 import { useCopyToClipboard } from '@iota/core';
 import clsx from 'clsx';
-import { type MetaItem, PageHeaderMeta } from './PageHeaderMeta';
 
 type PageHeaderType =
     | 'Transaction'
@@ -29,7 +28,6 @@ type PageHeaderType =
 export interface PageHeaderProps {
     title: string | React.JSX.Element;
     subtitle?: string | null;
-    metaItems?: MetaItem[];
     type: PageHeaderType;
     typeBadge?: React.ReactNode;
     summary?: React.ReactNode;
@@ -81,7 +79,6 @@ function StatusChip({ status }: { status: NonNullable<PageHeaderProps['status']>
 export function PageHeader({
     title,
     subtitle,
-    metaItems,
     type,
     typeBadge,
     summary,
@@ -169,7 +166,6 @@ export function PageHeader({
 
                     {summary && <div className="mt-xs">{summary}</div>}
 
-                    {metaItems && <PageHeaderMeta items={metaItems} />}
                     {error && (
                         <div className="mt-xs--rs flex">
                             <InfoBox

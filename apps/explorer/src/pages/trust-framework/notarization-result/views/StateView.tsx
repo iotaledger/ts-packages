@@ -14,7 +14,7 @@ interface StateViewProps {
 export function StateView({ notarization }: StateViewProps) {
     const data = useNotarizationState(notarization);
 
-    if (data == null) {
+    if (!data) {
         return;
     }
 
@@ -43,7 +43,7 @@ function StatePanel({ content, lang }: { content: string; lang: string }) {
             <div className="flex h-full w-full flex-col gap-sm">
                 <Title
                     title="Notarization State"
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The state data of this Notarization. Displayed as text if valid UTF-8, otherwise as Base64."
                 />
                 <div className="flex flex-col">
@@ -60,7 +60,7 @@ function MetadataPanel({ metadata }: { metadata?: string }) {
             <div className="flex h-full w-full flex-col gap-sm">
                 <Title
                     title="State Metadata"
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The metadata associated with the state."
                 />
                 <div className="flex flex-col">
