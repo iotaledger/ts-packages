@@ -8,9 +8,10 @@ import {
     PageHeader,
     PageLayout,
     PagePanel,
+    SyntaxHighlighter,
     TransactionBlocksForAddress,
 } from '~/components';
-import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
+import { getHistoryUnavailableMessage, onCopySuccess, replaceJsonKeyValue } from '~/lib';
 import { useNotarizationClient, useNotarizationPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
 import { useResolveNotarization } from '~/hooks/useResolveNotarization';
@@ -19,7 +20,6 @@ import { LockLifecycleView } from './views/LockLifecycleView';
 import { toNotarizationLocks } from './lockEntries';
 import { OwnersView } from './views/OwnersView';
 import { StateView } from './views/StateView';
-import { NotarizationJsonView } from './views/NotarizationJsonView';
 
 interface NotarizationContentProps {
     objectId: string;
@@ -146,8 +146,27 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                     >
                         <OwnersView objectId={objectId} />
                     </PagePanel>
-                    <StateView notarization={notarizationDocument} />
-                    <NotarizationJsonView notarization={notarizationDocument} />
+                    {notarizationDocument.state && (
+                        <PagePanel
+                            title="Notarization State"
+                            tooltip="The state data of this Notarization and its metadata. The data is displayed as text if valid UTF-8, otherwise as Base64."
+                        >
+                            <StateView notarization={notarizationDocument} />
+                        </PagePanel>
+                    )}
+                    <PagePanel
+                        title="Notarization"
+                        tooltip="The raw JSON representation of the On-Chain Notarization. This includes the state, metadata, and other properties of the notarization."
+                    >
+                        <SyntaxHighlighter
+                            code={JSON.stringify(
+                                notarizationDocument.toJSON(),
+                                replaceJsonKeyValue,
+                                2,
+                            )}
+                            language="json"
+                        />
+                    </PagePanel>
                     <ErrorBoundary>
                         <TransactionBlocksForAddress
                             address={objectId}

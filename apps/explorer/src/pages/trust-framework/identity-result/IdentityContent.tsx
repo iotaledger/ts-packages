@@ -9,6 +9,7 @@ import {
     PageHeader,
     PageLayout,
     PagePanel,
+    SyntaxHighlighter,
     TransactionBlocksForAddress,
 } from '~/components';
 import { useResolveDid } from '~/hooks/useResolveDid';
@@ -19,7 +20,6 @@ import { ControllerView } from './views/ControllerView';
 import { ServiceView } from './views/ServiceView';
 import { IdentitySummaryView } from './views/IdentitySummaryView';
 import { extractDidDoc } from './helper';
-import { IdentityDocumentJsonView } from './views/IdentityDocumentJsonView';
 
 interface IdentityContentProps {
     did: IotaDID;
@@ -146,7 +146,15 @@ export function IdentityContent({ did }: IdentityContentProps) {
                     >
                         <ServiceView didDocument={didDocument} />
                     </PagePanel>
-                    <IdentityDocumentJsonView didDocument={didDocument} />
+                    <PagePanel
+                        title="DID Document"
+                        tooltip="The core data structure of this Identity. Contains public keys, authentication rules, and service endpoints needed to interact with or verify this Identity."
+                    >
+                        <SyntaxHighlighter
+                            code={JSON.stringify(didDocument.toJSON(), null, 2)}
+                            language="json"
+                        />
+                    </PagePanel>
                     <ErrorBoundary>
                         <TransactionBlocksForAddress
                             address={did.tag()}
