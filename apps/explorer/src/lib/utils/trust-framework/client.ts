@@ -22,11 +22,6 @@ let initIdentityPromise: Promise<void> | null = null;
 let initNotarizationPromise: Promise<void> | null = null;
 let initAuditTrailPromise: Promise<void> | null = null;
 
-/**
- * Idempotent initialization of WASM module of Identity.
- *
- * Use it everytime you need to call any identity API.
- */
 export const initIdentityWasmWeb = async (): Promise<void> => {
     if (!initIdentityPromise) {
         initIdentityPromise = identity.init(identityWasmUrl).catch((e) => {
@@ -38,11 +33,6 @@ export const initIdentityWasmWeb = async (): Promise<void> => {
     return initIdentityPromise;
 };
 
-/**
- * Idempotent initialization of WASM module of Notarization.
- *
- * Use it everytime you need to call any notarization API.
- */
 export const initNotarizationWasmWeb = async (): Promise<void> => {
     if (!initNotarizationPromise) {
         initNotarizationPromise = notarization.init(notarizationWasmUrl).catch((e) => {
@@ -54,11 +44,6 @@ export const initNotarizationWasmWeb = async (): Promise<void> => {
     return initNotarizationPromise;
 };
 
-/**
- * Idempotent initialization of WASM module of Audit Trail.
- *
- * Use it everytime you need to call any audit trail API.
- */
 export const initAuditTrailWasmWeb = async (): Promise<void> => {
     if (!initAuditTrailPromise) {
         initAuditTrailPromise = auditTrail.init(auditTrailWasmUrl).catch((e) => {
@@ -74,7 +59,6 @@ export const createIdentityClientReadOnly = async (
     iotaClient: IotaClient,
     network: string,
 ): Promise<identity.IdentityClientReadOnly> => {
-    // If IOTA_IDENTITY_PKG_ID is declared it has precedence
     await initIdentityWasmWeb();
     if (IOTA_IDENTITY_PKG_ID != null) {
         return await identity.IdentityClientReadOnly.createWithPkgId(
@@ -83,7 +67,6 @@ export const createIdentityClientReadOnly = async (
         );
     }
 
-    // Well-known networks have well-known identity package id
     if (regularNetworks.has(network as Network)) {
         return await identity.IdentityClientReadOnly.create(iotaClient);
     }
@@ -97,7 +80,6 @@ export const createNotarizationClientReadOnly = async (
     iotaClient: IotaClient,
     network: string,
 ): Promise<notarization.NotarizationClientReadOnly> => {
-    // If IOTA_NOTARIZATION_PKG_ID is declared it has precedence
     await initNotarizationWasmWeb();
     if (IOTA_NOTARIZATION_PKG_ID != null) {
         return await notarization.NotarizationClientReadOnly.createWithPkgId(
@@ -106,7 +88,6 @@ export const createNotarizationClientReadOnly = async (
         );
     }
 
-    // Well-known networks have well-known notarization package id
     if (regularNetworks.has(network as Network)) {
         return await notarization.NotarizationClientReadOnly.create(iotaClient);
     }
@@ -120,7 +101,6 @@ export const createAuditTrailClientReadOnly = async (
     iotaClient: IotaClient,
     network: string,
 ): Promise<auditTrail.AuditTrailClientReadOnly> => {
-    // If IOTA_AUDIT_TRAIL_PKG_ID is declared it has precedence
     await initAuditTrailWasmWeb();
 
     const isKnownNetwork = regularNetworks.has(network as Network);
@@ -151,13 +131,6 @@ export async function tryDIDParse(didCandidate: string): Promise<identity.IotaDI
     }
 }
 
-/**
- * Encode a DID to be represented in URL by replacing ':' for '-' returning a string,
- * otherwise returning null;
- * @example
- *    await tryEncodeDidToUrl(identity.IotaDID.parse('did:iota:ef77060e:0x06ed4ae8eb655e5063cc3c949c60fd7306a1612390b5ed350b32fec22e118943'))
- *    // output: did-iota-ef77060e-0x06ed4ae8eb655e5063cc3c949c60fd7306a1612390b5ed350b32fec22e118943
- */
 export async function tryEncodeDidToUrl(did: identity.IotaDID | string): Promise<string | null> {
     try {
         await initIdentityWasmWeb();
@@ -170,13 +143,6 @@ export async function tryEncodeDidToUrl(did: identity.IotaDID | string): Promise
     }
 }
 
-/**
- * Decode a URL representation of a DID by replacing '-' for ':' returning a DID object,
- * otherwise returning null;
- * @example
- *    (await tryDecodeDidFromUrl('did-iota-ef77060e-0x06ed4ae8eb655e5063cc3c949c60fd7306a1612390b5ed350b32fec22e118943')).toString()
- *    // output: 'did:iota:ef77060e:0x06ed4ae8eb655e5063cc3c949c60fd7306a1612390b5ed350b32fec22e118943'
- */
 export async function tryDecodeDidFromUrl(encodedDid: string): Promise<identity.IotaDID | null> {
     try {
         await initIdentityWasmWeb();

@@ -297,9 +297,9 @@ const getResultsForValidatorByPoolIdOrIotaAddress = async (
 
 export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
-    const identityClient = useIdentityClient();
-    const notarizationClient = useNotarizationClient();
-    const auditTrailClient = useAuditTrailClient();
+    const { client: identityClient } = useIdentityClient();
+    const { client: notarizationClient } = useNotarizationClient();
+    const { client: auditTrailClient } = useAuditTrailClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
 
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);

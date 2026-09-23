@@ -9,7 +9,7 @@ export function useResolveNotarization(objectId: string): UseQueryResult<OnChain
     const { client } = useNotarizationClient();
     return useQuery({
         queryKey: ['resolve-notarization', objectId],
-        queryFn: async () => client.getNotarizationById(objectId),
+        queryFn: async () => client?.getNotarizationById(objectId),
         enabled: !!client,
     });
 }

@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useIdentityClient } from '~/contexts';
 
 export function useResolveDid(did: IotaDID | null) {
-    const identityClient = useIdentityClient();
+    const { client: identityClient } = useIdentityClient();
     return useQuery({
         queryKey: ['did-document', did],
         queryFn: async () => identityClient?.resolveDid(did!),
