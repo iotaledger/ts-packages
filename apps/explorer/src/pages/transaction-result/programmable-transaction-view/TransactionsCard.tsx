@@ -2,18 +2,9 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { Badge, BadgeType, BadgeSize } from '@iota/apps-ui-kit';
 import {
-    Badge,
-    BadgeType,
-    BadgeSize,
-    Table,
-    TableHeader,
-    TableRow,
-    TableHeaderCell,
-    TableBody,
-} from '@iota/apps-ui-kit';
-import { Info } from '@iota/apps-ui-icons';
-import {
+    type IotaArgument,
     type IotaTransaction,
     type IotaCallArg,
     type MoveCallIotaTransaction,
@@ -21,17 +12,21 @@ import {
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink } from '~/components/ui';
-import { ArgCommaList } from './Transaction';
-import { getCommandArguments, getResultUsedByCommands } from './utils';
+import { ArgCommaList, type InputDisplay } from './Transaction';
+import { getResultUsedByCommands } from './utils';
 import { HighlightableRef, usePtbHighlight } from './PtbHighlight';
 
-interface TransactionsCardProps {
+interface CommandsListProps {
     transactions: IotaTransaction[];
     inputs: IotaCallArg[];
+    inputDisplay: InputDisplay;
 }
 
-function Dash(): JSX.Element {
-    return <span className="text-iota-neutral-40 dark:text-iota-neutral-60">—</span>;
+const MUTED_TEXT = 'text-iota-neutral-40 dark:text-iota-neutral-60';
+const ADDRESS_REGEX = /0x[0-9a-fA-F]{64}/g;
+
+function formatTypeTag(typeTag: string): string {
+    return typeTag.replace(ADDRESS_REGEX, (address) => formatAddress(address));
 }
 
 function IndexCell({ index }: { index: number }): JSX.Element {
@@ -43,209 +38,209 @@ function IndexCell({ index }: { index: number }): JSX.Element {
             onMouseLeave={onMouseLeave}
             className="cursor-pointer select-none text-label-sm text-iota-neutral-60 dark:text-iota-neutral-40"
         >
-            {index}
+            #{index}
         </span>
     );
 }
 
-const MUTED_COLOR = '!text-iota-neutral-40 dark:!text-iota-neutral-60';
-const HIGHLIGHT_COLOR = '!text-iota-tertiary-40 dark:!text-iota-tertiary-70';
+function MoveCallSignature({ data }: { data: MoveCallIotaTransaction }): JSX.Element {
+    const { package: movePackage, module, function: func, type_arguments: typeArgs } = data;
 
-function PackageCell({
-    type,
-    data,
-    muted = false,
-}: {
-    type: string;
-    data: unknown;
-    muted?: boolean;
-}): JSX.Element {
-    const className = muted ? MUTED_COLOR : HIGHLIGHT_COLOR;
-
-    if (type === 'MoveCall') {
-        const { package: movePackage } = data as MoveCallIotaTransaction;
-        return (
+    return (
+        <span className="inline-flex flex-wrap items-baseline">
             <ObjectLink
                 objectId={movePackage}
                 label={formatAddress(movePackage)}
-                className={className}
+                showAddressAlias={false}
             />
-        );
-    }
-
-    if (type === 'Upgrade') {
-        const [, packageId] = data as [string[], string, unknown];
-        return (
+            <span className={MUTED_TEXT}>::</span>
             <ObjectLink
-                objectId={packageId}
-                label={formatAddress(packageId)}
-                className={className}
+                objectId={`${movePackage}?module=${module}`}
+                label={module}
+                showAddressAlias={false}
             />
-        );
-    }
-
-    return <Dash />;
-}
-
-function ModuleCell({
-    type,
-    data,
-    muted = false,
-}: {
-    type: string;
-    data: unknown;
-    muted?: boolean;
-}): JSX.Element {
-    if (type !== 'MoveCall') {
-        return <Dash />;
-    }
-
-    const { module, package: movePackage } = data as MoveCallIotaTransaction;
-    return (
-        <ObjectLink
-            objectId={`${movePackage}?module=${module}`}
-            label={module}
-            showAddressAlias={false}
-            className={muted ? MUTED_COLOR : HIGHLIGHT_COLOR}
-        />
-    );
-}
-
-function FunctionCell({
-    type,
-    data,
-    muted = false,
-}: {
-    type: string;
-    data: unknown;
-    muted?: boolean;
-}): JSX.Element {
-    if (type !== 'MoveCall') {
-        return <Dash />;
-    }
-
-    const { function: func } = data as MoveCallIotaTransaction;
-    return (
-        <span
-            className={
-                muted
-                    ? 'text-iota-neutral-40 dark:text-iota-neutral-60'
-                    : 'text-iota-neutral-10 dark:text-iota-neutral-92'
-            }
-        >
-            {func}
+            <span className={MUTED_TEXT}>::</span>
+            <span className="font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
+                {func}
+            </span>
+            {!!typeArgs?.length && (
+                <span className={MUTED_TEXT}>&lt;{typeArgs.map(formatTypeTag).join(', ')}&gt;</span>
+            )}
         </span>
-    );
-}
-
-function HighlightCell({
-    highlighted,
-    children,
-}: {
-    highlighted: boolean;
-    children: React.ReactNode;
-}): JSX.Element {
-    return (
-        <td
-            className={
-                highlighted
-                    ? 'h-14 border-b border-transparent bg-iota-neutral-92 px-md dark:bg-iota-neutral-12'
-                    : 'table-cell-border-color h-14 border-b px-md'
-            }
-        >
-            {children}
-        </td>
-    );
-}
-
-function CommandRow({
-    index,
-    type,
-    data,
-    args,
-    inputs,
-    showPackage,
-    showModule,
-    showFunction,
-}: {
-    index: number;
-    type: string;
-    data: unknown;
-    args: ReturnType<typeof getCommandArguments>;
-    inputs: IotaCallArg[];
-    showPackage: boolean;
-    showModule: boolean;
-    showFunction: boolean;
-}): JSX.Element {
-    const { isHighlighted } = usePtbHighlight(`command-${index}`);
-
-    return (
-        <tr>
-            <HighlightCell highlighted={isHighlighted}>
-                <IndexCell index={index} />
-            </HighlightCell>
-            <HighlightCell highlighted={isHighlighted}>
-                <Badge type={BadgeType.PrimarySoft} label={type} size={BadgeSize.Small} />
-            </HighlightCell>
-            {showPackage && (
-                <HighlightCell highlighted={isHighlighted}>
-                    <PackageCell type={type} data={data} muted />
-                </HighlightCell>
-            )}
-            {showModule && (
-                <HighlightCell highlighted={isHighlighted}>
-                    <ModuleCell type={type} data={data} muted />
-                </HighlightCell>
-            )}
-            {showFunction && (
-                <HighlightCell highlighted={isHighlighted}>
-                    <FunctionCell type={type} data={data} muted />
-                </HighlightCell>
-            )}
-            <HighlightCell highlighted={isHighlighted}>
-                <div className="text-body-sm">
-                    <ArgCommaList args={args} inputs={inputs} muted />
-                </div>
-            </HighlightCell>
-        </tr>
     );
 }
 
 function CommandSignature({ type, data }: { type: string; data: unknown }): JSX.Element | null {
-    if (type !== 'MoveCall') {
-        return null;
+    if (type === 'MoveCall') {
+        return <MoveCallSignature data={data as MoveCallIotaTransaction} />;
     }
 
+    if (type === 'MakeMoveVec') {
+        const [elementType] = data as [string | null, IotaArgument[]];
+        return elementType ? (
+            <span className={MUTED_TEXT}>&lt;{formatTypeTag(elementType)}&gt;</span>
+        ) : null;
+    }
+
+    if (type === 'Upgrade') {
+        const [, packageId] = data as [string[], string, IotaArgument];
+        return (
+            <ObjectLink
+                objectId={packageId}
+                label={formatAddress(packageId)}
+                showAddressAlias={false}
+            />
+        );
+    }
+
+    return null;
+}
+
+function Bracketed({
+    args,
+    inputs,
+    inputDisplay,
+}: {
+    args: IotaArgument[];
+    inputs: IotaCallArg[];
+    inputDisplay: InputDisplay;
+}): JSX.Element {
     return (
-        <div className="flex flex-wrap items-center gap-[3px]">
-            <PackageCell type={type} data={data} />
-            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">::</span>
-            <ModuleCell type={type} data={data} />
-            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">::</span>
-            <FunctionCell type={type} data={data} />
-        </div>
+        <span className="inline-flex items-center gap-[2px]">
+            <span className={MUTED_TEXT}>[</span>
+            {args.length > 0 && (
+                <ArgCommaList args={args} inputs={inputs} inputDisplay={inputDisplay} />
+            )}
+            <span className={MUTED_TEXT}>]</span>
+        </span>
     );
 }
 
-function CombinedCommandCard({
-    index,
+function Keyword({ children }: { children: string }): JSX.Element {
+    return <span className={MUTED_TEXT}>{children}</span>;
+}
+
+function CommandBody({
     type,
     data,
-    args,
-    usedBy,
     inputs,
+    inputDisplay,
 }: {
-    index: number;
     type: string;
     data: unknown;
-    args: ReturnType<typeof getCommandArguments>;
-    usedBy: ReturnType<typeof getResultUsedByCommands>;
     inputs: IotaCallArg[];
+    inputDisplay: InputDisplay;
+}): JSX.Element | null {
+    const list = (args: IotaArgument[]) => (
+        <Bracketed args={args} inputs={inputs} inputDisplay={inputDisplay} />
+    );
+
+    switch (type) {
+        case 'MoveCall':
+            return (
+                <>
+                    <Keyword>args:</Keyword>
+                    {list((data as MoveCallIotaTransaction).arguments ?? [])}
+                </>
+            );
+        case 'MergeCoins': {
+            const [destination, sources] = data as [IotaArgument, IotaArgument[]];
+            return (
+                <>
+                    <Keyword>merge</Keyword>
+                    {list(sources)}
+                    <Keyword>into</Keyword>
+                    {list([destination])}
+                </>
+            );
+        }
+        case 'SplitCoins': {
+            const [coin, amounts] = data as [IotaArgument, IotaArgument[]];
+            return (
+                <>
+                    <Keyword>split</Keyword>
+                    {list([coin])}
+                    <Keyword>into amounts</Keyword>
+                    {list(amounts)}
+                </>
+            );
+        }
+        case 'TransferObjects': {
+            const [objects, recipient] = data as [IotaArgument[], IotaArgument];
+            return (
+                <>
+                    <Keyword>transfer</Keyword>
+                    {list(objects)}
+                    <Keyword>to</Keyword>
+                    {list([recipient])}
+                </>
+            );
+        }
+        case 'MakeMoveVec': {
+            const [, elements] = data as [string | null, IotaArgument[]];
+            return (
+                <>
+                    <Keyword>elements:</Keyword>
+                    {list(elements)}
+                </>
+            );
+        }
+        case 'Upgrade': {
+            const [modules, , ticket] = data as [string[], string, IotaArgument];
+            return (
+                <>
+                    <Keyword>{`${modules.length} modules · ticket:`}</Keyword>
+                    {list([ticket])}
+                </>
+            );
+        }
+        case 'Publish': {
+            const modules = data as string[];
+            return <Keyword>{`${modules.length} modules`}</Keyword>;
+        }
+        default:
+            return null;
+    }
+}
+
+function UsedBy({ usedBy }: { usedBy: ReturnType<typeof getResultUsedByCommands> }): JSX.Element {
+    const commandIndexes = [...new Set(usedBy.map(({ commandIndex }) => commandIndex))];
+
+    return (
+        <span className={clsx('inline-flex items-center text-body-sm', MUTED_TEXT)}>
+            <span className="mr-xs">used by</span>
+            {commandIndexes.map((commandIndex, i) => (
+                <span key={commandIndex} className="inline-flex items-center">
+                    {i > 0 && <span className="mr-xs">,</span>}
+                    <HighlightableRef refId={`command-${commandIndex}`}>
+                        #{commandIndex}
+                    </HighlightableRef>
+                </span>
+            ))}
+        </span>
+    );
+}
+
+function CommandCard({
+    index,
+    transaction,
+    transactions,
+    inputs,
+    inputDisplay,
+}: {
+    index: number;
+    transaction: IotaTransaction;
+    transactions: IotaTransaction[];
+    inputs: IotaCallArg[];
+    inputDisplay: InputDisplay;
 }): JSX.Element {
     const { isHighlighted } = usePtbHighlight(`command-${index}`);
+    const [[type, data]] = Object.entries(transaction);
+    const usedBy = getResultUsedByCommands(index, transactions);
 
     return (
         <div
+            data-testid="command-card"
             className={clsx(
                 'flex flex-col gap-xxs rounded-lg border px-md--rs py-sm--rs',
                 isHighlighted
@@ -257,126 +252,43 @@ function CombinedCommandCard({
                 <IndexCell index={index} />
                 <Badge type={BadgeType.PrimarySoft} label={type} size={BadgeSize.Small} />
                 <CommandSignature type={type} data={data} />
-                {usedBy.length > 0 && (
-                    <span className="inline-flex items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                        <span>→</span>
-                        <span>
-                            used by{' '}
-                            {usedBy.map(({ commandIndex, nestedIndex }, i) => (
-                                <HighlightableRef
-                                    key={`${commandIndex}-${nestedIndex ?? ''}`}
-                                    refId={`command-${commandIndex}`}
-                                >
-                                    #{commandIndex}
-                                    {nestedIndex !== undefined ? `[${nestedIndex}]` : ''}
-                                    {i < usedBy.length - 1 ? ', ' : ''}
-                                </HighlightableRef>
-                            ))}
-                        </span>
-                    </span>
-                )}
+                {usedBy.length > 0 && <UsedBy usedBy={usedBy} />}
             </div>
-            {args.length > 0 && (
-                <div className="overflow-x-auto pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="flex w-max items-baseline gap-x-xs whitespace-nowrap">
-                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">
-                            args: [
-                        </span>
-                        <ArgCommaList args={args} inputs={inputs} nowrap showInputIndex />
-                        <span className="text-iota-neutral-40 dark:text-iota-neutral-60">]</span>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
-
-export function CombinedCommandsList({
-    transactions,
-    inputs,
-}: TransactionsCardProps): JSX.Element | null {
-    if (!transactions?.length) {
-        return null;
-    }
-
-    return (
-        <div data-testid="combined-commands-content" className="flex flex-col gap-xs">
-            <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                <Info className="h-3.5 w-3.5" />
-                Hover an argument to see its input and highlight every place it appears
-            </div>
-            {transactions.map((transaction, index) => {
-                const [[type, data]] = Object.entries(transaction);
-                const args = getCommandArguments(type, data);
-                const usedBy = getResultUsedByCommands(index, transactions);
-
-                return (
-                    <CombinedCommandCard
-                        key={index}
-                        index={index}
+            <div className="overflow-x-auto pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex w-max items-baseline gap-x-xs whitespace-nowrap">
+                    <CommandBody
                         type={type}
                         data={data}
-                        args={args}
-                        usedBy={usedBy}
                         inputs={inputs}
+                        inputDisplay={inputDisplay}
                     />
-                );
-            })}
+                </div>
+            </div>
         </div>
     );
 }
 
-export function TransactionsTable({
+export function CommandsList({
     transactions,
     inputs,
-}: TransactionsCardProps): JSX.Element | null {
+    inputDisplay,
+}: CommandsListProps): JSX.Element | null {
     if (!transactions?.length) {
         return null;
     }
 
-    const types = transactions.map((transaction) => Object.keys(transaction)[0]);
-    const showPackage = types.some((type) => type === 'MoveCall' || type === 'Upgrade');
-    const showModule = types.some((type) => type === 'MoveCall');
-    const showFunction = showModule;
-
     return (
-        <div data-testid="transactions-card-content">
-            <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                <Info className="h-3.5 w-3.5" />
-                Hover an argument to highlight every place it appears
-            </div>
-            <Table rowIndexes={transactions.map((_, index) => index)}>
-                <TableHeader>
-                    <TableRow>
-                        <TableHeaderCell columnKey="index" label="#" />
-                        <TableHeaderCell columnKey="type" label="Type" />
-                        {showPackage && <TableHeaderCell columnKey="package" label="Package" />}
-                        {showModule && <TableHeaderCell columnKey="module" label="Module" />}
-                        {showFunction && <TableHeaderCell columnKey="function" label="Function" />}
-                        <TableHeaderCell columnKey="arguments" label="Arguments" />
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {transactions.map((transaction, index) => {
-                        const [[type, data]] = Object.entries(transaction);
-                        const args = getCommandArguments(type, data);
-
-                        return (
-                            <CommandRow
-                                key={index}
-                                index={index}
-                                type={type}
-                                data={data}
-                                args={args}
-                                inputs={inputs}
-                                showPackage={showPackage}
-                                showModule={showModule}
-                                showFunction={showFunction}
-                            />
-                        );
-                    })}
-                </TableBody>
-            </Table>
+        <div data-testid="commands-content" className="flex flex-col gap-xs">
+            {transactions.map((transaction, index) => (
+                <CommandCard
+                    key={index}
+                    index={index}
+                    transaction={transaction}
+                    transactions={transactions}
+                    inputs={inputs}
+                    inputDisplay={inputDisplay}
+                />
+            ))}
         </div>
     );
 }

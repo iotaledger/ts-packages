@@ -48,9 +48,9 @@ export function usePtbHighlight(refId: PtbRefId | null): {
 }
 
 const HIGHLIGHT_BOX_CLASSES =
-    'inline-flex items-start rounded border border-transparent px-xxs -mx-xxs py-[2px] -my-[2px] transition-colors';
+    "relative inline-flex items-start rounded border border-transparent px-xxs -mx-xxs py-[2px] -my-[2px] transition-colors after:pointer-events-none after:absolute after:inset-0 after:rounded after:content-['']";
 const HIGHLIGHT_BG_CLASSES =
-    'border-iota-primary-80/60 bg-iota-primary-90/60 dark:border-iota-primary-70/60 dark:bg-iota-primary-70/20';
+    'border-iota-primary-70/60 after:bg-iota-primary-90/30 dark:border-iota-primary-70/60 dark:after:bg-iota-primary-70/30';
 
 export function HighlightableRef({
     refId,

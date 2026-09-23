@@ -15,13 +15,14 @@ import {
     Tooltip,
 } from '@iota/apps-ui-kit';
 import { Info } from '@iota/apps-ui-icons';
+import clsx from 'clsx';
 import { useGetObject } from '@iota/core';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
 import { formatDigest } from '@iota/iota-sdk/utils';
 import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
 import { CopyButton } from './Field';
-import { decodeVectorU8Value, pureValueHex, truncateHex } from './utils';
+import { decodeVectorU8Value, decodeVectorU8ValueDetailed, pureValueHex } from './utils';
 import { usePtbHighlight } from './PtbHighlight';
 
 const REGEX_NUMBER = /^\d+$/;
@@ -134,16 +135,28 @@ function PureRawBytes({
     }
 
     return (
-        <span className="flex items-center gap-xxs text-body-sm">
-            <span className="text-iota-neutral-40 dark:text-iota-neutral-60">
+        <span className="flex min-w-0 max-w-full items-center gap-xxs text-body-sm">
+            <span className="shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60">
                 {hex.length / 2}B
             </span>
-            <span className="text-iota-neutral-10 dark:text-iota-neutral-100">
-                0x{truncateHex(hex)}
+            <span
+                className="min-w-0 truncate text-iota-neutral-10 dark:text-iota-neutral-100"
+                title={`0x${hex}`}
+            >
+                0x{hex}
             </span>
             <CopyButton text={`0x${hex}`} />
         </span>
     );
+}
+
+function hasReadableDecoding(input: Extract<IotaCallArg, { type: 'pure' }>): boolean {
+    if (input.valueType !== 'vector<u8>') {
+        return true;
+    }
+
+    const { isPlainText, value } = decodeVectorU8ValueDetailed(input.value);
+    return isPlainText || value !== String(input.value);
 }
 
 function DecodedPureValue({
@@ -159,7 +172,7 @@ function DecodedPureValue({
 
     if (input.valueType === 'vector<u8>') {
         return (
-            <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+            <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                 <ExpandableValue value={decodeVectorU8Value(input.value)} align="start" />
             </span>
         );
@@ -167,14 +180,14 @@ function DecodedPureValue({
 
     if (REGEX_NUMBER.test(stringValue)) {
         return (
-            <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+            <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                 {BigInt(stringValue).toLocaleString()}
             </span>
         );
     }
 
     return (
-        <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+        <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
             <ExpandableValue value={stringValue} align="start" />
         </span>
     );
@@ -201,7 +214,7 @@ function InputValueCell({ input }: { input: IotaCallArg }): JSX.Element {
                         title={input.digest}
                     >
                         <span>digest</span>
-                        <span className="text-iota-tertiary-40 dark:text-iota-tertiary-70">
+                        <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                             {formatDigest(input.digest)}
                         </span>
                         <CopyButton text={input.digest} />
@@ -211,19 +224,23 @@ function InputValueCell({ input }: { input: IotaCallArg }): JSX.Element {
         );
     }
 
+    const hasRawBytes = !!input.valueType && !!pureValueHex(input.valueType, input.value);
+
     return (
-        <div className="flex flex-col gap-xxs">
+        <div className="flex min-w-0 flex-col gap-xxs">
             <PureRawBytes valueType={input.valueType} value={input.value} />
-            <div className="flex flex-wrap items-center gap-xs">
-                <Tooltip text="Decoded from the raw BCS bytes using this input's declared type.">
-                    <span className="flex items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                        decoded
-                        <Info className="h-3.5 w-3.5" />
-                    </span>
-                </Tooltip>
-                <ValueTypeLabel valueType={input.valueType} />
-                <DecodedPureValue input={input} />
-            </div>
+            {(!hasRawBytes || hasReadableDecoding(input)) && (
+                <div className="flex flex-wrap items-center gap-xs">
+                    <Tooltip text="Decoded from the raw BCS bytes using this input's declared type.">
+                        <span className="flex items-center gap-xxs text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                            decoded
+                            <Info className="h-3.5 w-3.5" />
+                        </span>
+                    </Tooltip>
+                    <ValueTypeLabel valueType={input.valueType} />
+                    <DecodedPureValue input={input} />
+                </div>
+            )}
         </div>
     );
 }
@@ -232,18 +249,22 @@ const VISIBLE_INPUTS_LIMIT = 6;
 
 function HighlightCell({
     highlighted,
+    className,
     children,
 }: {
     highlighted: boolean;
+    className?: string;
     children: React.ReactNode;
 }): JSX.Element {
     return (
         <td
-            className={
+            className={clsx(
+                'h-14 border-b px-md py-xs',
                 highlighted
-                    ? 'h-14 border-b border-transparent bg-iota-neutral-92 px-md dark:bg-iota-neutral-12'
-                    : 'table-cell-border-color h-14 border-b px-md'
-            }
+                    ? 'border-transparent bg-iota-neutral-92 dark:bg-iota-neutral-12'
+                    : 'table-cell-border-color',
+                className,
+            )}
         >
             {children}
         </td>
@@ -263,7 +284,7 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
             <HighlightCell highlighted={showRowHighlight}>
                 <InputTypeBadge input={input} />
             </HighlightCell>
-            <HighlightCell highlighted={showRowHighlight}>
+            <HighlightCell highlighted={showRowHighlight} className="w-full max-w-0">
                 <InputValueCell input={input} />
             </HighlightCell>
         </tr>
@@ -281,10 +302,6 @@ export function InputsTable({ inputs }: InputsCardProps): JSX.Element | null {
 
     return (
         <div data-testid="inputs-card-content">
-            <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                <Info className="h-3.5 w-3.5" />
-                Hover the input number to highlight every place it appears
-            </div>
             <div
                 style={canScroll ? { maxHeight: MAX_VISIBLE_TABLE_HEIGHT } : undefined}
                 className={canScroll ? 'overflow-y-auto' : undefined}

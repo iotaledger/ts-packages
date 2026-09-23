@@ -27,14 +27,6 @@ export function pureValueHex(valueType: string, value: unknown): string | null {
     }
 }
 
-export function truncateHex(hex: string, head = 8, tail = 6): string {
-    if (hex.length <= head + tail) {
-        return hex;
-    }
-
-    return `${hex.slice(0, head)}…${hex.slice(-tail)}`;
-}
-
 /** Extracts the `IotaArgument`s referenced by a single PTB command, regardless of its shape. */
 export function getCommandArguments(type: string, data: unknown): IotaArgument[] {
     switch (type) {

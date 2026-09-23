@@ -2,13 +2,16 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Tooltip } from '@iota/apps-ui-kit';
+import { Badge, BadgeSize, BadgeType, Tooltip } from '@iota/apps-ui-kit';
 import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink, AddressLink } from '~/components/ui';
 import { decodeVectorU8ValueDetailed, pureValueHex } from './utils';
 import { HighlightableRef, type PtbRefId } from './PtbHighlight';
+
+const RESULT_BADGE_TYPE = BadgeType.Neutral;
+const INPUT_BADGE_TYPE = BadgeType.Outlined;
 
 const REGEX_NUMBER = /^\d+$/;
 
@@ -30,14 +33,6 @@ function truncateEnd(value: string, max = 40): string {
     return `${value.slice(0, max - 1)}…`;
 }
 
-function ResultPill({ children }: { children: React.ReactNode }): JSX.Element {
-    return (
-        <span className="whitespace-nowrap rounded-full bg-iota-neutral-92 px-xs py-[1px] text-label-sm text-iota-neutral-40 dark:bg-iota-neutral-12 dark:text-iota-neutral-60">
-            {children}
-        </span>
-    );
-}
-
 function argRefId(arg: IotaArgument): PtbRefId | undefined {
     if (arg === 'GasCoin') {
         return undefined;
@@ -54,53 +49,35 @@ function argRefId(arg: IotaArgument): PtbRefId | undefined {
     return `command-${arg.NestedResult[0]}`;
 }
 
-const TRANSACTION_ARGUMENT_VALUE_COLOR = '!text-iota-tertiary-40 dark:!text-iota-tertiary-70';
-
-function ObjectInputArg({ objectId, muted }: { objectId: string; muted: boolean }): JSX.Element {
-    return (
-        <ObjectLink
-            objectId={objectId}
-            label={formatAddress(objectId)}
-            copyText={objectId}
-            className={muted ? undefined : TRANSACTION_ARGUMENT_VALUE_COLOR}
-        />
-    );
+function ObjectInputArg({ objectId }: { objectId: string }): JSX.Element {
+    return <ObjectLink objectId={objectId} label={formatAddress(objectId)} copyText={objectId} />;
 }
 
-function InlineInputValue({
-    input,
-    muted = false,
-}: {
-    input?: IotaCallArg;
-    muted?: boolean;
-}): JSX.Element {
+function InlineInputValue({ input }: { input?: IotaCallArg }): JSX.Element {
     if (!input) {
         return <span className="text-iota-neutral-40 dark:text-iota-neutral-60">—</span>;
     }
 
     if (input.type === 'object') {
-        return <ObjectInputArg objectId={input.objectId} muted={muted} />;
+        return <ObjectInputArg objectId={input.objectId} />;
     }
 
     if (input.type === 'pure' && input.valueType === 'address') {
         const address = String(input.value);
-        return (
-            <AddressLink
-                address={address}
-                label={formatAddress(address)}
-                copyText={address}
-                className={muted ? undefined : TRANSACTION_ARGUMENT_VALUE_COLOR}
-            />
-        );
+        return <AddressLink address={address} label={formatAddress(address)} copyText={address} />;
     }
 
-    const valueColor = muted
-        ? 'text-iota-neutral-10 dark:text-iota-neutral-92'
-        : 'text-iota-tertiary-40 dark:text-iota-tertiary-70';
+    const valueColor = 'text-iota-neutral-10 dark:text-iota-neutral-92';
 
     if (input.type === 'pure' && input.valueType === 'vector<u8>') {
         const { value: decoded, isPlainText } = decodeVectorU8ValueDetailed(input.value);
-        const truncated = isPlainText ? truncateEnd(decoded) : truncateMiddle(decoded);
+        const hex = pureValueHex(input.valueType, input.value);
+        const isRawBytes = !isPlainText && decoded === String(input.value) && hex;
+        const truncated = isRawBytes
+            ? truncateEnd(`0x${hex}`)
+            : isPlainText
+              ? truncateEnd(decoded)
+              : truncateMiddle(decoded);
         return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
     }
 
@@ -112,9 +89,9 @@ function InlineInputValue({
 
 function InputIndexLabel({ index }: { index: number }): JSX.Element {
     return (
-        <span className="text-[10px] leading-none text-iota-neutral-40 dark:text-iota-neutral-60">
-            #{index}
-        </span>
+        <sub className="text-[10px] leading-none text-iota-neutral-40 dark:text-iota-neutral-60">
+            in{index}
+        </sub>
     );
 }
 
@@ -131,25 +108,29 @@ function inputTooltipText(input: IotaCallArg | undefined, index: number): string
     return hex ? `Input #${index} · pure · 0x${hex}` : `Input #${index} · pure`;
 }
 
+export type InputDisplay = 'value' | 'reference';
+
 export function Arg({
     arg,
     inputs,
-    showInputIndex = false,
-    muted = false,
+    inputDisplay = 'value',
 }: {
     arg: IotaArgument;
     inputs: IotaCallArg[];
-    showInputIndex?: boolean;
-    muted?: boolean;
+    inputDisplay?: InputDisplay;
 }): JSX.Element {
     if (arg === 'GasCoin') {
-        return <ResultPill>Gas</ResultPill>;
+        return <Badge type={INPUT_BADGE_TYPE} label="Gas" size={BadgeSize.Small} />;
     }
 
     if ('Result' in arg) {
         return (
             <HighlightableRef refId={argRefId(arg)}>
-                <ResultPill>result of #{arg.Result}</ResultPill>
+                <Badge
+                    type={RESULT_BADGE_TYPE}
+                    label={`result of #${arg.Result}`}
+                    size={BadgeSize.Small}
+                />
             </HighlightableRef>
         );
     }
@@ -158,20 +139,34 @@ export function Arg({
         const [commandIndex, resultIndex] = arg.NestedResult;
         return (
             <HighlightableRef refId={argRefId(arg)}>
-                <ResultPill>
-                    result of #{commandIndex}[{resultIndex}]
-                </ResultPill>
+                <Badge
+                    type={RESULT_BADGE_TYPE}
+                    label={`result of #${commandIndex}[${resultIndex}]`}
+                    size={BadgeSize.Small}
+                />
+            </HighlightableRef>
+        );
+    }
+
+    if (inputDisplay === 'reference') {
+        return (
+            <HighlightableRef refId={argRefId(arg)}>
+                <Badge
+                    type={INPUT_BADGE_TYPE}
+                    label={`Input(${arg.Input})`}
+                    size={BadgeSize.Small}
+                />
             </HighlightableRef>
         );
     }
 
     const input = inputs[arg.Input];
-    const tooltipText = muted ? undefined : inputTooltipText(input, arg.Input);
+    const tooltipText = inputTooltipText(input, arg.Input);
     const value = (
         <HighlightableRef refId={argRefId(arg)}>
             <span className="inline-flex items-baseline gap-[3px]">
-                {showInputIndex && <InputIndexLabel index={arg.Input} />}
-                <InlineInputValue input={input} muted={muted} />
+                <InputIndexLabel index={arg.Input} />
+                <InlineInputValue input={input} />
             </span>
         </HighlightableRef>
     );
@@ -182,37 +177,24 @@ export function Arg({
 export function ArgCommaList({
     args,
     inputs,
-    nowrap = false,
-    showInputIndex = false,
-    muted = false,
+    inputDisplay,
 }: {
     args: IotaArgument[];
     inputs: IotaCallArg[];
-    nowrap?: boolean;
-    showInputIndex?: boolean;
-    muted?: boolean;
+    inputDisplay?: InputDisplay;
 }): JSX.Element {
-    if (args.length === 0) {
-        return <span className="text-iota-neutral-40 dark:text-iota-neutral-60">—</span>;
-    }
-
     return (
-        <div
-            className={clsx(
-                'flex items-baseline',
-                nowrap ? 'w-max flex-nowrap whitespace-nowrap' : 'w-full flex-wrap gap-y-xxs',
-            )}
-        >
+        <span className="inline-flex w-max flex-nowrap items-baseline whitespace-nowrap">
             {args.map((arg, index) => (
-                <div key={index} className="flex items-center">
+                <span key={index} className="inline-flex items-center">
                     {index > 0 && (
                         <span className="mr-xs text-iota-neutral-40 dark:text-iota-neutral-60">
                             ,
                         </span>
                     )}
-                    <Arg arg={arg} inputs={inputs} showInputIndex={showInputIndex} muted={muted} />
-                </div>
+                    <Arg arg={arg} inputs={inputs} inputDisplay={inputDisplay} />
+                </span>
             ))}
-        </div>
+        </span>
     );
 }
