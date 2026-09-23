@@ -2,43 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
-import { ButtonUnstyled, Panel, Title } from '@iota/apps-ui-kit';
+import { Panel, Title, Toggle, ToggleLabelPosition, ToggleSize } from '@iota/apps-ui-kit';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
-import clsx from 'clsx';
 import { SyntaxHighlighter } from '~/components';
 import { FilterList } from '~/components/ui';
 import { InputsTable } from './InputsCard';
-import { CombinedCommandsList, TransactionsTable } from './TransactionsCard';
+import { CommandsList } from './TransactionsCard';
 
-const PTB_VIEWS = ['Combined', 'Inputs + Transactions'] as const;
+const PTB_VIEWS = ['Combined', 'Inputs + Commands'] as const;
 type PtbView = (typeof PTB_VIEWS)[number];
 
 interface ProgrammableTransactionCardProps {
     inputs: IotaCallArg[];
     transactions: IotaTransaction[];
-}
-
-function RawJsonToggle({
-    isActive,
-    onToggle,
-}: {
-    isActive: boolean;
-    onToggle: () => void;
-}): JSX.Element {
-    return (
-        <ButtonUnstyled
-            aria-label="Toggle raw JSON"
-            onClick={onToggle}
-            className={clsx(
-                'shrink-0 rounded-full border px-xs py-xxs text-label-sm',
-                isActive
-                    ? 'badge-bg-color-primary-soft badge-border-color-soft badge-text-color-primary-soft'
-                    : 'badge-border-color-neutral badge-text-color-neutral bg-transparent',
-            )}
-        >
-            RAW
-        </ButtonUnstyled>
-    );
 }
 
 export function ProgrammableTransactionCard({
@@ -55,14 +31,29 @@ export function ProgrammableTransactionCard({
     return (
         <Panel hasBorder>
             <div className="flex w-full items-center justify-between gap-sm py-sm--rs">
-                <Title title="Programmable Tx" />
+                <Title
+                    title="Programmable Tx"
+                    tooltipText={
+                        view === 'Combined' && !showRaw
+                            ? 'Hover an argument to see its input and highlight every place it appears. in n marks input n'
+                            : undefined
+                    }
+                />
                 <div className="flex items-center gap-xs pr-md--rs">
                     <FilterList
                         options={PTB_VIEWS}
                         selected={view}
                         onSelected={(next) => setView(next)}
+                        disabled={showRaw}
                     />
-                    <RawJsonToggle isActive={showRaw} onToggle={() => setShowRaw((v) => !v)} />
+                    <Toggle
+                        name="ptb-raw-json-toggle"
+                        label="Raw JSON"
+                        labelPosition={ToggleLabelPosition.Left}
+                        size={ToggleSize.Small}
+                        isToggled={showRaw}
+                        onChange={setShowRaw}
+                    />
                 </div>
             </div>
             {showRaw ? (
@@ -74,22 +65,30 @@ export function ProgrammableTransactionCard({
                 </div>
             ) : (
                 <div className="flex flex-col gap-lg pb-lg pt-xs">
-                    {view === 'Inputs + Transactions' && (
+                    {view === 'Inputs + Commands' && (
                         <div className="flex flex-col gap-xs">
-                            <Title title="Inputs" />
+                            <Title
+                                title="Inputs"
+                                tooltipText="Hover the input number to highlight every place it appears"
+                            />
                             <div className="px-md--rs">
                                 <InputsTable inputs={inputs} transactions={transactions} />
                             </div>
                         </div>
                     )}
                     <div className="flex flex-col gap-xs">
-                        {view === 'Inputs + Transactions' && <Title title="Transactions" />}
+                        {view === 'Inputs + Commands' && (
+                            <Title
+                                title="Commands"
+                                tooltipText="Hover an Input(n) or result reference to highlight where it comes from and every place it is used"
+                            />
+                        )}
                         <div className="px-md--rs">
-                            {view === 'Combined' ? (
-                                <CombinedCommandsList transactions={transactions} inputs={inputs} />
-                            ) : (
-                                <TransactionsTable transactions={transactions} inputs={inputs} />
-                            )}
+                            <CommandsList
+                                transactions={transactions}
+                                inputs={inputs}
+                                inputDisplay={view === 'Combined' ? 'value' : 'reference'}
+                            />
                         </div>
                     </div>
                 </div>

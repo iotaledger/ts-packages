@@ -6,11 +6,13 @@ import {
     Accordion,
     AccordionContent,
     AccordionHeader,
-    ButtonUnstyled,
     Divider,
     Panel,
     Title,
     TitleSize,
+    Toggle,
+    ToggleLabelPosition,
+    ToggleSize,
 } from '@iota/apps-ui-kit';
 import { ArrowDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
@@ -37,26 +39,20 @@ export interface CollapsibleCardProps {
 
 interface RawJsonToggleProps {
     isActive: boolean;
-    onToggle: () => void;
+    onChange: (isActive: boolean) => void;
 }
 
-function RawJsonToggle({ isActive, onToggle }: RawJsonToggleProps): JSX.Element {
+function RawJsonToggle({ isActive, onChange }: RawJsonToggleProps): JSX.Element {
     return (
-        <ButtonUnstyled
-            aria-label="Toggle raw JSON"
-            onClick={(event) => {
-                event.stopPropagation();
-                onToggle();
-            }}
-            className={clsx(
-                'shrink-0 rounded-full border px-xs py-xxs text-label-sm',
-                isActive
-                    ? 'badge-bg-color-primary-soft badge-border-color-soft badge-text-color-primary-soft'
-                    : 'badge-border-color-neutral badge-text-color-neutral bg-transparent',
-            )}
-        >
-            RAW
-        </ButtonUnstyled>
+        <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
+            <Toggle
+                label="Raw JSON"
+                labelPosition={ToggleLabelPosition.Left}
+                size={ToggleSize.Small}
+                isToggled={isActive}
+                onChange={onChange}
+            />
+        </div>
     );
 }
 
@@ -111,8 +107,8 @@ export function CollapsibleCard({
     const rawToggle = rawData !== undefined && (
         <RawJsonToggle
             isActive={showRaw}
-            onToggle={() => {
-                setShowRaw(!showRaw);
+            onChange={(isActive) => {
+                setShowRaw(isActive);
                 setOpen(true);
             }}
         />
