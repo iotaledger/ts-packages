@@ -47,6 +47,34 @@ export function usePtbHighlight(refId: PtbRefId | null): {
     };
 }
 
+export function PtbIndexCell({
+    refId,
+    children,
+    onHoverChange,
+}: {
+    refId: PtbRefId;
+    children: ReactNode;
+    onHoverChange?: (hovered: boolean) => void;
+}): JSX.Element {
+    const { onMouseEnter, onMouseLeave } = usePtbHighlight(refId);
+
+    return (
+        <span
+            onMouseEnter={() => {
+                onHoverChange?.(true);
+                onMouseEnter();
+            }}
+            onMouseLeave={() => {
+                onHoverChange?.(false);
+                onMouseLeave();
+            }}
+            className="cursor-pointer select-none text-label-sm text-iota-neutral-60 dark:text-iota-neutral-40"
+        >
+            {children}
+        </span>
+    );
+}
+
 const HIGHLIGHT_BOX_CLASSES =
     "relative inline-flex items-start rounded border border-transparent px-xxs -mx-xxs py-[2px] -my-[2px] transition-colors after:pointer-events-none after:absolute after:inset-0 after:rounded after:content-['']";
 const HIGHLIGHT_BG_CLASSES =

@@ -7,31 +7,17 @@ import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink, AddressLink } from '~/components/ui';
-import { decodeVectorU8ValueDetailed, pureValueHex } from './utils';
+import {
+    REGEX_NUMBER,
+    decodeVectorU8Value,
+    pureValueHex,
+    truncateEnd,
+    truncateMiddle,
+} from './utils';
 import { HighlightableRef, type PtbRefId } from './PtbHighlight';
 
 const RESULT_BADGE_TYPE = BadgeType.Neutral;
 const INPUT_BADGE_TYPE = BadgeType.Outlined;
-
-const REGEX_NUMBER = /^\d+$/;
-
-function truncateMiddle(value: string, max = 40): string {
-    if (value.length <= max) {
-        return value;
-    }
-
-    const head = Math.ceil((max - 1) / 2);
-    const tail = Math.floor((max - 1) / 2);
-    return `${value.slice(0, head)}…${value.slice(-tail)}`;
-}
-
-function truncateEnd(value: string, max = 40): string {
-    if (value.length <= max) {
-        return value;
-    }
-
-    return `${value.slice(0, max - 1)}…`;
-}
 
 function argRefId(arg: IotaArgument): PtbRefId | undefined {
     if (arg === 'GasCoin') {
@@ -70,14 +56,14 @@ function InlineInputValue({ input }: { input?: IotaCallArg }): JSX.Element {
     const valueColor = 'text-iota-neutral-10 dark:text-iota-neutral-92';
 
     if (input.type === 'pure' && input.valueType === 'vector<u8>') {
-        const { value: decoded, isPlainText } = decodeVectorU8ValueDetailed(input.value);
+        const { value: decoded, kind } = decodeVectorU8Value(input.value);
         const hex = pureValueHex(input.valueType, input.value);
-        const isRawBytes = !isPlainText && decoded === String(input.value) && hex;
-        const truncated = isRawBytes
-            ? truncateEnd(`0x${hex}`)
-            : isPlainText
-              ? truncateEnd(decoded)
-              : truncateMiddle(decoded);
+        const truncated =
+            kind === 'raw' && hex
+                ? truncateEnd(`0x${hex}`)
+                : kind === 'text'
+                  ? truncateEnd(decoded)
+                  : truncateMiddle(decoded);
         return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
     }
 

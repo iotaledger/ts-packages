@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
-import { Panel, Title, Toggle, ToggleLabelPosition, ToggleSize } from '@iota/apps-ui-kit';
+import { Panel, Title } from '@iota/apps-ui-kit';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
-import { SyntaxHighlighter } from '~/components';
-import { FilterList } from '~/components/ui';
+import { FilterList, RawJsonContent, RawJsonToggle } from '~/components/ui';
 import { InputsTable } from './InputsCard';
 import { CommandsList } from './TransactionsCard';
 
@@ -46,23 +45,15 @@ export function ProgrammableTransactionCard({
                         onSelected={(next) => setView(next)}
                         disabled={showRaw}
                     />
-                    <Toggle
+                    <RawJsonToggle
                         name="ptb-raw-json-toggle"
-                        label="Raw JSON"
-                        labelPosition={ToggleLabelPosition.Left}
-                        size={ToggleSize.Small}
-                        isToggled={showRaw}
+                        isActive={showRaw}
                         onChange={setShowRaw}
                     />
                 </div>
             </div>
             {showRaw ? (
-                <div className="p-md--rs pt-0">
-                    <SyntaxHighlighter
-                        code={JSON.stringify({ inputs, transactions }, null, 2)}
-                        language="json"
-                    />
-                </div>
+                <RawJsonContent rawData={{ inputs, transactions }} />
             ) : (
                 <div className="flex flex-col gap-lg pb-lg pt-xs">
                     {view === 'Inputs + Commands' && (

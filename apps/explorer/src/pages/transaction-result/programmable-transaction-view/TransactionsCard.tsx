@@ -9,12 +9,12 @@ import {
     type IotaCallArg,
     type MoveCallIotaTransaction,
 } from '@iota/iota-sdk/client';
-import { formatAddress } from '@iota/iota-sdk/utils';
+import { formatAddress, formatType } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink } from '~/components/ui';
 import { ArgCommaList, type InputDisplay } from './Transaction';
 import { getResultUsedByCommands } from './utils';
-import { HighlightableRef, usePtbHighlight } from './PtbHighlight';
+import { HighlightableRef, PtbIndexCell, usePtbHighlight } from './PtbHighlight';
 
 interface CommandsListProps {
     transactions: IotaTransaction[];
@@ -23,26 +23,6 @@ interface CommandsListProps {
 }
 
 const MUTED_TEXT = 'text-iota-neutral-40 dark:text-iota-neutral-60';
-const ADDRESS_REGEX = /0x[0-9a-fA-F]{64}/g;
-
-function formatTypeTag(typeTag: string): string {
-    return typeTag.replace(ADDRESS_REGEX, (address) => formatAddress(address));
-}
-
-function IndexCell({ index }: { index: number }): JSX.Element {
-    const { onMouseEnter, onMouseLeave } = usePtbHighlight(`command-${index}`);
-
-    return (
-        <span
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            className="cursor-pointer select-none text-label-sm text-iota-neutral-60 dark:text-iota-neutral-40"
-        >
-            #{index}
-        </span>
-    );
-}
-
 function MoveCallSignature({ data }: { data: MoveCallIotaTransaction }): JSX.Element {
     const { package: movePackage, module, function: func, type_arguments: typeArgs } = data;
 
@@ -64,7 +44,7 @@ function MoveCallSignature({ data }: { data: MoveCallIotaTransaction }): JSX.Ele
                 {func}
             </span>
             {!!typeArgs?.length && (
-                <span className={MUTED_TEXT}>&lt;{typeArgs.map(formatTypeTag).join(', ')}&gt;</span>
+                <span className={MUTED_TEXT}>&lt;{typeArgs.map(formatType).join(', ')}&gt;</span>
             )}
         </span>
     );
@@ -78,7 +58,7 @@ function CommandSignature({ type, data }: { type: string; data: unknown }): JSX.
     if (type === 'MakeMoveVec') {
         const [elementType] = data as [string | null, IotaArgument[]];
         return elementType ? (
-            <span className={MUTED_TEXT}>&lt;{formatTypeTag(elementType)}&gt;</span>
+            <span className={MUTED_TEXT}>&lt;{formatType(elementType)}&gt;</span>
         ) : null;
     }
 
@@ -203,9 +183,7 @@ function CommandBody({
     }
 }
 
-function UsedBy({ usedBy }: { usedBy: ReturnType<typeof getResultUsedByCommands> }): JSX.Element {
-    const commandIndexes = [...new Set(usedBy.map(({ commandIndex }) => commandIndex))];
-
+function UsedBy({ commandIndexes }: { commandIndexes: number[] }): JSX.Element {
     return (
         <span className={clsx('inline-flex items-center text-body-sm', MUTED_TEXT)}>
             <span className="mr-xs">used by</span>
@@ -249,10 +227,10 @@ function CommandCard({
             )}
         >
             <div className="flex flex-wrap items-center gap-xs text-body-sm">
-                <IndexCell index={index} />
+                <PtbIndexCell refId={`command-${index}`}>#{index}</PtbIndexCell>
                 <Badge type={BadgeType.PrimarySoft} label={type} size={BadgeSize.Small} />
                 <CommandSignature type={type} data={data} />
-                {usedBy.length > 0 && <UsedBy usedBy={usedBy} />}
+                {usedBy.length > 0 && <UsedBy commandIndexes={usedBy} />}
             </div>
             <div className="overflow-x-auto pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex w-max items-baseline gap-x-xs whitespace-nowrap">
