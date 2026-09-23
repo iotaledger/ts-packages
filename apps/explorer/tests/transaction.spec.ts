@@ -26,7 +26,7 @@ test('displays inputs', async ({ page }) => {
     const txid = tx.digest;
     await page.goto(`/txblock/${txid}`);
     await waitForTransactionPage(page);
-    await page.getByRole('button', { name: 'Inputs + Transactions' }).click();
+    await page.getByRole('button', { name: 'Inputs + Commands' }).click();
 
     const programmableTxn = tx.transaction!.data.transaction as ProgrammableTransaction;
     const actualInputsCount = programmableTxn.inputs.length;
@@ -37,19 +37,21 @@ test('displays inputs', async ({ page }) => {
     await expect(inputsContent.locator('tbody tr')).toHaveCount(actualInputsCount);
 });
 
-test('displays transactions card', async ({ page }) => {
+test('displays commands card', async ({ page }) => {
     const address = await faucet();
     const tx = await split_coin(address);
     const txid = tx.digest;
     await page.goto(`/txblock/${txid}`);
     await waitForTransactionPage(page);
-    await page.getByRole('button', { name: 'Inputs + Transactions' }).click();
+    await page.getByRole('button', { name: 'Inputs + Commands' }).click();
 
     const programmableTxn = tx.transaction!.data.transaction as ProgrammableTransaction;
     const actualTransactionsCount = programmableTxn.transactions.length;
 
-    await expect(page.getByRole('heading', { name: 'Transactions' })).toBeVisible();
-    const transactionsContent = page.getByTestId('transactions-card-content');
+    await expect(page.getByRole('heading', { name: 'Commands' })).toBeVisible();
+    const transactionsContent = page.getByTestId('commands-content');
     await expect(transactionsContent).toBeVisible();
-    await expect(transactionsContent.locator('tbody tr')).toHaveCount(actualTransactionsCount);
+    await expect(transactionsContent.getByTestId('command-card')).toHaveCount(
+        actualTransactionsCount,
+    );
 });
