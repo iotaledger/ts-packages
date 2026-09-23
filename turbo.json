@@ -2,10 +2,6 @@
 	"ui": "tui",
 	"$schema": "https://turbo.build/schema.json",
 	"tasks": {
-		"lint": { },
-		"lint:fix": {
-			"dependsOn": ["^build"]
-		},
 		"test": {
 			"dependsOn": ["^build", "build"],
 			"outputs": ["coverage/**"]

@@ -26,8 +26,6 @@
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
         "build": "build-package",
         "prepublishOnly": "pnpm build",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "test:e2e": "vitest run",
         "run:example": "tsx"
     },

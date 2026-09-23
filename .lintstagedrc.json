@@ -1,4 +1,4 @@
 {
-    "{sdk,apps,dapps}/**/*.{ts,tsx,js,mjs,cjs}": "oxlint --fix",
-    "{sdk,apps,dapps}/**/*.{ts,tsx,js,mjs,cjs,css,scss}": "oxfmt"
+    "{sdk,apps,dapps}/**/*.{ts,tsx,js,jsx,mjs,cjs}": "oxlint --fix",
+    "{sdk,apps,dapps}/**/*.{ts,tsx,js,jsx,mjs,cjs,json,css,scss}": "oxfmt"
 }

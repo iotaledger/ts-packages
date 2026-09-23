@@ -49,7 +49,7 @@ async function faucetRequest({ host, path, body, headers, method }: FaucetReques
         body: body ? JSON.stringify(body) : undefined,
         headers: {
             'Content-Type': 'application/json',
-            ...(headers || {}),
+            ...headers,
         },
     });
 

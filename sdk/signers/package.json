@@ -28,8 +28,6 @@
     "scripts": {
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
         "build": "build-package",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "test": "echo 'No tests specified for sdk/signers package yet.'"
     },
     "repository": "https://github.com/iotaledger/ts-packages",

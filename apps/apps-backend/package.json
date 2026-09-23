@@ -6,9 +6,7 @@
         "dev": "NODE_ENV=development nest start --watch",
         "debug": "nest start --debug --watch",
         "preview": "node dist/apps-backend/src/main",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "test:e2e": "jest --config ./jest-e2e.json",
-        "lint:fix": "oxlint --fix && oxfmt"
+        "test:e2e": "jest --config ./jest-e2e.json"
     },
     "dependencies": {
         "@iota/core": "workspace:*",

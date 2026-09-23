@@ -11,8 +11,6 @@
         "dist"
     ],
     "scripts": {
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "build-package": "tsc --project tsconfig.package.json && vite build",

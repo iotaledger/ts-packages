@@ -39,11 +39,11 @@ tooling:
           .oxlintrc.json
           .lintstagedrc.json
           .npmrc
-          .oxfmtrc.json
           graphql.config.ts
           package.json
           pnpm-lock.yaml
           pnpm-workspace.yaml
+          .oxfmtrc.json
           turbo.json
           vercel.json
 iota-names:

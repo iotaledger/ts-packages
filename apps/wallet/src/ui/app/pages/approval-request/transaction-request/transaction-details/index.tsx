@@ -122,27 +122,25 @@ export function TransactionDetails({ sender, transaction, chain }: TransactionDe
                             {selectedDetailsCategory === DetailsCategory.Commands &&
                                 !!transactionData?.commands.length && (
                                     <div className="flex flex-col gap-md">
-                                        {(
-                                            transactionData?.commands as TxCommand[] | undefined
-                                        )?.map((command, index) => (
-                                            <Command key={index} command={command} />
-                                        ))}
+                                        {(transactionData!.commands as TxCommand[]).map(
+                                            (command, index) => (
+                                                <Command key={index} command={command} />
+                                            ),
+                                        )}
                                     </div>
                                 )}
                             {selectedDetailsCategory === DetailsCategory.Inputs &&
                                 !!transactionData?.inputs.length && (
                                     <div className="flex flex-col gap-md">
-                                        {(
-                                            transactionData?.inputs as
-                                                | TransactionInput[]
-                                                | undefined
-                                        )?.map((input, index) => (
-                                            <Input
-                                                key={index}
-                                                input={input}
-                                                dryRunInput={dryRunInputs?.[index]}
-                                            />
-                                        ))}
+                                        {(transactionData!.inputs as TransactionInput[]).map(
+                                            (input, index) => (
+                                                <Input
+                                                    key={index}
+                                                    input={input}
+                                                    dryRunInput={dryRunInputs?.[index]}
+                                                />
+                                            ),
+                                        )}
                                     </div>
                                 )}
                         </div>

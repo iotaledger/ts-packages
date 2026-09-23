@@ -42,8 +42,6 @@
         "analyze": "size-limit",
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
         "build": "build-package",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "size": "size-limit",
         "test": "pnpm test:typecheck && pnpm test:unit",
         "test:typecheck": "tsc -p ./tests",

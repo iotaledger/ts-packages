@@ -1,50 +1,50 @@
 {
     "$schema": "./node_modules/oxlint/configuration_schema.json",
-    "plugins": [
-        "typescript",
-        "oxc",
-        "import",
-        "react"
-    ],
-    "categories": {
-        "correctness": "error"
-    },
-    "jsPlugins": [
-        "./linting/license-check/plugin.js",
-        "@tanstack/eslint-plugin-query"
-    ],
+    "plugins": ["typescript", "unicorn", "oxc", "import", "react"],
+    "jsPlugins": ["./linting/license-check/plugin.js", "@tanstack/eslint-plugin-query"],
+    "categories": { "correctness": "error" },
+    "env": { "builtin": true, "es2020": true, "browser": true },
     "ignorePatterns": [
         "coverage",
         "next-env.d.ts",
         "doc/book",
         "external",
         "external-crates",
-        "storybook-static",
-        "**/*.config.js",
-        "**/*.config.ts",
-        "**/preprocess.mjs",
-        "**/storybook-static",
-        "**/node_modules",
+        "docs",
+        "examples",
+        "apps/icons/src",
         "sdk/build-scripts/src/build-package.ts",
         "sdk/build-scripts/src/build-dapp-kit.ts",
         "sdk/create-dapp/bin/index.js",
+        "sdk/move-bytecode-template/pkg",
+        "**/*.config.js",
+        "**/*.config.ts",
+        "**/preprocess.mjs",
+        "**/node_modules",
+        "**/storybook-static",
         "**/build",
-        "**/dist/",
-        "**/.next/",
-        "**/.swc/",
-        "**/out/"
+        "**/dist",
+        "**/.next",
+        "**/.swc",
+        "**/out",
+        "**/generated"
     ],
     "rules": {
         "no-case-declarations": "off",
-        "no-implicit-coercion": [
+        "no-implicit-coercion": ["error", { "number": true, "string": true, "boolean": false }],
+        "no-redeclare": "off",
+        "no-unused-expressions": ["error", { "allowShortCircuit": true }],
+        "no-unused-vars": [
             "error",
             {
-                "number": true,
-                "string": true,
-                "boolean": false
+                "vars": "all",
+                "varsIgnorePattern": "^_",
+                "args": "none",
+                "argsIgnorePattern": "^_",
+                "caughtErrors": "none",
+                "ignoreRestSiblings": true
             }
         ],
-        "typescript/no-redeclare": "off",
         "no-restricted-globals": [
             "error",
             {
@@ -52,15 +52,12 @@
                 "message": "Buffer usage increases bundle size and is not consistently implemented on web."
             }
         ],
-        "typescript/no-unused-vars": [
+        "typescript/no-restricted-types": [
             "error",
             {
-                "argsIgnorePattern": "^_",
-                "varsIgnorePattern": "^_",
-                "vars": "all",
-                "args": "none",
-                "ignoreRestSiblings": true,
-                "caughtErrors": "none"
+                "types": {
+                    "Buffer": "Buffer usage increases bundle size and is not consistently implemented on web."
+                }
             }
         ],
         "license-check/license-check": "error",
@@ -68,67 +65,36 @@
         "@tanstack/query/no-rest-destructuring": "warn",
         "@tanstack/query/stable-query-client": "error",
         "@tanstack/query/no-unstable-deps": "error",
-        "react/exhaustive-deps": "off",
+        "react-hooks/exhaustive-deps": "off",
         "react/set-state-in-effect": "off",
         "react/refs": "off",
         "react/purity": "off",
         "react/preserve-manual-memoization": "off",
         "react/incompatible-library": "off",
         "react/immutability": "off",
-        "no-unused-expressions": [
-            "error",
-            {
-                "allowShortCircuit": true,
-                "allowTernary": true
-            }
-        ],
+        "unicorn/no-new-array": "off",
         "import/namespace": "off"
     },
     "overrides": [
         {
-            "files": [
-                "sdk/**/*"
-            ],
+            "files": ["sdk/**/*", "apps/ui-kit/**/*"],
             "rules": {
                 "typescript/consistent-type-imports": "error",
-                "import/consistent-type-specifier-style": [
-                    "error",
-                    "prefer-top-level"
-                ],
-                "import/no-cycle": "error",
                 "typescript/no-explicit-any": "off",
-                "import/extensions": [
-                    "error",
-                    "ignorePackages"
-                ]
-            }
-        },
-        {
-            "files": [
-                "apps/ui-kit/**/*"
-            ],
-            "rules": {
-                "typescript/consistent-type-imports": "error",
-                "import/consistent-type-specifier-style": [
-                    "error",
-                    "prefer-top-level"
-                ],
-                "typescript/no-explicit-any": "off",
+                "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
                 "import/no-cycle": "error"
             }
         },
         {
-            "files": [
-                "sdk/graphql-transport/**/*"
-            ],
-            "rules": {
-                "typescript/no-non-null-asserted-optional-chain": "off"
-            }
+            "files": ["sdk/**/*"],
+            "rules": { "import/extensions": ["error", "ignorePackages"] }
         },
         {
-            "files": [
-                "apps/explorer/**/*"
-            ],
+            "files": ["sdk/graphql-transport/**/*"],
+            "rules": { "typescript/no-non-null-asserted-optional-chain": "off" }
+        },
+        {
+            "files": ["apps/explorer/**/*"],
             "rules": {
                 "import/no-duplicates": "error",
                 "import/no-anonymous-default-export": "off",
@@ -142,11 +108,9 @@
                 ],
                 "typescript/unified-signatures": "error",
                 "typescript/parameter-properties": "error",
+                "arrow-body-style": ["error", "as-needed"],
                 "react/jsx-key": "error",
-                "react/jsx-boolean-value": [
-                    "error",
-                    "never"
-                ],
+                "react/jsx-boolean-value": ["error", "never"],
                 "react/function-component-definition": [
                     "error",
                     {
@@ -154,20 +118,8 @@
                         "unnamedComponents": "arrow-function"
                     }
                 ],
-                "react/jsx-pascal-case": [
-                    "error",
-                    {
-                        "allowAllCaps": true,
-                        "allowNamespace": true
-                    }
-                ],
-                "react/self-closing-comp": [
-                    "error",
-                    {
-                        "component": true,
-                        "html": true
-                    }
-                ],
+                "react/jsx-pascal-case": ["error", { "allowAllCaps": true, "allowNamespace": true }],
+                "react/self-closing-comp": ["error", { "component": true, "html": true }],
                 "react/void-dom-elements-no-children": "error",
                 "react/no-danger": "error",
                 "react/no-danger-with-children": "error",
@@ -179,27 +131,11 @@
                 "react/jsx-no-undef": "error",
                 "react/jsx-curly-brace-presence": [
                     "error",
-                    {
-                        "props": "never",
-                        "children": "never"
-                    }
+                    { "props": "never", "children": "never" }
                 ],
-                "react/jsx-fragments": [
-                    "error",
-                    "syntax"
-                ],
-                "react/jsx-no-useless-fragment": [
-                    "error",
-                    {
-                        "allowExpressions": true
-                    }
-                ],
-                "react/jsx-handler-names": [
-                    "error",
-                    {
-                        "eventHandlerPropPrefix": "on"
-                    }
-                ],
+                "react/jsx-fragments": ["error", "syntax"],
+                "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }],
+                "react/jsx-handler-names": ["error", { "eventHandlerPropPrefix": "on" }],
                 "react/no-children-prop": "error",
                 "react/no-did-mount-set-state": "error",
                 "react/no-did-update-set-state": "error",
@@ -211,8 +147,8 @@
                 "react/no-this-in-sfc": "error",
                 "react/no-unescaped-entities": "error",
                 "react/no-unknown-property": "error",
-                "react/no-will-update-set-state": "error",
                 "react/style-prop-object": "error",
+                "react/no-will-update-set-state": "error",
                 "react/no-unstable-nested-components": "error",
                 "react/no-array-index-key": "off",
                 "no-restricted-imports": [
@@ -221,28 +157,17 @@
                         "paths": [
                             {
                                 "name": "react-router-dom",
-                                "importNames": [
-                                    "Link",
-                                    "useNavigate",
-                                    "useSearchParams"
-                                ],
+                                "importNames": ["Link", "useNavigate", "useSearchParams"],
                                 "message": "Please use `LinkWithQuery`, `useSearchParamsMerged`, and `useNavigateWithQuery` from \"~/components/ui/LinkWithQuery\" instead."
                             }
                         ]
                     }
-                ],
-                "arrow-body-style": [
-                    "error",
-                    "as-needed"
                 ]
             }
         },
         {
-            "files": [
-                "apps/wallet/**/*"
-            ],
+            "files": ["apps/wallet/**/*"],
             "rules": {
-                "react/display-name": "off",
                 "import/no-duplicates": "error",
                 "typescript/consistent-type-imports": [
                     "error",
@@ -254,17 +179,15 @@
                 ],
                 "typescript/unified-signatures": "error",
                 "typescript/parameter-properties": "error",
-                "no-console": "warn",
-                "typescript/no-non-null-assertion": "off"
+                "typescript/no-non-null-assertion": "off",
+                "react/display-name": "off",
+                "no-console": "warn"
             }
         },
         {
-            "files": [
-                "dapps/kiosk/**/*"
-            ],
+            "files": ["dapps/kiosk/**/*"],
             "rules": {
-                "no-unused-vars": "off",
-                "typescript/no-unused-vars": [
+                "no-unused-vars": [
                     "warn",
                     {
                         "vars": "all",
@@ -278,34 +201,47 @@
         {
             "files": [
                 "sdk/ledgerjs-hw-app-iota/**/*",
+                "sdk/create-dapp/**/*",
                 "apps/wallet/**/*"
             ],
             "rules": {
-                "no-restricted-globals": "off"
+                "no-restricted-globals": "off",
+                "typescript/no-restricted-types": "off"
             }
         },
         {
-            "files": [
-                "**/*.test.*",
-                "**/*.spec.*"
-            ],
+            "files": ["**/*.test.*", "**/*.spec.*"],
             "rules": {
                 "typescript/consistent-type-imports": "off",
-                "import/consistent-type-specifier-style": "off",
-                "no-restricted-globals": "off",
                 "typescript/no-explicit-any": "off",
                 "typescript/no-non-null-asserted-optional-chain": "off",
-                "import/extensions": "off"
+                "import/consistent-type-specifier-style": "off",
+                "no-restricted-globals": "off",
+                "import/extensions": "off",
+                "unicorn/no-await-in-promise-methods": "off"
             }
         },
         {
+            "files": ["**/*.stories.*"],
+            "rules": { "react/rules-of-hooks": "off" }
+        },
+        {
+            "files": ["sdk/create-dapp/templates/**/*"],
+            "rules": { "license-check/license-check": "off", "import/extensions": "off" }
+        },
+        {
+            "files": ["apps/apps-backend/**/*"],
+            "env": { "node": true, "jest": true }
+        },
+        {
             "files": [
-                "sdk/create-dapp/templates/**/*"
+                "apps/names/**/*",
+                "apps/names-display/**/*",
+                "apps/wallet-dashboard/**/*"
             ],
-            "rules": {
-                "license-check/license-check": "off",
-                "import/extensions": "off"
-            }
+            "plugins": ["nextjs"],
+            "env": { "node": true },
+            "rules": { "nextjs/no-img-element": "off" }
         }
     ]
 }

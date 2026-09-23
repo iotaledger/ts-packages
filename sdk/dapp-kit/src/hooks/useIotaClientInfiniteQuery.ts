@@ -78,6 +78,7 @@ export function useIotaClientInfiniteQuery<
         enabled,
         queryFn: ({ pageParam }) =>
             iotaContext.client[method]({
+                // oxlint-disable-next-line unicorn/no-useless-fallback-in-spread
                 ...(params ?? {}),
                 cursor: pageParam,
             } as never),

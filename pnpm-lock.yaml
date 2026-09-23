@@ -2068,6 +2068,9 @@ importers:
       msw:
         specifier: ^2.3.1
         version: 2.4.9(typescript@5.8.3)
+      oxfmt:
+        specifier: ^0.68.0
+        version: 0.68.0
       tmp:
         specifier: ^0.2.3
         version: 0.2.5

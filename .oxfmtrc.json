@@ -32,5 +32,47 @@
         "wallet-dist-L2/",
         "apps/evm-bridge/scripts/",
         "sdk/signers/*.json"
+    ],
+    "overrides": [
+        {
+            "files": [
+                "apps/explorer/**"
+            ],
+            "options": {
+                "sortTailwindcss": {
+                    "config": "apps/explorer/tailwind.config.ts"
+                }
+            }
+        },
+        {
+            "files": [
+                "apps/wallet/**"
+            ],
+            "options": {
+                "sortTailwindcss": {
+                    "config": "apps/wallet/tailwind.config.ts"
+                }
+            }
+        },
+        {
+            "files": [
+                "apps/wallet-dashboard/**"
+            ],
+            "options": {
+                "sortTailwindcss": {
+                    "config": "apps/wallet-dashboard/tailwind.config.ts"
+                }
+            }
+        },
+        {
+            "files": [
+                "apps/ui-kit/**"
+            ],
+            "options": {
+                "sortTailwindcss": {
+                    "config": "apps/ui-kit/tailwind.config.ts"
+                }
+            }
+        }
     ]
 }

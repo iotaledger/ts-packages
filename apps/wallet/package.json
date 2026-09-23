@@ -17,8 +17,6 @@
         "build:firefox:dev": "cross-env BUILD_BROWSER=\"firefox\" BUILD_ENV=\"development\" NODE_ENV=\"development\" rspack build",
         "build:firefox:rc": "cross-env BUILD_BROWSER=\"firefox\" BUILD_ENV=\"rc\" NODE_ENV=\"production\" rspack build",
         "build:firefox:nightly": "cross-env BUILD_BROWSER=\"firefox\" BUILD_ENV=\"nightly\" NODE_ENV=\"production\" rspack build",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "test": "vitest run",
         "test:watch": "vitest",
         "playwright": "cross-env PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=\"1\" playwright",

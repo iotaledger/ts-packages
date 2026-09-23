@@ -163,7 +163,7 @@ export function PasswordModalDialog({
                                 width="auto"
                                 className="aspect-[4/3] h-[178px] w-auto object-cover"
                             />
-                            <span className="py-xs text-headline-sm  text-iota-neutral-10 dark:text-iota-neutral-92">
+                            <span className="py-xs text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                                 {title}
                             </span>
                         </>

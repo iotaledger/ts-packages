@@ -7,8 +7,6 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "shadcnui": "pnpm dlx shadcn-ui@latest"
     },
     "dependencies": {

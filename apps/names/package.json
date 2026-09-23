@@ -10,8 +10,6 @@
         "test:ui": "vitest --ui",
         "test:e2e": "playwright test",
         "playwright:install": "playwright install --with-deps chromium",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "pull-amplitude": "ampli pull web && node prependLicense.mjs && oxfmt ampli.json src/lib/utils/analytics/ampli/index.ts",
         "inject-localnet": "node scripts/injectLocalnetConfig.mjs"
     },

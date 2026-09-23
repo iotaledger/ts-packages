@@ -10,8 +10,6 @@
     },
     "license": "Apache-2.0",
     "scripts": {
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "test": "vitest run",
         "test:watch": "vitest"
     },

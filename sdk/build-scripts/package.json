@@ -13,8 +13,6 @@
         "build-dapp-kit": "./src/build-dapp-kit.ts"
     },
     "scripts": {
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt",
         "build": "tsc --build"
     },
     "devDependencies": {

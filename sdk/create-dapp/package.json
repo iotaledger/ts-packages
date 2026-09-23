@@ -20,9 +20,7 @@
     "types": "./dist/cjs/index.d.ts",
     "scripts": {
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
-        "build": "tsc --build",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt"
+        "build": "tsc --build"
     },
     "bugs": {
         "url": "https://github.com/iotaledger/ts-packages/issues/new"

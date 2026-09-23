@@ -6,14 +6,12 @@
         "dev": "cross-env NODE_ENV=\"development\" next dev",
         "build": "cross-env NODE_ENV=\"production\" next build",
         "start": "next start",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
         "test": "jest",
         "ampli": "ampli",
         "pull-amplitude": "ampli pull web && node prependLicense.mjs && oxfmt ampli.json lib/utils/analytics/ampli/index.ts",
         "prepare:e2e": "pnpm -w wallet build && pnpm -w wallet-dashboard build",
         "playwright": "playwright",
-        "playwright:debug": "PWDEBUG=1 playwright",
-        "lint:fix": "oxlint --fix && oxfmt"
+        "playwright:debug": "PWDEBUG=1 playwright"
     },
     "engines": {
         "node": ">= 24"

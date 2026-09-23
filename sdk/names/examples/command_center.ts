@@ -6,8 +6,7 @@ import { requestIotaFromFaucetV0 } from '@iota/iota-sdk/faucet';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
-import type { TransactionObjectArgument } from '@iota/iota-sdk/transactions';
-import { Transaction } from '@iota/iota-sdk/transactions';
+import { Transaction, TransactionObjectArgument } from '@iota/iota-sdk/transactions';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
 
 import { IotaNamesClient } from '../src/iota-names-client.js';

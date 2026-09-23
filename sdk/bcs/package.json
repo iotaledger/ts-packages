@@ -25,9 +25,7 @@
         "dev": "pnpm build --watch",
         "build": "build-package",
         "test": "vitest run --typecheck",
-        "test:watch": "vitest --typecheck",
-        "lint": "oxlint --deny-warnings && oxfmt --check",
-        "lint:fix": "oxlint --fix && oxfmt"
+        "test:watch": "vitest --typecheck"
     },
     "repository": "https://github.com/iotaledger/ts-packages",
     "keywords": [
