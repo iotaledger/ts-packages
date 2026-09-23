@@ -21,9 +21,9 @@ export function TagsView({ tags }: TagsCardProps) {
                     icon={<Info />}
                 />
             ) : (
-                <div className="flex max-h-44 flex-col overflow-y-auto md:max-h-96">
+                <div className="flex max-h-44 flex-col gap-xs overflow-y-auto md:max-h-96">
                     {tags.map(({ tag, usageCount }) => (
-                        <div key={tag} className="p-xs">
+                        <div key={tag}>
                             <KeyValueInfo keyText={tag} value={usageCount.toString()} fullwidth />
                         </div>
                     ))}
