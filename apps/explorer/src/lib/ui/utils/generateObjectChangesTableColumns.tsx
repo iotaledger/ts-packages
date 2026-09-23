@@ -1,13 +1,38 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeType, ButtonUnstyled, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
-import { Copy } from '@iota/apps-ui-icons';
+import {
+    Badge,
+    BadgeSize,
+    BadgeType,
+    ButtonUnstyled,
+    TableCellBase,
+    TableCellText,
+} from '@iota/apps-ui-kit';
+import { Copy, TriangleDown } from '@iota/apps-ui-icons';
 import { ObjectChangeLabels, useCopyToClipboard, type IotaObjectChangeTypes } from '@iota/core';
 import { type DisplayFieldsResponse } from '@iota/iota-sdk/client';
-import { formatDigest } from '@iota/iota-sdk/utils';
+import { formatDigest, parseStructTag } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
+import clsx from 'clsx';
 import { AddressLink, ObjectLink, ObjectVideoImage } from '~/components/ui';
+
+function getShortObjectType(objectType: string): string {
+    try {
+        const { module, name, typeParams } = parseStructTag(objectType);
+        const typeParamsLabel = typeParams.length
+            ? `<${typeParams
+                  .map(
+                      (typeParam) =>
+                          `…${typeof typeParam === 'string' ? typeParam : typeParam.name}`,
+                  )
+                  .join(', ')}>`
+            : '';
+        return `${module}::${name}${typeParamsLabel}`;
+    } catch {
+        return objectType;
+    }
+}
 
 export interface ObjectChangeTableRow {
     objectId: string;
@@ -16,6 +41,7 @@ export interface ObjectChangeTableRow {
     objectType?: string;
     status: IotaObjectChangeTypes;
     version?: string;
+    previousVersion?: string;
     digest?: string;
     display?: DisplayFieldsResponse;
 }
@@ -30,31 +56,44 @@ const STATUS_BADGE_TYPE: Record<IotaObjectChangeTypes, BadgeType> = {
     unwrapped: BadgeType.Neutral,
 };
 
+function ExpandIndicator({
+    canExpand,
+    isExpanded,
+}: {
+    canExpand: boolean;
+    isExpanded: boolean;
+}): JSX.Element {
+    return (
+        <TriangleDown
+            aria-hidden="true"
+            className={clsx(
+                'h-4 w-4 shrink-0 text-iota-neutral-40 transition-transform ease-linear dark:text-iota-neutral-60',
+                !canExpand && 'invisible',
+                isExpanded ? 'rotate-0' : '-rotate-90',
+            )}
+        />
+    );
+}
+
 function ObjectTypeCell({ objectType }: { objectType?: string }): JSX.Element {
     const copyToClipboard = useCopyToClipboard();
 
-    if (!objectType) {
-        return (
-            <TableCellBase>
-                <TableCellText>Package</TableCellText>
-            </TableCellBase>
-        );
-    }
-
     return (
         <TableCellBase>
-            <div className="flex min-w-0 items-center gap-xxs">
-                <TableCellText>
-                    <span className="block max-w-[140px] truncate" title={objectType}>
-                        {objectType}
-                    </span>
-                </TableCellText>
-                <ButtonUnstyled
-                    onClick={() => copyToClipboard(objectType)}
-                    aria-label="Copy to clipboard"
-                >
-                    <Copy className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40" />
-                </ButtonUnstyled>
+            <div className="flex items-center gap-xxs" title={objectType}>
+                <Badge
+                    type={BadgeType.PrimarySoft}
+                    label={objectType ? getShortObjectType(objectType) : 'Package'}
+                    size={BadgeSize.Small}
+                />
+                {objectType && (
+                    <ButtonUnstyled
+                        onClick={() => copyToClipboard(objectType)}
+                        aria-label="Copy to clipboard"
+                    >
+                        <Copy className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40" />
+                    </ButtonUnstyled>
+                )}
             </div>
         </TableCellBase>
     );
@@ -134,6 +173,10 @@ export function generateObjectChangesTableColumns(
                 return (
                     <TableCellBase>
                         <div className="flex flex-row items-center gap-sm py-xs">
+                            <ExpandIndicator
+                                canExpand={row.getCanExpand()}
+                                isExpanded={row.getIsExpanded()}
+                            />
                             {row.original.display?.data && (
                                 <ObjectVideoImage
                                     variant="xxs"
@@ -184,17 +227,24 @@ export function generateObjectChangesTableColumns(
                 </TableCellBase>
             ),
         },
-        {
-            header: 'Version',
-            id: 'version',
-            cell: ({ row }) => (
-                <TableCellBase>
-                    <TableCellText>{row.original.version ?? '-'}</TableCellText>
-                </TableCellBase>
-            ),
-        },
         ...(isAdvancedMode
             ? [
+                  {
+                      header: 'Previous Version',
+                      id: 'previousVersion',
+                      meta: {
+                          tooltip: 'The version of the object before this transaction modified it.',
+                      },
+                      cell: ({ row }: { row: { original: ObjectChangeTableRow } }) => (
+                          <TableCellBase>
+                              <TableCellText>
+                                  {row.original.previousVersion
+                                      ? `v${row.original.previousVersion}`
+                                      : '-'}
+                              </TableCellText>
+                          </TableCellBase>
+                      ),
+                  },
                   {
                       header: 'New Digest',
                       id: 'digest',

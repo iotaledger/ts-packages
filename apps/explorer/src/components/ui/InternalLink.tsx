@@ -20,7 +20,6 @@ import { Link, type LinkProps } from '~/components/ui';
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
     hideAlias?: boolean;
-    alignEnd?: boolean;
     noTruncate?: boolean;
     label?: string | ReactNode;
     renderAddressAlias?: (alias: string) => ReactNode;
@@ -44,7 +43,6 @@ function createInternalLink<T extends string>(
         renderAddressAlias,
         showAddressAlias = ['address', 'object', 'validator'].includes(base),
         hideAlias = false,
-        alignEnd = false,
         className,
         ...props
     }: BaseInternalLinkProps & Record<T, string>) => {
@@ -76,7 +74,6 @@ function createInternalLink<T extends string>(
                     noTruncate={noTruncate}
                     truncateUnknown={!noTruncate}
                     hideAlias={hideAlias}
-                    alignEnd={alignEnd}
                     renderAddress={(address, copyButton, hasAlias) => (
                         <NamedAddressTooltip
                             name={hasAlias ? undefined : iotaName}

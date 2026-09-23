@@ -84,7 +84,7 @@ export function TransactionResult(): JSX.Element {
         isError: getTxnErrorBool,
         data,
         error: getTxnError,
-    } = useGetTransaction(id as string);
+    } = useGetTransaction(id as string, { showRawInput: true });
     const txnQueryErrorMessage = getTxnError?.message;
 
     return (

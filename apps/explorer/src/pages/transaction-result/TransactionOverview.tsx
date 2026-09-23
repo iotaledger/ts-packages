@@ -1,379 +1,35 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ReactNode, useId, useMemo, useState } from 'react';
-import { Badge, BadgeType, ButtonUnstyled, Divider, KeyValueInfo } from '@iota/apps-ui-kit';
-import {
-    CoinFiatValue,
-    TransactionAction,
-    getTransactionAction,
-    useFormatCoin,
-    type GasSummaryType,
-} from '@iota/core';
-import { ArrowBottomLeft, ArrowDown, ArrowTopRight } from '@iota/apps-ui-icons';
+import { type ReactNode, useMemo } from 'react';
+import { Badge, BadgeType, KeyValueInfo } from '@iota/apps-ui-kit';
+import { TransactionAction, getTransactionAction } from '@iota/core';
+import { ArrowBottomLeft, ArrowTopRight, CheckmarkFilled, Warning } from '@iota/apps-ui-icons';
 import { bcs } from '@iota/iota-sdk/bcs';
-import type {
-    IotaTransactionBlockResponse,
-    OwnedObjectRef,
-    TransactionBlockEffectsModifiedAtVersions,
-    TransactionEffects,
-} from '@iota/iota-sdk/client';
-import {
-    CoinFormat,
-    formatAddress,
-    formatDigest,
-    fromBase64,
-    toBase64,
-} from '@iota/iota-sdk/utils';
-import clsx from 'clsx';
-import {
-    AddressLink,
-    CheckpointSequenceLink,
-    DateDisplay,
-    EpochLink,
-    ObjectLink,
-    TransactionLink,
-} from '~/components';
+import type { IotaTransactionBlockResponse, TransactionEffects } from '@iota/iota-sdk/client';
+import { TransactionDataBuilder } from '@iota/iota-sdk/transactions';
+import { fromBase64 } from '@iota/iota-sdk/utils';
+import { AddressLink, CheckpointSequenceLink, DateDisplay, EpochLink } from '~/components';
 import { useAdvancedMode } from '~/contexts';
-import {
-    useBreakpoint,
-    useDeserializedSignatures,
-    type DeserializedSignature,
-    type MultiSigParticipant,
-    type MultiSigSignature,
-} from '~/hooks';
-import { getSendRecipientAddress, onCopySuccess } from '~/lib/utils';
+import { useBreakpoint } from '~/hooks';
+import { getSendRecipientAddress, getTransactionSponsor, onCopySuccess } from '~/lib/utils';
 
-interface ExpandableDetailsProps {
-    id?: string;
-    ariaLabel: string;
-    children: ReactNode;
-}
-
-function ExpandableDetails({ id, ariaLabel, children }: ExpandableDetailsProps): JSX.Element {
-    return (
-        <div
-            id={id}
-            role="region"
-            aria-label={ariaLabel}
-            className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
-        >
-            {children}
-        </div>
-    );
-}
-
-function MultiSigParticipantRow({
-    participant,
-    index,
-}: {
-    participant: MultiSigParticipant;
-    index: number;
-}): JSX.Element {
-    const [showPartialSignature, setShowPartialSignature] = useState(false);
-    const publicKey = participant.publicKey.toIotaPublicKey();
-    const partialSignature = participant.signature ? toBase64(participant.signature) : undefined;
-
-    return (
-        <div className="flex flex-col gap-xs">
-            <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
-                Participant {index + 1}
-            </div>
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Status"
-                value={
-                    <span className="flex items-center gap-xs">
-                        <span
-                            aria-hidden="true"
-                            className={clsx(
-                                'h-2 w-2 shrink-0 rounded-full',
-                                participant.signed
-                                    ? 'bg-iota-primary-50 dark:bg-iota-primary-80'
-                                    : 'bg-iota-neutral-70 dark:bg-iota-neutral-30',
-                            )}
-                        />
-                        <span>{participant.signed ? 'Signed' : 'Not signed'}</span>
-                    </span>
-                }
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Address"
-                value={<AddressLink address={participant.address} copyText={participant.address} />}
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Scheme"
-                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
-                value={participant.signatureScheme}
-            />
-            <KeyValueInfo layout="receipt" keyText="Weight" value={participant.weight.toString()} />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Public Key"
-                value={publicKey}
-                copyText={publicKey}
-                onCopySuccess={onCopySuccess}
-                isTruncated
-            />
-            {partialSignature && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Partial Signature"
-                        value={
-                            <ButtonUnstyled
-                                className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                aria-expanded={showPartialSignature}
-                                onClick={() => setShowPartialSignature(!showPartialSignature)}
-                            >
-                                {showPartialSignature
-                                    ? 'Hide Partial Signature'
-                                    : 'Show Partial Signature'}
-                            </ButtonUnstyled>
-                        }
-                    />
-                    {showPartialSignature && (
-                        <KeyValueInfo
-                            layout="receipt"
-                            keyText="Signature"
-                            value={partialSignature}
-                            copyText={partialSignature}
-                            onCopySuccess={onCopySuccess}
-                        />
-                    )}
-                </>
-            )}
-        </div>
-    );
-}
-
-function MultiSigBreakdown({ signature: data }: { signature: MultiSigSignature }): JSX.Element {
-    const { multisig } = data;
-
-    return (
-        <div className="flex flex-col gap-sm">
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Scheme"
-                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
-                value="MultiSig"
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Participants"
-                value={`${multisig.participants.length} total`}
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Threshold"
-                value={`${multisig.threshold} weight`}
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Address"
-                value={<AddressLink address={multisig.address} copyText={multisig.address} />}
-            />
-            <div className="flex flex-col gap-lg pt-sm">
-                {multisig.participants.map((participant, index) => (
-                    <MultiSigParticipantRow
-                        key={participant.address}
-                        participant={participant}
-                        index={index}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function SignatureBreakdown({
-    signature: data,
-}: {
-    signature: DeserializedSignature;
-}): JSX.Element {
-    if (data.signatureScheme === 'MultiSig') {
-        return <MultiSigBreakdown signature={data} />;
+function getDigestIntegrity(
+    rawTransaction: string | undefined,
+    digest: string,
+): boolean | undefined {
+    if (!rawTransaction) {
+        return undefined;
     }
 
-    const { signature, signatureScheme } = data;
-    return (
-        <div className="flex flex-col gap-sm">
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Scheme"
-                tooltipText="The cryptographic signature scheme used (e.g. Ed25519, Secp256k1). The first byte of a public key encodes which one."
-                value={signatureScheme}
-            />
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Address"
-                value={
-                    <AddressLink
-                        address={'address' in data ? data.address : data.publicKey.toIotaAddress()}
-                        copyText={'address' in data ? data.address : data.publicKey.toIotaAddress()}
-                    />
-                }
-            />
-            {'publicKey' in data ? (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="IOTA Public Key"
-                    value={data.publicKey.toIotaPublicKey()}
-                    copyText={data.publicKey.toIotaPublicKey()}
-                    onCopySuccess={onCopySuccess}
-                />
-            ) : null}
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Signature"
-                copyText={toBase64(signature)}
-                onCopySuccess={onCopySuccess}
-                value={toBase64(signature)}
-            />
-        </div>
-    );
-}
-
-interface GasFeeAmountProps {
-    amount?: bigint | number | string;
-    burnedAmount?: bigint | number | string;
-}
-
-function GasFeeAmount({ amount, burnedAmount }: GasFeeAmountProps): JSX.Element | null {
-    const [formattedAmount, symbol] = useFormatCoin({ balance: amount, format: CoinFormat.Full });
-    const [formattedBurnedAmount, burnedSymbol] = useFormatCoin({
-        balance: burnedAmount,
-        format: CoinFormat.Full,
-    });
-
-    if (!amount) {
-        return null;
+    try {
+        const [{ intentMessage }] = bcs.SenderSignedData.parse(fromBase64(rawTransaction));
+        const transactionDataBytes = bcs.TransactionData.serialize(intentMessage.value).toBytes();
+        const derivedDigest = TransactionDataBuilder.getDigestFromBytes(transactionDataBytes);
+        return derivedDigest === digest;
+    } catch {
+        return undefined;
     }
-
-    return (
-        <div className="flex flex-wrap items-baseline gap-xxs">
-            <span>
-                {formattedAmount} {symbol}
-            </span>
-            <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                {BigInt(amount).toLocaleString()} (nano)
-            </span>
-            {!!burnedAmount && (
-                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                    Burnt: {formattedBurnedAmount} {burnedSymbol} (
-                    {BigInt(burnedAmount).toLocaleString()} nano)
-                </span>
-            )}
-        </div>
-    );
-}
-
-interface GasPaymentObjectsSummaryProps {
-    payments: Array<{ objectId: string }>;
-    showAll: boolean;
-    onToggle: () => void;
-    detailsId: string;
-}
-
-function GasPaymentObjectsSummary({
-    payments,
-    showAll,
-    onToggle,
-    detailsId,
-}: GasPaymentObjectsSummaryProps): JSX.Element {
-    const hasMorePayments = payments.length > 2;
-
-    return (
-        <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-x-sm gap-y-xxs">
-            {!showAll &&
-                payments
-                    .slice(0, 2)
-                    .map((payment) => (
-                        <ObjectLink
-                            key={payment.objectId}
-                            objectId={payment.objectId}
-                            label={formatAddress(payment.objectId)}
-                            copyText={payment.objectId}
-                            className="text-label-md"
-                        />
-                    ))}
-            {hasMorePayments && (
-                <ButtonUnstyled
-                    className="inline-flex items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                    aria-controls={detailsId}
-                    aria-expanded={showAll}
-                    onClick={onToggle}
-                >
-                    {showAll ? 'Show Less' : `Show ${payments.length - 2} More`}
-                    <ArrowDown
-                        className={clsx(
-                            'h-4 w-4 transition-transform ease-linear',
-                            showAll && 'rotate-180',
-                        )}
-                    />
-                </ButtonUnstyled>
-            )}
-        </div>
-    );
-}
-
-interface GasPaymentObjectsDetailsProps {
-    payments: Array<{ objectId: string }>;
-    detailsId: string;
-}
-
-function GasPaymentObjectsDetails({
-    payments,
-    detailsId,
-}: GasPaymentObjectsDetailsProps): JSX.Element {
-    return (
-        <ExpandableDetails id={detailsId} ariaLabel="Gas payment object details">
-            <div className="flex items-center justify-between gap-sm text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                <span className="shrink-0">Objects</span>
-                <span className="shrink-0">
-                    {payments.length} Gas Object{payments.length === 1 ? '' : 's'}
-                </span>
-            </div>
-            <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
-                {payments.map((payment, index) => (
-                    <div
-                        key={payment.objectId}
-                        className={clsx(
-                            'min-w-0 py-xs',
-                            index > 0 &&
-                                'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
-                        )}
-                    >
-                        <div className="flex max-w-full justify-start overflow-x-auto md:justify-end">
-                            <div className="min-w-max">
-                                <ObjectLink
-                                    objectId={payment.objectId}
-                                    noTruncate
-                                    copyText={payment.objectId}
-                                    className="text-label-md"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </ExpandableDetails>
-    );
-}
-
-function getLamportVersion(effects?: TransactionEffects): string | undefined {
-    const touchedRefs = [
-        ...(effects?.mutated ?? []),
-        ...(effects?.created ?? []),
-        ...(effects?.unwrapped ?? []),
-    ];
-
-    return touchedRefs.reduce<string | undefined>((highest, { reference }) => {
-        const version = reference.version;
-        return highest === undefined || Number(version) > Number(highest) ? version : highest;
-    }, undefined);
 }
 
 function getExpiration(rawTransaction?: string): string | undefined {
@@ -390,299 +46,70 @@ function getExpiration(rawTransaction?: string): string | undefined {
     }
 }
 
-function ObjectRefList({
-    refs,
-}: {
-    refs: Array<{ objectId: string; version?: string }>;
-}): JSX.Element {
-    return (
-        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
-            {refs.map((ref, index) => (
-                <div
-                    key={ref.objectId}
-                    className={clsx(
-                        'min-w-0 py-xs',
-                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
-                    )}
-                >
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText={String(index + 1).padStart(2, '0')}
-                        value={
-                            <ObjectLink
-                                objectId={ref.objectId}
-                                copyText={ref.objectId}
-                                className="text-label-md"
-                            />
-                        }
-                        supportingLabel={ref.version ? `v${ref.version}` : undefined}
-                        fullwidth
-                    />
-                </div>
-            ))}
-        </div>
-    );
+function getLamportVersion(effects?: TransactionEffects): string | undefined {
+    const touchedRefs = [
+        ...(effects?.mutated ?? []),
+        ...(effects?.created ?? []),
+        ...(effects?.unwrapped ?? []),
+    ];
+
+    return touchedRefs.reduce<string | undefined>((highest, { reference }) => {
+        const version = reference.version;
+        return highest === undefined || Number(version) > Number(highest) ? version : highest;
+    }, undefined);
 }
 
-function TransactionDependencies({ dependencies }: { dependencies: string[] }): JSX.Element {
-    return (
-        <div className="flex max-h-64 flex-col overflow-y-auto pr-xxs">
-            {dependencies.map((digest, index) => (
-                <div
-                    key={digest}
-                    className={clsx(
-                        'min-w-0 py-xs',
-                        index > 0 && 'border-t border-iota-neutral-92 dark:border-iota-neutral-12',
-                    )}
-                >
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText={String(index + 1).padStart(2, '0')}
-                        value={
-                            <TransactionLink
-                                digest={digest}
-                                copyText={digest}
-                                className="text-label-md"
-                            />
-                        }
-                        fullwidth
-                    />
-                </div>
-            ))}
-        </div>
-    );
+interface ExpandableDetailsProps {
+    id?: string;
+    ariaLabel: string;
+    children: ReactNode;
 }
 
-interface EffectsBreakdownProps {
-    dependencies?: string[];
-    modifiedAtVersions?: TransactionBlockEffectsModifiedAtVersions[];
-    sharedObjects?: Array<{ objectId: string; version: string }>;
-    unwrapped?: OwnedObjectRef[];
-    eventsDigest?: string | null;
-    lamportVersion?: string;
-    expiration?: string;
-    isMediumOrAbove: boolean;
-}
-
-function EffectsBreakdown({
-    dependencies,
-    modifiedAtVersions,
-    sharedObjects,
-    unwrapped,
-    eventsDigest,
-    lamportVersion,
-    expiration,
-    isMediumOrAbove,
-}: EffectsBreakdownProps): JSX.Element {
-    const [showDependencies, setShowDependencies] = useState(false);
-    const [showModifiedAtVersions, setShowModifiedAtVersions] = useState(false);
-    const [showSharedObjects, setShowSharedObjects] = useState(false);
-
+export function ExpandableDetails({
+    id,
+    ariaLabel,
+    children,
+}: ExpandableDetailsProps): JSX.Element {
     return (
-        <div className="flex flex-col gap-sm" data-testid="effects-breakdown">
-            <div className="text-body-md font-medium text-iota-neutral-10 dark:text-iota-neutral-92">
-                Effects
-            </div>
-            {expiration && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Expiration"
-                    tooltipText="An optional epoch after which this transaction is invalid and can no longer be executed."
-                    value={expiration}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {lamportVersion !== undefined && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Lamport Version"
-                    tooltipText="The version assigned to every object this transaction touches, one higher than the highest input version."
-                    value={lamportVersion}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {eventsDigest && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Events Digest"
-                    tooltipText="The hash of all events emitted during this transaction's execution."
-                    value={formatDigest(eventsDigest)}
-                    copyText={eventsDigest}
-                    onCopySuccess={onCopySuccess}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {!!dependencies?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Dependencies"
-                        tooltipText="Other transactions that must be executed before this one, based on the objects they share."
-                        value={`${dependencies.length} transaction${dependencies.length === 1 ? '' : 's'}`}
-                        supportingLabel={
-                            <ButtonUnstyled
-                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                aria-controls="dependencies-details"
-                                aria-expanded={showDependencies}
-                                onClick={() => setShowDependencies(!showDependencies)}
-                            >
-                                {showDependencies ? 'Show Less' : 'Show More'}
-                                <ArrowDown
-                                    className={clsx(
-                                        'h-4 w-4 transition-transform ease-linear',
-                                        showDependencies && 'rotate-180',
-                                    )}
-                                />
-                            </ButtonUnstyled>
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    {showDependencies && (
-                        <ExpandableDetails
-                            id="dependencies-details"
-                            ariaLabel="Dependency transactions"
-                        >
-                            <TransactionDependencies dependencies={dependencies} />
-                        </ExpandableDetails>
-                    )}
-                </>
-            )}
-            {!!modifiedAtVersions?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Modified At Versions"
-                        tooltipText="The version each modified object had immediately before this transaction changed it."
-                        value={`${modifiedAtVersions.length} object${modifiedAtVersions.length === 1 ? '' : 's'}`}
-                        supportingLabel={
-                            <ButtonUnstyled
-                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                aria-controls="modified-at-versions-details"
-                                aria-expanded={showModifiedAtVersions}
-                                onClick={() => setShowModifiedAtVersions(!showModifiedAtVersions)}
-                            >
-                                {showModifiedAtVersions ? 'Show Less' : 'Show More'}
-                                <ArrowDown
-                                    className={clsx(
-                                        'h-4 w-4 transition-transform ease-linear',
-                                        showModifiedAtVersions && 'rotate-180',
-                                    )}
-                                />
-                            </ButtonUnstyled>
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    {showModifiedAtVersions && (
-                        <ExpandableDetails
-                            id="modified-at-versions-details"
-                            ariaLabel="Modified at versions"
-                        >
-                            <ObjectRefList
-                                refs={modifiedAtVersions.map((v) => ({
-                                    objectId: v.objectId,
-                                    version: v.sequenceNumber,
-                                }))}
-                            />
-                        </ExpandableDetails>
-                    )}
-                </>
-            )}
-            {!!sharedObjects?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Shared Objects"
-                        tooltipText="The shared objects read or mutated by this transaction."
-                        value={`${sharedObjects.length} object${sharedObjects.length === 1 ? '' : 's'}`}
-                        supportingLabel={
-                            <ButtonUnstyled
-                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                aria-controls="shared-objects-details"
-                                aria-expanded={showSharedObjects}
-                                onClick={() => setShowSharedObjects(!showSharedObjects)}
-                            >
-                                {showSharedObjects ? 'Show Less' : 'Show More'}
-                                <ArrowDown
-                                    className={clsx(
-                                        'h-4 w-4 transition-transform ease-linear',
-                                        showSharedObjects && 'rotate-180',
-                                    )}
-                                />
-                            </ButtonUnstyled>
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    {showSharedObjects && (
-                        <ExpandableDetails id="shared-objects-details" ariaLabel="Shared objects">
-                            <ObjectRefList refs={sharedObjects} />
-                        </ExpandableDetails>
-                    )}
-                </>
-            )}
-            {!!unwrapped?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Unwrapped"
-                        tooltipText="Objects that were wrapped inside another object in the past and got extracted back out by this transaction."
-                        value={`${unwrapped.length} object${unwrapped.length === 1 ? '' : 's'}`}
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    <ExpandableDetails ariaLabel="Unwrapped objects">
-                        <ObjectRefList
-                            refs={unwrapped.map((o) => ({ objectId: o.reference.objectId }))}
-                        />
-                    </ExpandableDetails>
-                </>
-            )}
+        <div
+            id={id}
+            role="region"
+            aria-label={ariaLabel}
+            className="ml-xs flex flex-col gap-md border-x border-iota-neutral-92 px-md py-md dark:border-iota-neutral-12"
+        >
+            {children}
         </div>
     );
 }
 
 interface TransactionOverviewProps {
     transaction: IotaTransactionBlockResponse;
-    gasSummary?: GasSummaryType;
 }
 
-export function TransactionOverview({
-    transaction,
-    gasSummary,
-}: TransactionOverviewProps): JSX.Element {
-    const [showAllGasPayment, setShowAllGasPayment] = useState(false);
-    const [showFullSignatures, setShowFullSignatures] = useState(false);
-    const gasPaymentDetailsId = `gas-payment-objects-${useId().replace(/:/g, '')}`;
+export function TransactionOverview({ transaction }: TransactionOverviewProps): JSX.Element {
     const isMediumOrAbove = useBreakpoint('md');
-    const { userSignatures, sponsorSignature } = useDeserializedSignatures(transaction);
     const { isAdvancedMode } = useAdvancedMode();
-    const expiration = useMemo(
-        () => getExpiration(transaction.rawTransaction),
-        [transaction.rawTransaction],
-    );
 
     const transactionKindName = transaction.transaction?.data.transaction?.kind;
-    const isProgrammableTransaction = transactionKindName === 'ProgrammableTransaction';
     const sender = transaction.transaction?.data.sender;
-    const signatures = transaction.transaction?.txSignatures;
+    const sponsor = getTransactionSponsor(transaction);
     const action = getTransactionAction(transaction, sender);
     const recipient =
         action === TransactionAction.Send
             ? getSendRecipientAddress(transaction, sender)
             : undefined;
-    const totalGas = gasSummary?.totalGas;
-    const gasBudget = gasSummary?.budget;
-    const gasPayment = gasSummary?.payment;
-    const gasOwner = gasSummary?.owner;
-    const gasPrice = gasSummary?.price;
-    const gasUsed = gasSummary?.gasUsed;
-
-    const [formattedTotalGas, totalGasSymbol] = useFormatCoin({
-        balance: totalGas,
-        format: CoinFormat.Full,
-    });
-    const [formattedBudget, budgetSymbol] = useFormatCoin({
-        balance: gasBudget,
-        format: CoinFormat.Full,
-    });
+    const digestMatches = useMemo(
+        () => getDigestIntegrity(transaction.rawTransaction, transaction.digest),
+        [transaction.rawTransaction, transaction.digest],
+    );
+    const expiration = useMemo(
+        () => getExpiration(transaction.rawTransaction),
+        [transaction.rawTransaction],
+    );
+    const lamportVersion = useMemo(
+        () => getLamportVersion(transaction.effects ?? undefined),
+        [transaction.effects],
+    );
 
     return (
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-sm p-md--rs">
@@ -691,9 +118,30 @@ export function TransactionOverview({
                     layout="receipt"
                     keyText="Transaction Type"
                     value={
-                        <div className="whitespace-nowrap">
+                        <div className="flex items-center gap-xs whitespace-nowrap">
                             <Badge label={transactionKindName} type={BadgeType.PrimarySoft} />
+                            {sponsor && <Badge label="Sponsored" type={BadgeType.Warning} />}
                         </div>
+                    }
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {digestMatches !== undefined && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Integrity"
+                    tooltipText="The transaction digest is recomputed from the raw BCS-encoded transaction data and compared against the digest reported by the network."
+                    value={
+                        <span className="flex items-center gap-xxs">
+                            {digestMatches ? (
+                                <CheckmarkFilled className="h-4 w-4 shrink-0" />
+                            ) : (
+                                <Warning className="h-4 w-4 shrink-0" />
+                            )}
+                            {digestMatches
+                                ? 'digest re-derived from the raw BCS — matches'
+                                : 'digest re-derived from the raw BCS — mismatch'}
+                        </span>
                     }
                     fullwidth={!isMediumOrAbove}
                 />
@@ -735,6 +183,24 @@ export function TransactionOverview({
                     fullwidth={!isMediumOrAbove}
                 />
             )}
+            {isAdvancedMode && expiration && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Expiration"
+                    tooltipText="The epoch after which this transaction would no longer be valid, if set by the sender."
+                    value={expiration}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
+            {isAdvancedMode && lamportVersion !== undefined && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Lamport Version"
+                    tooltipText="The highest object version written by this transaction, used to order causally dependent transactions."
+                    value={lamportVersion}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
             {transaction.timestampMs && (
                 <KeyValueInfo
                     layout="receipt"
@@ -762,6 +228,17 @@ export function TransactionOverview({
                     fullwidth={!isMediumOrAbove}
                 />
             )}
+            {sponsor && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Sponsor"
+                    tooltipText="The account that paid the gas for this transaction on behalf of the sender."
+                    value={<AddressLink address={sponsor} />}
+                    copyText={sponsor}
+                    onCopySuccess={onCopySuccess}
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
             {recipient && (
                 <KeyValueInfo
                     layout="receipt"
@@ -774,165 +251,6 @@ export function TransactionOverview({
                     onCopySuccess={onCopySuccess}
                     fullwidth={!isMediumOrAbove}
                 />
-            )}
-            {isProgrammableTransaction && totalGas && (
-                <div data-testid="gas-breakdown">
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Total Gas Fee"
-                        tooltipText="Computation cost plus storage cost, minus any storage rebate."
-                        value={`${formattedTotalGas} ${totalGasSymbol}`}
-                        supportingLabel={
-                            <CoinFiatValue amount={totalGas ?? 0} withParentheses={false} />
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                </div>
-            )}
-            {isProgrammableTransaction && isAdvancedMode && gasUsed && (
-                <ExpandableDetails ariaLabel="Gas fee details">
-                    {gasPrice && (
-                        <KeyValueInfo
-                            layout="receipt"
-                            keyText="Gas Price"
-                            tooltipText="What the sender offered to pay per unit of computation. Must be at least the epoch's reference gas price."
-                            value={<GasFeeAmount amount={gasPrice} />}
-                            fullwidth={!isMediumOrAbove}
-                        />
-                    )}
-                    {gasUsed.computationCost && (
-                        <KeyValueInfo
-                            layout="receipt"
-                            keyText="Computation Fee"
-                            tooltipText="Fee for executing the transaction's logic (CPU). Part of it is burned (removed from supply)."
-                            value={
-                                <GasFeeAmount
-                                    amount={gasUsed.computationCost}
-                                    burnedAmount={gasUsed.computationCostBurned}
-                                />
-                            }
-                            fullwidth={!isMediumOrAbove}
-                        />
-                    )}
-                    {gasUsed.storageCost && (
-                        <KeyValueInfo
-                            layout="receipt"
-                            keyText="Storage Fee"
-                            tooltipText="A deposit paid for the bytes this transaction stores on-chain. It is refunded later (as storage rebate) when the data is deleted or rewritten."
-                            value={<GasFeeAmount amount={gasUsed.storageCost} />}
-                            fullwidth={!isMediumOrAbove}
-                        />
-                    )}
-                    {gasUsed.storageRebate && (
-                        <KeyValueInfo
-                            layout="receipt"
-                            keyText="Storage Rebate"
-                            tooltipText="Deposit returned to the sender for on-chain data this transaction deleted or replaced."
-                            value={<GasFeeAmount amount={-Number(gasUsed.storageRebate)} />}
-                            fullwidth={!isMediumOrAbove}
-                        />
-                    )}
-                </ExpandableDetails>
-            )}
-            {isProgrammableTransaction && gasBudget && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Gas Budget"
-                    tooltipText="The maximum the sender allowed this transaction to cost. Unused budget isn't charged."
-                    value={`${formattedBudget} ${budgetSymbol}`}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {isProgrammableTransaction && !!gasPayment?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText="Gas Payment Objects"
-                        value={
-                            <GasPaymentObjectsSummary
-                                payments={gasPayment}
-                                showAll={showAllGasPayment}
-                                detailsId={gasPaymentDetailsId}
-                                onToggle={() => setShowAllGasPayment(!showAllGasPayment)}
-                            />
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    {showAllGasPayment && (
-                        <GasPaymentObjectsDetails
-                            payments={gasPayment}
-                            detailsId={gasPaymentDetailsId}
-                        />
-                    )}
-                </>
-            )}
-            {isProgrammableTransaction && gasOwner && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Gas Object Owner"
-                    value={<AddressLink address={gasOwner} />}
-                    copyText={gasOwner}
-                    onCopySuccess={onCopySuccess}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {!!signatures?.length && (
-                <>
-                    <KeyValueInfo
-                        layout="receipt"
-                        keyText={signatures.length > 1 ? 'User Signatures' : 'User Signature'}
-                        value={
-                            <ButtonUnstyled
-                                className="flex flex-row items-center gap-xxxs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
-                                aria-controls="user-signature-details"
-                                aria-expanded={showFullSignatures}
-                                onClick={() => setShowFullSignatures(!showFullSignatures)}
-                            >
-                                {showFullSignatures ? 'Show Less' : 'Show More'}
-                                <ArrowDown
-                                    className={clsx(
-                                        'h-4 w-4 transition-transform ease-linear',
-                                        showFullSignatures && 'rotate-180',
-                                    )}
-                                />
-                            </ButtonUnstyled>
-                        }
-                        fullwidth={!isMediumOrAbove}
-                    />
-                    {showFullSignatures && (
-                        <ExpandableDetails
-                            id="user-signature-details"
-                            ariaLabel="Signature details"
-                        >
-                            <div className="flex max-h-64 flex-col gap-lg overflow-y-auto pr-xxs">
-                                {[
-                                    ...userSignatures,
-                                    ...(sponsorSignature ? [sponsorSignature] : []),
-                                ].map((signature, index) => (
-                                    <div key={index} className="flex w-full flex-col gap-md">
-                                        {index > 0 && <Divider />}
-                                        <SignatureBreakdown signature={signature} />
-                                    </div>
-                                ))}
-                            </div>
-                        </ExpandableDetails>
-                    )}
-                </>
-            )}
-            {isAdvancedMode && transaction.effects && (
-                <>
-                    {showFullSignatures && <Divider />}
-                    <EffectsBreakdown
-                        dependencies={transaction.effects.dependencies}
-                        modifiedAtVersions={transaction.effects.modifiedAtVersions}
-                        sharedObjects={transaction.effects.sharedObjects}
-                        unwrapped={transaction.effects.unwrapped}
-                        eventsDigest={transaction.effects.eventsDigest}
-                        lamportVersion={getLamportVersion(transaction.effects)}
-                        expiration={expiration}
-                        isMediumOrAbove={isMediumOrAbove}
-                    />
-                </>
             )}
         </div>
     );

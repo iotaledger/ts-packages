@@ -22,6 +22,8 @@ type NonMultiSigScheme = Exclude<SignatureScheme, 'MultiSig'>;
 export type SignaturePubkeyPair = {
     signatureScheme: NonMultiSigScheme;
     signature: Uint8Array;
+    /** The full serialized signature (scheme flag + signature + public key), base64-encoded. */
+    serializedSignature: string;
 } & ({ address: string } | { publicKey: PublicKey });
 
 export interface MultiSigParticipant {

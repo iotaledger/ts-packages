@@ -22,7 +22,6 @@ interface AddressAliasProps {
     ) => React.ReactNode;
     renderAlias?: (addressAlias: string) => React.ReactNode;
     hideAlias?: boolean;
-    alignEnd?: boolean;
 }
 
 export function AddressAlias({
@@ -33,7 +32,6 @@ export function AddressAlias({
     renderAddress,
     renderAlias,
     hideAlias = false,
-    alignEnd = false,
 }: AddressAliasProps): React.JSX.Element {
     const getAddressAlias = useAddressAliasLookup();
 
@@ -57,7 +55,6 @@ export function AddressAlias({
                 <div
                     className={cx(
                         'flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60',
-                        alignEnd && 'self-end',
                     )}
                 >
                     <div className="h-5 w-5 shrink-0">
