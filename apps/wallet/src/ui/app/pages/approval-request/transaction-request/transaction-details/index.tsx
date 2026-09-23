@@ -122,7 +122,7 @@ export function TransactionDetails({ sender, transaction, chain }: TransactionDe
                             {selectedDetailsCategory === DetailsCategory.Commands &&
                                 !!transactionData?.commands.length && (
                                     <div className="flex flex-col gap-md">
-                                        {(transactionData?.commands as TxCommand[]).map(
+                                        {(transactionData!.commands as TxCommand[]).map(
                                             (command, index) => (
                                                 <Command key={index} command={command} />
                                             ),
@@ -132,7 +132,7 @@ export function TransactionDetails({ sender, transaction, chain }: TransactionDe
                             {selectedDetailsCategory === DetailsCategory.Inputs &&
                                 !!transactionData?.inputs.length && (
                                     <div className="flex flex-col gap-md">
-                                        {(transactionData?.inputs as TransactionInput[]).map(
+                                        {(transactionData!.inputs as TransactionInput[]).map(
                                             (input, index) => (
                                                 <Input
                                                     key={index}

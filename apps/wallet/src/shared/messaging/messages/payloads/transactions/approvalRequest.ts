@@ -36,8 +36,10 @@ export type ApprovalRequest = {
     tx: TransactionDataType | SignMessageDataType;
 };
 
-export interface SignPersonalMessageApprovalRequest
-    extends Omit<ApprovalRequest, 'txResult' | 'tx'> {
+export interface SignPersonalMessageApprovalRequest extends Omit<
+    ApprovalRequest,
+    'txResult' | 'tx'
+> {
     tx: SignMessageDataType;
     txResult?: IotaSignPersonalMessageOutput;
 }

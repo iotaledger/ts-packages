@@ -26,7 +26,7 @@ export function MissingFundsDialog({ open, setOpen }: MissingFundsDialogProps) {
                 <DialogBody>
                     <div className="flex flex-col gap-sm text-center">
                         <Panel bgColor="bg-iota-secondary-90 dark:bg-iota-secondary-10">
-                            <div className="flex h-[100px] w-full justify-between ">
+                            <div className="flex h-[100px] w-full justify-between">
                                 <div className="flex w-full flex-col justify-between p-md">
                                     <div className="flex flex-col items-start gap-xxs text-start">
                                         <span className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">

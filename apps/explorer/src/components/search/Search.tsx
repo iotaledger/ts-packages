@@ -19,6 +19,8 @@ interface SearchProps {
     autoFocus?: boolean;
 }
 
+// The named function expression is what gives this forwarded-ref component its display name.
+// oxlint-disable-next-line react/function-component-definition
 export const Search = forwardRef<HTMLInputElement, SearchProps>(function Search(
     { onSelectResult, autoFocus },
     ref,

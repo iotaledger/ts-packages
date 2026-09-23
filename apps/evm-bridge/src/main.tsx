@@ -138,11 +138,9 @@ function RainbowKit({ children }: React.PropsWithChildren) {
             modalSize="compact"
             theme={{
                 ...theme,
-                ...{
-                    radii: {
-                        ...theme.radii,
-                        connectButton: '999px',
-                    },
+                radii: {
+                    ...theme.radii,
+                    connectButton: '999px',
                 },
             }}
         >

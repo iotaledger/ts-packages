@@ -9,12 +9,6 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "preview": "vite preview",
-        "eslint:check": "eslint --max-warnings=0 \"./src/**/*.{js,jsx,ts,tsx}\"",
-        "eslint:fix": "pnpm eslint:check --fix",
-        "prettier:check": "prettier -c --ignore-unknown --ignore-path=.prettierignore .",
-        "prettier:fix": "prettier -w --ignore-unknown --ignore-path=.prettierignore .",
-        "lint": "pnpm eslint:check && pnpm prettier:check",
-        "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
         "test:prepare:L1": "pnpm -w wallet build",
         "test:prepare:L2": "vite-node scripts/downloadWallet.js",
         "test:prepare": "pnpm test:prepare:L1 && pnpm test:prepare:L2",
@@ -64,9 +58,5 @@
         "typescript": "^5.5.3",
         "vite": "^8.0.1",
         "vite-node": "^6.0.0"
-    },
-    "lint-staged": {
-        "src/**/*.{ts,js,mjs,tsx}": "eslint --fix",
-        "src/**/*.{ts,js,mjs,tsx,scss,css}": "prettier --write"
     }
 }

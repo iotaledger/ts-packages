@@ -278,11 +278,11 @@ class Permissions {
         const existingPermission = await this.getPermission(origin, permission);
         return Boolean(
             existingPermission &&
-                existingPermission.allowed &&
-                permissionTypes.every((permissionType) =>
-                    existingPermission.permissions.includes(permissionType),
-                ) &&
-                (!address || (address && existingPermission.accounts.includes(address))),
+            existingPermission.allowed &&
+            permissionTypes.every((permissionType) =>
+                existingPermission.permissions.includes(permissionType),
+            ) &&
+            (!address || (address && existingPermission.accounts.includes(address))),
         );
     }
 
