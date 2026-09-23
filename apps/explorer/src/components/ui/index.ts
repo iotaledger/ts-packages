@@ -13,6 +13,7 @@ export * from './Link';
 export * from './LinkWithQuery';
 export * from './ObjectVideoImage';
 export * from './PageHeader';
+export * from './PagePanel';
 export * from './PageSectionNav';
 export * from './Pagination';
 export * from './PlaceholderTable';

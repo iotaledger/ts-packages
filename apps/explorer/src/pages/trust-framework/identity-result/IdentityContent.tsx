@@ -4,7 +4,13 @@
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
 import type { IotaDID } from '@iota/identity-wasm/web';
-import { PageHeader, PageLayout } from '~/components';
+import {
+    ErrorBoundary,
+    PageHeader,
+    PageLayout,
+    PagePanel,
+    TransactionBlocksForAddress,
+} from '~/components';
 import { useResolveDid } from '~/hooks/useResolveDid';
 import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
 import { useIdentityPkgId } from '~/contexts';
@@ -12,8 +18,6 @@ import { Warning } from '@iota/apps-ui-icons';
 import { ControllerView } from './views/ControllerView';
 import { ServiceView } from './views/ServiceView';
 import { IdentitySummaryView } from './views/IdentitySummaryView';
-import { TransactionsView } from '../common/TransactionsView';
-import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 import { extractDidDoc } from './helper';
 import { IdentityDocumentJsonView } from './views/IdentityDocumentJsonView';
 
@@ -130,12 +134,25 @@ export function IdentityContent({ did }: IdentityContentProps) {
                         showCopyButton={false}
                     />
                     <IdentitySummaryView objectData={didObject} didDocument={didDocument} />
-                    <SideBySidePanels
-                        firstPanel={<ControllerView objectData={didObject} />}
-                        secondPanel={<ServiceView didDocument={didDocument} />}
-                    />
+                    <PagePanel
+                        title="Controller"
+                        tooltip="The entity or entities authorized to modify this Identity. An Identity can have multiple controllers with shared authority"
+                    >
+                        <ControllerView objectData={didObject} />
+                    </PagePanel>
+                    <PagePanel
+                        title="Domain Linkage"
+                        tooltip="A verified, bidirectional connection between this Identity and a web domain. Proves that the Identity controller owns the linked domain."
+                    >
+                        <ServiceView didDocument={didDocument} />
+                    </PagePanel>
                     <IdentityDocumentJsonView didDocument={didDocument} />
-                    <TransactionsView objectId={did.tag()} />
+                    <ErrorBoundary>
+                        <TransactionBlocksForAddress
+                            address={did.tag()}
+                            header="Transaction Blocks"
+                        />
+                    </ErrorBoundary>
                 </div>
             }
         />

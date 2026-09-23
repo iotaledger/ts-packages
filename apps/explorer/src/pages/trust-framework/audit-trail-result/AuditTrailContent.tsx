@@ -3,7 +3,13 @@
 
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
-import { PageHeader, PageLayout } from '~/components';
+import {
+    ErrorBoundary,
+    PageHeader,
+    PageLayout,
+    PagePanel,
+    TransactionBlocksForAddress,
+} from '~/components';
 import { onCopySuccess } from '~/lib';
 import { useAuditTrailClient, useAuditTrailPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
@@ -11,13 +17,11 @@ import {
     useResolveAuditTrailHandle,
     useResolveOnChainAuditTrail,
 } from '~/hooks/useResolveAuditTrail';
-import { TransactionsView } from '../common/TransactionsView';
 import { AuditTrailSummaryView } from './views/AuditTrailSummaryView';
 import { MetadataView } from './views/MetadataView';
 import { TagsView } from './views/TagsView';
 import { RecordsView } from './views/RecordsView';
 import { RolesView } from './views/RolesView';
-import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
 import { LockLifecycleView } from '../notarization-result/views/LockLifecycleView';
 import { toAuditTrailLocks } from './lockEntries';
 
@@ -109,25 +113,51 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
                         }
                         showCopyButton={false}
                     />
+
                     <AuditTrailSummaryView
                         auditTrailObject={auditTrailObject}
                         objectData={objectResult.data!}
                     />
-                    <SideBySidePanels
-                        firstPanel={
-                            <LockLifecycleView
-                                locks={toAuditTrailLocks(auditTrailObject.lockingConfig)}
-                            />
-                        }
-                        secondPanel={<MetadataView auditTrail={auditTrailObject} />}
-                    />
-                    <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
-                    <SideBySidePanels
-                        ratio="66-34"
-                        firstPanel={<RolesView roles={auditTrailObject.roles} />}
-                        secondPanel={<TagsView tags={auditTrailObject.tags} />}
-                    />
-                    <TransactionsView objectId={objectId} />
+
+                    <PagePanel
+                        title="Lock Lifecycle"
+                        tooltip="View the lock lifecycle governing transfer, update, and delete operations on this audit trail."
+                    >
+                        <LockLifecycleView
+                            locks={toAuditTrailLocks(auditTrailObject.lockingConfig)}
+                        />
+                    </PagePanel>
+
+                    <PagePanel
+                        title="Metadata"
+                        tooltip="Name and description are immutable. The updatable metadata can be changed by authorized actors."
+                    >
+                        <MetadataView auditTrail={auditTrailObject} />
+                    </PagePanel>
+                    <PagePanel
+                        title="Records"
+                        tooltip="Entries added to this audit trail. Each one gets a sequence number that is never reused, even if the record is deleted."
+                    >
+                        <RecordsView objectId={objectId} auditTrail={auditTrailHandle} />
+                    </PagePanel>
+                    <PagePanel
+                        title="Roles"
+                        tooltip="Roles grant permissions to the capabilities that write to this audit trail."
+                    >
+                        <RolesView roles={auditTrailObject.roles} />
+                    </PagePanel>
+                    <PagePanel
+                        title="Tags"
+                        tooltip="Labels a record can carry. A role can be limited to some tags, so it only adds records with those tags. The number counts the records and roles using each tag."
+                    >
+                        <TagsView tags={auditTrailObject.tags} />
+                    </PagePanel>
+                    <ErrorBoundary>
+                        <TransactionBlocksForAddress
+                            address={objectId}
+                            header="Transaction Blocks"
+                        />
+                    </ErrorBoundary>
                 </div>
             }
         />

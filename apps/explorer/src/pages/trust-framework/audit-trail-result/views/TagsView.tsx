@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type RecordTagEntry } from '@iota/audit-trails/web';
-import { Panel, Title, KeyValueInfo, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
+import { KeyValueInfo, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { Info } from '@iota/apps-ui-icons';
 
 interface TagsCardProps {
@@ -11,34 +11,24 @@ interface TagsCardProps {
 
 export function TagsView({ tags }: TagsCardProps) {
     return (
-        <Panel>
-            <div className="flex flex-col gap-md">
-                <Title title="Tags" />
-
-                {tags.length === 0 ? (
-                    <div className="p-md--rs pt-0">
-                        <InfoBox
-                            title="No tags found"
-                            supportingText="This audit trail has no tags configured."
-                            type={InfoBoxType.Default}
-                            style={InfoBoxStyle.Elevated}
-                            icon={<Info />}
-                        />
-                    </div>
-                ) : (
-                    <div className="flex max-h-44 flex-col overflow-y-auto md:max-h-96">
-                        {tags.map(({ tag, usageCount }) => (
-                            <div key={tag} className="p-xs">
-                                <KeyValueInfo
-                                    keyText={tag}
-                                    value={usageCount.toString()}
-                                    fullwidth
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </Panel>
+        <>
+            {tags.length === 0 ? (
+                <InfoBox
+                    title="No tags found"
+                    supportingText="This audit trail has no tags configured."
+                    type={InfoBoxType.Default}
+                    style={InfoBoxStyle.Elevated}
+                    icon={<Info />}
+                />
+            ) : (
+                <div className="flex max-h-44 flex-col overflow-y-auto md:max-h-96">
+                    {tags.map(({ tag, usageCount }) => (
+                        <div key={tag} className="p-xs">
+                            <KeyValueInfo keyText={tag} value={usageCount.toString()} fullwidth />
+                        </div>
+                    ))}
+                </div>
+            )}
+        </>
     );
 }

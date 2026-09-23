@@ -1,9 +1,8 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Title, TooltipPosition, Panel } from '@iota/apps-ui-kit';
-import { type ImmutableMetadata, type OnChainAuditTrail } from '@iota/audit-trails/web';
-import { ErrorBoundary, SyntaxHighlighter } from '~/components';
+import { type OnChainAuditTrail } from '@iota/audit-trails/web';
+import { SyntaxHighlighter } from '~/components';
 
 interface MetadataViewProps {
     auditTrail: OnChainAuditTrail;
@@ -25,60 +24,25 @@ function LabelledSyntaxHighlighter({ label, code, language }: LabelledSyntaxHigh
 }
 
 export function MetadataView({ auditTrail }: MetadataViewProps) {
-    const immutableMetadata = auditTrail.immutableMetadata;
-    const updatableMetadata = auditTrail.updatableMetadata;
+    const { immutableMetadata, updatableMetadata } = auditTrail;
 
     return (
-        <ErrorBoundary>
-            <div className="panel-bg flex w-full flex-col gap-sm--rs rounded-xl border border-transparent">
-                <UpdatableMetadataPanel metadata={updatableMetadata} />
-                <ImmutableMetadataPanel metadata={immutableMetadata} />
-            </div>
-        </ErrorBoundary>
-    );
-}
-
-function ImmutableMetadataPanel({ metadata }: { metadata?: ImmutableMetadata }) {
-    return (
-        <Panel>
-            <div className="flex w-full flex-col gap-sm">
-                <Title
-                    title="Immutable Metadata"
-                    tooltipPosition={TooltipPosition.Top}
-                    tooltipText="The immutable metadata of this Audit Trail. This data cannot be changed."
-                />
-                <div className="flex flex-col gap-y-md">
-                    <LabelledSyntaxHighlighter
-                        label="Name (Text)"
-                        code={metadata?.name ?? ''}
-                        language="text"
-                    />
-                    <LabelledSyntaxHighlighter
-                        label="Description (Text)"
-                        code={metadata?.description ?? ''}
-                        language="text"
-                    />
-                </div>
-            </div>
-        </Panel>
-    );
-}
-
-function UpdatableMetadataPanel({ metadata }: { metadata?: string }) {
-    return (
-        <Panel>
-            <div className="flex w-full flex-col gap-sm">
-                <Title
-                    title="Updatable Metadata"
-                    tooltipPosition={TooltipPosition.Top}
-                    tooltipText="The updatable metadata of this Audit Trail. This data can be changed by authorized actors."
-                />
-                <LabelledSyntaxHighlighter
-                    label="Metadata (Text)"
-                    code={metadata ?? ''}
-                    language="text"
-                />
-            </div>
-        </Panel>
+        <div className="flex flex-col gap-y-md">
+            <LabelledSyntaxHighlighter
+                label="Updatable Metadata (Text)"
+                code={updatableMetadata ?? ''}
+                language="text"
+            />
+            <LabelledSyntaxHighlighter
+                label="Name (Text)"
+                code={immutableMetadata?.name ?? ''}
+                language="text"
+            />
+            <LabelledSyntaxHighlighter
+                label="Description (Text)"
+                code={immutableMetadata?.description ?? ''}
+                language="text"
+            />
+        </div>
     );
 }

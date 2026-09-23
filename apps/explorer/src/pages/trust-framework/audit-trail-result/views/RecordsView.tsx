@@ -4,8 +4,6 @@
 import { type AuditTrailHandle, type Record, type Data } from '@iota/audit-trails/web';
 import { usePaginatedAuditTrailRecords } from '~/hooks/useResolveAuditTrail';
 import {
-    Panel,
-    Title,
     TableCellBase,
     TableCellText,
     Button,
@@ -39,37 +37,33 @@ export function RecordsView({ objectId, auditTrail }: AuditTrailRecordsProps) {
         });
 
     return (
-        <Panel>
-            <Title title="Records" />
-
-            <div className="flex flex-col gap-sm p-md--rs">
-                {isLoading ? (
-                    <PlaceholderTable
-                        rowCount={PAGE_SIZE}
-                        rowHeight="16px"
-                        colHeadings={[
-                            'Sequence #',
-                            'Tag',
-                            'Data Preview',
-                            'Added By',
-                            'Added At',
-                            'Status',
-                        ]}
+        <div className="flex flex-col gap-sm">
+            {isLoading ? (
+                <PlaceholderTable
+                    rowCount={PAGE_SIZE}
+                    rowHeight="16px"
+                    colHeadings={[
+                        'Sequence #',
+                        'Tag',
+                        'Data Preview',
+                        'Added By',
+                        'Added At',
+                        'Status',
+                    ]}
+                />
+            ) : (
+                <RecordsContent records={records} error={error} />
+            )}
+            {hasNextPage && (
+                <div className="flex justify-center">
+                    <Button
+                        onClick={() => fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        text={isFetchingNextPage ? 'Loading...' : 'Load More'}
                     />
-                ) : (
-                    <RecordsContent records={records} error={error} />
-                )}
-                {hasNextPage && (
-                    <div className="flex justify-center">
-                        <Button
-                            onClick={() => fetchNextPage()}
-                            disabled={isFetchingNextPage}
-                            text={isFetchingNextPage ? 'Loading...' : 'Load More'}
-                        />
-                    </div>
-                )}
-            </div>
-        </Panel>
+                </div>
+            )}
+        </div>
     );
 }
 

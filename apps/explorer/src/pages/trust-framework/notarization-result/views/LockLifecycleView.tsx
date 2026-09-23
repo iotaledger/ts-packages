@@ -9,12 +9,11 @@ import {
     InfoBoxStyle,
     InfoBoxType,
     KeyValueInfo,
-    Title,
     TitleSize,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { formatDate, useCountdownByTimestamp } from '@iota/core';
-import { CollapsibleCard, ErrorBoundary } from '~/components';
+import { CollapsibleCard } from '~/components';
 
 export type LockStatusKind = 'unlocked' | 'timeLocked' | 'permanent';
 
@@ -34,41 +33,21 @@ interface LockLifecycleViewProps {
 export function LockLifecycleView({ locks }: LockLifecycleViewProps): React.JSX.Element {
     if (!locks?.length) {
         return (
-            <ErrorBoundary>
-                <div className="flex w-full flex-col gap-sm">
-                    <Title
-                        title="Lock Lifecycle"
-                        tooltipPosition={TooltipPosition.Top}
-                        tooltipText="View the lock lifecycle governing transfer, update, and delete operations on this notarization."
-                    />
-                    <div className="flex flex-col">
-                        <InfoBox
-                            supportingText="No lock configuration found."
-                            icon={<Info />}
-                            type={InfoBoxType.Default}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    </div>
-                </div>
-            </ErrorBoundary>
+            <InfoBox
+                supportingText="No lock configuration found."
+                icon={<Info />}
+                type={InfoBoxType.Default}
+                style={InfoBoxStyle.Elevated}
+            />
         );
     }
 
     return (
-        <ErrorBoundary>
-            <div className="flex w-full flex-col gap-sm">
-                <Title
-                    title="Lock Lifecycle"
-                    tooltipPosition={TooltipPosition.Top}
-                    tooltipText="View the lock lifecycle governing transfer, update, and delete operations on this notarization."
-                />
-                <div className="flex flex-col gap-sm">
-                    {locks.map((lock, index) => (
-                        <LockCard key={index} lock={lock} />
-                    ))}
-                </div>
-            </div>
-        </ErrorBoundary>
+        <div className="flex flex-col gap-sm">
+            {locks.map((lock, index) => (
+                <LockCard key={index} lock={lock} />
+            ))}
+        </div>
     );
 }
 

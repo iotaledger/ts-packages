@@ -9,13 +9,11 @@ import {
     InfoBoxStyle,
     InfoBoxType,
     KeyValueInfo,
-    Panel,
-    Title,
     TitleSize,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { Permission, type RoleMap, type RolePermissionsEntry } from '@iota/audit-trails/web';
-import { CollapsibleCard, ErrorBoundary } from '~/components';
+import { CollapsibleCard } from '~/components';
 
 interface RolesViewProps {
     roles: RoleMap;
@@ -23,36 +21,27 @@ interface RolesViewProps {
 
 export function RolesView({ roles }: RolesViewProps): React.JSX.Element {
     return (
-        <ErrorBoundary>
-            <Panel>
-                <div className="flex w-full flex-col gap-sm">
-                    <Title
-                        title="Roles"
-                        tooltipPosition={TooltipPosition.Top}
-                        tooltipText="Roles grant permissions to the capabilities that write to this audit trail."
-                    />
-                    {roles.roles.length === 0 ? (
-                        <InfoBox
-                            title="No roles found"
-                            supportingText="This audit trail has no roles configured."
-                            type={InfoBoxType.Default}
-                            style={InfoBoxStyle.Elevated}
-                            icon={<Info />}
+        <>
+            {roles.roles.length === 0 ? (
+                <InfoBox
+                    title="No roles found"
+                    supportingText="This audit trail has no roles configured."
+                    type={InfoBoxType.Default}
+                    style={InfoBoxStyle.Elevated}
+                    icon={<Info />}
+                />
+            ) : (
+                <div className="flex flex-col gap-sm">
+                    {roles.roles.map((role) => (
+                        <RoleCard
+                            key={role.name}
+                            role={role}
+                            isAdmin={role.name === roles.initialAdminRoleName}
                         />
-                    ) : (
-                        <div className="flex flex-col gap-sm">
-                            {roles.roles.map((role) => (
-                                <RoleCard
-                                    key={role.name}
-                                    role={role}
-                                    isAdmin={role.name === roles.initialAdminRoleName}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    ))}
                 </div>
-            </Panel>
-        </ErrorBoundary>
+            )}
+        </>
     );
 }
 

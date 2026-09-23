@@ -12,7 +12,6 @@ import {
     InfoBoxType,
     KeyValueInfo,
     LoadingIndicator,
-    Title,
     TitleSize,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
@@ -22,7 +21,6 @@ import {
     AddressLink,
     CollapsibleCard,
     DateDisplay,
-    ErrorBoundary,
     ObjectLink,
     TransactionLink,
 } from '~/components';
@@ -51,58 +49,49 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
     const showRetentionNotice = !hasNextPage && !(owners?.length && data?.hasCreationEntry);
 
     return (
-        <ErrorBoundary>
-            <div className="flex w-full flex-col gap-sm">
-                <Title
-                    title="Owners History"
-                    tooltipPosition={TooltipPosition.Top}
-                    tooltipText="The history of addresses that have owned this notarization object, ordered from most recent to oldest."
-                />
-                <div className="flex flex-col gap-sm">
-                    {isPending && (
-                        <div className="flex justify-center">
-                            <LoadingIndicator size="w-6 h-6" text="Loading owners..." />
-                        </div>
-                    )}
-                    {isError && (
-                        <InfoBox
-                            title="Error Fetching Owners"
-                            supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
-                            icon={<Warning />}
-                            type={InfoBoxType.Error}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
-                    {owners && showRetentionNotice && (
-                        <InfoBox
-                            title={RETENTION_BANNER_TITLE}
-                            supportingText={RETENTION_BANNER_TEXT}
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
-                    {owners?.map((owner, index) => (
-                        <OwnerCard
-                            key={owner.transactionDigest}
-                            owner={owner}
-                            label={index === 0 ? OwnerLabel.Current : OwnerLabel.Previous}
-                        />
-                    ))}
-                    {hasNextPage && (
-                        <div className="flex justify-center">
-                            <Button
-                                size={ButtonSize.Small}
-                                type={ButtonType.Ghost}
-                                text={isFetchingNextPage ? 'Loading...' : 'Identify More Owners'}
-                                disabled={isFetchingNextPage}
-                                onClick={() => fetchNextPage()}
-                            />
-                        </div>
-                    )}
+        <div className="flex flex-col gap-sm">
+            {isPending && (
+                <div className="flex justify-center">
+                    <LoadingIndicator size="w-6 h-6" text="Loading owners..." />
                 </div>
-            </div>
-        </ErrorBoundary>
+            )}
+            {isError && (
+                <InfoBox
+                    title="Error Fetching Owners"
+                    supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
+                    icon={<Warning />}
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
+            {owners && showRetentionNotice && (
+                <InfoBox
+                    title={RETENTION_BANNER_TITLE}
+                    supportingText={RETENTION_BANNER_TEXT}
+                    icon={<Warning />}
+                    type={InfoBoxType.Warning}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
+            {owners?.map((owner, index) => (
+                <OwnerCard
+                    key={owner.transactionDigest}
+                    owner={owner}
+                    label={index === 0 ? OwnerLabel.Current : OwnerLabel.Previous}
+                />
+            ))}
+            {hasNextPage && (
+                <div className="flex justify-center">
+                    <Button
+                        size={ButtonSize.Small}
+                        type={ButtonType.Ghost}
+                        text={isFetchingNextPage ? 'Loading...' : 'Identify More Owners'}
+                        disabled={isFetchingNextPage}
+                        onClick={() => fetchNextPage()}
+                    />
+                </div>
+            )}
+        </div>
     );
 }
 

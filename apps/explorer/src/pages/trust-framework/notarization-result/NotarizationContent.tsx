@@ -3,7 +3,13 @@
 
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
-import { PageHeader, PageLayout } from '~/components';
+import {
+    ErrorBoundary,
+    PageHeader,
+    PageLayout,
+    PagePanel,
+    TransactionBlocksForAddress,
+} from '~/components';
 import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
 import { useNotarizationClient, useNotarizationPkgId } from '~/contexts';
 import { Warning } from '@iota/apps-ui-icons';
@@ -12,8 +18,6 @@ import { NotarizationSummaryView } from './views/NotarizationSummaryView';
 import { LockLifecycleView } from './views/LockLifecycleView';
 import { toNotarizationLocks } from './lockEntries';
 import { OwnersView } from './views/OwnersView';
-import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
-import { TransactionsView } from '../common/TransactionsView';
 import { StateView } from './views/StateView';
 import { NotarizationJsonView } from './views/NotarizationJsonView';
 
@@ -126,19 +130,30 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                         objectData={objectResult.data!}
                         notarizationDocument={notarizationDocument}
                     />
-                    <SideBySidePanels
-                        firstPanel={
-                            <LockLifecycleView
-                                locks={toNotarizationLocks(
-                                    notarizationDocument.immutableMetadata.locking,
-                                )}
-                            />
-                        }
-                        secondPanel={<OwnersView objectId={objectId} />}
-                    />
+                    <PagePanel
+                        title="Lock Lifecycle"
+                        tooltip="View the lock lifecycle governing transfer, update, and delete operations on this notarization."
+                    >
+                        <LockLifecycleView
+                            locks={toNotarizationLocks(
+                                notarizationDocument.immutableMetadata.locking,
+                            )}
+                        />
+                    </PagePanel>
+                    <PagePanel
+                        title="Owners History"
+                        tooltip="The history of addresses that have owned this notarization object, ordered from most recent to oldest."
+                    >
+                        <OwnersView objectId={objectId} />
+                    </PagePanel>
                     <StateView notarization={notarizationDocument} />
                     <NotarizationJsonView notarization={notarizationDocument} />
-                    <TransactionsView objectId={objectId} />
+                    <ErrorBoundary>
+                        <TransactionBlocksForAddress
+                            address={objectId}
+                            header="Transaction Blocks"
+                        />
+                    </ErrorBoundary>
                 </div>
             }
         />
