@@ -11,14 +11,21 @@ import {
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
+    Dialog,
+    DialogContent,
+    DialogBody,
+    Header,
+    KeyValueInfo,
+    Badge,
+    BadgeType,
 } from '@iota/apps-ui-kit';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { TableCard, PlaceholderTable } from '~/components/ui';
-import { DateDisplay } from '~/components';
+import { TableCard, PlaceholderTable, AddressLink } from '~/components/ui';
+import { DateDisplay, SyntaxHighlighter } from '~/components';
+import { OutlinedCopyButton } from '@iota/core';
 import { type ColumnDef } from '@tanstack/react-table';
 import { useState } from 'react';
-import clsx from 'clsx';
-import { formatAddress, toHex } from '@iota/iota-sdk/utils';
+import { toHex } from '@iota/iota-sdk/utils';
 
 type AuditTrailRecordsProps = {
     objectId: string;
@@ -106,10 +113,28 @@ export function formatDataPreview(data: Data): string {
     return typeof dataValue === 'string' ? dataValue : `0x${toHex(data.toBytes())}`;
 }
 
-function DataPreviewCell({ data }: { data: Data }) {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const isBinary = typeof data.value !== 'string';
-    const dataString = formatDataPreview(data);
+function toSyntaxHighlightedData(data: string): { code: string; language: 'json' | 'text' } {
+    try {
+        return { code: JSON.stringify(JSON.parse(data), null, 2), language: 'json' };
+    } catch {
+        return { code: data, language: 'text' };
+    }
+}
+
+function RecordStatusBadge({ record }: { record: Record }) {
+    const isReplacedBy = record.correction?.isReplacedBy;
+
+    return isReplacedBy !== undefined ? (
+        <Badge type={BadgeType.Neutral} label={`Replaced by ${isReplacedBy}`} />
+    ) : (
+        <Badge type={BadgeType.Success} label="Active" />
+    );
+}
+
+function DataPreviewCell({ record }: { record: Record }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const isBinary = typeof record.data.value !== 'string';
+    const dataString = formatDataPreview(record.data);
     const dataTitle = isBinary ? 'Binary data encoded as hexadecimal' : undefined;
 
     if (dataString.length <= PREVIEW_LENGTH) {
@@ -126,25 +151,95 @@ function DataPreviewCell({ data }: { data: Data }) {
         <TableCellBase>
             <TableCellText>
                 <span className="flex flex-col items-start gap-xxs">
-                    <span
-                        className={clsx(
-                            'whitespace-pre-wrap break-all',
-                            isExpanded &&
-                                'max-h-[300px] overflow-y-auto rounded-md border border-iota-neutral-92 p-xs dark:border-iota-neutral-12',
-                        )}
-                        title={dataTitle}
-                    >
-                        {isExpanded ? dataString : `${dataString.slice(0, PREVIEW_LENGTH)}...`}
+                    <span className="whitespace-pre-wrap break-all" title={dataTitle}>
+                        {`${dataString.slice(0, PREVIEW_LENGTH)}...`}
                     </span>
                     <ButtonUnstyled
                         className="shrink-0 text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
-                        onClick={() => setIsExpanded(!isExpanded)}
+                        onClick={() => setIsModalOpen(true)}
                     >
-                        {isExpanded ? 'Show Less' : 'Show More'}
+                        Show More
                     </ButtonUnstyled>
                 </span>
             </TableCellText>
+            <RecordDetailsDialog
+                record={record}
+                data={dataString}
+                isBinary={isBinary}
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+            />
         </TableCellBase>
+    );
+}
+
+interface RecordDetailsDialogProps {
+    record: Record;
+    data: string;
+    isBinary: boolean;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+function RecordDetailsDialog({
+    record,
+    data,
+    isBinary,
+    open,
+    onOpenChange,
+}: RecordDetailsDialogProps) {
+    const { code, language } = toSyntaxHighlightedData(data);
+    const dataLabel = isBinary ? 'Data (Hex)' : language === 'json' ? 'Data (JSON)' : 'Data (Text)';
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent showCloseOnOverlay isFixedPosition customWidth="w-[720px] max-w-[92vw]">
+                <Header
+                    title={`Record #${record.sequenceNumber.toString()}`}
+                    onClose={() => onOpenChange(false)}
+                />
+                <DialogBody>
+                    <div className="flex flex-col gap-md">
+                        <div className="flex flex-col gap-sm">
+                            <KeyValueInfo keyText="Tag" value={record.tag || 'N/A'} fullwidth />
+                            <KeyValueInfo
+                                keyText="Added By"
+                                value={
+                                    <AddressLink
+                                        address={record.addedBy}
+                                        copyText={record.addedBy}
+                                    />
+                                }
+                                fullwidth
+                            />
+                            <KeyValueInfo
+                                keyText="Added At"
+                                value={<DateDisplay timestamp={Number(record.addedAt)} />}
+                                fullwidth
+                            />
+                            <KeyValueInfo
+                                keyText="Status"
+                                value={<RecordStatusBadge record={record} />}
+                                fullwidth
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="relative rounded-md border border-iota-neutral-92 dark:border-iota-neutral-12">
+                                <div className="max-h-[50vh] overflow-auto">
+                                    <SyntaxHighlighter code={code} language={language} />
+                                </div>
+                                <div className="absolute right-[0.875rem] top-xs mr-xs">
+                                    <OutlinedCopyButton textToCopy={data} />
+                                </div>
+                            </div>
+                            <span className="mt-1 text-body-sm text-gray-500 dark:text-gray-400">
+                                {dataLabel}
+                            </span>
+                        </div>
+                    </div>
+                </DialogBody>
+            </DialogContent>
+        </Dialog>
     );
 }
 
@@ -171,14 +266,18 @@ export function generateRecordsTableColumns(): ColumnDef<Record>[] {
         {
             accessorKey: 'data',
             header: 'Data Preview',
-            cell: ({ getValue }) => <DataPreviewCell data={getValue<Data>()} />,
+            cell: ({ row }) => <DataPreviewCell record={row.original} />,
         },
         {
             accessorKey: 'addedBy',
             header: 'Added By',
             cell: ({ getValue }) => (
                 <TableCellBase>
-                    <TableCellText>{formatAddress(getValue<string>())}</TableCellText>
+                    <AddressLink
+                        address={getValue<string>()}
+                        copyText={getValue<string>()}
+                        className="[&>div]:max-w-[200px] [&>div]:truncate"
+                    />
                 </TableCellBase>
             ),
         },
@@ -196,16 +295,11 @@ export function generateRecordsTableColumns(): ColumnDef<Record>[] {
         {
             id: 'status',
             header: 'Status',
-            cell: ({ row }) => {
-                const isReplacedBy = row.original.correction?.isReplacedBy;
-                const status =
-                    isReplacedBy !== undefined ? `Replaced by ${isReplacedBy}` : 'Active';
-                return (
-                    <TableCellBase>
-                        <TableCellText>{status}</TableCellText>
-                    </TableCellBase>
-                );
-            },
+            cell: ({ row }) => (
+                <TableCellBase>
+                    <RecordStatusBadge record={row.original} />
+                </TableCellBase>
+            ),
         },
     ];
 }
