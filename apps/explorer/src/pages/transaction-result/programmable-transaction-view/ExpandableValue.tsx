@@ -7,13 +7,7 @@ import clsx from 'clsx';
 
 const VALUE_PREVIEW_LENGTH = 160;
 
-export function ExpandableValue({
-    value,
-    align = 'end',
-}: {
-    value: string;
-    align?: 'start' | 'end';
-}): JSX.Element {
+export function ExpandableValue({ value }: { value: string }): JSX.Element {
     const [showFullValue, setShowFullValue] = useState(false);
     const isLongValue = value.length > VALUE_PREVIEW_LENGTH;
     const displayedValue =
@@ -26,12 +20,7 @@ export function ExpandableValue({
     }
 
     return (
-        <span
-            className={clsx(
-                'flex max-w-full flex-col gap-xs pb-xxs',
-                align === 'end' ? 'items-end text-right' : 'items-start text-left',
-            )}
-        >
+        <span className="flex max-w-full flex-col items-start gap-xs pb-xxs text-left">
             <span
                 className={clsx(
                     'break-all',

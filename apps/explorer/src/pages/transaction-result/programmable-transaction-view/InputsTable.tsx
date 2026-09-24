@@ -7,6 +7,7 @@ import {
     Badge,
     BadgeType,
     BadgeSize,
+    ButtonUnstyled,
     Table,
     TableHeader,
     TableRow,
@@ -14,20 +15,32 @@ import {
     TableBody,
     Tooltip,
 } from '@iota/apps-ui-kit';
-import { Info } from '@iota/apps-ui-icons';
+import { Copy, Info } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
-import { useGetObject } from '@iota/core';
-import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
+import { useCopyToClipboard, useGetObject } from '@iota/core';
+import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatDigest } from '@iota/iota-sdk/utils';
 import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
-import { CopyButton } from './Field';
 import { REGEX_NUMBER, decodeVectorU8Value, pureValueHex, truncateMiddle } from './utils';
 import { PtbIndexCell, usePtbHighlight } from './PtbHighlight';
 
-interface InputsCardProps {
+interface InputsTableProps {
     inputs: IotaCallArg[];
-    transactions: IotaTransaction[];
+}
+
+function CopyButton({ text }: { text: string }): JSX.Element {
+    const copyToClipboard = useCopyToClipboard();
+
+    return (
+        <ButtonUnstyled
+            onClick={() => copyToClipboard(text)}
+            aria-label="Copy to clipboard"
+            className="shrink-0"
+        >
+            <Copy className="key-supporting-text-color" />
+        </ButtonUnstyled>
+    );
 }
 
 function InputTypeBadge({ input }: { input: IotaCallArg }): JSX.Element {
@@ -146,7 +159,7 @@ function DecodedPureValue({
     if (input.valueType === 'vector<u8>') {
         return (
             <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
-                <ExpandableValue value={decodeVectorU8Value(input.value).value} align="start" />
+                <ExpandableValue value={decodeVectorU8Value(input.value).value} />
             </span>
         );
     }
@@ -161,7 +174,7 @@ function DecodedPureValue({
 
     return (
         <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
-            <ExpandableValue value={stringValue} align="start" />
+            <ExpandableValue value={stringValue} />
         </span>
     );
 }
@@ -264,7 +277,7 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
     );
 }
 
-export function InputsTable({ inputs }: InputsCardProps): JSX.Element | null {
+export function InputsTable({ inputs }: InputsTableProps): JSX.Element | null {
     if (!inputs?.length) {
         return null;
     }

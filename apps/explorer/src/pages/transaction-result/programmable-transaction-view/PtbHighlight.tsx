@@ -13,7 +13,7 @@ import {
 import clsx from 'clsx';
 import { Badge, BadgeSize, type BadgeType } from '@iota/apps-ui-kit';
 
-export type PtbRefId = `input-${number}` | `command-${number}`;
+type PtbRefId = `input-${number}` | `command-${number}`;
 
 interface PtbHighlightContextValue {
     hoveredRef: PtbRefId | null;
