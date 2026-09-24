@@ -6,7 +6,6 @@ export * from './header';
 export * from './modal';
 
 export * from './ButtonOrLink';
-export * from './ExpandableList';
 export * from './FilterList';
 export * from './InternalLink';
 export * from './Link';
