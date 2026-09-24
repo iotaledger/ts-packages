@@ -75,9 +75,13 @@ export function ReceiveTokensDialog({ address, open, setOpen }: ReceiveTokensDia
                         <div className="flex flex-col gap-xs">
                             {iotaName && (
                                 <Panel bgColor="bg-iota-neutral-96 dark:bg-iota-neutral-12">
-                                    <div className="flex items-center justify-center gap-xs break-words px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
-                                        <NameAvatar address={address} size={NameAvatarSize.Xs} />
-                                        {iotaName}
+                                    <div className="flex items-center justify-center gap-xs px-md--rs py-xs text-title-lg text-iota-neutral-12 dark:text-iota-neutral-96">
+                                        <NameAvatar
+                                            address={address}
+                                            size={NameAvatarSize.Xs}
+                                            className="shrink-0"
+                                        />
+                                        <div className="min-w-0 break-words">{iotaName}</div>
                                     </div>
                                 </Panel>
                             )}
