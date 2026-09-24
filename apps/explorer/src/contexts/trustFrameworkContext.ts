@@ -7,18 +7,22 @@ import type { IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import type { NotarizationClientReadOnly } from '@iota/notarization/web';
 import type { AuditTrailClientReadOnly } from '@iota/audit-trails/web';
 import { createContext, useContext } from 'react';
+import type { QueryStatus } from '@tanstack/react-query';
+
+type IdentityClient = IdentityClientReadOnly | null;
+type NotarizationClient = NotarizationClientReadOnly | null;
+type AuditTrailClient = AuditTrailClientReadOnly | null;
 
 export interface TrustFrameworkProviderContext {
-    identityClient: IdentityClientReadOnly | null;
-    notarizationClient: NotarizationClientReadOnly | null;
-    auditTrailClient: AuditTrailClientReadOnly | null;
+    identityClient: IdentityClient;
+    identityClientStatus: QueryStatus;
+    notarizationClient: NotarizationClient;
+    notarizationClientStatus: QueryStatus;
+    auditTrailClient: AuditTrailClient;
+    auditTrailClientStatus: QueryStatus;
 }
 
-export const TrustFrameworkContext = createContext<TrustFrameworkProviderContext>({
-    identityClient: null,
-    notarizationClient: null,
-    auditTrailClient: null,
-});
+export const TrustFrameworkContext = createContext<TrustFrameworkProviderContext | null>(null);
 
 export function useTrustFramework(): TrustFrameworkProviderContext {
     const context = useContext(TrustFrameworkContext);
@@ -30,26 +34,35 @@ export function useTrustFramework(): TrustFrameworkProviderContext {
     return context;
 }
 
-export function useIdentityClient(): IdentityClientReadOnly | null {
-    return useTrustFramework().identityClient;
+export function useIdentityClient(): { client: IdentityClient; status: QueryStatus } {
+    const { identityClient, identityClientStatus } = useTrustFramework();
+    return { client: identityClient, status: identityClientStatus };
 }
 
-export function useNotarizationClient(): NotarizationClientReadOnly | null {
-    return useTrustFramework().notarizationClient;
+export function useNotarizationClient(): {
+    client: NotarizationClient;
+    status: QueryStatus;
+} {
+    const { notarizationClient, notarizationClientStatus } = useTrustFramework();
+    return {
+        client: notarizationClient,
+        status: notarizationClientStatus,
+    };
 }
 
-export function useAuditTrailClient(): AuditTrailClientReadOnly | null {
-    return useTrustFramework().auditTrailClient;
+export function useAuditTrailClient(): { client: AuditTrailClient; status: QueryStatus } {
+    const { auditTrailClient, auditTrailClientStatus } = useTrustFramework();
+    return { client: auditTrailClient, status: auditTrailClientStatus };
 }
 
 export function useIdentityPkgId(): string | null {
-    return useIdentityClient()?.packageId() || null;
+    return useIdentityClient().client?.packageId() || null;
 }
 
 export function useNotarizationPkgId(): string | null {
-    return useNotarizationClient()?.packageId() || null;
+    return useNotarizationClient().client?.packageId() || null;
 }
 
 export function useAuditTrailPkgId(): string | null {
-    return useAuditTrailClient()?.packageId() || null;
+    return useAuditTrailClient().client?.packageId() || null;
 }

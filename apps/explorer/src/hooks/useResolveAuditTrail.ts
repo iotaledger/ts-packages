@@ -1,48 +1,31 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    type AuditTrailHandle,
-    type OnChainAuditTrail,
-    type PaginatedRecord,
-} from '@iota/audit-trails/web';
+import { type AuditTrailHandle, type PaginatedRecord } from '@iota/audit-trails/web';
 import {
     type InfiniteData,
     type QueryKey,
     useInfiniteQuery,
     useQuery,
-    type UseQueryResult,
 } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useAuditTrailClient } from '~/contexts';
 
-/**
- * A React hook that resolves an Object ID to its corresponding Audit Trail document on chain.
- *
- * @param {string} objectId - The Object ID to resolve.
- * @returns a Audit Trail document on chain.
- */
-export function useResolveOnChainAuditTrail(objectId: string): UseQueryResult<OnChainAuditTrail> {
-    const auditTrailClient = useAuditTrailClient();
+export function useResolveOnChainAuditTrail(objectId: string) {
+    const { client } = useAuditTrailClient();
     return useQuery({
         queryKey: ['resolve-audit-trail', objectId],
-        queryFn: async () => auditTrailClient?.trail(objectId).get(),
-        enabled: !!auditTrailClient,
+        queryFn: async () => client?.trail(objectId).get(),
+        enabled: !!client,
     });
 }
 
-/**
- * A React hook that resolves an Object ID to its corresponding Audit Trail document on chain.
- *
- * @param {string} objectId - The Object ID to resolve.
- * @returns a Audit Trail document on chain.
- */
-export function useResolveAuditTrailHandle(objectId: string): UseQueryResult<AuditTrailHandle> {
-    const auditTrailClient = useAuditTrailClient();
+export function useResolveAuditTrailHandle(objectId: string) {
+    const { client } = useAuditTrailClient();
     return useQuery({
         queryKey: ['resolve-audit-trail-handle', objectId],
-        queryFn: async () => auditTrailClient?.trail(objectId),
-        enabled: !!auditTrailClient,
+        queryFn: async () => client?.trail(objectId),
+        enabled: !!client,
     });
 }
 
