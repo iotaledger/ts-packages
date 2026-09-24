@@ -218,8 +218,6 @@ function InputValueCell({ input }: { input: IotaCallArg }): JSX.Element {
     );
 }
 
-const VISIBLE_INPUTS_LIMIT = 6;
-
 function HighlightCell({
     highlighted,
     className,
@@ -266,36 +264,27 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
     );
 }
 
-const MAX_VISIBLE_TABLE_HEIGHT = (VISIBLE_INPUTS_LIMIT + 1) * 56;
-
 export function InputsTable({ inputs }: InputsCardProps): JSX.Element | null {
     if (!inputs?.length) {
         return null;
     }
 
-    const canScroll = inputs.length > VISIBLE_INPUTS_LIMIT;
-
     return (
-        <div data-testid="inputs-card-content">
-            <div
-                style={canScroll ? { maxHeight: MAX_VISIBLE_TABLE_HEIGHT } : undefined}
-                className={canScroll ? 'overflow-y-auto' : undefined}
-            >
-                <Table rowIndexes={inputs.map((_, index) => index)}>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHeaderCell columnKey="index" label="#" />
-                            <TableHeaderCell columnKey="type" label="Type" />
-                            <TableHeaderCell columnKey="value" label="Value" />
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {inputs.map((input, index) => (
-                            <InputRow key={index} index={index} input={input} />
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+        <div data-testid="inputs-card-content" className="max-h-96 overflow-y-auto">
+            <Table rowIndexes={inputs.map((_, index) => index)}>
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell columnKey="index" label="#" />
+                        <TableHeaderCell columnKey="type" label="Type" />
+                        <TableHeaderCell columnKey="value" label="Value" />
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {inputs.map((input, index) => (
+                        <InputRow key={index} index={index} input={input} />
+                    ))}
+                </TableBody>
+            </Table>
         </div>
     );
 }

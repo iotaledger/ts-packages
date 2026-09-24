@@ -232,7 +232,7 @@ function CommandCard({
                 <CommandSignature type={type} data={data} />
                 {usedBy.length > 0 && <UsedBy commandIndexes={usedBy} />}
             </div>
-            <div className="overflow-x-auto pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="-my-[2px] overflow-x-auto py-[2px] pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex w-max items-baseline gap-x-xs whitespace-nowrap">
                     <CommandBody
                         type={type}
@@ -256,7 +256,10 @@ export function CommandsList({
     }
 
     return (
-        <div data-testid="commands-content" className="flex flex-col gap-xs">
+        <div
+            data-testid="commands-content"
+            className="flex max-h-[560px] flex-col gap-xs overflow-y-auto"
+        >
             {transactions.map((transaction, index) => (
                 <CommandCard
                     key={index}

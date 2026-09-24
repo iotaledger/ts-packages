@@ -3,6 +3,8 @@
 
 import { useState } from 'react';
 import { Panel, Title } from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
+import { useLocalStorage } from '@iota/core';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
 import { FilterList, RawJsonContent, RawJsonToggle } from '~/components/ui';
 import { InputsTable } from './InputsCard';
@@ -10,6 +12,15 @@ import { CommandsList } from './TransactionsCard';
 
 const PTB_VIEWS = ['Combined', 'Inputs + Commands'] as const;
 type PtbView = (typeof PTB_VIEWS)[number];
+
+function HoverHint({ children }: { children: string }): JSX.Element {
+    return (
+        <div className="mb-xs flex items-center gap-xxs text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+            <Info className="h-3.5 w-3.5" />
+            {children}
+        </div>
+    );
+}
 
 interface ProgrammableTransactionCardProps {
     inputs: IotaCallArg[];
@@ -20,7 +31,7 @@ export function ProgrammableTransactionCard({
     inputs,
     transactions,
 }: ProgrammableTransactionCardProps): JSX.Element | null {
-    const [view, setView] = useState<PtbView>('Combined');
+    const [view, setView] = useLocalStorage<PtbView>('ptb-view-mode', 'Combined');
     const [showRaw, setShowRaw] = useState(false);
 
     if (!transactions?.length) {
@@ -32,11 +43,7 @@ export function ProgrammableTransactionCard({
             <div className="flex w-full items-center justify-between gap-sm py-sm--rs">
                 <Title
                     title="Programmable Tx"
-                    tooltipText={
-                        view === 'Combined' && !showRaw
-                            ? 'Hover an argument to see its input and highlight every place it appears. in n marks input n'
-                            : undefined
-                    }
+                    subtitle={`${inputs.length} Inputs | ${transactions.length} Commands`}
                 />
                 <div className="flex items-center gap-xs pr-md--rs">
                     <FilterList
@@ -58,23 +65,23 @@ export function ProgrammableTransactionCard({
                 <div className="flex flex-col gap-lg pb-lg pt-xs">
                     {view === 'Inputs + Commands' && (
                         <div className="flex flex-col gap-xs">
-                            <Title
-                                title="Inputs"
-                                tooltipText="Hover the input number to highlight every place it appears"
-                            />
+                            <Title title="Inputs" />
                             <div className="px-md--rs">
+                                <HoverHint>
+                                    Hover the input number to highlight every place it appears
+                                </HoverHint>
                                 <InputsTable inputs={inputs} transactions={transactions} />
                             </div>
                         </div>
                     )}
                     <div className="flex flex-col gap-xs">
-                        {view === 'Inputs + Commands' && (
-                            <Title
-                                title="Commands"
-                                tooltipText="Hover an Input(n) or result reference to highlight where it comes from and every place it is used"
-                            />
-                        )}
+                        {view === 'Inputs + Commands' && <Title title="Commands" />}
                         <div className="px-md--rs">
+                            <HoverHint>
+                                {view === 'Combined'
+                                    ? 'Hover an argument to see its input and highlight every place it appears'
+                                    : 'Hover an input to highlight every place it appears'}
+                            </HoverHint>
                             <CommandsList
                                 transactions={transactions}
                                 inputs={inputs}
