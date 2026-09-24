@@ -135,28 +135,10 @@ function CurrentOwnerCell({
     );
 }
 
-function NewDigestCell({ digest }: { digest?: string }): JSX.Element {
-    const copyToClipboard = useCopyToClipboard();
-
-    if (!digest) {
-        return (
-            <TableCellBase>
-                <TableCellText>-</TableCellText>
-            </TableCellBase>
-        );
-    }
-
+export function NewDigestCell({ digest }: { digest?: string }): JSX.Element {
     return (
         <TableCellBase>
-            <div className="flex min-w-0 items-center gap-xxs">
-                <TableCellText>{formatDigest(digest)}</TableCellText>
-                <ButtonUnstyled
-                    onClick={() => copyToClipboard(digest)}
-                    aria-label="Copy to clipboard"
-                >
-                    <Copy className="shrink-0 text-iota-neutral-60 dark:text-iota-neutral-40" />
-                </ButtonUnstyled>
-            </div>
+            <TableCellText>{digest ? formatDigest(digest) : '-'}</TableCellText>
         </TableCellBase>
     );
 }

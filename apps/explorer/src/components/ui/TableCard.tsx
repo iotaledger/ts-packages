@@ -53,6 +53,7 @@ export interface TableCardProps<DataType extends RowData> {
     allowManualTableSort?: boolean;
     renderExpandedRow?: (row: DataType) => ReactNode;
     getRowCanExpand?: (row: DataType) => boolean;
+    getRowId?: (row: DataType) => string;
 }
 
 function isInteractiveTarget(target: EventTarget): boolean {
@@ -75,6 +76,7 @@ export function TableCard<DataType extends object>({
     allowManualTableSort = true,
     renderExpandedRow,
     getRowCanExpand,
+    getRowId,
 }: TableCardProps<DataType>): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
 
@@ -85,6 +87,7 @@ export function TableCard<DataType extends object>({
         getSortedRowModel: getSortedRowModel(),
         getExpandedRowModel: getExpandedRowModel(),
         getRowCanExpand: (row) => !!renderExpandedRow && (getRowCanExpand?.(row.original) ?? true),
+        getRowId,
         onSortingChange: setSorting,
         enableSorting: !!sortTable,
         enableSortingRemoval: false,

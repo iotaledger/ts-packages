@@ -311,7 +311,7 @@ export function TransactionSignatures({ transaction }: TransactionSignaturesProp
     return (
         <CollapsibleCard title="Signatures" hideBorder rawData={signatures}>
             {!!signatures?.length && (
-                <div className="flex flex-col gap-sm px-md--rs pb-md--rs">
+                <div className="mx-md--rs mb-md--rs flex max-h-[560px] flex-col gap-sm overflow-y-auto">
                     {allSignatures.map((signature, index) => (
                         <SignatureBreakdown
                             key={index}

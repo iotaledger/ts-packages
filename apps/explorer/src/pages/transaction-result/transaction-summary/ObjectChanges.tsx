@@ -81,6 +81,7 @@ export function ObjectChanges({
                     paginationOptions={paginationOptions}
                     totalLabel={supportingLabel}
                     getRowCanExpand={canShowObjectContents}
+                    getRowId={(row) => row.objectId}
                     renderExpandedRow={(row) => (
                         <ObjectVersionContents
                             objectId={row.objectId}

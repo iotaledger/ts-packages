@@ -10,7 +10,6 @@ import {
     Badge,
     BadgeType,
     BadgeSize,
-    ButtonUnstyled,
 } from '@iota/apps-ui-kit';
 import { type IotaEvent } from '@iota/iota-sdk/client';
 import { parseStructTag } from '@iota/iota-sdk/utils';
@@ -76,38 +75,17 @@ interface EventsProps {
     events: IotaEvent[];
 }
 
-const EVENTS_PAGE_SIZE = 6;
-
 export function Events({ events }: EventsProps): JSX.Element | null {
-    const [visibleCount, setVisibleCount] = useState(EVENTS_PAGE_SIZE);
-
     if (!events?.length) {
         return null;
     }
 
-    const visibleEvents = events.slice(0, visibleCount);
-    const hiddenCount = events.length - visibleCount;
-
     return (
         <CollapsibleCard title="Events" rawData={events}>
-            <div className="flex flex-col gap-xs p-md--rs pt-xs--rs">
-                {visibleEvents.map((event, index) => (
+            <div className="mx-md--rs mb-md--rs mt-xs--rs flex max-h-[560px] flex-col gap-xs overflow-y-auto">
+                {events.map((event, index) => (
                     <EventRow key={index} event={event} index={index} />
                 ))}
-                {hiddenCount > 0 && (
-                    <div className="mt-xs flex justify-center">
-                        <ButtonUnstyled
-                            onClick={() =>
-                                setVisibleCount((count) =>
-                                    Math.min(count + EVENTS_PAGE_SIZE, events.length),
-                                )
-                            }
-                            className="text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
-                        >
-                            Show more
-                        </ButtonUnstyled>
-                    </div>
-                )}
             </div>
         </CollapsibleCard>
     );
