@@ -40,20 +40,30 @@ export function layoutToBcs(layout: MoveTypeLayout): BcsType<any> {
             fields[name] = layoutToBcs(field);
         }
 
-        let struct = bcs.struct(layout.struct.type, fields);
+        let struct: BcsType<any> = bcs.struct(layout.struct.type, fields);
         const structName = toShortTypeString(layout.struct.type);
 
         if (structName === '0x2::object::ID') {
             struct = struct.transform({
-                input: (id: any) => (typeof id === 'string' ? { bytes: id } : id) as never,
-                output: (id) => id.id,
+                input: (id) => (typeof id === 'string' ? { bytes: id } : id) as never,
+                output: (id) => id.bytes,
             });
-
-            return struct;
         }
+
+        if (structName === '0x1::string::String') {
+            const encoder = new TextEncoder();
+            const decoder = new TextDecoder();
+            struct = struct.transform({
+                input: (str) =>
+                    typeof str === 'string' ? { bytes: Array.from(encoder.encode(str)) } : str,
+                output: (obj) => decoder.decode(Uint8Array.from(obj.bytes)),
+            });
+        }
+
+        return struct;
     }
 
-    throw new Error(`Unknown layout: ${layout}`);
+    throw new Error(`Unknown layout: ${JSON.stringify(layout)}`);
 }
 
 export function mapJsonToBcs(json: unknown, layout: MoveTypeLayout) {
