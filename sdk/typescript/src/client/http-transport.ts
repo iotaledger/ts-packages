@@ -53,6 +53,7 @@ export interface IotaTransportSubscribeOptions<T> {
      */
     onError?: (error: Error) => void;
     signal?: AbortSignal;
+    startAfter?: string;
 }
 
 export interface IotaTransport {
@@ -147,6 +148,10 @@ export class IotaHTTPTransport implements IotaTransport {
     }
 
     async subscribe<T>(input: IotaTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
+        if (input.startAfter) {
+            throw new Error(`startAfter is not supported for ${input.method} over JSON-RPC`);
+        }
+
         const unsubscribe = await this.#getWebsocketClient().subscribe(input);
 
         if (input.signal) {

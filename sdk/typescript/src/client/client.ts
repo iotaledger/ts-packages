@@ -134,6 +134,14 @@ export type IotaClientOptions = NetworkOrTransport & {
     waitForTransaction?: WaitForTransactionDefaults;
 };
 
+export type SubscribeParams = {
+    /**
+     * Digest of the last transaction received, to resume the stream right after it. Only
+     * supported by the GraphQL transport.
+     */
+    startAfter?: string;
+};
+
 type NetworkOrTransport =
     | {
           url: string;
@@ -734,16 +742,15 @@ export class IotaClient {
 
     /**
      * Subscribe to get notifications whenever an event matching the filter occurs
-     *
-     * @deprecated
      */
     async subscribeEvent(
-        input: SubscribeEventParams & {
-            /** function to run when we receive a notification of a new event matching the filter */
-            onMessage: (event: IotaEvent) => void;
-            /** function to run when the subscription ends for a reason other than unsubscribing */
-            onError?: (error: Error) => void;
-        },
+        input: SubscribeEventParams &
+            SubscribeParams & {
+                /** function to run when we receive a notification of a new event matching the filter */
+                onMessage: (event: IotaEvent) => void;
+                /** function to run when the subscription ends for a reason other than unsubscribing */
+                onError?: (error: Error) => void;
+            },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
             method: 'iotax_subscribeEvent',
@@ -752,19 +759,21 @@ export class IotaClient {
             onMessage: input.onMessage,
             onError: input.onError,
             signal: input.signal,
+            startAfter: input.startAfter,
         });
     }
 
     /**
-     * @deprecated
+     * Subscribe to transaction events matching the specified filter.
      */
     async subscribeTransaction(
-        input: SubscribeTransactionParams & {
-            /** function to run when we receive a notification of a new event matching the filter */
-            onMessage: (event: TransactionEffects) => void;
-            /** function to run when the subscription ends for a reason other than unsubscribing */
-            onError?: (error: Error) => void;
-        },
+        input: SubscribeTransactionParams &
+            SubscribeParams & {
+                /** function to run when we receive a notification of a new event matching the filter */
+                onMessage: (event: TransactionEffects) => void;
+                /** function to run when the subscription ends for a reason other than unsubscribing */
+                onError?: (error: Error) => void;
+            },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
             method: 'iotax_subscribeTransaction',
@@ -773,6 +782,7 @@ export class IotaClient {
             onMessage: input.onMessage,
             onError: input.onError,
             signal: input.signal,
+            startAfter: input.startAfter,
         });
     }
 

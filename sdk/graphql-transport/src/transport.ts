@@ -282,8 +282,8 @@ export class IotaClientGraphQLTransport implements IotaTransport {
 
         // Events arrive in transaction order, so a drop can cut one transaction in half.
         // Only a digest change proves the previous transaction was delivered whole.
-        let currentDigest: string | undefined;
-        let startAfter: string | undefined;
+        let currentDigest = input.startAfter;
+        let startAfter = input.startAfter;
 
         const client = this.#getWebSocketClient();
         return client.subscribe<SubscribeEventsSubscription>({
@@ -321,7 +321,7 @@ export class IotaClientGraphQLTransport implements IotaTransport {
         const filter = rpcFilter ? mapRpcTransactionFilterToGraphQL(rpcFilter) : undefined;
 
         // Each message is one whole transaction.
-        let startAfter: string | undefined;
+        let startAfter = input.startAfter;
 
         const client = this.#getWebSocketClient();
         return client.subscribe<SubscribeTransactionsSubscription>({
