@@ -27,6 +27,7 @@ export {
 export type * from './types/index.js';
 export {
     type IotaClientOptions,
+    type WaitForTransactionDefaults,
     type PaginationArguments,
     type OrderArguments,
     isIotaClient,
