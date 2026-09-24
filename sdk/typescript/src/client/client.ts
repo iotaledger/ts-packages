@@ -116,10 +116,23 @@ export interface OrderArguments {
 }
 
 /**
+ * Client-wide defaults for `waitForTransaction`. Per-call arguments take precedence.
+ */
+export interface WaitForTransactionDefaults {
+    /** The amount of time to wait for a transaction block. Defaults to one minute. */
+    timeout?: number;
+    /** The amount of time to wait between checks for the transaction block. Defaults to 2 seconds. */
+    pollInterval?: number;
+}
+
+/**
  * Configuration options for the IotaClient
  * You must provide either a `url` or a `transport`
  */
-export type IotaClientOptions = NetworkOrTransport;
+export type IotaClientOptions = NetworkOrTransport & {
+    /** Defaults applied to every `waitForTransaction` call made through this client. */
+    waitForTransaction?: WaitForTransactionDefaults;
+};
 
 type NetworkOrTransport =
     | {
@@ -165,6 +178,7 @@ export function isIotaClient(client: unknown): client is IotaClient {
 
 export class IotaClient {
     protected transport: IotaTransport;
+    protected waitForTransactionDefaults: WaitForTransactionDefaults;
 
     get [IOTA_CLIENT_BRAND]() {
         return true;
@@ -177,6 +191,7 @@ export class IotaClient {
      */
     constructor(options: IotaClientOptions) {
         this.transport = options.transport ?? new IotaHTTPTransport({ url: options.url });
+        this.waitForTransactionDefaults = options.waitForTransaction ?? {};
     }
 
     async getRpcApiVersion({ signal }: { signal?: AbortSignal } = {}): Promise<string | undefined> {
@@ -726,6 +741,8 @@ export class IotaClient {
         input: SubscribeEventParams & {
             /** function to run when we receive a notification of a new event matching the filter */
             onMessage: (event: IotaEvent) => void;
+            /** function to run when the subscription ends for a reason other than unsubscribing */
+            onError?: (error: Error) => void;
         },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
@@ -733,6 +750,7 @@ export class IotaClient {
             unsubscribe: 'iotax_unsubscribeEvent',
             params: [input.filter],
             onMessage: input.onMessage,
+            onError: input.onError,
             signal: input.signal,
         });
     }
@@ -744,6 +762,8 @@ export class IotaClient {
         input: SubscribeTransactionParams & {
             /** function to run when we receive a notification of a new event matching the filter */
             onMessage: (event: TransactionEffects) => void;
+            /** function to run when the subscription ends for a reason other than unsubscribing */
+            onError?: (error: Error) => void;
         },
     ): Promise<Unsubscribe> {
         return this.transport.subscribe({
@@ -751,6 +771,7 @@ export class IotaClient {
             unsubscribe: 'iotax_unsubscribeTransaction',
             params: [input.filter],
             onMessage: input.onMessage,
+            onError: input.onError,
             signal: input.signal,
         });
     }
@@ -1068,19 +1089,20 @@ export class IotaClient {
      * This can be used in conjunction with `executeTransactionBlock` to wait for the transaction to
      * be available via the API.
      * This currently polls the `getTransactionBlock` API to check for the transaction.
+     * `timeout` and `pollInterval` fall back to the client's `waitForTransaction` options.
      */
     async waitForTransaction({
         signal,
-        timeout = 60 * 1000,
-        pollInterval = 2 * 1000,
+        timeout = this.waitForTransactionDefaults.timeout ?? 60 * 1000,
+        pollInterval = this.waitForTransactionDefaults.pollInterval ?? 2 * 1000,
         waitMode = 'checkpoint',
         ...input
     }: {
         /** An optional abort signal that can be used to cancel */
         signal?: AbortSignal;
-        /** The amount of time to wait for a transaction block. Defaults to one minute. */
+        /** The amount of time to wait for a transaction block. Defaults to the client option, then one minute. */
         timeout?: number;
-        /** The amount of time to wait between checks for the transaction block. Defaults to 2 seconds. */
+        /** The amount of time to wait between checks for the transaction block. Defaults to the client option, then 2 seconds. */
         pollInterval?: number;
         /** Whether to wait the transaction to have been checkpointed or indexed on the node.
          * A transaction might be indexed but not checkpointed yet, but a checkpointed transaction is guaranteed to be indexed.

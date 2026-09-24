@@ -22,8 +22,8 @@ function TooltipContent({ data }: { data: CompletedEpochMetrics }): JSX.Element 
     return (
         <GraphTooltipContent
             overline={`${date}, Epoch ${data.epoch}`}
-            title={`${formatBalance(mintedTokensAmount, IOTA_DECIMALS, CoinFormat.Rounded)} IOTA minted`}
-            subtitle={`Burnt ${formatBalance(burntTokensAmount, IOTA_DECIMALS, CoinFormat.Rounded)} · Net ${formatBalance(net, IOTA_DECIMALS, CoinFormat.Rounded, true)} IOTA`}
+            title={`${formatBalance(mintedTokensAmount, IOTA_DECIMALS, CoinFormat.Full)} IOTA minted`}
+            subtitle={`Burnt ${formatBalance(burntTokensAmount, IOTA_DECIMALS, CoinFormat.Full)} · Net ${formatBalance(net, IOTA_DECIMALS, CoinFormat.Full, true)} IOTA`}
         />
     );
 }
@@ -55,14 +55,16 @@ export function TokenEmissionChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Minted',
-                    text: formatBalance(totalMinted, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalMinted, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalMinted,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Burnt',
-                    text: formatBalance(totalBurnt, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalBurnt, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalBurnt,
                 },
                 {
                     size: LabelTextSize.Large,
@@ -70,10 +72,11 @@ export function TokenEmissionChart(): JSX.Element {
                     text: formatBalance(
                         totalMinted - totalBurnt,
                         IOTA_DECIMALS,
-                        CoinFormat.Rounded,
+                        CoinFormat.Full,
                         true,
                     ),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalMinted - totalBurnt,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}

@@ -279,9 +279,11 @@ export function generateValidatorsTableColumns({
                 const lastReward = getValue<number | undefined>();
                 return (
                     <TableCellBase>
-                        <TableCellText>
-                            {lastReward !== undefined ? <StakeColumn stake={lastReward} /> : '--'}
-                        </TableCellText>
+                        {lastReward !== undefined ? (
+                            <StakeColumn stake={lastReward} />
+                        ) : (
+                            <TableCellText>--</TableCellText>
+                        )}
                     </TableCellBase>
                 );
             },
