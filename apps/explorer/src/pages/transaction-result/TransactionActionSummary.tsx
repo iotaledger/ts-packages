@@ -219,10 +219,12 @@ function ActionSummaryLine({ details, transaction }: ActionSummaryLineProps): JS
             <span>{details.verb}</span>
             {details.amount !== undefined && (
                 <span className="flex items-center gap-x-xs">
-                    <CoinIcon
-                        coinType={details.coinType ?? IOTA_TYPE_ARG}
-                        size={ImageIconSize.Small}
-                    />
+                    <div className="h-5 w-5 shrink-0">
+                        <CoinIcon
+                            coinType={details.coinType ?? IOTA_TYPE_ARG}
+                            size={ImageIconSize.Small}
+                        />
+                    </div>
                     <span
                         className={
                             details.outgoing
