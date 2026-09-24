@@ -6,13 +6,13 @@ export * from './header';
 export * from './modal';
 
 export * from './ButtonOrLink';
-export * from './IconBadge';
 export * from './FilterList';
 export * from './InternalLink';
 export * from './Link';
 export * from './LinkWithQuery';
 export * from './ObjectVideoImage';
 export * from './PageHeader';
+export * from './PagePanel';
 export * from './PageSectionNav';
 export * from './Pagination';
 export * from './PlaceholderTable';

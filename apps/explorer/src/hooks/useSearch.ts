@@ -22,19 +22,40 @@ import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import { useFeatureIsOn } from '@iota/apps-backend-client';
 import { type NotarizationClientReadOnly } from '@iota/notarization/web';
 import { tryDIDParse, tryEncodeDidToUrl } from '~/lib/utils/trust-framework/client';
-import { useIdentityClient, useNotarizationClient } from '~/contexts';
+import { useAuditTrailClient, useIdentityClient, useNotarizationClient } from '~/contexts';
+import { type AuditTrailClientReadOnly } from '@iota/audit-trails/web';
 
 const isGenesisLibAddress = (value: string): boolean => /^(0x|0X)0{0,39}[12]$/.test(value);
 
 type Results = { id: string; label: string; type: string }[];
+
+const getResultsForAuditTrail = async (
+    auditTrailClient: AuditTrailClientReadOnly | null,
+    isAuditTrailEnabled: boolean,
+    query: string,
+): Promise<Results | null> => {
+    if (!auditTrailClient) return null;
+    if (!isAuditTrailEnabled) return null;
+
+    const auditTrailChain = await auditTrailClient.trail(query).get();
+    if (!auditTrailChain) return null;
+
+    return [
+        {
+            id: auditTrailChain.id,
+            label: auditTrailChain.id,
+            type: 'audit-trail',
+        },
+    ];
+};
 
 const getResultsForNotarization = async (
     notarizationClient: NotarizationClientReadOnly | null,
     isNotarizationEnabled: boolean,
     query: string,
 ): Promise<Results | null> => {
-    if (notarizationClient == null) return null; // client not available
-    if (!isNotarizationEnabled) return null; // feature flag disabled
+    if (!notarizationClient) return null;
+    if (!isNotarizationEnabled) return null;
 
     const notarizationChain = await notarizationClient.getNotarizationById(query);
     if (!notarizationChain) return null;
@@ -53,14 +74,14 @@ const getResultsForDid = async (
     isIdentityEnabled: boolean,
     query: string,
 ): Promise<Results | null> => {
-    if (identityClient == null) return null; // client not available
-    if (!isIdentityEnabled) return null; // feature flag disabled
+    if (!identityClient) return null;
+    if (!isIdentityEnabled) return null;
 
     let didDocument = null;
     const didParsed = await tryDIDParse(query);
 
     try {
-        if (didParsed == null) {
+        if (!didParsed) {
             const identity = await identityClient.getIdentity(query);
             didDocument = identity.toFullFledged()?.didDocument();
         } else {
@@ -71,7 +92,7 @@ const getResultsForDid = async (
         // for it to fail is only not show a selection option in the search result
     }
 
-    if (didDocument == null) return null; // Nothing to show
+    if (!didDocument) return null;
 
     const didUrlEncoded = await tryEncodeDidToUrl(didDocument.id());
     if (didUrlEncoded == null) {
@@ -276,12 +297,14 @@ const getResultsForValidatorByPoolIdOrIotaAddress = async (
 
 export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
-    const identityClient = useIdentityClient();
-    const notarizationClient = useNotarizationClient();
+    const { client: identityClient } = useIdentityClient();
+    const { client: notarizationClient } = useNotarizationClient();
+    const { client: auditTrailClient } = useAuditTrailClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
 
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);
     const isTFNotarizationEnabled = useFeatureIsOn(Feature.ExplorerTFNotarization as string);
+    const isTFAuditTrailEnabled = useFeatureIsOn(Feature.ExplorerTFAuditTrail as string);
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
@@ -296,6 +319,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
                     getResultsForAddress(client, query, iotaNamesClient),
                     getResultsForDid(identityClient, isTFIdentityEnabled, query),
                     getResultsForNotarization(notarizationClient, isTFNotarizationEnabled, query),
+                    getResultsForAuditTrail(auditTrailClient, isTFAuditTrailEnabled, query),
                     getResultsForObject(client, query),
                     getResultsForValidatorByPoolIdOrIotaAddress(systemStateSummary || null, query),
                 ])
