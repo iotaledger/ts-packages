@@ -56,7 +56,7 @@ export function AccountBalance() {
                         <LoadingIndicator />
                     </div>
                 ) : (
-                    <div className="flex h-full flex-col justify-center gap-y-xs px-6">
+                    <div className="flex h-full flex-col justify-center gap-y-xs px-lg">
                         {address && (
                             <div
                                 className="flex w-full justify-center md:justify-start"
@@ -70,7 +70,6 @@ export function AccountBalance() {
                                     isExternal
                                     externalLink={explorerLink}
                                     onCopySuccess={onCopySuccess}
-                                    direction="row"
                                 />
                             </div>
                         )}
@@ -107,27 +106,27 @@ export function AccountBalance() {
                                         </div>
                                     </div>
                                     {fiatBalance && (
-                                        <div className="ites flex text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        <div className="flex text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                             {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
                                         </div>
                                     )}
                                 </div>
                             </div>
                             <div className="flex flex-none items-center gap-sm">
-                                <div className="flex flex-col items-center gap-1">
+                                <div className="flex flex-col items-center gap-xxs">
                                     <Button
                                         onClick={openReceiveTokenDialog}
                                         type={ButtonType.Secondary}
                                         icon={<ArrowBottomLeft className="h-5 w-5" />}
-                                        size={ButtonSize.Medium}
+                                        size={ButtonSize.Small}
                                         aria-label="Receive"
                                     />
                                 </div>
-                                <div className="flex flex-col items-center gap-1">
+                                <div className="flex flex-col items-center gap-xxs">
                                     <Button
                                         onClick={openSendTokenDialog}
                                         icon={<Send className="h-5 w-5" />}
-                                        size={ButtonSize.Medium}
+                                        size={ButtonSize.Small}
                                         disabled={!address || coinBalances?.length === 0}
                                         testId="send-coin-button"
                                         aria-label="Send"
