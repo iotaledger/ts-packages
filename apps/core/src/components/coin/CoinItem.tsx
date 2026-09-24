@@ -58,14 +58,12 @@ export function CoinItem({
                 title={`${isBalanceVisible ? formatted : BALANCE_MASK} ${symbol}`}
                 subtitle={
                     isBalanceVisible ? (
-                        <span className="flex flex-row items-baseline gap-1">
-                            <span className="key-supporting-text-color text-body-sm">~</span>
-                            <CoinFiatValue
-                                amount={balance}
-                                coinType={coinType}
-                                withParentheses={false}
-                            />
-                        </span>
+                        <CoinFiatValue
+                            amount={balance}
+                            coinType={coinType}
+                            withParentheses={false}
+                            showApproxSymbol
+                        />
                     ) : undefined
                 }
             />

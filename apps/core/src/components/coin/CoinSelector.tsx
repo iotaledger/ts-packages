@@ -62,7 +62,7 @@ function CoinSelectOption({
 
     const { network } = useIotaClientContext();
     const usd = useBalanceInUSD(coinType, totalBalance, network as Network);
-    const hasFiatValue = usd !== null && usd !== undefined && Math.abs(usd) >= 0.005;
+    const hasFiatValue = usd !== null && usd !== undefined && usd !== 0;
 
     return (
         <div className="flex w-full flex-row items-center justify-between">

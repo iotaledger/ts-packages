@@ -50,6 +50,7 @@ export function TransactionAmount({
                         amount={Math.abs(Number(amount))}
                         coinType={coinType}
                         withParentheses={false}
+                        showApproxSymbol
                     />
                 }
             />

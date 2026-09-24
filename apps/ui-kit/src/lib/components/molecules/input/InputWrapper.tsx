@@ -28,7 +28,7 @@ export interface InputWrapperProps {
     /**
      * Amount counter that is shown at the side of the caption text.
      */
-    amountCounter?: string | number;
+    amountCounter?: React.ReactNode;
     /**
      * Is the input required
      */

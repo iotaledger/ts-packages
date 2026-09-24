@@ -23,7 +23,7 @@ function WalletBalanceUsd({ amount: walletBalance, coinType, isVisible }: Wallet
     const network = useAppSelector((state) => state.app.network);
     const usdValue = useBalanceInUSD(coinType, walletBalance, network);
 
-    if (usdValue === null || usdValue === undefined || Math.abs(usdValue) < 0.005) {
+    if (usdValue === null || usdValue === undefined || usdValue === 0) {
         return null;
     }
 
@@ -31,11 +31,11 @@ function WalletBalanceUsd({ amount: walletBalance, coinType, isVisible }: Wallet
         <div className="key-supporting-text-color flex items-center gap-1 text-label-md [&>span]:!text-label-md">
             {isVisible ? (
                 <>
-                    <span>~</span>
                     <CoinFiatValue
                         amount={walletBalance}
                         coinType={coinType}
                         withParentheses={false}
+                        showApproxSymbol
                     />
                     <span>USD</span>
                 </>

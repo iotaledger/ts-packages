@@ -45,9 +45,13 @@ export function SendTokenFormInput({
         coinMetadata === null ? 'There was an error fetching the coin metadata' : meta.error;
     const isActionButtonDisabled = isSubmitting || isMaxActionDisabled;
 
-    const gasAmount = formattedGasBudgetEstimation
-        ? formattedGasBudgetEstimation + ' ' + gasToken
-        : undefined;
+    const gasAmount = formattedGasBudgetEstimation ? (
+        <AmountWithFiat
+            amount={totalGas ?? 0}
+            formatted={formattedGasBudgetEstimation}
+            symbol={gasToken}
+        />
+    ) : undefined;
 
     const totalBalance = coins.reduce((acc, { balance }) => {
         return BigInt(acc) + BigInt(balance);

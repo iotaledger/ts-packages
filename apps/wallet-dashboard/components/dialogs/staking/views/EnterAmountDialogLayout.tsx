@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    AmountWithFiat,
     useFormatCoin,
     useIsValidatorCommitteeMember,
     useStakeTxnInfo,
@@ -143,8 +144,17 @@ export function EnterAmountDialogLayout({
                                 <Divider />
                                 <KeyValueInfo
                                     keyText="Gas fee"
-                                    value={gas || '--'}
-                                    supportingLabel={symbol}
+                                    value={
+                                        gas ? (
+                                            <AmountWithFiat
+                                                amount={totalGas ?? 0}
+                                                formatted={gas}
+                                                symbol={symbol}
+                                            />
+                                        ) : (
+                                            '--'
+                                        )
+                                    }
                                     fullwidth
                                 />
                             </div>

@@ -1,10 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useIotaClientContext } from '@iota/dapp-kit';
-import { type Network } from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
-import { useBalanceInUSD } from '../../hooks';
 import { CoinFiatValue } from './CoinFiatValue';
 
 export interface AmountWithFiatProps {
@@ -26,9 +23,6 @@ export function AmountWithFiat({
     showApproxSymbol = true,
     align = 'start',
 }: AmountWithFiatProps) {
-    const { network } = useIotaClientContext();
-    const value = useBalanceInUSD(coinType, amount, network as Network);
-    const hasFiatValue = value !== null && value !== undefined && Math.abs(value) >= 0.005;
     const alignClass = align === 'end' ? 'items-end justify-end' : 'items-start justify-start';
 
     return (
@@ -43,16 +37,16 @@ export function AmountWithFiat({
                 {formatted}
                 {symbol ? ` ${symbol}` : ''}
             </span>
-            {hasFiatValue && (
-                <span
-                    className={`flex flex-row items-baseline gap-1 whitespace-nowrap [&>span]:!text-body-sm ${direction === 'column' ? alignClass : ''}`}
-                >
-                    {showApproxSymbol && (
-                        <span className="key-supporting-text-color text-body-sm">~</span>
-                    )}
-                    <CoinFiatValue amount={amount} coinType={coinType} withParentheses={false} />
-                </span>
-            )}
+            <span
+                className={`whitespace-nowrap [&>span]:!text-body-sm ${direction === 'column' ? alignClass : ''}`}
+            >
+                <CoinFiatValue
+                    amount={amount}
+                    coinType={coinType}
+                    withParentheses={false}
+                    showApproxSymbol={showApproxSymbol}
+                />
+            </span>
         </span>
     );
 }

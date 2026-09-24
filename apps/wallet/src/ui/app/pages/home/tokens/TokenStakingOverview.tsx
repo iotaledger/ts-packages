@@ -84,15 +84,11 @@ export function TokenStakingOverview({
                                     {symbol}
                                 </span>
                                 {isBalanceVisible && (
-                                    <span className="flex items-baseline gap-0.5">
-                                        <span className="key-supporting-text-color text-body-sm">
-                                            ~
-                                        </span>
-                                        <CoinFiatValue
-                                            amount={totalDelegatedStake}
-                                            withParentheses={false}
-                                        />
-                                    </span>
+                                    <CoinFiatValue
+                                        amount={totalDelegatedStake}
+                                        withParentheses={false}
+                                        showApproxSymbol
+                                    />
                                 )}
                             </>
                         ) : (

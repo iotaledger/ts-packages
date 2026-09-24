@@ -10,6 +10,7 @@ import {
     NO_BALANCE_GENERIC_MESSAGE,
     useValidatorInfo,
     AmountWithFiat,
+    CoinFiatValue,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -75,13 +76,9 @@ export function EnterAmountView({
         format: CoinFormat.Full,
     });
     const caption = availableBalance ? (
-        <span className="flex flex-row items-baseline gap-1">
-            <AmountWithFiat
-                amount={availableBalance}
-                formatted={availableBalanceFormatted}
-                symbol={availableBalanceFormattedSymbol}
-            />
-            <span>Available</span>
+        <span className="flex flex-col">
+            <span>{`${availableBalanceFormatted} ${availableBalanceFormattedSymbol} Available`}</span>
+            <CoinFiatValue amount={availableBalance} withParentheses={false} showApproxSymbol />
         </span>
     ) : (
         '--'

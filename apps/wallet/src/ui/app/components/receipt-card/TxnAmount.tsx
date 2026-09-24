@@ -36,14 +36,12 @@ export function TxnAmount({ amount, coinType, subtitle, approximation }: TxnAmou
                             {approximation ? '~' : ''}
                             {formatAmount} {symbol}
                         </span>
-                        <span className="flex items-baseline gap-0.5">
-                            <span className="key-supporting-text-color text-body-sm">~</span>
-                            <CoinFiatValue
-                                amount={Math.abs(Number(amount))}
-                                coinType={coinType}
-                                withParentheses={false}
-                            />
-                        </span>
+                        <CoinFiatValue
+                            amount={Math.abs(Number(amount))}
+                            coinType={coinType}
+                            withParentheses={false}
+                            showApproxSymbol
+                        />
                     </div>
                 </div>
                 <div className="card-body-subtitle-color text-start font-inter text-body-md">

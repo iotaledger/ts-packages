@@ -11,7 +11,7 @@ import {
     toast,
     getGasBudgetErrorMessage,
     useCoinMetadata,
-    AmountWithFiat,
+    CoinFiatValue,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -98,13 +98,13 @@ export function EnterTimelockedAmountView({
     });
 
     const caption = (
-        <span className="flex flex-row items-baseline gap-1">
-            <AmountWithFiat
+        <span className="flex flex-col">
+            <span>{`${maxTokenFormatted} ${maxTokenFormattedSymbol} Available`}</span>
+            <CoinFiatValue
                 amount={maxStakableTimelockedAmount}
-                formatted={maxTokenFormatted}
-                symbol={maxTokenFormattedSymbol}
+                withParentheses={false}
+                showApproxSymbol
             />
-            <span>Available</span>
         </span>
     );
     const info = useMemo(() => {
