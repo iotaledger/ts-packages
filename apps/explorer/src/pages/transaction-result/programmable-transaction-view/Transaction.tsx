@@ -91,15 +91,10 @@ function inputTooltipText(input: IotaCallArg | undefined, index: number): string
     }
 
     if (input.type === 'object') {
-        return `Input #${index} · ${input.objectType} · ${input.objectId}`;
+        return `Input #${index} · ${input.objectType}`;
     }
 
-    if (input.valueType === 'address') {
-        return `Input #${index} · address · ${String(input.value)}`;
-    }
-
-    const hex = input.valueType ? pureValueHex(input.valueType, input.value) : null;
-    return hex ? `Input #${index} · pure · 0x${hex}` : `Input #${index} · pure`;
+    return `Input #${index} · ${input.valueType ?? 'pure'}`;
 }
 
 export type InputDisplay = 'value' | 'reference';
