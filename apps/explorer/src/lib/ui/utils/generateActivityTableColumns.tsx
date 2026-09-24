@@ -192,7 +192,7 @@ export function generateActivityTableColumns(
                 const formatted = formatBalance(
                     Math.abs(Number(amount)) / Number(NANOS_PER_IOTA),
                     0,
-                    CoinFormat.Rounded,
+                    CoinFormat.Full,
                 );
                 const isPositive = Number(amount) >= 0;
                 const sign = isPositive ? '+' : '-';
