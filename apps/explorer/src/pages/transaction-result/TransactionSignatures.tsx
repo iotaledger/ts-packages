@@ -26,7 +26,7 @@ import {
     type MultiSigParticipant,
     type MultiSigSignature,
 } from '~/hooks';
-import { getTransactionSponsor, onCopySuccess } from '~/lib/utils';
+import { getTransactionSponsor } from '~/lib/utils';
 import { CopyButton } from './programmable-transaction-view/Field';
 
 interface FieldTableRow {
@@ -40,7 +40,7 @@ function CopyableCellValue({ value }: { value: string }): JSX.Element {
             <TableCellText>
                 <span className="break-all">{value}</span>
             </TableCellText>
-            <CopyButton text={value} onCopySuccess={onCopySuccess} />
+            <CopyButton text={value} />
         </div>
     );
 }

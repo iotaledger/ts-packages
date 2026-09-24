@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SyntaxHighlighter } from '~/components';
-import { onCopySuccess } from '~/lib/utils';
 import { CopyButton } from './programmable-transaction-view/Field';
 
 export function JsonPanel({ data }: { data: unknown }): JSX.Element {
@@ -11,7 +10,7 @@ export function JsonPanel({ data }: { data: unknown }): JSX.Element {
     return (
         <div className="relative w-0 min-w-full">
             <div className="absolute right-sm top-sm z-10">
-                <CopyButton text={code} onCopySuccess={onCopySuccess} />
+                <CopyButton text={code} />
             </div>
             <SyntaxHighlighter code={code} language="json" />
         </div>
