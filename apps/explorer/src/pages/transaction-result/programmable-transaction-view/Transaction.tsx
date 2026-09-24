@@ -3,54 +3,45 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Badge, BadgeSize, BadgeType, Tooltip } from '@iota/apps-ui-kit';
+import { useGetDefaultIotaName } from '@iota/core';
 import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink, AddressLink } from '~/components/ui';
-import { decodeVectorU8ValueDetailed, pureValueHex } from './utils';
-import { HighlightableRef, type PtbRefId } from './PtbHighlight';
+import {
+    REGEX_NUMBER,
+    decodeVectorU8Value,
+    pureValueHex,
+    truncateEnd,
+    truncateMiddle,
+} from './utils';
+import { HighlightableBadge, HighlightableRef } from './PtbHighlight';
 
 const RESULT_BADGE_TYPE = BadgeType.Neutral;
 const INPUT_BADGE_TYPE = BadgeType.Outlined;
 
-const REGEX_NUMBER = /^\d+$/;
-
-function truncateMiddle(value: string, max = 40): string {
-    if (value.length <= max) {
-        return value;
-    }
-
-    const head = Math.ceil((max - 1) / 2);
-    const tail = Math.floor((max - 1) / 2);
-    return `${value.slice(0, head)}…${value.slice(-tail)}`;
-}
-
-function truncateEnd(value: string, max = 40): string {
-    if (value.length <= max) {
-        return value;
-    }
-
-    return `${value.slice(0, max - 1)}…`;
-}
-
-function argRefId(arg: IotaArgument): PtbRefId | undefined {
-    if (arg === 'GasCoin') {
-        return undefined;
-    }
-
-    if ('Input' in arg) {
-        return `input-${arg.Input}`;
-    }
-
-    if ('Result' in arg) {
-        return `command-${arg.Result}`;
-    }
-
-    return `command-${arg.NestedResult[0]}`;
-}
-
 function ObjectInputArg({ objectId }: { objectId: string }): JSX.Element {
-    return <ObjectLink objectId={objectId} label={formatAddress(objectId)} copyText={objectId} />;
+    return (
+        <ObjectLink
+            objectId={objectId}
+            label={formatAddress(objectId)}
+            copyText={objectId}
+            showAddressAlias={false}
+        />
+    );
+}
+
+function AddressInputArg({ address }: { address: string }): JSX.Element {
+    const { data: iotaName } = useGetDefaultIotaName(address);
+
+    return (
+        <AddressLink
+            address={address}
+            label={iotaName || formatAddress(address)}
+            copyText={address}
+            showAddressAlias={false}
+        />
+    );
 }
 
 function InlineInputValue({ input }: { input?: IotaCallArg }): JSX.Element {
@@ -63,21 +54,20 @@ function InlineInputValue({ input }: { input?: IotaCallArg }): JSX.Element {
     }
 
     if (input.type === 'pure' && input.valueType === 'address') {
-        const address = String(input.value);
-        return <AddressLink address={address} label={formatAddress(address)} copyText={address} />;
+        return <AddressInputArg address={String(input.value)} />;
     }
 
     const valueColor = 'text-iota-neutral-10 dark:text-iota-neutral-92';
 
     if (input.type === 'pure' && input.valueType === 'vector<u8>') {
-        const { value: decoded, isPlainText } = decodeVectorU8ValueDetailed(input.value);
+        const { value: decoded, kind } = decodeVectorU8Value(input.value);
         const hex = pureValueHex(input.valueType, input.value);
-        const isRawBytes = !isPlainText && decoded === String(input.value) && hex;
-        const truncated = isRawBytes
-            ? truncateEnd(`0x${hex}`)
-            : isPlainText
-              ? truncateEnd(decoded)
-              : truncateMiddle(decoded);
+        const truncated =
+            kind === 'raw' && hex
+                ? truncateEnd(`0x${hex}`)
+                : kind === 'text'
+                  ? truncateEnd(decoded)
+                  : truncateMiddle(decoded);
         return <span className={clsx('break-all', valueColor)}>{truncated}</span>;
     }
 
@@ -101,7 +91,11 @@ function inputTooltipText(input: IotaCallArg | undefined, index: number): string
     }
 
     if (input.type === 'object') {
-        return `Input #${index} · ${input.objectType}`;
+        return `Input #${index} · ${input.objectType} · ${input.objectId}`;
+    }
+
+    if (input.valueType === 'address') {
+        return `Input #${index} · address · ${String(input.value)}`;
     }
 
     const hex = input.valueType ? pureValueHex(input.valueType, input.value) : null;
@@ -125,45 +119,39 @@ export function Arg({
 
     if ('Result' in arg) {
         return (
-            <HighlightableRef refId={argRefId(arg)}>
-                <Badge
-                    type={RESULT_BADGE_TYPE}
-                    label={`result of #${arg.Result}`}
-                    size={BadgeSize.Small}
-                />
-            </HighlightableRef>
+            <HighlightableBadge
+                refId={`command-${arg.Result}`}
+                type={RESULT_BADGE_TYPE}
+                label={`result of #${arg.Result}`}
+            />
         );
     }
 
     if ('NestedResult' in arg) {
         const [commandIndex, resultIndex] = arg.NestedResult;
         return (
-            <HighlightableRef refId={argRefId(arg)}>
-                <Badge
-                    type={RESULT_BADGE_TYPE}
-                    label={`result of #${commandIndex}[${resultIndex}]`}
-                    size={BadgeSize.Small}
-                />
-            </HighlightableRef>
+            <HighlightableBadge
+                refId={`command-${commandIndex}`}
+                type={RESULT_BADGE_TYPE}
+                label={`result of #${commandIndex}[${resultIndex}]`}
+            />
         );
     }
 
     if (inputDisplay === 'reference') {
         return (
-            <HighlightableRef refId={argRefId(arg)}>
-                <Badge
-                    type={INPUT_BADGE_TYPE}
-                    label={`Input(${arg.Input})`}
-                    size={BadgeSize.Small}
-                />
-            </HighlightableRef>
+            <HighlightableBadge
+                refId={`input-${arg.Input}`}
+                type={INPUT_BADGE_TYPE}
+                label={`Input(${arg.Input})`}
+            />
         );
     }
 
     const input = inputs[arg.Input];
     const tooltipText = inputTooltipText(input, arg.Input);
     const value = (
-        <HighlightableRef refId={argRefId(arg)}>
+        <HighlightableRef refId={`input-${arg.Input}`}>
             <span className="inline-flex items-baseline gap-[3px]">
                 <InputIndexLabel index={arg.Input} />
                 <InlineInputValue input={input} />

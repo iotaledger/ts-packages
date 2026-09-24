@@ -11,6 +11,7 @@ import {
     type SetStateAction,
 } from 'react';
 import clsx from 'clsx';
+import { Badge, BadgeSize, type BadgeType } from '@iota/apps-ui-kit';
 
 export type PtbRefId = `input-${number}` | `command-${number}`;
 
@@ -52,6 +53,43 @@ const HIGHLIGHT_BOX_CLASSES =
 const HIGHLIGHT_BG_CLASSES =
     'border-iota-primary-70/60 after:bg-iota-primary-90/30 dark:border-iota-primary-70/60 dark:after:bg-iota-primary-70/30';
 
+export function PtbIndexCell({
+    refId,
+    children,
+    onHoverChange,
+}: {
+    refId: PtbRefId;
+    children: ReactNode;
+    onHoverChange?: (hovered: boolean) => void;
+}): JSX.Element {
+    const { onMouseEnter, onMouseLeave } = usePtbHighlight(refId);
+    const [isSelfHovered, setIsSelfHovered] = useState(false);
+
+    return (
+        <span
+            onMouseEnter={() => {
+                setIsSelfHovered(true);
+                onHoverChange?.(true);
+                onMouseEnter();
+            }}
+            onMouseLeave={() => {
+                setIsSelfHovered(false);
+                onHoverChange?.(false);
+                onMouseLeave();
+            }}
+            className={clsx(
+                'cursor-pointer select-none text-label-sm',
+                HIGHLIGHT_BOX_CLASSES,
+                isSelfHovered
+                    ? clsx(HIGHLIGHT_BG_CLASSES, 'text-iota-primary-30 dark:text-iota-primary-80')
+                    : 'text-iota-neutral-60 dark:text-iota-neutral-40',
+            )}
+        >
+            {children}
+        </span>
+    );
+}
+
 export function HighlightableRef({
     refId,
     children,
@@ -83,5 +121,32 @@ export function HighlightableRef({
         >
             {children}
         </Tag>
+    );
+}
+
+const BADGE_HIGHLIGHT_CLASSES =
+    "relative inline-flex cursor-pointer select-none rounded-full after:pointer-events-none after:absolute after:inset-0 after:rounded-full after:border after:border-transparent after:transition-colors after:content-['']";
+const BADGE_HIGHLIGHT_BG_CLASSES =
+    'after:border-iota-primary-70/60 after:bg-iota-primary-90/30 dark:after:border-iota-primary-70/60 dark:after:bg-iota-primary-70/30';
+
+export function HighlightableBadge({
+    refId,
+    label,
+    type,
+}: {
+    refId: PtbRefId;
+    label: string;
+    type: BadgeType;
+}): JSX.Element {
+    const { isHighlighted, onMouseEnter, onMouseLeave } = usePtbHighlight(refId);
+
+    return (
+        <span
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            className={clsx(BADGE_HIGHLIGHT_CLASSES, isHighlighted && BADGE_HIGHLIGHT_BG_CLASSES)}
+        >
+            <Badge type={type} label={label} size={BadgeSize.Small} />
+        </span>
     );
 }

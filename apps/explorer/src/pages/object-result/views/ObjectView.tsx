@@ -5,19 +5,18 @@
 import { DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
 import { capitalize, resolveNFTMedia, useFormatCoin, useNFTMediaHeaders } from '@iota/core';
 import { type IotaObjectResponse, type ObjectOwner } from '@iota/iota-sdk/client';
-import {
-    CoinFormat,
-    formatAddress,
-    formatDigest,
-    formatType,
-    normalizeStructTag,
-    parseStructTag,
-} from '@iota/iota-sdk/utils';
+import { CoinFormat, formatDigest, parseStructTag } from '@iota/iota-sdk/utils';
 import { SortByDefault } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
 import { AddressLink, Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
-import { extractName, onCopySuccess, parseObjectType, trimStdLibPrefix } from '~/lib/utils';
+import {
+    extractName,
+    onCopySuccess,
+    parseObjectType,
+    trimStdLibPrefix,
+    truncateStruct,
+} from '~/lib/utils';
 
 interface HeroVideoImageProps {
     title: string;
@@ -93,27 +92,8 @@ interface TypeCardCardProps {
 }
 
 function TypeCard({ objectType }: TypeCardCardProps): JSX.Element {
-    const { address, module, typeParams, ...rest } = parseStructTag(objectType);
-
-    const formattedTypeParams = typeParams.map((typeParam) => {
-        if (typeof typeParam === 'string') {
-            return typeParam;
-        } else {
-            return {
-                ...typeParam,
-                address: formatAddress(typeParam.address),
-            };
-        }
-    });
-
-    const structTag = {
-        address: formatAddress(address),
-        module,
-        typeParams: formattedTypeParams,
-        ...rest,
-    };
-
-    const normalizedStructTag = formatType(normalizeStructTag(structTag));
+    const { address, module } = parseStructTag(objectType);
+    const normalizedStructTag = truncateStruct(objectType);
     return (
         <DisplayStats
             label="Type"

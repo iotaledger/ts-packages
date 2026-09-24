@@ -40,12 +40,14 @@ export interface CollapsibleCardProps {
 interface RawJsonToggleProps {
     isActive: boolean;
     onChange: (isActive: boolean) => void;
+    name?: string;
 }
 
-function RawJsonToggle({ isActive, onChange }: RawJsonToggleProps): JSX.Element {
+export function RawJsonToggle({ isActive, onChange, name }: RawJsonToggleProps): JSX.Element {
     return (
         <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
             <Toggle
+                name={name}
                 label="Raw JSON"
                 labelPosition={ToggleLabelPosition.Left}
                 size={ToggleSize.Small}
@@ -56,7 +58,7 @@ function RawJsonToggle({ isActive, onChange }: RawJsonToggleProps): JSX.Element 
     );
 }
 
-function RawJsonContent({ rawData }: { rawData: unknown }): JSX.Element {
+export function RawJsonContent({ rawData }: { rawData: unknown }): JSX.Element {
     return (
         <div className="p-md--rs">
             <SyntaxHighlighter code={JSON.stringify(rawData, null, 2)} language="json" />

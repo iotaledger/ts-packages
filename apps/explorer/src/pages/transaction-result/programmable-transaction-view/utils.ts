@@ -10,12 +10,31 @@ import {
 import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
-function toBcsPureType(valueType: string): string {
-    if (/::string::String$/.test(valueType)) {
-        return 'string';
+export const REGEX_NUMBER = /^\d+$/;
+
+export function truncateMiddle(value: string, max = 40): string {
+    if (value.length <= max) {
+        return value;
     }
 
-    return valueType;
+    const head = Math.ceil((max - 1) / 2);
+    const tail = Math.floor((max - 1) / 2);
+    return `${value.slice(0, head)}…${value.slice(-tail)}`;
+}
+
+export function truncateEnd(value: string, max = 40): string {
+    if (value.length <= max) {
+        return value;
+    }
+
+    return `${value.slice(0, max - 1)}…`;
+}
+
+function toBcsPureType(valueType: string): string {
+    return valueType
+        .replace(/0x0*1::(string|ascii)::String/g, 'string')
+        .replace(/0x0*2::object::ID/g, 'id')
+        .replace(/0x0*1::option::Option</g, 'option<');
 }
 
 export function pureValueHex(valueType: string, value: unknown): string | null {
@@ -27,7 +46,6 @@ export function pureValueHex(valueType: string, value: unknown): string | null {
     }
 }
 
-/** Extracts the `IotaArgument`s referenced by a single PTB command, regardless of its shape. */
 export function getCommandArguments(type: string, data: unknown): IotaArgument[] {
     switch (type) {
         case 'MoveCall':
@@ -58,42 +76,12 @@ export function getCommandArguments(type: string, data: unknown): IotaArgument[]
     }
 }
 
-export function flattenIotaArguments(data: (IotaArgument | IotaArgument[])[]): string {
-    if (!data) {
-        return '';
-    }
-
-    return data
-        .map((value) => {
-            if (value === 'GasCoin') {
-                return value;
-            } else if (Array.isArray(value)) {
-                return `[${flattenIotaArguments(value)}]`;
-            } else if (value === null) {
-                return 'Null';
-            } else if (typeof value === 'object') {
-                if ('Input' in value) {
-                    return `Input(${value.Input})`;
-                } else if ('Result' in value) {
-                    return `Result(${value.Result})`;
-                } else if ('NestedResult' in value) {
-                    return `NestedResult(${value.NestedResult[0]}, ${value.NestedResult[1]})`;
-                }
-            } else if (typeof value === 'string') {
-                return value;
-            } else {
-                throw new Error('Not a correct flattenable data');
-            }
-        })
-        .join(', ');
-}
-
 export interface DecodedVectorU8Value {
     value: string;
-    isPlainText: boolean;
+    kind: 'text' | 'address' | 'raw';
 }
 
-export function decodeVectorU8ValueDetailed(value: unknown): DecodedVectorU8Value {
+export function decodeVectorU8Value(value: unknown): DecodedVectorU8Value {
     const stringValue = String(value);
 
     let parsedVector: Array<number> | null = null;
@@ -128,48 +116,26 @@ export function decodeVectorU8ValueDetailed(value: unknown): DecodedVectorU8Valu
     }
 
     if (parsedUtf) {
-        return { value: parsedUtf, isPlainText: true };
+        return { value: parsedUtf, kind: 'text' };
     } else if (parsedAddress) {
-        return { value: parsedAddress, isPlainText: false };
+        return { value: parsedAddress, kind: 'address' };
     }
 
-    return { value: stringValue, isPlainText: false };
-}
-
-export function decodeVectorU8Value(value: unknown): string {
-    return decodeVectorU8ValueDetailed(value).value;
-}
-
-export interface ResultConsumer {
-    commandIndex: number;
-    type: string;
-    nestedIndex?: number;
+    return { value: stringValue, kind: 'raw' };
 }
 
 export function getResultUsedByCommands(
     commandIndex: number,
     transactions: IotaTransaction[],
-): ResultConsumer[] {
-    return transactions.reduce<ResultConsumer[]>((usedBy, transaction, otherCommandIndex) => {
+): number[] {
+    return transactions.flatMap((transaction, otherCommandIndex) => {
         const [[type, data]] = Object.entries(transaction);
-        const args = getCommandArguments(type, data);
-
-        args.forEach((arg) => {
-            if (typeof arg !== 'object' || arg === null) {
-                return;
-            }
-
-            if ('Result' in arg && arg.Result === commandIndex) {
-                usedBy.push({ commandIndex: otherCommandIndex, type });
-            } else if ('NestedResult' in arg && arg.NestedResult[0] === commandIndex) {
-                usedBy.push({
-                    commandIndex: otherCommandIndex,
-                    type,
-                    nestedIndex: arg.NestedResult[1],
-                });
-            }
-        });
-
-        return usedBy;
-    }, []);
+        const isConsumer = getCommandArguments(type, data).some(
+            (arg) =>
+                typeof arg === 'object' &&
+                (('Result' in arg && arg.Result === commandIndex) ||
+                    ('NestedResult' in arg && arg.NestedResult[0] === commandIndex)),
+        );
+        return isConsumer ? [otherCommandIndex] : [];
+    });
 }

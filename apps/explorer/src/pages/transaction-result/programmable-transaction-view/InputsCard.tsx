@@ -22,40 +22,12 @@ import { formatDigest } from '@iota/iota-sdk/utils';
 import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
 import { CopyButton } from './Field';
-import { decodeVectorU8Value, decodeVectorU8ValueDetailed, pureValueHex } from './utils';
-import { usePtbHighlight } from './PtbHighlight';
-
-const REGEX_NUMBER = /^\d+$/;
+import { REGEX_NUMBER, decodeVectorU8Value, pureValueHex, truncateMiddle } from './utils';
+import { PtbIndexCell, usePtbHighlight } from './PtbHighlight';
 
 interface InputsCardProps {
     inputs: IotaCallArg[];
     transactions: IotaTransaction[];
-}
-
-function IndexCell({
-    index,
-    onSelfHoverChange,
-}: {
-    index: number;
-    onSelfHoverChange: (hovered: boolean) => void;
-}): JSX.Element {
-    const { onMouseEnter, onMouseLeave } = usePtbHighlight(`input-${index}`);
-
-    return (
-        <span
-            onMouseEnter={() => {
-                onSelfHoverChange(true);
-                onMouseEnter();
-            }}
-            onMouseLeave={() => {
-                onSelfHoverChange(false);
-                onMouseLeave();
-            }}
-            className="cursor-pointer select-none text-label-sm text-iota-neutral-60 dark:text-iota-neutral-40"
-        >
-            {index}
-        </span>
-    );
 }
 
 function InputTypeBadge({ input }: { input: IotaCallArg }): JSX.Element {
@@ -118,6 +90,8 @@ function ValueTypeLabel({ valueType }: { valueType?: string | null }): JSX.Eleme
     );
 }
 
+const RAW_BYTES_PREVIEW_LENGTH = 20;
+
 function PureRawBytes({
     valueType,
     value,
@@ -143,7 +117,7 @@ function PureRawBytes({
                 className="min-w-0 truncate text-iota-neutral-10 dark:text-iota-neutral-100"
                 title={`0x${hex}`}
             >
-                0x{hex}
+                {truncateMiddle(`0x${hex}`, RAW_BYTES_PREVIEW_LENGTH)}
             </span>
             <CopyButton text={`0x${hex}`} />
         </span>
@@ -155,8 +129,7 @@ function hasReadableDecoding(input: Extract<IotaCallArg, { type: 'pure' }>): boo
         return true;
     }
 
-    const { isPlainText, value } = decodeVectorU8ValueDetailed(input.value);
-    return isPlainText || value !== String(input.value);
+    return decodeVectorU8Value(input.value).kind !== 'raw';
 }
 
 function DecodedPureValue({
@@ -173,7 +146,7 @@ function DecodedPureValue({
     if (input.valueType === 'vector<u8>') {
         return (
             <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
-                <ExpandableValue value={decodeVectorU8Value(input.value)} align="start" />
+                <ExpandableValue value={decodeVectorU8Value(input.value).value} align="start" />
             </span>
         );
     }
@@ -245,8 +218,6 @@ function InputValueCell({ input }: { input: IotaCallArg }): JSX.Element {
     );
 }
 
-const VISIBLE_INPUTS_LIMIT = 6;
-
 function HighlightCell({
     highlighted,
     className,
@@ -279,7 +250,9 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
     return (
         <tr>
             <HighlightCell highlighted={showRowHighlight}>
-                <IndexCell index={index} onSelfHoverChange={setIsSelfHovered} />
+                <PtbIndexCell refId={`input-${index}`} onHoverChange={setIsSelfHovered}>
+                    {index}
+                </PtbIndexCell>
             </HighlightCell>
             <HighlightCell highlighted={showRowHighlight}>
                 <InputTypeBadge input={input} />
@@ -291,36 +264,27 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
     );
 }
 
-const MAX_VISIBLE_TABLE_HEIGHT = (VISIBLE_INPUTS_LIMIT + 1) * 56;
-
 export function InputsTable({ inputs }: InputsCardProps): JSX.Element | null {
     if (!inputs?.length) {
         return null;
     }
 
-    const canScroll = inputs.length > VISIBLE_INPUTS_LIMIT;
-
     return (
-        <div data-testid="inputs-card-content">
-            <div
-                style={canScroll ? { maxHeight: MAX_VISIBLE_TABLE_HEIGHT } : undefined}
-                className={canScroll ? 'overflow-y-auto' : undefined}
-            >
-                <Table rowIndexes={inputs.map((_, index) => index)}>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHeaderCell columnKey="index" label="#" />
-                            <TableHeaderCell columnKey="type" label="Type" />
-                            <TableHeaderCell columnKey="value" label="Value" />
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {inputs.map((input, index) => (
-                            <InputRow key={index} index={index} input={input} />
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+        <div data-testid="inputs-card-content" className="max-h-96 overflow-y-auto">
+            <Table rowIndexes={inputs.map((_, index) => index)}>
+                <TableHeader>
+                    <TableRow>
+                        <TableHeaderCell columnKey="index" label="#" />
+                        <TableHeaderCell columnKey="type" label="Type" />
+                        <TableHeaderCell columnKey="value" label="Value" />
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {inputs.map((input, index) => (
+                        <InputRow key={index} index={index} input={input} />
+                    ))}
+                </TableBody>
+            </Table>
         </div>
     );
 }

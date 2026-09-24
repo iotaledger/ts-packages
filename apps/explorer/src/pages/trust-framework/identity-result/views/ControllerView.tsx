@@ -9,7 +9,6 @@ import {
     InfoBoxType,
     KeyValueInfo,
     LoadingIndicator,
-    Title,
     TitleSize,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
@@ -32,69 +31,62 @@ export function ControllerView({ objectData }: ControllerViewProps) {
     const controllersLoaded = controllers.filter((controller) => !controller.isError);
 
     return (
-        <div className="flex w-full flex-col gap-sm">
-            <Title
-                title="Controller"
-                tooltipPosition={TooltipPosition.Left}
-                tooltipText="The entity or entities authorized to modify this Identity. An Identity can have multiple controllers with shared authority"
-            />
-            <div className="flex flex-col">
-                {isPending && (
-                    <div className="flex justify-center">
-                        <LoadingIndicator size="w-6 h-6" text="Loading controllers..." />
-                    </div>
-                )}
-                {isError && (
-                    <InfoBox
-                        title="Error Fetching DID's Controllers"
-                        supportingText={`Could not fetch controllers of DID object ${objectData.objectId} on the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
-                )}
-                {controllersFailedToLoad.map((controller) => (
-                    <InfoBox
-                        key={controller.objectId}
-                        title="Error Fetching Controller"
-                        supportingText={`Could not fetch ControllerCap ${controller.objectId} on the current network.`}
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
-                        style={InfoBoxStyle.Elevated}
-                    />
-                ))}
-                {controllersLoaded.map((controller) => (
-                    <CollapsibleCard
-                        key={controller.objectId}
-                        collapsible
-                        title="Controller Capability"
-                        titleSize={TitleSize.Small}
-                        footer={
-                            <ControllerCardFooter
-                                weight={controller.weight}
-                                threshold={threshold}
-                                ownerType={controller.ownerType!}
-                                ownerAddress={controller.owner!}
-                            />
-                        }
-                        supportingTitleElement={
-                            <div className="ml-1 flex">
-                                <Badge
-                                    label={controller.ownerType || 'Undefined'}
-                                    type={BadgeType.PrimarySoft}
-                                />
-                            </div>
-                        }
-                    >
-                        <div className="flex flex-col gap-4">
-                            <ControllerDetail
-                                objectId={controller.objectId}
-                                objectType={controller.objectType!}
+        <div className="flex flex-col">
+            {isPending && (
+                <div className="flex justify-center">
+                    <LoadingIndicator size="w-6 h-6" text="Loading controllers..." />
+                </div>
+            )}
+            {isError && (
+                <InfoBox
+                    title="Error Fetching DID's Controllers"
+                    supportingText={`Could not fetch controllers of DID object ${objectData.objectId} on the current network.`}
+                    icon={<Warning />}
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
+            {controllersFailedToLoad.map((controller) => (
+                <InfoBox
+                    key={controller.objectId}
+                    title="Error Fetching Controller"
+                    supportingText={`Could not fetch ControllerCap ${controller.objectId} on the current network.`}
+                    icon={<Warning />}
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Elevated}
+                />
+            ))}
+            {controllersLoaded.map((controller) => (
+                <CollapsibleCard
+                    key={controller.objectId}
+                    collapsible
+                    title="Controller Capability"
+                    titleSize={TitleSize.Small}
+                    footer={
+                        <ControllerCardFooter
+                            weight={controller.weight}
+                            threshold={threshold}
+                            ownerType={controller.ownerType!}
+                            ownerAddress={controller.owner!}
+                        />
+                    }
+                    supportingTitleElement={
+                        <div className="ml-1 flex">
+                            <Badge
+                                label={controller.ownerType || 'Undefined'}
+                                type={BadgeType.PrimarySoft}
                             />
                         </div>
-                    </CollapsibleCard>
-                ))}
-            </div>
+                    }
+                >
+                    <div className="flex flex-col gap-4">
+                        <ControllerDetail
+                            objectId={controller.objectId}
+                            objectType={controller.objectType!}
+                        />
+                    </div>
+                </CollapsibleCard>
+            ))}
         </div>
     );
 }
@@ -120,7 +112,7 @@ export function ControllerCardFooter({
                     keyText="Weight"
                     value={[`${weight}`, threshold && ` of ${threshold}`]}
                     fullwidth
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="This controller's voting power in a multi-controller setup."
                 />
             </div>
@@ -150,7 +142,7 @@ export function ControllerCardFooter({
                         </>
                     }
                     fullwidth
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="The IOTA address that holds control of this Identity, authorized to update or delete the document and to transfer control."
                 />
             </div>
