@@ -89,7 +89,9 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
         <div>
             <div className="flex flex-col gap-2xl">
                 <Panel>
-                    <Title title="Details" />
+                    <div className="px-md--rs py-sm--rs">
+                        <Title title="Details" />
+                    </div>
                     <div className="grid grid-cols-1 gap-lg p-md--rs md:grid-cols-2">
                         <div className="flex flex-col gap-lg">
                             <KeyValueInfo
@@ -171,27 +173,29 @@ export function PkgView({ data }: PkgViewProps): JSX.Element {
                 </Panel>
 
                 <Panel>
-                    <Title
-                        title="Modules"
-                        trailingElement={
-                            <div className="hidden md:flex">
-                                <SegmentedButton
-                                    type={SegmentedButtonType.Outlined}
-                                    shape={ButtonSegmentType.Rounded}
-                                >
-                                    {SPLIT_PANELS_ORIENTATION.map(({ value, label }) => (
-                                        <ButtonSegment
-                                            key={value}
-                                            type={ButtonSegmentType.Rounded}
-                                            onClick={() => setSplitPanelOrientation(value)}
-                                            selected={selectedSplitPanelOrientation === value}
-                                            label={label}
-                                        />
-                                    ))}
-                                </SegmentedButton>
-                            </div>
-                        }
-                    />
+                    <div className="px-md--rs py-sm--rs">
+                        <Title
+                            title="Modules"
+                            trailingElement={
+                                <div className="hidden md:flex">
+                                    <SegmentedButton
+                                        type={SegmentedButtonType.Outlined}
+                                        shape={ButtonSegmentType.Rounded}
+                                    >
+                                        {SPLIT_PANELS_ORIENTATION.map(({ value, label }) => (
+                                            <ButtonSegment
+                                                key={value}
+                                                type={ButtonSegmentType.Rounded}
+                                                onClick={() => setSplitPanelOrientation(value)}
+                                                selected={selectedSplitPanelOrientation === value}
+                                                label={label}
+                                            />
+                                        ))}
+                                    </SegmentedButton>
+                                </div>
+                            }
+                        />
+                    </div>
                     <div className="h-full p-md--rs">
                         <ErrorBoundary>
                             <PkgModulesWrapper

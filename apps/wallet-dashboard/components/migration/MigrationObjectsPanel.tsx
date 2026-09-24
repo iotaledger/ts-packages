@@ -61,17 +61,19 @@ export function MigrationObjectsPanel({
     return (
         <div className={clsx('flex h-full min-h-0 w-full flex-col md:w-2/3', isHidden && 'hidden')}>
             <Panel>
-                <Title
-                    title="Details"
-                    trailingElement={
-                        <Button
-                            icon={<Close />}
-                            type={ButtonType.Ghost}
-                            onClick={onClose}
-                            aria-label="Close details panel"
-                        />
-                    }
-                />
+                <div className="px-md--rs py-sm--rs">
+                    <Title
+                        title="Details"
+                        trailingElement={
+                            <Button
+                                icon={<Close />}
+                                type={ButtonType.Ghost}
+                                onClick={onClose}
+                                aria-label="Close details panel"
+                            />
+                        }
+                    />
+                </div>
                 <div className="flex min-h-0 flex-1 flex-col px-md--rs">
                     <div className="flex flex-row gap-xs py-xs">
                         {filters.map((filter) => (

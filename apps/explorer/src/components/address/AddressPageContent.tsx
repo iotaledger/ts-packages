@@ -54,7 +54,7 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                 <div className="flex flex-col gap-lg">
                     <PageSectionAnchor id={AddressPageSection.Portfolio}>
                         <Panel>
-                            <div className="py-sm">
+                            <div className="px-md--rs py-sm">
                                 <Title title="Portfolio" />
                             </div>
                             <div className="flex flex-col gap-2xl px-md--rs py-md md:py-sm">
@@ -66,7 +66,7 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                     {showStakingSection && (
                         <PageSectionAnchor id={AddressPageSection.Staking}>
                             <Panel>
-                                <div className="py-sm">
+                                <div className="px-md--rs py-sm">
                                     <Title title="Staking" />
                                 </div>
                                 <div className="h-full min-h-14 px-md--rs py-md md:py-sm">
@@ -77,7 +77,7 @@ export function AddressPageContent({ address }: AddressPageContentProps): JSX.El
                     )}
                     <PageSectionAnchor id={AddressPageSection.Activity}>
                         <Panel>
-                            <div className="py-sm">
+                            <div className="px-md--rs py-sm">
                                 <Title title="Activity" />
                             </div>
                             <div

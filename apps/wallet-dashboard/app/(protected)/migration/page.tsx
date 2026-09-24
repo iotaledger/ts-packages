@@ -230,17 +230,19 @@ function MigrationDashboardPage(): JSX.Element {
                         </div>
                     </Panel>
                     <Panel>
-                        <Title
-                            title="Migration"
-                            trailingElement={
-                                <Button
-                                    text="Migrate All"
-                                    disabled={!hasMigratableObjects}
-                                    onClick={openMigrationDialog}
-                                    size={ButtonSize.Small}
-                                />
-                            }
-                        />
+                        <div className="px-md--rs py-sm--rs">
+                            <Title
+                                title="Migration"
+                                trailingElement={
+                                    <Button
+                                        text="Migrate All"
+                                        disabled={!hasMigratableObjects}
+                                        onClick={openMigrationDialog}
+                                        size={ButtonSize.Small}
+                                    />
+                                }
+                            />
+                        </div>
                         <div className="flex flex-col gap-xs p-sm--rs">
                             {MIGRATION_CARDS.map((card) => (
                                 <MigrationDisplayCard
@@ -268,7 +270,9 @@ function MigrationDashboardPage(): JSX.Element {
                     </Panel>
 
                     <Panel>
-                        <Title title="Time-locked Assets" />
+                        <div className="px-md--rs py-sm--rs">
+                            <Title title="Time-locked Assets" />
+                        </div>
                         <div className="flex flex-col gap-xs p-sm--rs">
                             {TIMELOCKED_ASSETS_CARDS.map((card) => (
                                 <MigrationDisplayCard

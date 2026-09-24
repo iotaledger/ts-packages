@@ -13,7 +13,11 @@ export function EpochStats({
     return (
         <Panel>
             <div className="flex flex-col">
-                {titleProps && <Title {...titleProps} />}
+                {titleProps && (
+                    <div className="px-md--rs py-sm--rs">
+                        <Title {...titleProps} />
+                    </div>
+                )}
                 <div className="w-full p-md--rs">{children}</div>
             </div>
         </Panel>

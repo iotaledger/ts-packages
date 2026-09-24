@@ -130,7 +130,12 @@ export function CollapsibleCard({
                             compactHeader && 'mx-auto max-w-5xl gap-md pr-md',
                         )}
                     >
-                        <div className={clsx('min-w-0 flex-1')}>
+                        <div
+                            className={clsx(
+                                'min-w-0 flex-1',
+                                titleSize === TitleSize.Small ? 'pl-md' : 'pl-md--rs',
+                            )}
+                        >
                             {render ? (
                                 render({ isOpen: open })
                             ) : (
@@ -170,7 +175,7 @@ export function CollapsibleCard({
         </div>
     ) : (
         <Panel hasBorder={!hideBorder} bgColor={isTransparentPanel ? 'bg-transparent' : undefined}>
-            <div className="flex w-full items-center py-sm--rs">
+            <div className="flex w-full items-center px-md--rs py-sm--rs">
                 <div className="flex-1">
                     <Title size={titleSize} title={title ?? ''} />
                 </div>

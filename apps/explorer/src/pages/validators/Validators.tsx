@@ -354,7 +354,9 @@ function ValidatorPageResult(): JSX.Element {
                             ))}
                         </div>
                         <Panel>
-                            <Title title="All Validators" />
+                            <div className="px-md--rs py-sm--rs">
+                                <Title title="All Validators" />
+                            </div>
 
                             <div className="flex flex-col gap-md p-md">
                                 <ValidatorSearch onSearch={onSearchTermChange} />

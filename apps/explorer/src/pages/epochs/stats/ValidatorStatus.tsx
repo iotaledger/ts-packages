@@ -77,7 +77,9 @@ export function ValidatorStatus(): JSX.Element | null {
     return (
         <Panel>
             <div className="flex flex-col">
-                <Title title={`Validators in Epoch ${nextEpoch}`} />
+                <div className="px-md--rs py-sm--rs">
+                    <Title title={`Validators in Epoch ${nextEpoch}`} />
+                </div>
                 <div className="flex flex-col items-start justify-center gap-x-xl gap-y-sm p-md--rs md:flex-row md:items-center md:justify-between md:gap-sm--rs">
                     <div className="flex w-auto flex-row gap-x-md p-md md:max-w-[50%]">
                         <div className="h-[92px] w-[92px]">

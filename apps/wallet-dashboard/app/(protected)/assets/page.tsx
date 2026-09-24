@@ -73,7 +73,9 @@ export default function AssetsDashboardPage(): React.JSX.Element {
 
     return (
         <Panel>
-            <Title title="Assets" size={TitleSize.Medium} />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="Assets" size={TitleSize.Medium} />
+            </div>
             <div className="px-lg">
                 {isError ? (
                     <div className="mb-2 flex h-full w-full items-center justify-center p-2">

@@ -12,7 +12,9 @@ export default function AppsDashboardPage(): React.JSX.Element {
 
     return (
         <Panel>
-            <Title title="IOTA Apps" size={TitleSize.Medium} />
+            <div className="px-md--rs py-sm--rs">
+                <Title title="IOTA Apps" size={TitleSize.Medium} />
+            </div>
             <div className="px-lg py-sm">
                 {ecosystemApps?.length ? (
                     <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-md">
