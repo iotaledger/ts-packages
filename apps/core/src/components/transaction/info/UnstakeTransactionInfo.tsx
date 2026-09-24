@@ -49,6 +49,7 @@ export function UnstakeTransactionInfo({
                                 amount={unstakeAmount}
                                 coinType={IOTA_TYPE_ARG}
                                 withParentheses={false}
+                                showApproxSymbol
                             />
                         }
                         fullwidth
@@ -61,6 +62,7 @@ export function UnstakeTransactionInfo({
                                 amount={unstakeRewards || 0}
                                 coinType={IOTA_TYPE_ARG}
                                 withParentheses={false}
+                                showApproxSymbol
                             />
                         }
                         fullwidth

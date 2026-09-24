@@ -133,7 +133,6 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
                                 coinType={coinType}
                                 direction="column"
                                 align="end"
-                                showApproxSymbol={false}
                             />
                         )
                     }

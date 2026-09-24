@@ -135,7 +135,6 @@ export function TransactionTile({ transaction, hideBalance }: TransactionTilePro
                                 coinType={coinType}
                                 direction="column"
                                 align="end"
-                                showApproxSymbol={false}
                             />
                         )
                     }

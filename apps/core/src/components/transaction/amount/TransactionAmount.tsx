@@ -47,7 +47,7 @@ export function TransactionAmount({
                 type={CardActionType.SupportingText}
                 title={
                     <CoinFiatValue
-                        amount={Math.abs(Number(amount))}
+                        amount={amount}
                         coinType={coinType}
                         withParentheses={false}
                         showApproxSymbol

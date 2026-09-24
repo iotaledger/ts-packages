@@ -101,7 +101,9 @@ export function AccountBalance() {
                                 </div>
                                 {fiatBalance && (
                                     <div className="key-supporting-text-color text-label-md">
-                                        {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                        {isBalanceVisible
+                                            ? `~ ${fiatBalance}`
+                                            : `${BALANCE_MASK} USD`}
                                     </div>
                                 )}
                             </div>

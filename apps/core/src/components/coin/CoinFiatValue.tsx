@@ -27,7 +27,7 @@ export function CoinFiatValue({
         return null;
     }
 
-    const formattedValue = formatBalanceToUSD(value);
+    const formattedValue = formatBalanceToUSD(Math.abs(value));
 
     if (showApproxSymbol) {
         return (

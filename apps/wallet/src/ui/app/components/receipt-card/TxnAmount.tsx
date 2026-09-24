@@ -37,7 +37,7 @@ export function TxnAmount({ amount, coinType, subtitle, approximation }: TxnAmou
                             {formatAmount} {symbol}
                         </span>
                         <CoinFiatValue
-                            amount={Math.abs(Number(amount))}
+                            amount={amount}
                             coinType={coinType}
                             withParentheses={false}
                             showApproxSymbol
