@@ -7,6 +7,7 @@ import { IOTA_COIN_METADATA, useFormatCoin } from '../../hooks';
 import { useField, useFormikContext } from 'formik';
 import { TokenForm } from '../../forms';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
+import { AmountWithFiat } from '../coin';
 
 export interface SendTokenInputProps {
     coins: CoinStruct[];
@@ -32,6 +33,8 @@ export function SendTokenFormInput({
     const coinDecimals = coinMetadata?.decimals ?? 0;
     const symbol = coinMetadata?.symbol ?? IOTA_COIN_METADATA.symbol;
 
+    const parsedAmount = parseAmount(values.amount, coinDecimals);
+
     const [formattedGasBudgetEstimation, gasToken] = useFormatCoin({
         balance: totalGas,
         format: CoinFormat.Full,
@@ -42,16 +45,19 @@ export function SendTokenFormInput({
         coinMetadata === null ? 'There was an error fetching the coin metadata' : meta.error;
     const isActionButtonDisabled = isSubmitting || isMaxActionDisabled;
 
-    const gasAmount = formattedGasBudgetEstimation
-        ? formattedGasBudgetEstimation + ' ' + gasToken
-        : undefined;
+    const gasAmount = formattedGasBudgetEstimation ? (
+        <AmountWithFiat
+            amount={totalGas ?? 0}
+            formatted={formattedGasBudgetEstimation}
+            symbol={gasToken}
+        />
+    ) : undefined;
 
     const totalBalance = coins.reduce((acc, { balance }) => {
         return BigInt(acc) + BigInt(balance);
     }, BigInt(0));
 
-    const approximation =
-        parseAmount(values.amount, coinDecimals) === totalBalance && coinType === IOTA_TYPE_ARG;
+    const approximation = parsedAmount === totalBalance && coinType === IOTA_TYPE_ARG;
 
     return (
         <Input
@@ -67,6 +73,11 @@ export function SendTokenFormInput({
             allowNegative={false}
             errorMessage={errorMessage}
             amountCounter={!errorMessage ? (coins ? gasAmount : '--') : undefined}
+            supportingValue={
+                !errorMessage ? (
+                    <AmountWithFiat amount={parsedAmount} coinType={coinType} />
+                ) : undefined
+            }
             trailingElement={
                 <ButtonPill disabled={isActionButtonDisabled} onClick={onActionClick}>
                     Max

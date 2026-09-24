@@ -6,6 +6,7 @@ import {
     EFFECTIVE_COMMISSION_TOOLTIP,
     formatPercentageDisplay,
     useGetStakingValidatorDetails,
+    AmountWithFiat,
 } from '@iota/core';
 import { useSearchParams } from 'react-router-dom';
 import { useActiveAddress } from '_hooks';
@@ -34,7 +35,9 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
         totalStakePercentage,
         validatorApy: { apy, isApyApproxZero },
         totalValidatorsStake: [totalValidatorStakeFormatted, totalValidatorStakeSymbol],
+        totalValidatorsStakeOriginal,
         totalStake: [totalStakeFormatted, totalStakeSymbol],
+        totalStakeOriginal,
         delegatedStakeDataResult,
         systemDataResult,
         effectiveCommission,
@@ -102,16 +105,26 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
                                 keyText="Total Staked"
                                 tooltipPosition={TooltipPosition.Bottom}
                                 tooltipText="The full amount of IOTA staked by this validator and delegators for network validation and rewards."
-                                value={totalValidatorStakeFormatted}
-                                supportingLabel={totalValidatorStakeSymbol}
+                                value={
+                                    <AmountWithFiat
+                                        amount={totalValidatorsStakeOriginal}
+                                        formatted={totalValidatorStakeFormatted}
+                                        symbol={totalValidatorStakeSymbol}
+                                    />
+                                }
                                 fullwidth
                             />
                             <KeyValueInfo
                                 keyText="Your Staked IOTA"
                                 tooltipPosition={TooltipPosition.Bottom}
                                 tooltipText="Your current staked balance."
-                                value={totalStakeFormatted}
-                                supportingLabel={totalStakeSymbol}
+                                value={
+                                    <AmountWithFiat
+                                        amount={totalStakeOriginal}
+                                        formatted={totalStakeFormatted}
+                                        symbol={totalStakeSymbol}
+                                    />
+                                }
                                 fullwidth
                             />
                         </>

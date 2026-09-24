@@ -18,6 +18,7 @@ import {
     useUnstakeForm,
     UnstakeBreakdown,
     MIN_PARTIAL_UNSTAKE_MESSAGE,
+    AmountWithFiat,
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
@@ -42,7 +43,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '../../helpers';
 import { Info, Loader } from '@iota/apps-ui-icons';
 import { type IotaTransactionBlockResponse, type StakeObject } from '@iota/iota-sdk/client';
-import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { ValidatorFormDetail } from './ValidatorFormDetail';
 
 export interface StakeFromProps {
@@ -97,6 +98,7 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
         transaction,
         activeIsError,
         activeIsLoading,
+        gasAmount,
         gasFormatted,
         gasSymbol,
         isInvalidPartialAmount,
@@ -178,6 +180,8 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
 
     const isLoading = isPending || isUnstakeTokenTransactionPending || activeIsLoading;
 
+    const partialUnstakeAmount = parseAmount(values.amount, IOTA_DECIMALS);
+
     return (
         <FormikProvider value={formik}>
             <div className="flex flex-1 flex-col flex-nowrap gap-y-md overflow-auto">
@@ -213,6 +217,14 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                                             errorMessage={
                                                 values.amount && meta.error ? meta.error : undefined
                                             }
+                                            supportingValue={
+                                                !meta.error ? (
+                                                    <AmountWithFiat
+                                                        amount={partialUnstakeAmount}
+                                                        coinType={IOTA_TYPE_ARG}
+                                                    />
+                                                ) : undefined
+                                            }
                                         />
                                     )}
                                 </Field>
@@ -241,8 +253,17 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                     <div className="flex flex-col gap-y-sm p-md">
                         <KeyValueInfo
                             keyText="Gas Fees"
-                            value={gasFormatted || '-'}
-                            supportingLabel={gasSymbol}
+                            value={
+                                gasFormatted ? (
+                                    <AmountWithFiat
+                                        amount={gasAmount ?? 0}
+                                        formatted={gasFormatted}
+                                        symbol={gasSymbol}
+                                    />
+                                ) : (
+                                    '-'
+                                )
+                            }
                             fullwidth
                         />
                     </div>

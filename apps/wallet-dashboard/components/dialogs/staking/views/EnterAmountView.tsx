@@ -9,6 +9,8 @@ import {
     getGasBudgetErrorMessage,
     NO_BALANCE_GENERIC_MESSAGE,
     useValidatorInfo,
+    AmountWithFiat,
+    CoinFiatValue,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -73,9 +75,14 @@ export function EnterAmountView({
         balance: availableBalance,
         format: CoinFormat.Full,
     });
-    const caption = availableBalance
-        ? `${availableBalanceFormatted} ${availableBalanceFormattedSymbol} Available`
-        : '--';
+    const caption = availableBalance ? (
+        <span className="flex flex-col">
+            <span>{`${availableBalanceFormatted} ${availableBalanceFormattedSymbol} Available`}</span>
+            <CoinFiatValue amount={availableBalance} withParentheses={false} showApproxSymbol />
+        </span>
+    ) : (
+        '--'
+    );
 
     const gasUnstakeBuffer = gasSummary?.budget ? BigInt(gasSummary.budget) * BigInt(2) : BigInt(0);
     const maxSafeAmount = availableBalance - gasUnstakeBuffer;
@@ -136,6 +143,7 @@ export function EnterAmountView({
             totalGas={gasSummary?.totalGas}
             senderAddress={senderAddress}
             caption={caption}
+            supportingValue={<AmountWithFiat amount={amount} coinType={IOTA_TYPE_ARG} />}
             renderInfo={
                 isUnsafeAmount ? (
                     <InfoBox

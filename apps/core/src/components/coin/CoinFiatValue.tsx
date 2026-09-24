@@ -11,24 +11,37 @@ export interface CoinFiatValueProps {
     amount: bigint | string | number;
     coinType?: string;
     withParentheses?: boolean;
+    showApproxSymbol?: boolean;
 }
 
 export function CoinFiatValue({
     amount,
     coinType = IOTA_TYPE_ARG,
     withParentheses = true,
+    showApproxSymbol = false,
 }: CoinFiatValueProps): JSX.Element | null {
     const { network } = useIotaClientContext();
     const value = useBalanceInUSD(coinType, amount, network as Network);
 
-    if (value === null || value === undefined || Math.abs(value) < 0.005) {
+    if (value === null || value === undefined || value === 0) {
         return null;
     }
 
     const formattedValue = formatBalanceToUSD(Math.abs(value));
 
+    if (showApproxSymbol) {
+        return (
+            <span className="flex flex-row items-baseline gap-1">
+                <span className="key-supporting-text-color text-body-sm">~</span>
+                <span className="key-supporting-text-color text-body-sm">
+                    {withParentheses ? `(${formattedValue})` : formattedValue}
+                </span>
+            </span>
+        );
+    }
+
     return (
-        <span className="text-body-sm text-iota-neutral-60 dark:text-iota-neutral-40">
+        <span className="key-supporting-text-color text-body-sm">
             {withParentheses ? `(${formattedValue})` : formattedValue}
         </span>
     );
