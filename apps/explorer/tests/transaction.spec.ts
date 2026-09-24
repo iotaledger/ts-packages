@@ -17,6 +17,7 @@ test('displays gas breakdown', async ({ page }) => {
     const txid = tx.digest;
     await page.goto(`/txblock/${txid}`);
     await waitForTransactionPage(page);
+    await page.getByText('Advanced mode', { exact: true }).click();
     await expect(page.getByTestId('gas-breakdown')).toBeVisible();
 });
 
