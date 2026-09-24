@@ -23,6 +23,7 @@ type PageHeaderType =
     | 'Package'
     | 'Identity'
     | 'Notarization'
+    | 'Audit Trail'
     | 'Abstract Account';
 
 export interface PageHeaderProps {
