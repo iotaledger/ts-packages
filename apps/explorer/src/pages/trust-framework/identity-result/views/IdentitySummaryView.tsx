@@ -43,7 +43,7 @@ export function IdentitySummaryView({
                         <DisplayStats
                             label="Active"
                             value={isActive ? 'Yes' : 'No'}
-                            tooltipPosition={TooltipPosition.Left}
+                            tooltipPosition={TooltipPosition.Top}
                             tooltipText="Whether this Identity is currently active on the ledger. Once deleted, an Identity is permanently deactivated and cannot be recovered."
                         />
                     </div>
@@ -59,7 +59,7 @@ export function IdentitySummaryView({
                             <DisplayStats
                                 label="Created at"
                                 value={<DateDisplay timestamp={createdAtMs} type="transaction" />}
-                                tooltipPosition={TooltipPosition.Left}
+                                tooltipPosition={TooltipPosition.Top}
                                 tooltipText="Timestamp of the transaction that first published this Identity onchain."
                             />
                         </div>
@@ -70,7 +70,7 @@ export function IdentitySummaryView({
                             <DisplayStats
                                 label="Updated at"
                                 value={<DateDisplay timestamp={updatedAtMs} type="transaction" />}
-                                tooltipPosition={TooltipPosition.Left}
+                                tooltipPosition={TooltipPosition.Top}
                                 tooltipText="Timestamp of the most recent transaction that modified this Identity. Any change to keys, services, or document content triggers an update."
                             />
                         </div>
@@ -99,7 +99,7 @@ function ObjectIdCard({ objectId }: ObjectIdCardProps): JSX.Element {
                     <ObjectLink objectId={objectId} copyText={objectId} />
                 </div>
             }
-            tooltipPosition={TooltipPosition.Left}
+            tooltipPosition={TooltipPosition.Top}
             tooltipText="The unique onchain identifier of the Move object storing this Identity's state. The Identity itself is derived from this Object ID."
         />
     );
@@ -116,7 +116,7 @@ function LastTxBlockCard({ digest }: LastTxBlockCardProps): JSX.Element {
             value={<TransactionLink digest={digest}>{formatDigest(digest)}</TransactionLink>}
             copyText={digest}
             onCopySuccess={onCopySuccess}
-            tooltipPosition={TooltipPosition.Left}
+            tooltipPosition={TooltipPosition.Top}
             tooltipText="Hash of the most recent transaction that modified this Identity. Use it to inspect transaction details on the explorer."
         />
     );
@@ -137,8 +137,8 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
             label="Storage Rebate"
             value={`-${storageRebateFormatted}`}
             supportingLabel={symbol}
-            tooltipPosition={TooltipPosition.Left}
-            tooltipText="IOTA held as a storage deposit for this object. The amount is returned when the object is deleted or its storage usage decreases."
+            tooltipPosition={TooltipPosition.Top}
+            tooltipText="IOTA tokens locked as a storage deposit for this object. Partially refundable when the object is deleted or reduced in size."
         />
     );
 }

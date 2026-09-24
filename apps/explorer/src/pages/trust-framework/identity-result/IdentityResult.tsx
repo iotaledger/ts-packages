@@ -16,7 +16,7 @@ export function IdentityResult() {
         return <PageLayout loading loadingText="Decoding DID..." content={[]} />;
     }
 
-    if (decodedDid == null) {
+    if (!decodedDid) {
         return (
             <PageLayout
                 content={

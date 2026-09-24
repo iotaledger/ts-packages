@@ -3,38 +3,42 @@
 
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { AddressAlias, useCopyToClipboard, useGetObjectOrPastObject } from '@iota/core';
-import { PageHeader, PageLayout } from '~/components';
-import { getHistoryUnavailableMessage, onCopySuccess } from '~/lib';
-import { useNotarizationPkgId } from '~/contexts';
-import { Warning } from '@iota/apps-ui-icons';
 import {
-    getNotarizationMethod,
-    getNotarizationType,
-    MetadataBuilder,
-} from '../headerMetadataHelper';
+    ErrorBoundary,
+    PageHeader,
+    PageLayout,
+    PagePanel,
+    SyntaxHighlighter,
+    TransactionBlocksForAddress,
+} from '~/components';
+import { getHistoryUnavailableMessage, onCopySuccess, replaceJsonKeyValue } from '~/lib';
+import { useNotarizationClient, useNotarizationPkgId } from '~/contexts';
+import { Warning } from '@iota/apps-ui-icons';
 import { useResolveNotarization } from '~/hooks/useResolveNotarization';
 import { NotarizationSummaryView } from './views/NotarizationSummaryView';
 import { LockLifecycleView } from './views/LockLifecycleView';
+import { toNotarizationLocks } from './lockEntries';
 import { OwnersView } from './views/OwnersView';
-import { SideBySidePanels } from '~/components/ui/SideBySidePanels';
-import { TransactionsView } from '../common/TransactionsView';
 import { StateView } from './views/StateView';
-import { NotarizationJsonView } from './views/NotarizationJsonView';
 
 interface NotarizationContentProps {
     objectId: string;
 }
 
 export function NotarizationContent({ objectId }: NotarizationContentProps) {
-    const { data: objectResult, isPending: isObjectPending } = useGetObjectOrPastObject(objectId);
-    const { data: notarizationDocument, isPending: isNotarizationPending } =
+    const { data: objectResult, isLoading: isObjectLoading } = useGetObjectOrPastObject(objectId);
+    const { data: notarizationDocument, isLoading: isNotarizationLoading } =
         useResolveNotarization(objectId);
+    const { status: notarizationClientStatus } = useNotarizationClient();
 
     const copyToClipboard = useCopyToClipboard(onCopySuccess);
     const iotaNotarizationPackage = useNotarizationPkgId();
 
-    const isPending = isNotarizationPending || isObjectPending;
-    if (isPending) {
+    const isLoading = Boolean(
+        isNotarizationLoading || isObjectLoading || notarizationClientStatus === 'pending',
+    );
+
+    if (isLoading) {
         return (
             <PageLayout
                 loading
@@ -60,7 +64,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (notarizationDocument == null) {
+    if (!notarizationDocument) {
         return (
             <PageLayout
                 content={
@@ -76,7 +80,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (objectResult == null || objectResult.data == null) {
+    if (!objectResult || !objectResult.data) {
         return (
             <PageLayout
                 content={
@@ -92,8 +96,7 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
         );
     }
 
-    if (iotaNotarizationPackage == null) {
-        // The activation of this branch is a symptom of Notarization WASM Web module not loaded.
+    if (!iotaNotarizationPackage) {
         return (
             <PageLayout
                 content={
@@ -122,31 +125,54 @@ export function NotarizationContent({ objectId }: NotarizationContentProps) {
                             />
                         }
                         showCopyButton={false}
-                        metaItems={MetadataBuilder.create()
-                            .addItem(
-                                getNotarizationType(
-                                    objectResult.data || null,
-                                    iotaNotarizationPackage,
-                                ),
-                            )
-                            .addItem(getNotarizationMethod(notarizationDocument))
-                            .build()}
                     />
                     <NotarizationSummaryView
                         objectData={objectResult.data!}
                         notarizationDocument={notarizationDocument}
                     />
-                    <SideBySidePanels
-                        firstPanel={
-                            <LockLifecycleView
-                                locking={notarizationDocument.immutableMetadata.locking}
-                            />
-                        }
-                        secondPanel={<OwnersView objectId={objectId} />}
-                    />
-                    <StateView notarization={notarizationDocument} />
-                    <NotarizationJsonView notarization={notarizationDocument} />
-                    <TransactionsView objectId={objectId} />
+                    <PagePanel
+                        title="Lock Lifecycle"
+                        tooltip="View the lock lifecycle governing transfer, update, and delete operations on this notarization."
+                    >
+                        <LockLifecycleView
+                            locks={toNotarizationLocks(
+                                notarizationDocument.immutableMetadata.locking,
+                            )}
+                        />
+                    </PagePanel>
+                    <PagePanel
+                        title="Owners History"
+                        tooltip="The history of addresses that have owned this notarization object, ordered from most recent to oldest."
+                    >
+                        <OwnersView objectId={objectId} />
+                    </PagePanel>
+                    {notarizationDocument.state && (
+                        <PagePanel
+                            title="Notarization State"
+                            tooltip="The state data of this Notarization and its metadata. The data is displayed as text if valid UTF-8, otherwise as Base64."
+                        >
+                            <StateView notarization={notarizationDocument} />
+                        </PagePanel>
+                    )}
+                    <PagePanel
+                        title="Notarization"
+                        tooltip="The raw JSON representation of the On-Chain Notarization. This includes the state, metadata, and other properties of the notarization."
+                    >
+                        <SyntaxHighlighter
+                            code={JSON.stringify(
+                                notarizationDocument.toJSON(),
+                                replaceJsonKeyValue,
+                                2,
+                            )}
+                            language="json"
+                        />
+                    </PagePanel>
+                    <ErrorBoundary>
+                        <TransactionBlocksForAddress
+                            address={objectId}
+                            header="Transaction Blocks"
+                        />
+                    </ErrorBoundary>
                 </div>
             }
         />
