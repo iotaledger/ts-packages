@@ -7,8 +7,8 @@ import { Info } from '@iota/apps-ui-icons';
 import { useLocalStorage } from '@iota/core';
 import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
 import { FilterList, RawJsonContent, RawJsonToggle } from '~/components/ui';
-import { InputsTable } from './InputsCard';
-import { CommandsList } from './TransactionsCard';
+import { InputsTable } from './InputsTable';
+import { CommandsList } from './CommandsList';
 
 const PTB_VIEWS = ['Combined', 'Inputs + Commands'] as const;
 type PtbView = (typeof PTB_VIEWS)[number];
@@ -70,7 +70,7 @@ export function ProgrammableTransactionCard({
                                 <HoverHint>
                                     Hover the input number to highlight every place it appears
                                 </HoverHint>
-                                <InputsTable inputs={inputs} transactions={transactions} />
+                                <InputsTable inputs={inputs} />
                             </div>
                         </div>
                     )}

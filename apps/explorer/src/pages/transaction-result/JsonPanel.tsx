@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SyntaxHighlighter } from '~/components';
-import { CopyButton } from './programmable-transaction-view/Field';
+import { CopyButton } from './CopyButton';
 
 export function JsonPanel({ data }: { data: unknown }): JSX.Element {
     const code = JSON.stringify(data, null, 2);

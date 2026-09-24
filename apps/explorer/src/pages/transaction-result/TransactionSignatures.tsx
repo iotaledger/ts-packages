@@ -27,7 +27,7 @@ import {
     type MultiSigSignature,
 } from '~/hooks';
 import { getTransactionSponsor } from '~/lib/utils';
-import { CopyButton } from './programmable-transaction-view/Field';
+import { CopyButton } from './CopyButton';
 
 interface FieldTableRow {
     field: string;

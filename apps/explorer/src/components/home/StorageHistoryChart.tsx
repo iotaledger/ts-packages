@@ -22,8 +22,8 @@ function TooltipContent({ data }: { data: CompletedEpochMetrics }): JSX.Element 
     return (
         <GraphTooltipContent
             overline={`${date}, Epoch ${data.epoch}`}
-            title={`${formatBalance(storageCharge, IOTA_DECIMALS, CoinFormat.Rounded)} IOTA charged`}
-            subtitle={`Rebate ${formatBalance(storageRebate, IOTA_DECIMALS, CoinFormat.Rounded)} · Net ${formatBalance(net, IOTA_DECIMALS, CoinFormat.Rounded, true)} IOTA`}
+            title={`${formatBalance(storageCharge, IOTA_DECIMALS, CoinFormat.Full)} IOTA charged`}
+            subtitle={`Rebate ${formatBalance(storageRebate, IOTA_DECIMALS, CoinFormat.Full)} · Net ${formatBalance(net, IOTA_DECIMALS, CoinFormat.Full, true)} IOTA`}
         />
     );
 }
@@ -55,14 +55,16 @@ export function StorageHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Charge',
-                    text: formatBalance(totalCharge, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalCharge, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalCharge,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Rebate',
-                    text: formatBalance(totalRebate, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalRebate, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalRebate,
                 },
                 {
                     size: LabelTextSize.Large,
@@ -70,10 +72,11 @@ export function StorageHistoryChart(): JSX.Element {
                     text: formatBalance(
                         totalCharge - totalRebate,
                         IOTA_DECIMALS,
-                        CoinFormat.Rounded,
+                        CoinFormat.Full,
                         true,
                     ),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalCharge - totalRebate,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}
