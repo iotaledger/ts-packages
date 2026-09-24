@@ -114,23 +114,52 @@ body,
     }
 
     .address-grid-container-top {
-        @apply grid grid-cols-2 gap-4;
+        @apply grid grid-cols-1 gap-4;
         grid-template-areas:
-            'heroImage name'
-            'heroImage description'
-            'objectId version'
-            'digest owner'
-            'type type'
-            'lastTxBlock storageRebate';
+            'heroImage'
+            'name'
+            'description'
+            'objectId'
+            'version'
+            'digest'
+            'owner'
+            'type'
+            'lastTxBlock'
+            'storageRebate';
     }
 
     .address-grid-container-top.no-description.no-image {
-        @apply grid grid-cols-2 gap-4;
+        @apply grid grid-cols-1 gap-4;
         grid-template-areas:
-            'objectId version'
-            'digest owner'
-            'type type'
-            'lastTxBlock storageRebate';
+            'objectId'
+            'version'
+            'digest'
+            'owner'
+            'type'
+            'lastTxBlock'
+            'storageRebate';
+    }
+
+    @screen sm {
+        .address-grid-container-top {
+            @apply grid-cols-2;
+            grid-template-areas:
+                'heroImage name'
+                'heroImage description'
+                'objectId version'
+                'digest owner'
+                'type type'
+                'lastTxBlock storageRebate';
+        }
+
+        .address-grid-container-top.no-description.no-image {
+            @apply grid-cols-2;
+            grid-template-areas:
+                'objectId version'
+                'digest owner'
+                'type type'
+                'lastTxBlock storageRebate';
+        }
     }
 
     @screen md {
