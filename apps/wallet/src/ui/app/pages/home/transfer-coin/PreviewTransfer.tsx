@@ -9,6 +9,8 @@ import {
     NamedAddressTooltip,
     useCoinMetadata,
     useFormatCoin,
+    NameAvatar,
+    NameAvatarSize,
     useGetIotaNameRecord,
 } from '@iota/core';
 import { Divider, KeyValueInfo } from '@iota/apps-ui-kit';
@@ -73,15 +75,21 @@ export function PreviewTransfer({
                             address={nameRecord?.targetAddress || to}
                             name={nameRecord?.name}
                         >
-                            <ExplorerLink
-                                type={ExplorerLinkType.Address}
-                                address={nameRecord?.targetAddress || to}
-                                eventType="address"
-                            >
-                                <span data-amp-mask>
-                                    {nameRecord ? nameRecord.name : formatAddress(to || '')}
-                                </span>
-                            </ExplorerLink>
+                            <span className="inline-flex items-center gap-xs">
+                                <NameAvatar
+                                    address={nameRecord?.targetAddress || to}
+                                    size={NameAvatarSize.Xxs}
+                                />
+                                <ExplorerLink
+                                    type={ExplorerLinkType.Address}
+                                    address={nameRecord?.targetAddress || to}
+                                    eventType="address"
+                                >
+                                    <span data-amp-mask>
+                                        {nameRecord ? nameRecord.name : formatAddress(to || '')}
+                                    </span>
+                                </ExplorerLink>
+                            </span>
                         </NamedAddressTooltip>
                     }
                     fullwidth

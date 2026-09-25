@@ -5,6 +5,8 @@ import { Address } from '@iota/apps-ui-kit';
 import { useGetDefaultIotaName } from '../../hooks';
 import { truncateString } from '../../utils';
 import { formatAddress } from '@iota/iota-sdk/utils';
+import { NameAvatar, NameAvatarSize } from '../icon';
+import clsx from 'clsx';
 
 interface NamedAddressProps extends Omit<React.ComponentProps<typeof Address>, 'text'> {
     address: string;
@@ -24,9 +26,10 @@ export function NamedAddress({
     const formattedAddress = formatAddress(address);
 
     return (
-        <div className="flex flex-row items-baseline gap-x-xxs">
+        <div className={clsx('flex flex-row gap-x-xxs', iotaName && 'items-center')}>
             {iotaName ? (
-                <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                <span className="flex items-center gap-xs text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
+                    <NameAvatar address={address} size={NameAvatarSize.Xxs} />
                     {truncateString(iotaName, 12)}
                 </span>
             ) : null}

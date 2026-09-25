@@ -13,6 +13,7 @@ import { formatIotaName, getRecognizedUnRecognizedTokenChanges } from '../../uti
 import { BalanceChange } from '../../interfaces';
 import { useGetDefaultIotaName } from '../../hooks';
 import { NamedAddressTooltip } from '../NamedAddressTooltip';
+import { NameAvatar, NameAvatarSize } from '../icon';
 
 interface BalanceChangesProps {
     renderExplorerLink: RenderExplorerLink;
@@ -81,13 +82,16 @@ function BalanceChangePanel({
                         keyText="Owner"
                         value={
                             <NamedAddressTooltip name={name} address={owner}>
-                                <ExplorerLink
-                                    type={ExplorerLinkType.Address}
-                                    address={owner}
-                                    eventType="address"
-                                >
-                                    {formatIotaName(name) || formatAddress(owner)}
-                                </ExplorerLink>
+                                <span className="inline-flex items-center gap-xs">
+                                    <NameAvatar address={owner} size={NameAvatarSize.Xxs} />
+                                    <ExplorerLink
+                                        type={ExplorerLinkType.Address}
+                                        address={owner}
+                                        eventType="address"
+                                    >
+                                        {formatIotaName(name) || formatAddress(owner)}
+                                    </ExplorerLink>
+                                </span>
                             </NamedAddressTooltip>
                         }
                         fullwidth

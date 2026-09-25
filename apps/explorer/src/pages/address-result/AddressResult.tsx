@@ -19,10 +19,11 @@ import {
     useAddressAliasLookup,
     useCopyToClipboard,
     useGetDefaultIotaName,
+    useIotaNameAvatar,
 } from '@iota/core';
 import { isValidIotaName } from '@iota/iota-names-sdk';
 import { isValidIotaAddress, trimOrFormatAddress } from '@iota/iota-sdk/utils';
-import { useAbstractAccountData, useIotaNameAvatar, useValidatorByAddress } from '~/hooks';
+import { useAbstractAccountData, useValidatorByAddress } from '~/hooks';
 import { Badge, BadgeSize, BadgeType, InfoBox, InfoBoxType, InfoBoxStyle } from '@iota/apps-ui-kit';
 import { cx } from 'class-variance-authority';
 

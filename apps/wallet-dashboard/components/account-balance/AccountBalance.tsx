@@ -7,17 +7,24 @@ import {
     useFormatCoin,
     useGetFiatBalance,
     useGetAllBalances,
-    NamedAddress,
     toast,
     BALANCE_MASK,
 } from '@iota/core';
-import { Button, ButtonSize, ButtonType, LoadingIndicator, Panel } from '@iota/apps-ui-kit';
+import {
+    Address,
+    Button,
+    ButtonSize,
+    ButtonType,
+    LoadingIndicator,
+    Panel,
+} from '@iota/apps-ui-kit';
 import { getNetwork } from '@iota/iota-sdk/client';
 import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
 import { trackElementCopied } from '@/lib/utils';
 import { useBalanceVisibility } from '@/store/balanceVisibility';
 import { ArrowBottomLeft, Send, VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
+import { formatAddress } from '@iota/iota-sdk/utils';
 
 export function AccountBalance() {
     const account = useCurrentAccount();
@@ -63,8 +70,8 @@ export function AccountBalance() {
                                 data-full-address={address}
                                 data-amp-mask
                             >
-                                <NamedAddress
-                                    address={address}
+                                <Address
+                                    text={formatAddress(address)}
                                     isCopyable
                                     copyText={address}
                                     isExternal

@@ -10,14 +10,21 @@ interface AccountIconProps {
 }
 
 export function AccountIcon({ account }: AccountIconProps) {
+    let LogoIcon = null;
+
     if (account.type === AccountType.LedgerDerived) {
-        return <Ledger className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />;
+        LogoIcon = Ledger;
+    } else if (account.type === AccountType.KeystoneDerived) {
+        LogoIcon = Keystone;
+    } else if (account.type === AccountType.PasskeyDerived) {
+        LogoIcon = Passkey;
+    } else {
+        LogoIcon = IotaLogoMark;
     }
-    if (account.type === AccountType.KeystoneDerived) {
-        return <Keystone className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />;
-    }
-    if (account.type === AccountType.PasskeyDerived) {
-        return <Passkey className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />;
-    }
-    return <IotaLogoMark className="h-5 w-5 text-iota-neutral-10 dark:text-iota-neutral-92" />;
+
+    return (
+        <div className="flex h-full w-full items-center justify-center bg-iota-primary-30 text-iota-neutral-100">
+            <LogoIcon className="h-5 w-5" />
+        </div>
+    );
 }

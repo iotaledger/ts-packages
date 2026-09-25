@@ -29,6 +29,7 @@ import {
 import { TriangleDown } from '@iota/apps-ui-icons';
 import { ObjectChange, RenderExplorerLink } from '../../types';
 import { NamedAddressTooltip } from '../NamedAddressTooltip';
+import { NameAvatar, NameAvatarSize } from '../icon';
 import toast from 'react-hot-toast';
 
 interface ObjectDetailProps {
@@ -267,13 +268,16 @@ function ObjectChangeByOwnerPanel({
                                     </span>
                                 ) : (
                                     <NamedAddressTooltip name={iotaName} address={owner}>
-                                        <ExplorerLink
-                                            type={ExplorerLinkType.Address}
-                                            address={owner}
-                                            eventType="address"
-                                        >
-                                            {formatIotaName(iotaName) || formatAddress(owner)}
-                                        </ExplorerLink>
+                                        <span className="inline-flex items-center gap-xs">
+                                            <NameAvatar address={owner} size={NameAvatarSize.Xxs} />
+                                            <ExplorerLink
+                                                type={ExplorerLinkType.Address}
+                                                address={owner}
+                                                eventType="address"
+                                            >
+                                                {formatIotaName(iotaName) || formatAddress(owner)}
+                                            </ExplorerLink>
+                                        </span>
                                     </NamedAddressTooltip>
                                 )
                             }

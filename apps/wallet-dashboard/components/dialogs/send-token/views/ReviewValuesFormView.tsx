@@ -24,6 +24,8 @@ import {
     useFormatCoin,
     ExplorerLinkType,
     useCoinMetadata,
+    NameAvatar,
+    NameAvatarSize,
     useGetIotaNameRecord,
     NamedAddressTooltip,
     CoinFiatValue,
@@ -125,14 +127,22 @@ export function ReviewValuesFormView({
                                     address={nameRecord?.targetAddress || to}
                                     name={nameRecord?.name}
                                 >
-                                    <ExplorerLink
-                                        type={ExplorerLinkType.Address}
-                                        address={nameRecord?.targetAddress || to}
-                                    >
-                                        <span data-amp-mask>
-                                            {nameRecord ? nameRecord.name : formatAddress(to || '')}
-                                        </span>
-                                    </ExplorerLink>
+                                    <span className="inline-flex items-center gap-xs">
+                                        <NameAvatar
+                                            address={nameRecord?.targetAddress || to}
+                                            size={NameAvatarSize.Xxs}
+                                        />
+                                        <ExplorerLink
+                                            type={ExplorerLinkType.Address}
+                                            address={nameRecord?.targetAddress || to}
+                                        >
+                                            <span data-amp-mask>
+                                                {nameRecord
+                                                    ? nameRecord.name
+                                                    : formatAddress(to || '')}
+                                            </span>
+                                        </ExplorerLink>
+                                    </span>
                                 </NamedAddressTooltip>
                             }
                             fullwidth

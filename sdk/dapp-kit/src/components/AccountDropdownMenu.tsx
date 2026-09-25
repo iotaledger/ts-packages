@@ -13,6 +13,7 @@ import { useSwitchAccount } from '../hooks/wallet/useSwitchAccount.js';
 import * as styles from './AccountDropdownMenu.css.js';
 import { CheckIcon } from './icons/CheckIcon.js';
 import { ChevronIcon } from './icons/ChevronIcon.js';
+import { IotaNameNftImage } from './IotaNameNftImage.js';
 import { StyleMarker } from './styling/StyleMarker.js';
 import { Button } from './ui/Button.js';
 import { Text } from './ui/Text.js';
@@ -40,6 +41,10 @@ export function AccountDropdownMenu({
             <StyleMarker>
                 <DropdownMenu.Trigger asChild>
                     <Button size={size} className={styles.connectedAccount}>
+                        <IotaNameNftImage
+                            address={currentAccount.address}
+                            iotaNamesEnabled={iotaNamesEnabled}
+                        />
                         <Text mono weight="bold" className={styles.accountName}>
                             {displayAccount}
                         </Text>
@@ -92,9 +97,12 @@ export function AccountDropdownMenuItem({
             className={clsx(styles.menuItem, styles.switchAccountMenuItem)}
             onSelect={() => switchAccount({ account })}
         >
-            <Text mono className={styles.accountNameMenuItem}>
-                {displayAccount}
-            </Text>
+            <div className={styles.accountIdentity}>
+                <IotaNameNftImage address={account.address} iotaNamesEnabled={iotaNamesEnabled} />
+                <Text mono className={styles.accountNameMenuItem}>
+                    {displayAccount}
+                </Text>
+            </div>
             {active ? <CheckIcon /> : null}
         </DropdownMenu.Item>
     );
