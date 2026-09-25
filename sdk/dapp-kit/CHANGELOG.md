@@ -1,5 +1,23 @@
 # @iota/dapp-kit
 
+## 0.11.0
+
+### Minor Changes
+
+-   da813ab: Show the IOTA Name avatar next to accounts in the `ConnectButton` account dropdown.
+
+### Patch Changes
+
+-   da61128: fix: truncate long iota names in account dropdown
+-   Updated dependencies [1d8e175]
+-   Updated dependencies [b43f870]
+-   Updated dependencies [4f0bc5e]
+-   Updated dependencies [361df87]
+-   Updated dependencies [8be9ef4]
+-   Updated dependencies [858756f]
+    -   @iota/iota-sdk@1.16.0
+    -   @iota/wallet-standard@0.4.6
+
 ## 0.10.4
 
 ### Patch Changes
