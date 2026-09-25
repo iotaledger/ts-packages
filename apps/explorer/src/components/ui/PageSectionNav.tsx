@@ -8,7 +8,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 const SCROLL_SPY_OFFSET = 160;
 
 export const PAGE_SECTION_SCROLL_MARGIN =
-    'scroll-mt-[288px] sm:scroll-mt-[180px] md:scroll-mt-[148px]';
+    'scroll-mt-[300px] sm:scroll-mt-[184px] md:scroll-mt-[152px]';
 
 export interface PageSectionNavItem {
     id: string;
@@ -18,9 +18,14 @@ export interface PageSectionNavItem {
 interface PageSectionNavProps {
     sections: PageSectionNavItem[];
     actions?: ReactNode;
+    disabled?: boolean;
 }
 
-export function PageSectionNav({ sections, actions }: PageSectionNavProps): JSX.Element | null {
+export function PageSectionNav({
+    sections,
+    actions,
+    disabled,
+}: PageSectionNavProps): JSX.Element | null {
     const [activeSection, setActiveSection] = useState<string>(sections[0]?.id ?? '');
     const navRef = useRef<HTMLDivElement>(null);
 
@@ -58,7 +63,7 @@ export function PageSectionNav({ sections, actions }: PageSectionNavProps): JSX.
     return (
         <div
             ref={navRef}
-            className="panel-bg panel-border-color sticky top-[128px] z-10 flex w-full flex-wrap items-center justify-between gap-sm rounded-3xl border p-xs sm:rounded-full md:top-[88px]"
+            className="panel-bg panel-border-color sticky top-[88px] z-10 flex w-full flex-wrap items-center justify-between gap-sm rounded-3xl border p-xs sm:rounded-full"
         >
             <div className="flex flex-row flex-wrap items-center gap-x-xs gap-y-xs sm:gap-x-md">
                 {sections.map(({ id, label }) => (
@@ -66,7 +71,8 @@ export function PageSectionNav({ sections, actions }: PageSectionNavProps): JSX.
                         key={id}
                         onClick={() => goToSection(id)}
                         label={label}
-                        selected={activeSection === id}
+                        selected={!disabled && activeSection === id}
+                        disabled={disabled}
                     />
                 ))}
             </div>

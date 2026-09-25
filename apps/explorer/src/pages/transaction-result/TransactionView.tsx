@@ -59,6 +59,7 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
         <div className="flex h-full flex-col gap-2xl">
             <PageSectionNav
                 sections={pageSections}
+                disabled={showRawJson}
                 actions={
                     <>
                         <Toggle

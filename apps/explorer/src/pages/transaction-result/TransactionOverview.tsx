@@ -126,7 +126,7 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     fullwidth={!isMediumOrAbove}
                 />
             )}
-            {digestMatches !== undefined && (
+            {isAdvancedMode && digestMatches !== undefined && (
                 <KeyValueInfo
                     layout="receipt"
                     keyText="Integrity"

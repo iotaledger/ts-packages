@@ -14,8 +14,10 @@ import {
     TableCellBase,
     TableCellText,
     TableRow,
+    Tooltip,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { toSerializedSignature } from '@iota/iota-sdk/cryptography';
 import { normalizeIotaAddress, toBase64 } from '@iota/iota-sdk/utils';
@@ -33,6 +35,19 @@ interface FieldTableRow {
     field: string;
     value: ReactNode;
 }
+
+const PUBLIC_KEY_TOOLTIP =
+    'The public key that produced this signature, prefixed with its scheme flag.';
+
+const FIELD_TOOLTIPS: Record<string, string> = {
+    'Derived Address': 'The address derived from the signer’s public key.',
+    'Public Key': PUBLIC_KEY_TOOLTIP,
+    'IOTA Public Key': PUBLIC_KEY_TOOLTIP,
+    'Signature Bytes':
+        'The raw signature over the transaction’s intent message (intent prefix and transaction data).',
+    'Full Signature':
+        'The serialized signature as submitted: scheme flag, signature and public key.',
+};
 
 function CopyableCellValue({ value }: { value: string }): JSX.Element {
     return (
@@ -77,7 +92,14 @@ function FieldsTable({ rows }: { rows: FieldTableRow[] }): JSX.Element {
                     {rows.map((row, index) => (
                         <TableRow key={index}>
                             <TableCellBase>
-                                <TableCellText>{row.field}</TableCellText>
+                                <div className="flex items-center gap-xxs">
+                                    <TableCellText>{row.field}</TableCellText>
+                                    {FIELD_TOOLTIPS[row.field] && (
+                                        <Tooltip text={FIELD_TOOLTIPS[row.field]}>
+                                            <Info className="h-3.5 w-3.5 text-iota-neutral-40 dark:text-iota-neutral-60" />
+                                        </Tooltip>
+                                    )}
+                                </div>
                             </TableCellBase>
                             <TableCellBase>{row.value}</TableCellBase>
                         </TableRow>

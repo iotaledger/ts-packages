@@ -209,6 +209,15 @@ export function generateObjectChangesTableColumns(
                 </TableCellBase>
             ),
         },
+        {
+            header: 'Version',
+            id: 'version',
+            cell: ({ row }) => (
+                <TableCellBase>
+                    <TableCellText>{row.original.version ?? '-'}</TableCellText>
+                </TableCellBase>
+            ),
+        },
         ...(isAdvancedMode
             ? [
                   {

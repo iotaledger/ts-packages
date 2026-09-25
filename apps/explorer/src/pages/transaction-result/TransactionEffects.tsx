@@ -8,7 +8,6 @@ import type {
     IotaTransactionBlockResponse,
     TransactionEffects as TransactionEffectsData,
 } from '@iota/iota-sdk/client';
-import { formatDigest } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CollapsibleCard, ObjectLink, TransactionLink } from '~/components';
 import { TableCard } from '~/components/ui';
@@ -106,9 +105,9 @@ export function TransactionEffects({ transaction }: TransactionEffectsProps): JS
                         title="Events Digest"
                         tooltipText="Hash of all the events emitted by this transaction."
                     >
-                        <div className="flex flex-row items-center gap-x-xxs">
-                            <span className="table-text-color text-body-md">
-                                {formatDigest(eventsDigest)}
+                        <div className="flex min-w-0 flex-row items-center gap-x-xxs">
+                            <span className="table-text-color break-all text-body-md">
+                                {eventsDigest}
                             </span>
                             <CopyButton text={eventsDigest} />
                         </div>
