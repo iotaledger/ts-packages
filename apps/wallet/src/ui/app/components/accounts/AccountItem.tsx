@@ -8,7 +8,7 @@ import { useExplorerLink, useAccounts, useCopyToClipboard } from '_hooks';
 import { ExplorerLinkType } from '_components';
 import { Account } from '@iota/apps-ui-kit';
 import { formatAccountName } from '../../helpers';
-import { useGetDefaultIotaName } from '@iota/core';
+import { NameAvatar, NameAvatarSize, useGetDefaultIotaName } from '@iota/core';
 
 interface AccountItemProps {
     accountID: string;
@@ -43,7 +43,7 @@ export function AccountItem({ icon, accountID, hideExplorerLink, hideCopy }: Acc
                 title={accountName}
                 subtitle={formatAddress(account.address)}
                 onOpen={handleOpen}
-                avatarContent={() => <AccountAvatar icon={icon} />}
+                avatarContent={() => <AccountAvatar address={account.address} icon={icon} />}
                 onCopy={copyAddress}
                 isCopyable={!hideCopy}
                 isExternal={!hideExplorerLink}
@@ -52,10 +52,10 @@ export function AccountItem({ icon, accountID, hideExplorerLink, hideCopy }: Acc
     );
 }
 
-function AccountAvatar({ icon }: { icon?: ReactNode }) {
+function AccountAvatar({ address, icon }: { address: string; icon?: ReactNode }) {
     return (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full [&_svg]:h-5 [&_svg]:w-5 ">
-            {icon}
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full [&_svg]:h-5 [&_svg]:w-5">
+            <NameAvatar address={address} fallback={icon} size={NameAvatarSize.Small} />
         </div>
     );
 }
