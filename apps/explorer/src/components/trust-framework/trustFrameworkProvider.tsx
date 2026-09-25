@@ -4,46 +4,58 @@
 'use client';
 
 import { useIotaClient, useIotaClientContext } from '@iota/dapp-kit';
-import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
-import { type NotarizationClientReadOnly } from '@iota/notarization/web';
-import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
-import { TrustFrameworkContext, type TrustFrameworkProviderContext } from '~/contexts';
+import { Feature } from '@iota/core';
+import { useFeatureIsOn } from '@iota/apps-backend-client';
+import type { PropsWithChildren } from 'react';
+import { TrustFrameworkContext } from '~/contexts';
 import {
+    createAuditTrailClientReadOnly,
     createIdentityClientReadOnly,
     createNotarizationClientReadOnly,
 } from '~/lib/utils/trust-framework/client';
+import { useQuery } from '@tanstack/react-query';
 
 export function TrustFrameworkProvider({ children }: PropsWithChildren) {
     const { network } = useIotaClientContext();
     const iotaClient = useIotaClient();
-    const [identityClient, setIdentityClient] = useState<IdentityClientReadOnly | null>(null);
-    const [notarizationClient, setNotarizationClient] = useState<NotarizationClientReadOnly | null>(
-        null,
+    const isAuditTrailEnabled = useFeatureIsOn(Feature.ExplorerTFAuditTrail as string);
+
+    const identityClientQuery = useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['identity-client', network],
+        queryFn: () => createIdentityClientReadOnly(iotaClient, network),
+        enabled: !!iotaClient,
+        retry: false,
+    });
+
+    const notarizationClientQuery = useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['notarization-client', network],
+        queryFn: () => createNotarizationClientReadOnly(iotaClient, network),
+        enabled: !!iotaClient,
+        retry: false,
+    });
+
+    const auditTrailClientQuery = useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['audit-trail-client', network],
+        queryFn: () => createAuditTrailClientReadOnly(iotaClient, network),
+        enabled: !!iotaClient && isAuditTrailEnabled,
+        retry: false,
+    });
+
+    return (
+        <TrustFrameworkContext.Provider
+            value={{
+                identityClient: identityClientQuery.data ?? null,
+                identityClientStatus: identityClientQuery.status,
+                notarizationClient: notarizationClientQuery.data ?? null,
+                notarizationClientStatus: notarizationClientQuery.status,
+                auditTrailClient: auditTrailClientQuery.data ?? null,
+                auditTrailClientStatus: auditTrailClientQuery.status,
+            }}
+        >
+            {children}
+        </TrustFrameworkContext.Provider>
     );
-
-    useEffect(() => {
-        if (!iotaClient) return;
-
-        const instantiateIdentityClient = async () => {
-            const _identityClient = await createIdentityClientReadOnly(iotaClient, network);
-            setIdentityClient(_identityClient);
-        };
-        instantiateIdentityClient();
-
-        const instantiateNotarizationClient = async () => {
-            const _notarizationClient = await createNotarizationClientReadOnly(iotaClient, network);
-            setNotarizationClient(_notarizationClient);
-        };
-        instantiateNotarizationClient();
-    }, [iotaClient, network]);
-
-    const ctx = useMemo(
-        (): TrustFrameworkProviderContext => ({
-            identityClient,
-            notarizationClient,
-        }),
-        [identityClient, notarizationClient],
-    );
-
-    return <TrustFrameworkContext.Provider value={ctx}>{children}</TrustFrameworkContext.Provider>;
 }

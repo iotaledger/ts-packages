@@ -13,13 +13,14 @@ import {
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import {
+    CoinFiatValue,
     formatPercentageDisplay,
     roundFloat,
     useFormatCoin,
     useGetValidatorsApy,
     useMaxCommitteeSize,
 } from '@iota/core';
-import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 // Scale before the BigInt division so the percentage keeps two decimal places,
 // then divide the resulting Number by the divisor to get the final value.
@@ -53,7 +54,10 @@ export function StakingHeroCard(): JSX.Element {
         return apys.length > 0 ? roundFloat(avg / apys.length) : 0;
     }, [validatorsApy]);
 
-    const [formattedStaked, stakedSymbol] = useFormatCoin({ balance: totalStaked });
+    const [formattedStaked, stakedSymbol] = useFormatCoin({
+        balance: totalStaked,
+        format: CoinFormat.Full,
+    });
 
     const { data: maxCommitteeSize } = useMaxCommitteeSize();
     const committeeCount = data?.committeeMembers?.length ?? 0;
@@ -67,13 +71,31 @@ export function StakingHeroCard(): JSX.Element {
         <Panel>
             <Title title="Staking" size={TitleSize.Medium} />
             <div className="flex flex-col gap-md p-md--rs">
-                <div className="flex flex-wrap gap-md">
+                <div className="flex flex-col gap-md sm:flex-row sm:flex-wrap">
                     <div className="min-w-0 flex-1">
                         <LabelText
                             size={LabelTextSize.Large}
                             label="Total Staked"
-                            text={formattedStaked ?? '--'}
-                            supportingLabel={formattedStaked ? stakedSymbol : undefined}
+                            text={
+                                formattedStaked ? (
+                                    <div className="flex min-w-0 flex-col gap-xxs">
+                                        <div className="flex min-w-0 flex-row flex-wrap items-baseline gap-xxs">
+                                            <span className="min-w-0 break-all text-title-sm">
+                                                {formattedStaked}
+                                            </span>
+                                            <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                                {stakedSymbol}
+                                            </span>
+                                        </div>
+                                        <CoinFiatValue
+                                            amount={totalStaked}
+                                            withParentheses={false}
+                                        />
+                                    </div>
+                                ) : (
+                                    '--'
+                                )
+                            }
                             tooltipPosition={TooltipPosition.Top}
                             tooltipText="The total amount of IOTA currently staked with validators."
                         />

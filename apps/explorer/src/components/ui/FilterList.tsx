@@ -12,6 +12,7 @@ export interface FilterListProps<T extends string = string> {
     options: readonly T[];
     onSelected(value: T): void;
     filtersAsChip?: boolean;
+    disabled?: boolean;
 }
 
 export function FilterList<T extends string>({
@@ -19,6 +20,7 @@ export function FilterList<T extends string>({
     selected,
     onSelected,
     filtersAsChip,
+    disabled,
 }: FilterListProps<T>): JSX.Element {
     const FilterComponent = filtersAsChip ? Chip : ButtonSegment;
 
@@ -29,6 +31,7 @@ export function FilterList<T extends string>({
                     key={option}
                     label={option}
                     selected={option == selected}
+                    disabled={disabled}
                     onClick={() => onSelected(option)}
                 />
             ))}

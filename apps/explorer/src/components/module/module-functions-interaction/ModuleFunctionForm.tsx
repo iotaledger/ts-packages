@@ -15,7 +15,7 @@ import {
     Transaction,
 } from '@iota/iota-sdk/transactions';
 import { useMutation } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useWatch } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -24,39 +24,26 @@ import { FunctionExecutionResult } from './FunctionExecutionResult';
 
 import type { IotaMoveNormalizedFunction } from '@iota/iota-sdk/client';
 import type { TypeOf } from 'zod';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionHeader,
-    Input,
-    InputType,
-    Title,
-    Button,
-    ButtonType,
-    ButtonHtmlType,
-    TitleSize,
-} from '@iota/apps-ui-kit';
+import { Input, InputType, Button, ButtonType, ButtonHtmlType } from '@iota/apps-ui-kit';
 
 const argsSchema = z.object({
     params: z.optional(z.array(z.string().trim().min(1))),
     types: z.optional(z.array(z.string().trim().min(1))),
 });
 
-type ModuleFunctionProps = {
+type ModuleFunctionFormProps = {
     packageId: string;
     moduleName: string;
     functionName: string;
     functionDetails: IotaMoveNormalizedFunction;
-    defaultOpen?: boolean;
 };
 
-export function ModuleFunction({
-    defaultOpen,
+export function ModuleFunctionForm({
     packageId,
     moduleName,
     functionName,
     functionDetails,
-}: ModuleFunctionProps): JSX.Element {
+}: ModuleFunctionFormProps): JSX.Element {
     const currentAccount = useCurrentAccount();
     const iotaClient = useIotaClient();
     const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction({
@@ -120,72 +107,57 @@ export function ModuleFunction({
 
     const isExecuteDisabled = isValidating || !isValid || isSubmitting || !currentAccount;
 
-    const [isExpanded, setIsExpanded] = useState<boolean>(defaultOpen ?? false);
-
-    function onToggle() {
-        setIsExpanded((prev) => !prev);
-    }
-
     return (
-        <Accordion>
-            <AccordionHeader isExpanded={isExpanded} onToggle={onToggle}>
-                <Title size={TitleSize.Small} title={functionName} />
-            </AccordionHeader>
-            <AccordionContent isExpanded={isExpanded}>
-                <form
-                    className="flex flex-col flex-nowrap items-stretch gap-md p-md--rs"
-                    onSubmit={handleSubmit((formData) =>
-                        execute.mutateAsync(formData).catch(() => {
-                            /* ignore tx execution errors */
-                        }),
-                    )}
-                    autoComplete="off"
-                >
-                    {typeArguments.map((aTypeArgument, index) => (
-                        <Input
-                            type={InputType.Text}
-                            key={index}
-                            label={`Type${index}`}
-                            {...register(`types.${index}` as const)}
-                            placeholder={aTypeArgument}
-                        />
-                    ))}
-                    {paramsDetails.map(({ paramTypeText }, index) => (
-                        <Input
-                            type={InputType.Text}
-                            key={index}
-                            label={`Arg${index}`}
-                            {...register(`params.${index}` as const)}
-                            placeholder={paramTypeText}
-                            disabled={isSubmitting}
-                        />
-                    ))}
-                    <div className="flex items-stretch justify-end gap-1.5">
-                        <Button
-                            type={ButtonType.Primary}
-                            htmlType={ButtonHtmlType.Submit}
-                            disabled={isExecuteDisabled || execute.isPending}
-                            text="Execute"
-                        />
-                        {currentAccount ? null : (
-                            <ConnectModal
-                                trigger={<Button text="Connect Wallet" type={ButtonType.Primary} />}
-                            />
-                        )}
-                    </div>
-                    {execute.error || execute.data ? (
-                        <FunctionExecutionResult
-                            error={
-                                execute.error ? (execute.error as Error).message || 'Error' : false
-                            }
-                            result={execute.data || null}
-                            onClear={() => {
-                                execute.reset();
-                            }}
-                        />
-                    ) : null}
-                </form>
-            </AccordionContent>
-        </Accordion>
+        <form
+            className="flex flex-col flex-nowrap items-stretch gap-md pt-md"
+            onSubmit={handleSubmit((formData) =>
+                execute.mutateAsync(formData).catch(() => {
+                    /* ignore tx execution errors */
+                }),
+            )}
+            autoComplete="off"
+        >
+            {typeArguments.map((aTypeArgument, index) => (
+                <Input
+                    type={InputType.Text}
+                    key={index}
+                    label={`Type${index}`}
+                    {...register(`types.${index}` as const)}
+                    placeholder={aTypeArgument}
+                />
+            ))}
+            {paramsDetails.map(({ paramTypeText }, index) => (
+                <Input
+                    type={InputType.Text}
+                    key={index}
+                    label={`Arg${index}`}
+                    {...register(`params.${index}` as const)}
+                    placeholder={paramTypeText}
+                    disabled={isSubmitting}
+                />
+            ))}
+            <div className="flex items-stretch justify-end gap-1.5">
+                <Button
+                    type={ButtonType.Primary}
+                    htmlType={ButtonHtmlType.Submit}
+                    disabled={isExecuteDisabled || execute.isPending}
+                    text="Execute"
+                />
+                {currentAccount ? null : (
+                    <ConnectModal
+                        trigger={<Button text="Connect Wallet" type={ButtonType.Primary} />}
+                    />
+                )}
+            </div>
+            {execute.error || execute.data ? (
+                <FunctionExecutionResult
+                    error={execute.error ? (execute.error as Error).message || 'Error' : false}
+                    result={execute.data || null}
+                    onClear={() => {
+                        execute.reset();
+                    }}
+                />
+            ) : null}
+        </form>
     );
 }

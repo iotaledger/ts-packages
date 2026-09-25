@@ -26,10 +26,10 @@ export function OnTheNetwork(): JSX.Element {
     const { data: circulatingSupply } = useIotaClientQuery('getCirculatingSupply');
 
     const circulatingSupplyFormatted = circulatingSupply?.value
-        ? formatBalance(circulatingSupply.value, IOTA_DECIMALS, CoinFormat.Rounded)
+        ? formatBalance(circulatingSupply.value, IOTA_DECIMALS, CoinFormat.Full)
         : null;
     const totalSupplyFormatted = totalSupply?.value
-        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Rounded)
+        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Full)
         : null;
 
     const currentTpsFormatted = networkMetrics?.currentTps

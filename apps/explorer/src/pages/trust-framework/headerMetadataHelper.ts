@@ -3,13 +3,16 @@
 
 import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { parseStructTag } from '@iota/iota-sdk/utils';
+import { truncateStruct } from '~/lib/utils';
 import { type OnChainNotarization } from '@iota/notarization/web';
-import { type MetaItem } from '~/components/ui/PageHeaderMeta';
+import { type OnChainAuditTrail } from '@iota/audit-trails/web';
 
 const IDENTITY_MODULE = 'identity';
 const IDENTITY_METHOD = 'Identity';
 const NOTARIZATION_MODULE = 'notarization';
 const NOTARIZATION_METHOD = 'Notarization';
+const AUDIT_TRAIL_MODULE = 'main';
+const AUDIT_TRAIL_METHOD = 'AuditTrail';
 
 const metadata = {
     objectLegacyId: {
@@ -30,41 +33,15 @@ const metadata = {
         visible: true,
         badge: 'IOTA Notarization',
     },
+    auditTrailType: {
+        label: 'Type',
+        visible: true,
+        badge: 'IOTA Audit Trail',
+    },
 };
 
-export class MetadataBuilder {
-    items: MetaItem[];
-
-    public constructor() {
-        this.items = [];
-    }
-
-    static create(): MetadataBuilder {
-        return new MetadataBuilder();
-    }
-
-    addItem(item: MetaItem | null): MetadataBuilder {
-        if (item != null) {
-            this.items.push(item);
-        }
-        return this;
-    }
-
-    build(): MetaItem[] {
-        return this.items;
-    }
-}
-
-/**
- * Determines the identity type of an IOTA DID object based on its type.
- *
- * @param didObject - The IOTA object data to analyze.
- * @param pkgId - The package ID to compare against for official identity package.
- * @returns A MetaItem object containing identity type information, or null if
- *          the objectData is null or has no type.
- */
-export function getIdentityType(didObject: IotaObjectData | null, pkgId: string): MetaItem | null {
-    if (didObject == null || didObject.type == null) {
+export function getIdentityType(didObject: IotaObjectData | null, pkgId: string) {
+    if (!didObject || !didObject.type) {
         return null;
     }
     const tooltipText =
@@ -72,13 +49,12 @@ export function getIdentityType(didObject: IotaObjectData | null, pkgId: string)
 
     const [_package, _module, _method] = didObject.type.split('::');
     if (_method === IDENTITY_METHOD && _module === IDENTITY_MODULE && _package === pkgId) {
-        // Official Identity package for the current network
         return {
             label: metadata.identityType.label,
             value: metadata.identityType.badge,
             visible: metadata.identityType.visible,
             tooltipText,
-        } as MetaItem;
+        };
     }
 
     return {
@@ -86,17 +62,11 @@ export function getIdentityType(didObject: IotaObjectData | null, pkgId: string)
         value: didObject.type,
         visible: metadata.identityType.visible,
         tooltipText,
-    } as MetaItem;
+    };
 }
 
-/**
- * Extracts legacy metadata from an IOTA DID object if available.
- *
- * @param didObject - The IOTA DID object data containing potential legacy ID information.
- * @returns A MetaItem containing the legacy ID if found, otherwise null.
- */
-export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | null {
-    if (didObject == null) {
+export function getLegacyMetadata(didObject: IotaObjectData | null) {
+    if (!didObject) {
         return null;
     }
 
@@ -109,7 +79,7 @@ export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | 
     }
 
     const legacyId = didObject.content.fields.legacy_id;
-    if (legacyId == null) {
+    if (!legacyId) {
         return null;
     }
 
@@ -117,10 +87,10 @@ export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | 
         label: metadata.objectLegacyId.label,
         value: legacyId,
         visible: metadata.objectLegacyId.visible,
-    } as MetaItem;
+    };
 }
 
-export function getNotarizationMethod(notarizationDocument: OnChainNotarization): MetaItem {
+export function getNotarizationMethod(notarizationDocument: OnChainNotarization) {
     return {
         label: metadata.notarizationMethod.label,
         value: notarizationDocument.method,
@@ -128,19 +98,8 @@ export function getNotarizationMethod(notarizationDocument: OnChainNotarization)
     };
 }
 
-/**
- * Determines the notarization type of an Notarization Object based on its type.
- *
- * @param notarizationObject - The IOTA object data to analyze.
- * @param pkgId - The package ID to compare against for official notarization package.
- * @returns A MetaItem object containing identity type information, or null if
- *          the objectData is null or has no type.
- */
-export function getNotarizationType(
-    notarizationObject: IotaObjectData | null,
-    pkgId: string,
-): MetaItem | null {
-    if (notarizationObject == null || notarizationObject.type == null) {
+export function getNotarizationType(notarizationObject: IotaObjectData | null, pkgId: string) {
+    if (!notarizationObject || !notarizationObject.type) {
         return null;
     }
 
@@ -152,20 +111,52 @@ export function getNotarizationType(
         module: _module,
         name: _method,
     } = parseStructTag(notarizationObject.type);
-    if (_method === NOTARIZATION_METHOD && _module === NOTARIZATION_MODULE && _package === pkgId) {
-        // Official Notarization package for the current network
-        return {
-            label: metadata.notarizationType.label,
-            value: metadata.notarizationType.badge,
-            visible: metadata.notarizationType.visible,
-            tooltipText,
-        } as MetaItem;
-    }
+    const isOfficialFramework =
+        _method === NOTARIZATION_METHOD && _module === NOTARIZATION_MODULE && _package === pkgId;
 
     return {
         label: metadata.notarizationType.label,
-        value: notarizationObject.type,
+        value: isOfficialFramework
+            ? metadata.notarizationType.badge
+            : truncateStruct(notarizationObject.type),
+        structTag: notarizationObject.type,
         visible: metadata.notarizationType.visible,
         tooltipText,
-    } as MetaItem;
+    };
+}
+
+export function getAuditTrailType(auditTrailObject: IotaObjectData | null, pkgId: string) {
+    if (!auditTrailObject || !auditTrailObject.type) {
+        return null;
+    }
+
+    const tooltipText =
+        'The method used to create and resolve this Audit Trail. "IOTA Audit Trail" is the Foundation\'s official audit trail framework, anchored onchain on IOTA L1.';
+
+    const {
+        address: _package,
+        module: _module,
+        name: _method,
+    } = parseStructTag(auditTrailObject.type);
+
+    const isOfficialFramework =
+        _method === AUDIT_TRAIL_METHOD && _module === AUDIT_TRAIL_MODULE && _package === pkgId;
+
+    return {
+        label: metadata.auditTrailType.label,
+        value: isOfficialFramework
+            ? metadata.auditTrailType.badge
+            : truncateStruct(auditTrailObject.type),
+        structTag: auditTrailObject.type,
+        visible: metadata.auditTrailType.visible,
+        tooltipText,
+    };
+}
+
+export function getAuditTrailRecordsSize(auditTrail: OnChainAuditTrail | null) {
+    if (!auditTrail) {
+        return null;
+    }
+
+    return auditTrail.records.size.toString();
 }

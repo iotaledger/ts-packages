@@ -131,7 +131,7 @@ function BalanceRow({ icon, label, value }: BalanceRowProps): JSX.Element {
                 <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
                     {amount} {symbol}
                 </span>
-                <span className="[&>span]:!text-body-sm [&>span]:!text-iota-neutral-40 dark:[&>span]:!text-iota-neutral-60">
+                <span className="[&>span]:!text-body-sm">
                     <CoinFiatValue amount={value} withParentheses={false} />
                 </span>
             </span>
