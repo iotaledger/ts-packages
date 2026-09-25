@@ -45,6 +45,7 @@ module.exports = {
         'sdk/build-scripts/src/build-package.ts',
         'sdk/build-scripts/src/build-dapp-kit.ts',
         'sdk/create-dapp/bin/index.js',
+        'sdk/grpc/src/proto',
         'docs',
         'examples',
         '**/build',
