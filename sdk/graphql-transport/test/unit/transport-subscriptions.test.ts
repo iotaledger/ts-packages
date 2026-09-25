@@ -84,6 +84,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
                         sender: { address: '0xabc' },
                         sendingModule: { name: 'coin', package: { address: '0x2' } },
                         type: { repr: '0x2::coin::Event' },
+                        transactionBlock: { digest: 'tx-a' },
                     },
                 },
             },
@@ -91,6 +92,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
 
         expect(onMessage).toHaveBeenCalledWith(
             expect.objectContaining({
+                id: expect.objectContaining({ txDigest: 'tx-a' }),
                 bcsEncoding: 'base64',
                 packageId: '0x2',
                 parsedJson: { amount: '1' },
@@ -268,6 +270,74 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
             filter: undefined,
             startAfter: 'tx-a',
         });
+        transport.close();
+    });
+
+    test('keeps the given startAfter until a later transaction completes', async () => {
+        const harness = createMockWebSocket();
+        const transport = new IotaClientGraphQLTransport({
+            url: 'http://localhost:9125/graphql',
+            WebSocketConstructor: harness.WebSocketConstructor,
+            wsOptions: { startupErrorGrace: 1, reconnectTimeout: 5 },
+        });
+
+        await transport.subscribe({
+            method: 'iotax_subscribeEvent',
+            unsubscribe: 'iotax_unsubscribeEvent',
+            params: [{}],
+            startAfter: 'tx-0',
+            onMessage: () => {},
+        });
+
+        expect(subscribeFrame(harness).variables).toEqual({
+            filter: undefined,
+            startAfter: 'tx-0',
+        });
+
+        emitServerMessage(harness.latest(), {
+            id: '1',
+            type: 'next',
+            payload: {
+                data: {
+                    events: {
+                        __typename: 'Event',
+                        json: {},
+                        bcs: 'AA==',
+                        type: { repr: '0x2::a::B' },
+                        transactionBlock: { digest: 'tx-a' },
+                    },
+                },
+            },
+        });
+
+        emitClose(harness.latest());
+        await tick(30);
+
+        expect(subscribeFrame(harness).variables).toEqual({
+            filter: undefined,
+            startAfter: 'tx-0',
+        });
+        transport.close();
+    });
+
+    test('rejects startAfter instead of falling back to JSON-RPC without it', async () => {
+        const harness = createMockWebSocket();
+        const transport = new IotaClientGraphQLTransport({
+            url: 'http://localhost:9125/graphql',
+            WebSocketConstructor: harness.WebSocketConstructor,
+            fallbackTransportUrl: 'http://localhost:9000',
+            wsOptions: { startupErrorGrace: 1 },
+        });
+
+        await expect(
+            transport.subscribe({
+                method: 'iotax_subscribeEvent',
+                unsubscribe: 'iotax_unsubscribeEvent',
+                params: [{ Sender: '0xabc' }],
+                startAfter: 'tx-0',
+                onMessage: () => {},
+            }),
+        ).rejects.toThrow(/startAfter is not supported/);
         transport.close();
     });
 

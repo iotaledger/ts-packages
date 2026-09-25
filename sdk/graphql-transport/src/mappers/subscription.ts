@@ -100,7 +100,7 @@ export function mapSubscriptionEvent(event: SubscriptionEvent) {
         bcsEncoding: 'base64',
         id: {
             eventSeq: '', // TODO
-            txDigest: '', // TODO
+            txDigest: event.transactionBlock?.digest ?? '',
         },
         packageId: event.sendingModule?.package.address ?? '',
         parsedJson: event.json,

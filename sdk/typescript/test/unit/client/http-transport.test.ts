@@ -169,6 +169,24 @@ describe('IotaHTTPTransport', () => {
             sentMessages = [];
         });
 
+        it('Rejects startAfter, which JSON-RPC cannot resume from', async () => {
+            const transport = new IotaHTTPTransport({
+                url: 'http://localhost:4000',
+                WebSocketConstructor: MockWebSocketConstructor,
+            });
+
+            await expect(
+                transport.subscribe({
+                    method: 'subscribeExample',
+                    unsubscribe: 'unsubscribeExample',
+                    params: [],
+                    startAfter: 'tx-0',
+                    onMessage: () => {},
+                }),
+            ).rejects.toThrow(/startAfter is not supported/);
+            expect(sockets).toHaveLength(0);
+        });
+
         it('Creates a subscription', async () => {
             const transport = new IotaHTTPTransport({
                 url: 'http://localhost:4000',
