@@ -27,6 +27,7 @@ import {
     useBalance,
     useFormatCoin,
     VirtualList,
+    AmountWithFiat,
 } from '@iota/core';
 import { getStardustObjectsTotals, filterMigrationObjects } from '@/lib/utils';
 import { DialogLayout, DialogLayoutBody, DialogLayoutFooter } from '../../layout';
@@ -221,8 +222,17 @@ export function ConfirmMigrationView({
                                     />
                                     <KeyValueInfo
                                         keyText="Gas Fees"
-                                        value={gasFee || '-'}
-                                        supportingLabel={gasFeeSymbol}
+                                        value={
+                                            gasFee ? (
+                                                <AmountWithFiat
+                                                    amount={migrateData?.gasSummary?.totalGas ?? 0}
+                                                    formatted={gasFee}
+                                                    symbol={gasFeeSymbol}
+                                                />
+                                            ) : (
+                                                '-'
+                                            )
+                                        }
                                         fullwidth
                                     />
                                 </div>

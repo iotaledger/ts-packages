@@ -15,6 +15,7 @@ import {
     toast,
     type SendNftFormValues,
     RECEIVING_ADDRESS_FIELD_IDS,
+    AmountWithFiat,
 } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import { useQueryClient } from '@tanstack/react-query';
@@ -64,8 +65,17 @@ function GasBudgetComponent({
     return (
         <KeyValueInfo
             keyText={'Est. Gas Fees'}
-            value={gasFormatted}
-            supportingLabel={gasFormatted ? gasSymbol : undefined}
+            value={
+                gasFormatted ? (
+                    <AmountWithFiat
+                        amount={gasBudgetEst ?? 0}
+                        formatted={gasFormatted}
+                        symbol={gasSymbol}
+                    />
+                ) : (
+                    gasFormatted
+                )
+            }
             fullwidth
         />
     );

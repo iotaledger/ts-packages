@@ -85,7 +85,7 @@ export function AccountBalance() {
                             </span>
                             {fiatBalance && (
                                 <div className="flex text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    {isBalanceVisible ? fiatBalance : `${BALANCE_MASK} USD`}
+                                    {isBalanceVisible ? `~ ${fiatBalance}` : `${BALANCE_MASK} USD`}
                                 </div>
                             )}
                             <Button

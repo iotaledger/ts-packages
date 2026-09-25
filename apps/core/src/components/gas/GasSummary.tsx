@@ -2,8 +2,10 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ExplorerLinkType, useFormatCoin, type GasSummaryType } from '../../';
-import { RenderExplorerLink } from '../../types';
+import { ExplorerLinkType } from '../../enums';
+import { useFormatCoin } from '../../hooks';
+import { type GasSummaryType, RenderExplorerLink } from '../../types';
+import { AmountWithFiat } from '../coin';
 import { CoinFormat, formatAddress } from '@iota/iota-sdk/utils';
 
 import { KeyValueInfo } from '@iota/apps-ui-kit';
@@ -28,6 +30,8 @@ export function GasSummary({
     const address = sender || activeAddress;
     const [gas, symbol] = useFormatCoin({ balance: gasSummary?.totalGas, format: CoinFormat.Full });
 
+    const isGasFeeAmount = !isPending && !isError && !gasSummary?.isSponsored;
+
     const gasValueText = isPending
         ? 'Estimating...'
         : isError
@@ -37,24 +41,23 @@ export function GasSummary({
     if (!gasSummary)
         return <KeyValueInfo keyText="Gas fee" value="0" supportingLabel={symbol} fullwidth />;
 
+    const gasAmountWithFiat = (
+        <AmountWithFiat amount={gasSummary.totalGas ?? 0} formatted={gas} symbol={symbol} />
+    );
+
     return (
         <>
-            {address === gasSummary?.owner && (
+            {address === gasSummary.owner && (
                 <KeyValueInfo
                     keyText="Gas fee"
-                    value={gasValueText}
-                    supportingLabel={symbol}
+                    value={isGasFeeAmount ? gasAmountWithFiat : gasValueText}
+                    supportingLabel={isGasFeeAmount ? undefined : symbol}
                     fullwidth
                 />
             )}
-            {gasSummary?.isSponsored && gasSummary.owner && (
+            {gasSummary.isSponsored && gasSummary.owner && (
                 <>
-                    <KeyValueInfo
-                        keyText="Sponsored fee"
-                        value={gas}
-                        supportingLabel={symbol}
-                        fullwidth
-                    />
+                    <KeyValueInfo keyText="Sponsored fee" value={gasAmountWithFiat} fullwidth />
                     <KeyValueInfo
                         keyText="Sponsor"
                         value={
