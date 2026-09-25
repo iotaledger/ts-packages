@@ -20,6 +20,13 @@ const STRING_LAYOUT: MoveTypeLayout = {
     },
 };
 
+const ASCII_STRING_LAYOUT: MoveTypeLayout = {
+    struct: {
+        type: `${normalizeIotaAddress(MOVE_STDLIB_ADDRESS)}::ascii::String`,
+        fields: [{ name: 'bytes', layout: { vector: 'u8' } }],
+    },
+};
+
 const ID_LAYOUT: MoveTypeLayout = {
     struct: {
         type: `${normalizeIotaAddress(IOTA_FRAMEWORK_ADDRESS)}::object::ID`,
@@ -39,6 +46,11 @@ describe('layoutToBcs', () => {
     test('serializes 0x1::string::String from a plain string', () => {
         expect(mapJsonToBcs('field_name', STRING_LAYOUT)).toBe('CmZpZWxkX25hbWU=');
         expect(roundTrip('field_name', STRING_LAYOUT)).toBe('field_name');
+    });
+
+    test('serializes 0x1::ascii::String from a plain string', () => {
+        expect(mapJsonToBcs('field_name', ASCII_STRING_LAYOUT)).toBe('CmZpZWxkX25hbWU=');
+        expect(roundTrip('field_name', ASCII_STRING_LAYOUT)).toBe('field_name');
     });
 
     test('serializes 0x2::object::ID from an address string', () => {

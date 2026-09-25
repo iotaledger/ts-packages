@@ -50,7 +50,7 @@ export function layoutToBcs(layout: MoveTypeLayout): BcsType<any> {
             });
         }
 
-        if (structName === '0x1::string::String') {
+        if (structName === '0x1::string::String' || structName === '0x1::ascii::String') {
             const encoder = new TextEncoder();
             const decoder = new TextDecoder();
             struct = struct.transform({
