@@ -30,7 +30,7 @@ export function TransactionView({ transaction }: TransactionViewProps): JSX.Elem
     const pageSections = [
         PageSection.Overview,
         PageSection.Changes,
-        ...(isProgrammableTransaction ? [PageSection.Inputs, PageSection.Transactions] : []),
+        ...(isProgrammableTransaction ? [PageSection.ProgrammableTx] : []),
         ...(hasEvents ? [PageSection.Events] : []),
     ].map((section) => ({ id: section, label: PAGE_SECTION_LABELS[section] }));
 

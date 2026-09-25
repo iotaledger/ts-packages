@@ -10,6 +10,20 @@ export const connectedAccount = style({
     gap: 8,
 });
 
+export const accountName = style({
+    maxWidth: 140,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+});
+
+export const accountNameMenuItem = style({
+    maxWidth: 120,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+});
+
 export const menuContainer = style({
     zIndex: 999999999,
 });

@@ -18,6 +18,7 @@ export * from './useNetwork';
 export * from './useNormalizedMoveModule';
 export * from './useRecentSearches';
 export * from './usePackageUpgradePolicy';
+export * from './usePackageVersions';
 export * from './useSearch';
 export * from './useSearchShortcut';
 export * from './useVerifiedSourceCode';

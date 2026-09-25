@@ -7,53 +7,52 @@ import {
     Accordion,
     AccordionHeader,
     AccordionContent,
-    KeyValueInfo,
-    TitleSize,
+    Badge,
+    BadgeType,
+    BadgeSize,
+    ButtonUnstyled,
 } from '@iota/apps-ui-kit';
 import { type IotaEvent } from '@iota/iota-sdk/client';
-import { formatAddress, parseStructTag } from '@iota/iota-sdk/utils';
+import { parseStructTag } from '@iota/iota-sdk/utils';
 import { TriangleDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
-import { ProgrammableTxnBlockCard, SyntaxHighlighter } from '~/components';
-import { CollapsibleCard, ObjectLink } from '~/components/ui';
-import { useBreakpoint } from '~/hooks';
-import { onCopySuccess } from '~/lib';
+import { CollapsibleCard, SyntaxHighlighter } from '~/components';
+import { ObjectLink } from '~/components/ui';
+import { DateDisplay } from '~/components/DateDisplay';
 
-function EventContent({ event }: { event: IotaEvent }): JSX.Element {
+function EventRow({ event, index }: { event: IotaEvent; index: number }): JSX.Element {
     const [open, setOpen] = useState(false);
-    const isMediumOrAbove = useBreakpoint('md');
-    const { address, module, name } = parseStructTag(event.type);
-    const objectLinkLabel = [formatAddress(address), module, name].join('::');
+    const { name } = parseStructTag(event.type);
 
     return (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-xs px-lg pb-lg pt-md--rs">
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Type"
-                value={objectLinkLabel}
-                copyText={[address, module, name].join('::')}
-                onCopySuccess={onCopySuccess}
-                isTruncated
-                fullwidth={!isMediumOrAbove}
-            />
-
-            <KeyValueInfo
-                layout="receipt"
-                keyText="Event Emitter"
-                value={
-                    <ObjectLink
-                        objectId={event.packageId}
-                        queryStrings={{ module: event.transactionModule }}
-                        label={`${formatAddress(event.packageId)}::${event.transactionModule}`}
-                        copyText={event.packageId}
-                    />
-                }
-                isTruncated
-                fullwidth={!isMediumOrAbove}
-            />
+        <div className="panel-border-color flex flex-col gap-xs rounded-lg border px-md--rs py-sm--rs">
+            <div className="flex flex-wrap items-center gap-x-sm gap-y-xs">
+                <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                    #{index}
+                </span>
+                <Badge type={BadgeType.PrimarySoft} label={name} size={BadgeSize.Small} />
+                <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    emitted by
+                </span>
+                <ObjectLink
+                    objectId={event.packageId}
+                    queryStrings={{ module: event.transactionModule }}
+                    label={event.transactionModule}
+                />
+                {event.timestampMs && (
+                    <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        <DateDisplay
+                            timestamp={event.timestampMs}
+                            showTimeAgo
+                            showTooltip={false}
+                            showHoverStyle={false}
+                        />
+                    </span>
+                )}
+            </div>
             <Accordion hideBorder>
                 <AccordionHeader hideArrow isExpanded={open} onToggle={() => setOpen(!open)}>
-                    <div className="flex w-full flex-row items-center gap-xs pl-xxs text-iota-neutral-40 dark:text-iota-neutral-60">
+                    <div className="flex w-full flex-row items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
                         <TriangleDown
                             className={clsx(
                                 'h-4 w-4 shrink-0 transition-transform ease-linear',
@@ -77,35 +76,39 @@ interface EventsProps {
     events: IotaEvent[];
 }
 
+const EVENTS_PAGE_SIZE = 6;
+
 export function Events({ events }: EventsProps): JSX.Element | null {
+    const [visibleCount, setVisibleCount] = useState(EVENTS_PAGE_SIZE);
+
     if (!events?.length) {
         return null;
     }
 
-    const expandableItems = events.map((event, index) => {
-        const { name } = parseStructTag(event.type);
-
-        return (
-            <CollapsibleCard
-                key={index}
-                title={`Event ${index}`}
-                supportingTitleElement={
-                    <span className="ml-xs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
-                        {name}
-                    </span>
-                }
-                collapsible
-                compactHeader
-                initialClose
-                titleSize={TitleSize.Small}
-                isTransparent
-            >
-                <EventContent event={event} />
-            </CollapsibleCard>
-        );
-    });
+    const visibleEvents = events.slice(0, visibleCount);
+    const hiddenCount = events.length - visibleCount;
 
     return (
-        <ProgrammableTxnBlockCard items={expandableItems} itemsLabel="Events" rawData={events} />
+        <CollapsibleCard title="Events" rawData={events}>
+            <div className="flex flex-col gap-xs p-md--rs pt-xs--rs">
+                {visibleEvents.map((event, index) => (
+                    <EventRow key={index} event={event} index={index} />
+                ))}
+                {hiddenCount > 0 && (
+                    <div className="mt-xs flex justify-center">
+                        <ButtonUnstyled
+                            onClick={() =>
+                                setVisibleCount((count) =>
+                                    Math.min(count + EVENTS_PAGE_SIZE, events.length),
+                                )
+                            }
+                            className="text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
+                        >
+                            Show more
+                        </ButtonUnstyled>
+                    </div>
+                )}
+            </div>
+        </CollapsibleCard>
     );
 }

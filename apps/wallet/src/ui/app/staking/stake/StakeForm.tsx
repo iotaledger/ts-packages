@@ -16,6 +16,8 @@ import {
     NO_BALANCE_GENERIC_MESSAGE,
     getGasBudgetErrorMessage,
     useGetValidatorsApy,
+    AmountWithFiat,
+    CoinFiatValue,
 } from '@iota/core';
 import * as Sentry from '@sentry/react';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -242,12 +244,29 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                                 placeholder={`0 ${symbol}`}
                                 value={amount}
                                 caption={
-                                    minAmountTxGasBudget
-                                        ? `${availableBalanceFormatted} ${symbol} Available`
-                                        : '--'
+                                    minAmountTxGasBudget ? (
+                                        <span className="flex flex-col">
+                                            <span>{`${availableBalanceFormatted} ${symbol} Available`}</span>
+                                            <CoinFiatValue
+                                                amount={availableBalance}
+                                                withParentheses={false}
+                                                showApproxSymbol
+                                            />
+                                        </span>
+                                    ) : (
+                                        '--'
+                                    )
                                 }
                                 suffix={' ' + symbol}
                                 errorMessage={amount && meta.error ? meta.error : undefined}
+                                supportingValue={
+                                    !meta.error ? (
+                                        <AmountWithFiat
+                                            amount={amountWithoutDecimals}
+                                            coinType={IOTA_TYPE_ARG}
+                                        />
+                                    ) : undefined
+                                }
                                 label="Amount"
                                 trailingElement={
                                     <ButtonPill onClick={setMaxAmount} disabled={!availableBalance}>

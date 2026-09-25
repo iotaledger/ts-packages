@@ -28,7 +28,7 @@ interface DisplayStatsProps {
     /**
      * The tooltip text.
      */
-    tooltipText?: string;
+    tooltipText?: ReactNode;
     /**
      * The value of the stats.
      */
@@ -123,7 +123,7 @@ export function DisplayStats({
                 {icon && <span className="display-stats-icon-color">{icon}</span>}
             </div>
             <div className="flex w-full flex-row items-baseline gap-xxs">
-                <span className={cx('break-all', valueClass)}>{value}</span>
+                <span className={cx('min-w-0 break-all', valueClass)}>{value}</span>
                 {supportingLabel && (
                     <span className={cx('opacity-40', supportingLabelTextClass)}>
                         {supportingLabel}

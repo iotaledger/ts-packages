@@ -45,7 +45,7 @@ export function AccountDropdownMenu({
                             address={currentAccount.address}
                             iotaNamesEnabled={iotaNamesEnabled}
                         />
-                        <Text mono weight="bold">
+                        <Text mono weight="bold" className={styles.accountName}>
                             {displayAccount}
                         </Text>
                         <ChevronIcon />
@@ -99,7 +99,9 @@ export function AccountDropdownMenuItem({
         >
             <div className={styles.accountIdentity}>
                 <IotaNameNftImage address={account.address} iotaNamesEnabled={iotaNamesEnabled} />
-                <Text mono>{displayAccount}</Text>
+                <Text mono className={styles.accountNameMenuItem}>
+                    {displayAccount}
+                </Text>
             </div>
             {active ? <CheckIcon /> : null}
         </DropdownMenu.Item>

@@ -49,51 +49,78 @@ export function Tooltip({
         closeTimer.current = setTimeout(() => setVisible(false), closeDelay);
     };
 
-    useLayoutEffect(() => {
-        if (!visible) return;
-
-        const rect = triggerRef.current?.getBoundingClientRect();
-        if (!rect) return;
-
-        const pos = {
+    const computePosition = (rect: DOMRect) =>
+        ({
             [TooltipPosition.Top]: {
                 top: rect.top - offset,
                 left: rect.left + rect.width / 2,
                 transform: 'translate(-50%, -100%)',
+                anchorX: 0.5,
+                anchorY: 1,
             },
             [TooltipPosition.Bottom]: {
                 top: rect.bottom + offset,
                 left: rect.left + rect.width / 2,
                 transform: 'translate(-50%, 0)',
+                anchorX: 0.5,
+                anchorY: 0,
             },
             [TooltipPosition.Left]: {
                 top: rect.top + rect.height / 2,
                 left: rect.left - offset,
                 transform: 'translate(-100%, -50%)',
+                anchorX: 1,
+                anchorY: 0.5,
             },
             [TooltipPosition.Right]: {
                 top: rect.top + rect.height / 2,
                 left: rect.right + offset,
                 transform: 'translate(0, -50%)',
+                anchorX: 0,
+                anchorY: 0.5,
             },
-        }[position];
+        })[position];
 
-        setCoords({ top: pos.top, left: pos.left });
-        tooltipRef.current!.style.transform = pos.transform;
+    const clampDelta = (boxStart: number, size: number, viewportSize: number, margin: number) => {
+        const boxEnd = boxStart + size;
+        if (boxEnd > viewportSize - margin) return viewportSize - margin - boxEnd;
+        if (boxStart < margin) return margin - boxStart;
+        return 0;
+    };
+
+    useLayoutEffect(() => {
+        if (!visible) return;
+
+        const rect = triggerRef.current?.getBoundingClientRect();
+        const tooltipEl = tooltipRef.current;
+        if (!rect || !tooltipEl) return;
+
+        const pos = computePosition(rect);
+        tooltipEl.style.transform = pos.transform;
+
+        const { width, height } = tooltipEl.getBoundingClientRect();
+        const margin = 8;
+
+        const boxLeft = pos.left - width * pos.anchorX;
+        const boxTop = pos.top - height * pos.anchorY;
+
+        const deltaX = clampDelta(boxLeft, width, window.innerWidth, margin);
+        const deltaY = clampDelta(boxTop, height, window.innerHeight, margin);
+
+        setCoords({ top: pos.top + deltaY, left: pos.left + deltaX });
     }, [visible, position, offset]);
 
     useLayoutEffect(() => {
         if (!visible) return;
-        const update = () => {
-            const rect = triggerRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            setCoords((prev) => ({ ...prev, left: rect.left + rect.width / 2 }));
+        const dismiss = () => {
+            clearTimers();
+            setVisible(false);
         };
-        window.addEventListener('scroll', update, true);
-        window.addEventListener('resize', update);
+        window.addEventListener('scroll', dismiss, true);
+        window.addEventListener('resize', dismiss);
         return () => {
-            window.removeEventListener('scroll', update, true);
-            window.removeEventListener('resize', update);
+            window.removeEventListener('scroll', dismiss, true);
+            window.removeEventListener('resize', dismiss);
         };
     }, [visible]);
 

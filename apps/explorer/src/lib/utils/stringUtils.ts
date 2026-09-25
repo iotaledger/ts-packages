@@ -3,6 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { extractMediaFileType } from '@iota/core';
+import {
+    formatAddress,
+    formatType,
+    normalizeStructTag,
+    parseStructTag,
+} from '@iota/iota-sdk/utils';
 
 export function hexToAscii(hex: string): string | undefined {
     if (!hex || typeof hex != 'string') return;
@@ -33,4 +39,29 @@ export function isString(value: unknown): boolean {
 
 export function replaceJsonKeyValue(_key: unknown, value: unknown) {
     return typeof value === 'bigint' ? value.toString() : value;
+}
+
+export function truncateStruct(objectType: string): string {
+    const { address, module, typeParams, ...rest } = parseStructTag(objectType);
+
+    const formattedTypeParams = typeParams.map((typeParam) => {
+        if (typeof typeParam === 'string') {
+            return typeParam;
+        } else {
+            return {
+                ...typeParam,
+                address: formatAddress(typeParam.address),
+            };
+        }
+    });
+
+    const structTag = {
+        address: formatAddress(address),
+        module,
+        typeParams: formattedTypeParams,
+        ...rest,
+    };
+
+    const normalizedStructTag = formatType(normalizeStructTag(structTag));
+    return normalizedStructTag;
 }

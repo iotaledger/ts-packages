@@ -5,6 +5,7 @@
 import { ExplorerLink, ExplorerLinkType, TxnAmount } from '_components';
 import { useActiveAddress } from '_hooks';
 import {
+    AmountWithFiat,
     NamedAddressTooltip,
     useCoinMetadata,
     useFormatCoin,
@@ -97,8 +98,17 @@ export function PreviewTransfer({
                 <Divider />
                 <KeyValueInfo
                     keyText={'Est. Gas Fees'}
-                    value={formattedGasBudgetEstimation}
-                    supportingLabel={gasToken}
+                    value={
+                        formattedGasBudgetEstimation ? (
+                            <AmountWithFiat
+                                amount={gasBudget ?? 0}
+                                formatted={formattedGasBudgetEstimation}
+                                symbol={gasToken}
+                            />
+                        ) : (
+                            '-'
+                        )
+                    }
                     fullwidth
                 />
             </div>
