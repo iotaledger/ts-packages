@@ -63,9 +63,9 @@ export function PageSectionNav({
     return (
         <div
             ref={navRef}
-            className="panel-bg panel-border-color sticky top-[88px] z-10 flex w-full flex-wrap items-center justify-between gap-sm rounded-3xl border p-xs sm:rounded-full"
+            className="panel-bg panel-border-color sticky top-[88px] z-10 flex w-full flex-wrap items-center justify-between gap-md rounded-3xl border p-xs sm:rounded-full"
         >
-            <div className="flex flex-row flex-wrap items-center gap-x-xs gap-y-xs sm:gap-x-md">
+            <div className="flex flex-row flex-wrap items-center gap-x-xxs gap-y-xxs sm:gap-x-md md:gap-x-xs md:gap-y-xs">
                 {sections.map(({ id, label }) => (
                     <ButtonSegment
                         key={id}
@@ -77,7 +77,9 @@ export function PageSectionNav({
                 ))}
             </div>
             {actions && (
-                <div className="flex flex-row flex-wrap items-center gap-md pr-xs">{actions}</div>
+                <div className="flex flex-row flex-wrap items-center gap-xs pl-sm md:gap-md md:pr-xs">
+                    {actions}
+                </div>
             )}
         </div>
     );

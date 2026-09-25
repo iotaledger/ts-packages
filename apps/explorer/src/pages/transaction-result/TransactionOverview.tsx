@@ -13,6 +13,7 @@ import { AddressLink, CheckpointSequenceLink, DateDisplay, EpochLink } from '~/c
 import { useAdvancedMode } from '~/contexts';
 import { useBreakpoint } from '~/hooks';
 import { getSendRecipientAddress, getTransactionSponsor, onCopySuccess } from '~/lib/utils';
+import { CopyButton } from './CopyButton';
 
 function getDigestIntegrity(
     rawTransaction: string | undefined,
@@ -132,15 +133,17 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     keyText="Integrity"
                     tooltipText="The transaction digest is recomputed from the raw BCS-encoded transaction data and compared against the digest reported by the network."
                     value={
-                        <span className="flex items-center gap-xxs">
+                        <span className="flex min-w-0 items-center gap-xxs">
                             {digestMatches ? (
                                 <CheckmarkFilled className="h-4 w-4 shrink-0" />
                             ) : (
                                 <Warning className="h-4 w-4 shrink-0" />
                             )}
-                            {digestMatches
-                                ? 'digest re-derived from the raw BCS — matches'
-                                : 'digest re-derived from the raw BCS — mismatch'}
+                            <span className="min-w-0 truncate">
+                                {digestMatches
+                                    ? 'digest re-derived from the raw BCS — matches'
+                                    : 'digest re-derived from the raw BCS — mismatch'}
+                            </span>
                         </span>
                     }
                     fullwidth={!isMediumOrAbove}
@@ -150,9 +153,12 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                 layout="receipt"
                 keyText="Digest"
                 tooltipText="The unique hash that identifies this transaction on the network."
-                value={transaction.digest}
-                copyText={transaction.digest}
-                onCopySuccess={onCopySuccess}
+                value={
+                    <span className="flex min-w-0 items-center gap-xxs">
+                        <span className="min-w-0 truncate">{transaction.digest}</span>
+                        <CopyButton text={transaction.digest} />
+                    </span>
+                }
                 isTruncated
                 fullwidth={!isMediumOrAbove}
             />

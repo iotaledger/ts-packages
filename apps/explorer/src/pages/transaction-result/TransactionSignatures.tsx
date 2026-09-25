@@ -51,10 +51,10 @@ const FIELD_TOOLTIPS: Record<string, string> = {
 
 function CopyableCellValue({ value }: { value: string }): JSX.Element {
     return (
-        <div className="flex min-w-0 items-center gap-xxs">
-            <TableCellText>
-                <span className="break-all">{value}</span>
-            </TableCellText>
+        <div className="flex w-0 min-w-full items-center gap-xxs">
+            <span className="min-w-0 truncate md:whitespace-normal md:break-all" title={value}>
+                {value}
+            </span>
             <CopyButton text={value} />
         </div>
     );
