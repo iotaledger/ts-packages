@@ -12,12 +12,12 @@ import {
     DELEGATED_STAKES_QUERY_STALE_TIME,
     useBalanceVisible,
     BALANCE_MASK,
+    CoinFiatValue,
 } from '@iota/core';
 import {
     Card,
     CardAction,
     CardActionType,
-    CardBody,
     CardImage,
     CardType,
     ImageShape,
@@ -72,16 +72,34 @@ export function TokenStakingOverview({
             <CardImage shape={ImageShape.SquareRounded}>
                 <Stake className="h-5 w-5 text-iota-primary-20 dark:text-iota-primary-90" />
             </CardImage>
-            <CardBody
-                title={
-                    isLoading
-                        ? '--'
-                        : totalDelegatedStake
-                          ? `${isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK} ${symbol}`
-                          : 'Start Staking'
-                }
-                subtitle={isLoading ? '--' : totalDelegatedStake ? 'Current Stake' : 'Earn Rewards'}
-            />
+            <div className="flex w-full flex-col">
+                <div className="flex flex-row items-center gap-x-xxs">
+                    <div className="card-body-title-color flex items-baseline gap-1 text-start font-inter text-title-md">
+                        {isLoading ? (
+                            '--'
+                        ) : totalDelegatedStake ? (
+                            <>
+                                <span>
+                                    {isBalanceVisible ? formattedDelegatedStake : BALANCE_MASK}{' '}
+                                    {symbol}
+                                </span>
+                                {isBalanceVisible && (
+                                    <CoinFiatValue
+                                        amount={totalDelegatedStake}
+                                        withParentheses={false}
+                                        showApproxSymbol
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            'Start Staking'
+                        )}
+                    </div>
+                </div>
+                <div className="card-body-subtitle-color text-start font-inter text-body-md">
+                    {isLoading ? '--' : totalDelegatedStake ? 'Current Stake' : 'Earn Rewards'}
+                </div>
+            </div>
             <CardAction type={CardActionType.Link} onClick={handleOnClick} />
         </Card>
     );

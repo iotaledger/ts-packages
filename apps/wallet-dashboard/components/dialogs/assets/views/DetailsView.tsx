@@ -7,6 +7,8 @@ import {
     Collapsible,
     useNFTBasicData,
     NFTMediaDisplayCard,
+    NameAvatar,
+    NameAvatarSize,
     useGetDefaultIotaName,
     formatIotaName,
     NamedAddressTooltip,
@@ -114,15 +116,21 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                                                 name={iotaName}
                                                 address={ownerAddress}
                                             >
-                                                <ExplorerLink
-                                                    type={ExplorerLinkType.Address}
-                                                    address={ownerAddress}
-                                                >
-                                                    <span data-amp-mask>
-                                                        {formatIotaName(iotaName) ||
-                                                            formatAddress(ownerAddress)}
-                                                    </span>
-                                                </ExplorerLink>
+                                                <span className="inline-flex items-center gap-xs">
+                                                    <NameAvatar
+                                                        address={ownerAddress}
+                                                        size={NameAvatarSize.Xxs}
+                                                    />
+                                                    <ExplorerLink
+                                                        type={ExplorerLinkType.Address}
+                                                        address={ownerAddress}
+                                                    >
+                                                        <span data-amp-mask>
+                                                            {formatIotaName(iotaName) ||
+                                                                formatAddress(ownerAddress)}
+                                                        </span>
+                                                    </ExplorerLink>
+                                                </span>
                                             </NamedAddressTooltip>
                                         }
                                         fullwidth

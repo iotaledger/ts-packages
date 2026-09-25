@@ -9,6 +9,7 @@ import {
     useTotalDelegatedStake,
     useBalanceVisible,
     BALANCE_MASK,
+    AmountWithFiat,
 } from '@iota/core';
 import { DelegatedStake } from '@iota/iota-sdk/client';
 interface StakingDataProps {
@@ -36,13 +37,18 @@ export function StakingData({ stakingData }: StakingDataProps) {
                         size={LabelTextSize.Large}
                         label="Staked"
                         text={
-                            stakeResult.isPending
-                                ? '-'
-                                : isBalanceVisible
-                                  ? `${formattedDelegatedStake}`
-                                  : BALANCE_MASK
+                            stakeResult.isPending ? (
+                                '-'
+                            ) : isBalanceVisible ? (
+                                <AmountWithFiat
+                                    amount={totalDelegatedStake}
+                                    formatted={formattedDelegatedStake}
+                                    symbol={stakeSymbol}
+                                />
+                            ) : (
+                                `${BALANCE_MASK} ${stakeSymbol}`
+                            )
                         }
-                        supportingLabel={stakeSymbol}
                     />
                 </div>
                 <div className="w-1/2">
@@ -50,13 +56,18 @@ export function StakingData({ stakingData }: StakingDataProps) {
                         size={LabelTextSize.Large}
                         label="Earned"
                         text={
-                            rewardsResult.isPending
-                                ? '-'
-                                : isBalanceVisible
-                                  ? `${formattedDelegatedRewards}`
-                                  : BALANCE_MASK
+                            rewardsResult.isPending ? (
+                                '-'
+                            ) : isBalanceVisible ? (
+                                <AmountWithFiat
+                                    amount={totalDelegatedRewards}
+                                    formatted={formattedDelegatedRewards}
+                                    symbol={rewardsSymbol}
+                                />
+                            ) : (
+                                `${BALANCE_MASK} ${rewardsSymbol}`
+                            )
                         }
-                        supportingLabel={rewardsSymbol}
                     />
                 </div>
             </div>

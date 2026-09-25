@@ -26,7 +26,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
     /**
      * The text of the button.
      */
-    text?: string;
+    text?: React.ReactNode;
     /**
      The icon of the button
      */
