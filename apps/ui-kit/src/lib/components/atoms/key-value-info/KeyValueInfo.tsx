@@ -13,7 +13,7 @@ interface KeyValueProps {
     /**
      * The key of the KeyValue.
      */
-    keyText: string;
+    keyText: ReactNode;
     /**
      * An icon shown next to the key text (optional).
      */

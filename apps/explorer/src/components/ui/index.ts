@@ -6,7 +6,6 @@ export * from './header';
 export * from './modal';
 
 export * from './ButtonOrLink';
-export * from './ExpandableList';
 export * from './FilterList';
 export * from './InternalLink';
 export * from './Link';
@@ -20,6 +19,5 @@ export * from './PlaceholderTable';
 export * from './PlayPause';
 export * from './ProgressBar';
 export * from './RingChart';
-export * from './SplitPanes';
 export * from './TableCard';
 export * from './VerticalList';

@@ -6,11 +6,13 @@ import {
     Accordion,
     AccordionContent,
     AccordionHeader,
-    ButtonUnstyled,
     Divider,
     Panel,
     Title,
     TitleSize,
+    Toggle,
+    ToggleLabelPosition,
+    ToggleSize,
 } from '@iota/apps-ui-kit';
 import { ArrowDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
@@ -32,34 +34,31 @@ export interface CollapsibleCardProps {
     rawData?: unknown;
     compactHeader?: boolean;
     isTransparent?: boolean;
+    className?: string;
 }
 
 interface RawJsonToggleProps {
     isActive: boolean;
-    onToggle: () => void;
+    onChange: (isActive: boolean) => void;
+    name?: string;
 }
 
-function RawJsonToggle({ isActive, onToggle }: RawJsonToggleProps): JSX.Element {
+export function RawJsonToggle({ isActive, onChange, name }: RawJsonToggleProps): JSX.Element {
     return (
-        <ButtonUnstyled
-            aria-label="Toggle raw JSON"
-            onClick={(event) => {
-                event.stopPropagation();
-                onToggle();
-            }}
-            className={clsx(
-                'shrink-0 rounded-full border px-xs py-xxs text-label-sm',
-                isActive
-                    ? 'badge-bg-color-primary-soft badge-border-color-soft badge-text-color-primary-soft'
-                    : 'badge-border-color-neutral badge-text-color-neutral bg-transparent',
-            )}
-        >
-            RAW
-        </ButtonUnstyled>
+        <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
+            <Toggle
+                name={name}
+                label="Raw JSON"
+                labelPosition={ToggleLabelPosition.Left}
+                size={ToggleSize.Small}
+                isToggled={isActive}
+                onChange={onChange}
+            />
+        </div>
     );
 }
 
-function RawJsonContent({ rawData }: { rawData: unknown }): JSX.Element {
+export function RawJsonContent({ rawData }: { rawData: unknown }): JSX.Element {
     return (
         <div className="p-md--rs">
             <SyntaxHighlighter code={JSON.stringify(rawData, null, 2)} language="json" />
@@ -81,6 +80,7 @@ export function CollapsibleCard({
     isTransparentPanel,
     rawData,
     compactHeader,
+    className,
 }: CollapsibleCardProps) {
     const [open, setOpen] = useState(!initialClose);
     const [showRaw, setShowRaw] = useState(false);
@@ -109,14 +109,14 @@ export function CollapsibleCard({
     const rawToggle = rawData !== undefined && (
         <RawJsonToggle
             isActive={showRaw}
-            onToggle={() => {
-                setShowRaw(!showRaw);
+            onChange={(isActive) => {
+                setShowRaw(isActive);
                 setOpen(true);
             }}
         />
     );
     return collapsible ? (
-        <div className="relative w-full" data-state={open ? 'open' : 'closed'}>
+        <div className={clsx('relative w-full', className)} data-state={open ? 'open' : 'closed'}>
             <Accordion hideBorder={hideBorder}>
                 <AccordionHeader
                     hideArrow={hideArrow || compactHeader}

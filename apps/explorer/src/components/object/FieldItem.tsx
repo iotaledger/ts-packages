@@ -2,8 +2,9 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useGetObject } from '@iota/core';
+import { truncateString, useGetObject } from '@iota/core';
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
+import { Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import { SyntaxHighlighter } from '~/components';
 import { AddressLink, Link, ObjectLink } from '~/components/ui';
 import { getFieldTypeValue } from '~/lib/ui';
@@ -16,8 +17,16 @@ interface FieldItemProps {
     truncate?: boolean;
 }
 
+const INLINE_VALUE_MAX_LENGTH = 48;
+const INLINE_VALUE_SEGMENT_LENGTH = 22;
+
 const TYPE_ADDRESS = 'Address';
 const TYPE_URL = '0x2::url::Url';
+
+/** Whether the value fits on a single line, and so does not need an expander. */
+export function isInlineFieldValue(value: FieldItemProps['value']): boolean {
+    return typeof value !== 'object' || value === null;
+}
 
 export function FieldItem({
     value,
@@ -26,6 +35,15 @@ export function FieldItem({
     truncate = false,
     objectType,
 }: FieldItemProps): JSX.Element {
+    const isNameId = name
+        ?.toLowerCase()
+        .split(/[_\s-]/)
+        .some((part) => part === 'id' || part === 'uid');
+
+    const objectId = isNameId && typeof value === 'string' ? value : null;
+
+    const { data: objectData } = useGetObject(objectId);
+
     // for object types, use SyntaxHighlighter
     if (typeof value === 'object') {
         return <SyntaxHighlighter code={JSON.stringify(value, null, 2)} language="json" />;
@@ -45,15 +63,6 @@ export function FieldItem({
         );
     }
 
-    const isNameId = name
-        ?.toLowerCase()
-        .split(/[_\s-]/)
-        .some((part) => part === 'id' || part === 'uid');
-
-    const objectId = isNameId && typeof value === 'string' ? value : null;
-
-    const { data: objectData } = useGetObject(objectId);
-
     if (objectId && objectData?.data) {
         return (
             <div className="break-all">
@@ -72,9 +81,18 @@ export function FieldItem({
         );
     }
 
-    return (
-        <div className="break-all text-body-md text-iota-neutral-40">
-            {value === null || value === undefined ? null : String(value)}
-        </div>
-    );
+    const text = value === null || value === undefined ? '' : String(value);
+    const shouldTruncate = truncate && text.length > INLINE_VALUE_MAX_LENGTH;
+
+    if (shouldTruncate) {
+        return (
+            <Tooltip text={text} position={TooltipPosition.Left} maxWidth="max-w-[24rem]">
+                <div className="break-all text-body-md text-iota-neutral-40">
+                    {truncateString(text, INLINE_VALUE_MAX_LENGTH, INLINE_VALUE_SEGMENT_LENGTH)}
+                </div>
+            </Tooltip>
+        );
+    }
+
+    return <div className="break-all text-body-md text-iota-neutral-40">{text}</div>;
 }

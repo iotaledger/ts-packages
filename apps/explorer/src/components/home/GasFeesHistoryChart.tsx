@@ -17,7 +17,7 @@ import {
 
 function TooltipContent({ data }: { data: CompletedEpochMetrics }): JSX.Element {
     const date = formatDate(new Date(Number(data.epochStartTimestamp)), ['day', 'month']);
-    const fees = formatBalance(data.endOfEpochInfo.totalGasFees, IOTA_DECIMALS, CoinFormat.Rounded);
+    const fees = formatBalance(data.endOfEpochInfo.totalGasFees, IOTA_DECIMALS, CoinFormat.Full);
     return (
         <GraphTooltipContent
             overline={`${date}, Epoch ${data.epoch}`}
@@ -50,8 +50,9 @@ export function GasFeesHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Collected',
-                    text: formatBalance(totalFees, IOTA_DECIMALS, CoinFormat.Rounded),
+                    text: formatBalance(totalFees, IOTA_DECIMALS, CoinFormat.Full),
                     supportingLabel: 'IOTA',
+                    fiatAmount: totalFees,
                 },
             ]}
             getX={({ epoch }) => Number(epoch)}
