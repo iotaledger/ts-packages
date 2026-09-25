@@ -3,13 +3,11 @@
 
 import { Address } from '@iota/apps-ui-kit';
 import { useGetDefaultIotaName } from '../../hooks';
-import clsx from 'clsx';
 import { truncateString } from '../../utils';
 import { formatAddress } from '@iota/iota-sdk/utils';
 
 interface NamedAddressProps extends Omit<React.ComponentProps<typeof Address>, 'text'> {
     address: string;
-    addMarginRightToCenter?: boolean;
 }
 
 export function NamedAddress({
@@ -21,20 +19,14 @@ export function NamedAddress({
     onCopySuccess,
     onCopyError,
     onOpen,
-    addMarginRightToCenter = false,
 }: NamedAddressProps): React.JSX.Element {
     const { data: iotaName } = useGetDefaultIotaName(address);
     const formattedAddress = formatAddress(address);
 
     return (
-        <div
-            className={clsx(
-                'flex flex-col gap-y-xxs items-center',
-                addMarginRightToCenter ? '-mr-xl' : '',
-            )}
-        >
+        <div className="flex flex-row items-baseline gap-x-xxs">
             {iotaName ? (
-                <span className="text-label-md dark:text-iota-neutral-92 text-iota-neutral-10 -ml-xl">
+                <span className="text-label-md text-iota-neutral-10 dark:text-iota-neutral-92">
                     {truncateString(iotaName, 12)}
                 </span>
             ) : null}

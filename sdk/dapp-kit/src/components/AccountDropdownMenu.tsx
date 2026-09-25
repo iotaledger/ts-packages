@@ -40,7 +40,7 @@ export function AccountDropdownMenu({
             <StyleMarker>
                 <DropdownMenu.Trigger asChild>
                     <Button size={size} className={styles.connectedAccount}>
-                        <Text mono weight="bold">
+                        <Text mono weight="bold" className={styles.accountName}>
                             {displayAccount}
                         </Text>
                         <ChevronIcon />
@@ -92,7 +92,9 @@ export function AccountDropdownMenuItem({
             className={clsx(styles.menuItem, styles.switchAccountMenuItem)}
             onSelect={() => switchAccount({ account })}
         >
-            <Text mono>{displayAccount}</Text>
+            <Text mono className={styles.accountNameMenuItem}>
+                {displayAccount}
+            </Text>
             {active ? <CheckIcon /> : null}
         </DropdownMenu.Item>
     );
