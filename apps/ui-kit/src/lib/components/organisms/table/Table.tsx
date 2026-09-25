@@ -177,9 +177,19 @@ export function TableHeader({ children }: PropsWithChildren): JSX.Element {
 export function TableRow({
     children,
     leading,
-}: PropsWithChildren<{ leading?: React.ReactNode }>): JSX.Element {
+    onClick,
+}: PropsWithChildren<{
+    leading?: React.ReactNode;
+    onClick?: React.MouseEventHandler<HTMLTableRowElement>;
+}>): JSX.Element {
     return (
-        <tr>
+        <tr
+            onClick={onClick}
+            className={cx({
+                'cursor-pointer hover:bg-shader-neutral-light-8 dark:hover:bg-shader-neutral-dark-8':
+                    onClick,
+            })}
+        >
             {leading}
             {children}
         </tr>

@@ -8,11 +8,16 @@ import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 
 export function useGetTransaction(
     transactionId: string,
-    queryOptions?: { retry?: number; initialData?: IotaTransactionBlockResponse },
+    queryOptions?: {
+        retry?: number;
+        initialData?: IotaTransactionBlockResponse;
+        showRawInput?: boolean;
+    },
 ): UseQueryResult<IotaTransactionBlockResponse, Error> {
     const client = useIotaClient();
+    const showRawInput = !!queryOptions?.showRawInput;
     return useQuery<IotaTransactionBlockResponse, Error>({
-        queryKey: ['transactions-by-id', transactionId],
+        queryKey: ['transactions-by-id', transactionId, { showRawInput }],
         queryFn: async () =>
             client.getTransactionBlock({
                 digest: transactionId,
@@ -22,6 +27,7 @@ export function useGetTransaction(
                     showEvents: true,
                     showBalanceChanges: true,
                     showObjectChanges: true,
+                    showRawInput,
                 },
             }),
         enabled: !!transactionId,

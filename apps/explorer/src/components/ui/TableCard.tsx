@@ -5,6 +5,7 @@
 import {
     Table,
     TableBody,
+    TableCellBase,
     TableHeader,
     TableHeaderCell,
     TableRow,
@@ -19,6 +20,7 @@ import {
     type RowData,
     flexRender,
     getCoreRowModel,
+    getExpandedRowModel,
     getSortedRowModel,
     type SortingState,
     useReactTable,
@@ -49,6 +51,13 @@ export interface TableCardProps<DataType extends RowData> {
     heightFull?: boolean;
     rowLimit?: number;
     allowManualTableSort?: boolean;
+    renderExpandedRow?: (row: DataType) => ReactNode;
+    getRowCanExpand?: (row: DataType) => boolean;
+    getRowId?: (row: DataType) => string;
+}
+
+function isInteractiveTarget(target: EventTarget): boolean {
+    return target instanceof Element && !!target.closest('a, button');
 }
 
 export function TableCard<DataType extends object>({
@@ -65,6 +74,9 @@ export function TableCard<DataType extends object>({
     heightFull,
     rowLimit,
     allowManualTableSort = true,
+    renderExpandedRow,
+    getRowCanExpand,
+    getRowId,
 }: TableCardProps<DataType>): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
 
@@ -73,6 +85,9 @@ export function TableCard<DataType extends object>({
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
+        getExpandedRowModel: getExpandedRowModel(),
+        getRowCanExpand: (row) => !!renderExpandedRow && (getRowCanExpand?.(row.original) ?? true),
+        getRowId,
         onSortingChange: setSorting,
         enableSorting: !!sortTable,
         enableSortingRemoval: false,
@@ -159,13 +174,35 @@ export function TableCard<DataType extends object>({
                         .getRowModel()
                         .rows.slice(0, rowLimit)
                         .map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <Fragment key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </Fragment>
-                                ))}
-                            </TableRow>
+                            <Fragment key={row.id}>
+                                <TableRow
+                                    onClick={
+                                        row.getCanExpand()
+                                            ? (event) => {
+                                                  if (!isInteractiveTarget(event.target)) {
+                                                      row.toggleExpanded();
+                                                  }
+                                              }
+                                            : undefined
+                                    }
+                                >
+                                    {row.getVisibleCells().map((cell) => (
+                                        <Fragment key={cell.id}>
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext(),
+                                            )}
+                                        </Fragment>
+                                    ))}
+                                </TableRow>
+                                {row.getIsExpanded() && renderExpandedRow && (
+                                    <TableRow>
+                                        <TableCellBase colSpan={row.getVisibleCells().length}>
+                                            {renderExpandedRow(row.original)}
+                                        </TableCellBase>
+                                    </TableRow>
+                                )}
+                            </Fragment>
                         ))}
                 </TableBody>
             </Table>

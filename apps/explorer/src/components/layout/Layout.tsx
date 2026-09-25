@@ -14,7 +14,7 @@ import { getNetwork, type Network } from '@iota/iota-sdk/client';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Fragment } from 'react';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
-import { DateFormatProvider, NetworkContext } from '~/contexts';
+import { AdvancedModeProvider, DateFormatProvider, NetworkContext } from '~/contexts';
 import { useAmplitudeIdentity, useNetwork } from '~/hooks';
 import { createIotaClient, SupportedNetworks } from '~/lib/utils';
 import { TrustFrameworkProvider } from '../trust-framework/trustFrameworkProvider';
@@ -45,11 +45,13 @@ export function Layout(): JSX.Element {
                                 <KioskClientProvider>
                                     <NetworkContext.Provider value={[network, setNetwork]}>
                                         <DateFormatProvider>
-                                            <ThemeProvider appId="iota-explorer">
-                                                <Outlet />
-                                                <Toaster />
-                                                <ReactQueryDevtools />
-                                            </ThemeProvider>
+                                            <AdvancedModeProvider>
+                                                <ThemeProvider appId="iota-explorer">
+                                                    <Outlet />
+                                                    <Toaster />
+                                                    <ReactQueryDevtools />
+                                                </ThemeProvider>
+                                            </AdvancedModeProvider>
                                         </DateFormatProvider>
                                     </NetworkContext.Provider>
                                 </KioskClientProvider>

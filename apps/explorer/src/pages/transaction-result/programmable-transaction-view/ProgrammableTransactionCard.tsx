@@ -40,12 +40,12 @@ export function ProgrammableTransactionCard({
 
     return (
         <Panel hasBorder>
-            <div className="flex w-full items-center justify-between gap-sm py-sm--rs">
+            <div className="flex w-full flex-wrap items-center justify-between gap-sm py-sm--rs">
                 <Title
                     title="Programmable Tx"
                     subtitle={`${inputs.length} Inputs | ${transactions.length} Commands`}
                 />
-                <div className="flex items-center gap-xs pr-md--rs">
+                <div className="flex flex-wrap items-center gap-xs px-md--rs [&_button]:whitespace-nowrap">
                     <FilterList
                         options={PTB_VIEWS}
                         selected={view}
