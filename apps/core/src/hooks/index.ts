@@ -54,6 +54,7 @@ export * from './useSendCoinTransaction';
 export * from './useGetClockTimestamp';
 export * from './useAssetGasBudgetEstimation';
 export * from './useRecognizedPackages';
+export * from './useCoinRegistry';
 export * from './useGetAllBalances';
 export * from './useCoinsReFetchingConfig';
 export * from './useIsValidatorCommitteeMember';

@@ -34,6 +34,7 @@ export * from './formatIotaName';
 export * from './isLegacyBrowser';
 export * from './formatUIErrors';
 
+export * from './coins';
 export * from './stake';
 export * from './transaction';
 export * from './validation';

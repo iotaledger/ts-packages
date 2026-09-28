@@ -18,7 +18,9 @@
         "forceConsistentCasingInFileNames": false,
         "noFallthroughCasesInSwitch": false,
         "paths": {
-            "@iota/core/enums/*": ["./../core/src/enums/*"]
+            "@iota/core/enums/*": ["./../core/src/enums/*"],
+            "@iota/core/interfaces/*": ["./../core/src/interfaces/*"],
+            "@iota/core/types/*": ["./../core/src/types/*"]
         }
     }
 }
