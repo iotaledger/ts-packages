@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
-import { CoinTrust } from '../enums';
-import { CoinRegistryEntry } from '../interfaces';
+import { CoinTrust } from '../enums/coins.enums';
+import { CoinRegistryEntry } from '../interfaces/coins.interfaces';
 
 export const COINS_QUERY_REFETCH_INTERVAL = 20_000;
 export const COINS_QUERY_STALE_TIME = 20_000;

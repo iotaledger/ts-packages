@@ -35,13 +35,14 @@ export function useCoinFiatValue(
 ): number | null {
     const entry = useCoinRegistryEntry(coinType);
     const { data: coinMetadata } = useCoinMetadata(coinType);
+    const isFiatConversionEnabled = useFeatureEnabledByNetwork(Feature.FiatConversion, network);
 
     const valuation = entry?.valuation;
     const priceId = valuation?.kind === 'market' ? valuation.priceId : null;
     const { data: tokenPrice } = useTokenPrice(priceId, network);
 
     const unitPrice = valuation?.kind === 'peg' ? valuation.rate : tokenPrice?.price;
-    if (!unitPrice || !coinMetadata) return null;
+    if (!isFiatConversionEnabled || !unitPrice || !coinMetadata) return null;
 
     return new BigNumber(amount.toString())
         .shiftedBy(-coinMetadata.decimals)

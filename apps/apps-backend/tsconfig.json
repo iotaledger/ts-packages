@@ -20,6 +20,7 @@
         "paths": {
             "@iota/core/enums/*": ["./../core/src/enums/*"],
             "@iota/core/interfaces/*": ["./../core/src/interfaces/*"],
+            "@iota/core/constants/*": ["./../core/src/constants/*"]
         }
     }
 }

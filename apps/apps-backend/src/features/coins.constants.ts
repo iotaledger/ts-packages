@@ -1,22 +1,12 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { CoinTrust } from '@iota/core/enums/coins.enums';
 import { CoinRegistryEntry } from '@iota/core/interfaces/coins.interfaces';
-
-interface RecognizedCoinPackage {
-    type: string;
-    name?: string;
-}
+import { DEFAULT_COIN_REGISTRY } from '@iota/core/constants/coins.constants';
 
 export const COIN_REGISTRY: CoinRegistryEntry[] = [
-    {
-        coinType: IOTA_TYPE_ARG,
-        name: 'IOTA',
-        trust: CoinTrust.Native,
-        valuation: { kind: 'market', priceId: 'iota' },
-    },
+    ...DEFAULT_COIN_REGISTRY,
     {
         coinType: '0x1ec64aa5356180866521292ebefb778a16e2852380ff6425784ebc62fc98463f::cyb::CYB',
         name: 'CYB',
@@ -50,13 +40,6 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
         trust: CoinTrust.Recognized,
     },
 ];
-
-export const RECOGNIZED_COIN_PACKAGES: RecognizedCoinPackage[] = COIN_REGISTRY.filter(
-    (entry) => entry.trust === CoinTrust.Recognized,
-).map((entry) => ({
-    type: entry.coinType,
-    name: entry.name,
-}));
 
 export const MARKET_PRICE_IDS: string[] = COIN_REGISTRY.flatMap((entry) =>
     entry.valuation?.kind === 'market' ? [entry.valuation.priceId] : [],
