@@ -25,8 +25,8 @@
         "dev": "pnpm build --watch",
         "build": "build-package",
         "codegen": "buf generate",
-        "test": "vitest run unit --typecheck",
-        "test:e2e": "vitest run e2e --typecheck"
+        "test": "vitest run unit --typecheck --typecheck.tsconfig ./test/tsconfig.json",
+        "test:e2e": "vitest run e2e --typecheck --typecheck.tsconfig ./test/tsconfig.json"
     },
     "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
