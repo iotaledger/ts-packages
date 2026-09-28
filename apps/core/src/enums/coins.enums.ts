@@ -5,3 +5,10 @@ export enum CoinTrust {
     Native = 'native',
     Recognized = 'recognized',
 }
+
+export enum CoinOwnerType {
+    Address = 'AddressOwner',
+    Object = 'ObjectOwner',
+    Shared = 'Shared',
+    Immutable = 'Immutable',
+}
