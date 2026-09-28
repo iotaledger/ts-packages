@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-import { CoinFiatValue, useBalanceInUSD, useFormatCoin, BALANCE_MASK } from '@iota/core';
+import { CoinFiatValue, useCoinFiatValue, useFormatCoin, BALANCE_MASK } from '@iota/core';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { Button, ButtonSize, ButtonType, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import BigNumber from 'bignumber.js';
@@ -21,7 +21,7 @@ interface WalletBalanceUsdProps {
 
 function WalletBalanceUsd({ amount: walletBalance, coinType, isVisible }: WalletBalanceUsdProps) {
     const network = useAppSelector((state) => state.app.network);
-    const usdValue = useBalanceInUSD(coinType, walletBalance, network);
+    const usdValue = useCoinFiatValue(coinType, walletBalance, network);
 
     if (usdValue === null || usdValue === undefined || usdValue === 0) {
         return null;

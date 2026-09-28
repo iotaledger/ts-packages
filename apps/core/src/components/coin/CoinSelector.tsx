@@ -5,8 +5,8 @@ import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { Select, SelectOption } from '@iota/apps-ui-kit';
 import { CoinBalance, type Network } from '@iota/iota-sdk/client';
 import { useIotaClientContext } from '@iota/dapp-kit';
-import { useBalanceInUSD, useFormatCoin } from '../../hooks';
-import { formatBalanceToUSD } from '../../utils';
+import { useCoinFiatValue, useFormatCoin } from '../../hooks';
+import { formatFiat } from '../../utils';
 import { CoinIcon } from './CoinIcon';
 import { ImageIconSize } from '../icon';
 
@@ -61,7 +61,7 @@ function CoinSelectOption({
     const isIota = coinType === IOTA_TYPE_ARG;
 
     const { network } = useIotaClientContext();
-    const usd = useBalanceInUSD(coinType, totalBalance, network as Network);
+    const usd = useCoinFiatValue(coinType, totalBalance, network as Network);
     const hasFiatValue = usd !== null && usd !== undefined && usd !== 0;
 
     return (
@@ -85,7 +85,7 @@ function CoinSelectOption({
                 </span>
                 {hasFiatValue && (
                     <span className="key-supporting-text-color text-body-sm">
-                        ~ {formatBalanceToUSD(usd as number)}
+                        ~ {formatFiat(usd as number)}
                     </span>
                 )}
             </div>

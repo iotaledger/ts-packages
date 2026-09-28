@@ -7,19 +7,19 @@ import BigNumber from 'bignumber.js';
 
 import { useAppsBackendClient } from '@iota/apps-backend-client';
 import { useCoinMetadata } from './useFormatCoin';
-import { Feature, FiatTokenName } from '../enums';
-import { COIN_TYPE_TO_FIAT_TOKEN_NAME } from '../constants';
+import { Feature } from '../enums';
 import { Network } from '@iota/iota-sdk/client';
 import { useFeatureEnabledByNetwork } from './useFeatureEnabledByNetwork';
+import { useCoinRegistryEntry } from './useCoinRegistry';
 
-export function useTokenPrice(tokenName: FiatTokenName | null, network: Network) {
+export function useTokenPrice(priceId: string | null, network: Network) {
     const client = useAppsBackendClient();
     const isFiatConversionEnabled = useFeatureEnabledByNetwork(Feature.FiatConversion, network);
     return useQuery({
-        queryKey: ['apps-backend', 'token-price', isFiatConversionEnabled, network, tokenName],
+        queryKey: ['apps-backend', 'token-price', isFiatConversionEnabled, network, priceId],
         queryFn: () => {
-            if (!isFiatConversionEnabled || !tokenName) return { price: null };
-            return client.getCoinPrice(tokenName);
+            if (!isFiatConversionEnabled || !priceId) return { price: null };
+            return client.getCoinPrice(priceId);
         },
 
         // These values are set to one minute to prevent displaying stale data, as token prices can change frequently.
@@ -28,17 +28,23 @@ export function useTokenPrice(tokenName: FiatTokenName | null, network: Network)
     });
 }
 
-export function useBalanceInUSD(
+export function useCoinFiatValue(
     coinType: string,
-    balance: bigint | string | number,
+    amount: bigint | string | number,
     network: Network,
-) {
+): number | null {
+    const entry = useCoinRegistryEntry(coinType);
     const { data: coinMetadata } = useCoinMetadata(coinType);
-    const tokenName: FiatTokenName | null = COIN_TYPE_TO_FIAT_TOKEN_NAME[coinType];
-    const { data: tokenPrice } = useTokenPrice(tokenName, network);
-    if (!tokenPrice || !coinMetadata || !tokenPrice.price) return null;
-    return new BigNumber(balance.toString())
-        .shiftedBy(-1 * coinMetadata.decimals)
-        .multipliedBy(tokenPrice.price)
+
+    const valuation = entry?.valuation;
+    const priceId = valuation?.kind === 'market' ? valuation.priceId : null;
+    const { data: tokenPrice } = useTokenPrice(priceId, network);
+
+    const unitPrice = valuation?.kind === 'peg' ? valuation.rate : tokenPrice?.price;
+    if (!unitPrice || !coinMetadata) return null;
+
+    return new BigNumber(amount.toString())
+        .shiftedBy(-coinMetadata.decimals)
+        .multipliedBy(unitPrice)
         .toNumber();
 }

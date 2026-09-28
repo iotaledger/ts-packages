@@ -6,9 +6,9 @@ import { Panel } from '@iota/apps-ui-kit';
 import {
     COIN_GECKO_IOTA_URL,
     CoinIcon,
-    formatBalanceToUSD,
+    formatFiat,
     ImageIconSize,
-    useBalanceInUSD,
+    useCoinFiatValue,
 } from '@iota/core';
 import { ButtonOrLink } from '~/components/ui';
 import { IOTA_TYPE_ARG, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
@@ -17,8 +17,8 @@ import { type Network } from '@iota/iota-sdk/client';
 
 export function IotaTokenCard(): JSX.Element {
     const { network } = useIotaClientContext();
-    const iotaPrice = useBalanceInUSD(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
-    const formattedPrice = formatBalanceToUSD(iotaPrice ?? 0);
+    const iotaPrice = useCoinFiatValue(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
+    const formattedPrice = formatFiat(iotaPrice ?? 0);
 
     return (
         <ButtonOrLink href={COIN_GECKO_IOTA_URL}>
