@@ -1,5 +1,41 @@
 # @iota/graphql-transport
 
+## 0.19.0
+
+### Minor Changes
+
+-   8be9ef4: Add native GraphQL WebSocket subscription support
+-   858756f: Add `startAfter` to `subscribeEvent` and `subscribeTransaction` to resume a
+    subscription after a given transaction digest over GraphQL, and fill `id.txDigest` on subscribed
+    events
+
+### Patch Changes
+
+-   027d297: Fix `getDynamicFieldObject` for struct-typed dynamic field names: `0x2::object::ID`,
+    `0x1::string::String` and `0x1::ascii::String` names can be passed as plain strings, and other
+    struct names no longer throw `Unknown layout`.
+-   1d8e175: Update generated GraphQL package version types to use `UInt53`.
+-   4f0bc5e: Update the GraphQL schema and open-rpc types: add the `AFFECTED` transaction
+    relationship, `TransactionBlockFilter.affectedAddress`, `Checkpoint.bcs` and
+    `Query.transactionsByDigests`, and deprecate `Query.transactionBlocksByDigests` and the
+    `scanLimit` argument.
+
+    Update the GraphQL schema and open-rpc types for the transaction deny rules system transactions:
+    add `TransactionDenyRulesUpdateTransaction` to the `TransactionBlockKind` union and
+    `TransactionDenyRulesCreateTransaction` to the `EndOfEpochTransactionKind` union, with the
+    matching `TransactionDenyRulesUpdate` and `TransactionDenyRulesCreate` transaction kinds in the
+    JSON-RPC types.
+
+-   361df87: Add `abortCode` to `TransactionBlockEffects` in the generated GraphQL types.
+-   357d469: tsconfig typo
+-   Updated dependencies [1d8e175]
+-   Updated dependencies [b43f870]
+-   Updated dependencies [4f0bc5e]
+-   Updated dependencies [361df87]
+-   Updated dependencies [8be9ef4]
+-   Updated dependencies [858756f]
+    -   @iota/iota-sdk@1.16.0
+
 ## 0.18.1
 
 ### Patch Changes
