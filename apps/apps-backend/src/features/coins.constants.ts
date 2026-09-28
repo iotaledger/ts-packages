@@ -5,6 +5,14 @@ import { CoinTrust } from '@iota/core/enums/coins.enums';
 import { CoinRegistryEntry } from '@iota/core/interfaces/coins.interfaces';
 import { DEFAULT_COIN_REGISTRY } from '@iota/core/constants/coins.constants';
 
+/**
+ * Add a coin here to make it known to all apps.
+ *
+ * Its dollar value is set with `valuation`:
+ * - 'market': the price is fetched from CoinGecko, using the coin's CoinGecko id.
+ * - 'peg': the price is a fixed number (`rate`). Use it for stablecoins that are not on CoinGecko.
+ * - No `valuation`: the coin has no dollar value.
+ */
 export const COIN_REGISTRY: CoinRegistryEntry[] = [
     ...DEFAULT_COIN_REGISTRY,
     {
