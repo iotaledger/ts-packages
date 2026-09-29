@@ -1,8 +1,8 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { IotaMoveNormalizedModule } from '@iota/iota-sdk/dist/cjs/client';
-import { parseStructTag } from '@iota/iota-sdk/dist/cjs/utils';
+import { IotaMoveNormalizedModule } from '@iota/iota-sdk/client';
+import { parseStructTag } from '@iota/iota-sdk/utils';
 import { getMoveFunctionParams } from './getMoveFunctionParams';
 
 const BURN_FUNCTION_KEYWORDS = ['burn', 'destroy', 'delete'];
