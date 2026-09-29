@@ -210,6 +210,5 @@ export function useDeserializedSignatures(
             : null;
 
         return { userSignatures, sponsorSignature };
-        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [transactionSignatures, gasData?.owner, sender]);
 }

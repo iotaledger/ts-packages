@@ -54,6 +54,7 @@ export function SubnamesDialog({ selectedName, onClose, onRenewClick }: Subnames
                 setNamePaths([initialNameTree.name]);
             }
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [initialNameTree]);
 
     const namePermissions = nameRecordData

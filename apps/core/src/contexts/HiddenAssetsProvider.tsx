@@ -81,6 +81,7 @@ export const HiddenAssetsProvider = ({ children }: PropsWithChildren) => {
         setHiddenAssetIds(newHiddenAssetIds);
         syncIdb(newHiddenAssetIds, prevIds);
         return assetId;
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const showAsset = useCallback((assetId: string) => {
@@ -92,6 +93,7 @@ export const HiddenAssetsProvider = ({ children }: PropsWithChildren) => {
         const updatedHiddenAssetIds = hiddenAssetIdsRef.current.filter((id) => id !== assetId);
         setHiddenAssetIds(updatedHiddenAssetIds);
         syncIdb(updatedHiddenAssetIds, prevIds);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

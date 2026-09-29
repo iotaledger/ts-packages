@@ -117,5 +117,6 @@ export function useCoinsMetadata(coins: Array<{ coinType: string }>) {
             metadata,
             isLoading,
         };
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [uniqueCoinTypes]);
 }

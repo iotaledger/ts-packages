@@ -314,7 +314,6 @@ export function useGetSupplyIncreaseVestingObjects(address: string): SupplyIncre
             setIsMaxTransactionSizeError(true);
             setReductionSize((prev) => prev + REDUCTION_STEP_SIZE);
         }
-        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isUnlockError, unlockError]);
 
     return {

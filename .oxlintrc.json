@@ -65,7 +65,8 @@
         "@tanstack/query/no-rest-destructuring": "warn",
         "@tanstack/query/stable-query-client": "error",
         "@tanstack/query/no-unstable-deps": "error",
-        "react-hooks/exhaustive-deps": "off",
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": "error",
         "react/set-state-in-effect": "off",
         "react/refs": "off",
         "react/purity": "off",
@@ -222,8 +223,17 @@
             }
         },
         {
-            "files": ["**/*.stories.*"],
-            "rules": { "react/rules-of-hooks": "off" }
+            "files": ["**/*.stories.*", "**/tests/**/fixtures.ts"],
+            "rules": { "react-hooks/rules-of-hooks": "off" }
+        },
+        {
+            "files": [
+                "sdk/**/*",
+                "apps/ui-kit/**/*",
+                "apps/ui-icons/**/*",
+                "apps/apps-backend-client/**/*"
+            ],
+            "rules": { "react-hooks/exhaustive-deps": "off" }
         },
         {
             "files": ["sdk/create-dapp/templates/**/*"],

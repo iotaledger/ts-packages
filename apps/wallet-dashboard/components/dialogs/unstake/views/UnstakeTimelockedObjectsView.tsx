@@ -134,7 +134,6 @@ export function UnstakeTimelockedObjectsView({
         }
 
         console.error('[DEBUG]: Timelocked Unstake Error:', unstakeError);
-        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isUnstakeError, unstakeError]);
 
     return (

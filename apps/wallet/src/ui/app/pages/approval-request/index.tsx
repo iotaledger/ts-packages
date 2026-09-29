@@ -52,6 +52,7 @@ export function ApprovalRequestPage() {
         if (!requestsLoading && (!request || (request && request.approved !== null))) {
             navigate('/tokens');
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [request, requestsLoading]);
 
     return (

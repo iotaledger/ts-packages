@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 export function useGetCurrentEpochStartTimestamp() {
     const client = useIotaClient();
     return useQuery({
-        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['current-epoch-start-timestamp'],
         queryFn: async () => {
             const iotaSystemState = await client.getLatestIotaSystemState();

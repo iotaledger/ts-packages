@@ -30,7 +30,6 @@ import { Fragment, type ReactNode, useState } from 'react';
 import { Link } from './Link';
 
 declare module '@tanstack/react-table' {
-    // oxlint-disable-next-line @typescript-eslint/no-unused-vars
     interface ColumnMeta<TData extends RowData, TValue> {
         /** Tooltip text shown next to the column header, via an info icon. */
         tooltip?: string;

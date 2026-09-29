@@ -23,6 +23,7 @@ export const IotaNamesClientProvider: React.FC<React.PropsWithChildren> = ({ chi
             graphQlClient: iotaGraphQLClient,
             network: network.id,
         });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [network.id]);
 
     return (

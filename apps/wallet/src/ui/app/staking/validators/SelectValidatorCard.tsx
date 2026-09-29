@@ -81,6 +81,7 @@ export function SelectValidatorCard() {
             };
         });
         return sortedAsc;
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [allValidatorsRandomOrder, rollingAverageApys, totalStake]);
 
     const filteredValidators = validatorList.filter((validator) => {

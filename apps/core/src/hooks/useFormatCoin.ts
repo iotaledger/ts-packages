@@ -142,6 +142,7 @@ export function useFormatCoin({
         if (!isFetched) return '...';
 
         return formatBalance(balance, data?.decimals ?? 0, format, showSign, { useGroupSeparator });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [data?.decimals, isFetched, balance, format, useGroupSeparator]);
 
     return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];

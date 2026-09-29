@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-// oxlint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Runtime } from 'webextension-polyfill';
 
 declare module 'webextension-polyfill' {

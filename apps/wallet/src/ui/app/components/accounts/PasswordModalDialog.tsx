@@ -72,6 +72,7 @@ export function PasswordModalDialog({
         if (open && !runLockInterval) {
             setRunLockInterval(true);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     useEffect(() => {
@@ -99,6 +100,7 @@ export function PasswordModalDialog({
         return () => {
             clearInterval(interval);
         };
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [runLockInterval, open]);
 
     const {

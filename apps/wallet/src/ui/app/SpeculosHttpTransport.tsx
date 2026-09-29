@@ -80,7 +80,6 @@ export default class SpeculosHttpTransport extends Transport {
                     const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
 
                     const readChunk = async () => {
-                        // oxlint-disable-next-line no-constant-condition
                         while (true) {
                             const { value, done } = await reader.read();
                             if (done) {
