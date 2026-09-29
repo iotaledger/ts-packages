@@ -132,11 +132,6 @@ async function writeCurrentLatest(version: string) {
     );
 }
 
-// copies the `latest` schema into its version and generates all of its files
-async function freezeLatestSchema(version: string) {
-    await writeSchemaVersion(version, latestSchemaPath);
-}
-
 // `latest` follows the schema of the iota node in the submodule, and its index file stores the node
 // version it was generated from. A schema change in a new node version freezes `latest` under the
 // previous one.
@@ -154,7 +149,7 @@ if (!hasNewSchema) {
 } else {
     // 2. a new node version freezes the old latest
     if (hasNewVersion) {
-        await freezeLatestSchema(oldLatestVersion);
+        await writeSchemaVersion(oldLatestVersion, latestSchemaPath);
     }
 
     // 3. update latest with the new node schema and reference its node version
