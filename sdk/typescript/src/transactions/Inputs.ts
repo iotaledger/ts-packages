@@ -8,7 +8,7 @@ import type { SerializedBcs } from '@iota/bcs';
 import { normalizeIotaAddress } from '../utils/iota-types.js';
 import type { CallArg, ObjectRef } from './data/internal.js';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 function Pure(data: Uint8Array | SerializedBcs<any>): Extract<CallArg, { Pure: unknown }> {
     return {
         $kind: 'Pure',

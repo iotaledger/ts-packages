@@ -25,13 +25,7 @@
         "dev": "pnpm build --watch",
         "build": "build-package",
         "test": "vitest run --typecheck",
-        "test:watch": "vitest --typecheck",
-        "prettier:check": "prettier -c --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
-        "prettier:fix": "prettier -w --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
-        "eslint:check": "eslint --max-warnings=0 .",
-        "eslint:fix": "pnpm run eslint:check --fix",
-        "lint": "pnpm run eslint:check && pnpm run prettier:check",
-        "lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
+        "test:watch": "vitest --typecheck"
     },
     "repository": "https://github.com/iotaledger/ts-packages",
     "keywords": [

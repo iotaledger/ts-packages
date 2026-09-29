@@ -33,9 +33,8 @@ export function Divider({
     lineHeight = DEFAULT_LINE_HEIGHT,
 }: DividerProps): React.JSX.Element {
     // Set height and width of divider line based on type
-    const lineStyle = {
-        ...(type === DividerType.Horizontal ? { height: lineHeight } : { width: lineHeight }),
-    };
+    const lineStyle =
+        type === DividerType.Horizontal ? { height: lineHeight } : { width: lineHeight };
 
     let dividerSize = DIVIDER_FULL_WIDTH[type];
     if (width && type === DividerType.Horizontal) {

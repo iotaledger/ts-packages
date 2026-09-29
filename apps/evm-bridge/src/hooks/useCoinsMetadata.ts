@@ -48,7 +48,7 @@ export function useCoinsMetadata(coins: Array<{ coinType: string }>) {
                     // but the GraphQL Node does
                     const structType = `0x2::coin_manager::CoinManager<${coinType}>`;
 
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
                     const { data: graphqlData } = await iotaGraphQLClient.query<any>({
                         query: graphql(`
                             query getCoinManager($type: String!) {
@@ -117,5 +117,6 @@ export function useCoinsMetadata(coins: Array<{ coinType: string }>) {
             metadata,
             isLoading,
         };
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [uniqueCoinTypes]);
 }

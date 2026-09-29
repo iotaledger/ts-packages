@@ -75,7 +75,7 @@ function loadTsConfig(tsConfigFilePath: string) {
     }).then(
         (tsContent) => JSON.parse(tsContent),
         (e) => {
-            // eslint-disable-next-line no-console
+            // oxlint-disable-next-line no-console
             console.error(e);
             throw e;
         },

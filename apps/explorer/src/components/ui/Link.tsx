@@ -49,9 +49,7 @@ const linkContentStyles = cva(['flex-nowrap items-center'], {
 type LinkContentStylesProps = VariantProps<typeof linkContentStyles>;
 
 export interface LinkProps
-    extends ButtonOrLinkProps,
-        VariantProps<typeof linkStyles>,
-        LinkContentStylesProps {
+    extends ButtonOrLinkProps, VariantProps<typeof linkStyles>, LinkContentStylesProps {
     before?: ReactNode;
     after?: ReactNode;
 }

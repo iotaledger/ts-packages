@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable no-restricted-globals */
+/* oxlint-disable @typescript-eslint/ban-types */
+/* oxlint-disable no-restricted-globals */
 
 import { existsSync, statSync } from 'fs';
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises';

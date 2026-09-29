@@ -154,6 +154,7 @@ export function AvailabilityCheck({ autoFocusInput }: AvailabilityCheckProps) {
         if (fullName === name && nameRecordData) {
             updateRecentSearch(searchValue, isNameTaken);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [searchValue, validationError, isNameTaken, name, nameRecordData]);
 
     function handleInputChange(inputValue: string) {

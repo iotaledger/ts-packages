@@ -9,7 +9,7 @@ import { parseSerializedSignature, SIGNATURE_FLAG_TO_SCHEME } from '../cryptogra
 import { Ed25519PublicKey } from '../keypairs/ed25519/publickey.js';
 import { Secp256k1PublicKey } from '../keypairs/secp256k1/publickey.js';
 import { Secp256r1PublicKey } from '../keypairs/secp256r1/publickey.js';
-// eslint-disable-next-line import/no-cycle
+// oxlint-disable-next-line import/no-cycle
 import { MultiSigPublicKey } from '../multisig/publickey.js';
 import { PasskeyPublicKey } from '../keypairs/passkey/publickey.js';
 import { MoveAuthenticatorPublicKey } from '../keypairs/move-authenticator/publickey.js';

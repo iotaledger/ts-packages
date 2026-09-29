@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-/* eslint-disable @tanstack/query/exhaustive-deps */
+/* oxlint-disable @tanstack/query/exhaustive-deps */
 
 import { useIotaClient, useIotaClientContext } from '@iota/dapp-kit';
 import {

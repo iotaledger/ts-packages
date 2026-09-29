@@ -74,6 +74,7 @@ export function ConnectToAddressDialog({ name, setOpen }: ConnectToAddressDialog
     // Sync address current public name
     useEffect(() => {
         setEditIsPublicName(addressName === name);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [addressName]);
 
     const hasAddressChange = editTargetAddress !== currentTargetAddress;

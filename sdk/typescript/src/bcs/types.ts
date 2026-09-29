@@ -39,7 +39,7 @@ export type ObjectCallArg = {
  */
 export type PureArg = { Pure: { bytes: Uint8Array | string } };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export function isPureArg(arg: any): arg is PureArg {
     return (arg as PureArg).Pure !== undefined;
 }

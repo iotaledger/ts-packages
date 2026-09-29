@@ -29,7 +29,7 @@ export type IotaRpcPaginatedMethods = {
     [K in IotaRpcPaginatedMethodName]: IotaClient[K] extends (
         input: infer Params,
     ) => Promise<
-        infer Result extends { hasNextPage?: boolean | null; nextCursor?: infer Cursor | null }
+        infer Result extends { hasNextPage?: boolean | null; nextCursor?: (infer Cursor) | null }
     >
         ? {
               name: K;
@@ -78,6 +78,7 @@ export function useIotaClientInfiniteQuery<
         enabled,
         queryFn: ({ pageParam }) =>
             iotaContext.client[method]({
+                // oxlint-disable-next-line unicorn/no-useless-fallback-in-spread
                 ...(params ?? {}),
                 cursor: pageParam,
             } as never),

@@ -111,6 +111,7 @@ export function AvatarDisplay({ src, alt, isLoadingSrc, blur }: AvatarDisplayPro
             img.removeEventListener('load', handleLoad);
             img.removeEventListener('error', handleError);
         };
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [avatarSrc]);
 
     const isLoading = srcStatus === 'pending' || avatarStatus === 'loading';

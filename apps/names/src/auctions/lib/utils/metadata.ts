@@ -135,7 +135,7 @@ export function createAuctionMetadataQuery({
     graphQLClient,
 }: CreateAuctionMetadataQueryParams) {
     return {
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...queryKey.auctionMetadata(name), packageId, auctionsTableObjectId],
         queryFn: async () => {
             if (!auctionsTableObjectId) {

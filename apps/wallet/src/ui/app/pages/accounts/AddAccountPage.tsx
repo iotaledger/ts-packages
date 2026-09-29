@@ -250,7 +250,7 @@ const DEFAULT_ICON_COLOR = 'text-iota-primary-20 dark:text-iota-primary-90';
 const LEGACY_BG_COLOR = 'dark:bg-iota-warning-10 bg-iota-warning-90';
 const LEGACY_ICON_COLOR = 'text-iota-warning-20 dark:text-iota-warning-90';
 
-export function OnboardingCardIcon({ Icon, isLegacy: isLegacy = false }: CardIconProps) {
+export function OnboardingCardIcon({ Icon, isLegacy = false }: CardIconProps) {
     const bgColor = isLegacy ? LEGACY_BG_COLOR : DEFAULT_BG_COLOR;
     const iconColor = isLegacy ? LEGACY_ICON_COLOR : DEFAULT_ICON_COLOR;
 

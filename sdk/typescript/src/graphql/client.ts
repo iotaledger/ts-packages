@@ -53,7 +53,7 @@ export interface IotaGraphQLClientOptions<Queries extends Record<string, GraphQL
 
 export class IotaGraphQLRequestError extends Error {}
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// oxlint-disable-next-line @typescript-eslint/ban-types
 export class IotaGraphQLClient<Queries extends Record<string, GraphQLDocument> = {}> {
     #url: string;
     #queries: Queries;

@@ -130,6 +130,7 @@ export function ProtectAccountPage() {
                 toast.error((e as Error).message ?? 'Failed to create account');
             }
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [createMutation, navigate, successRedirect],
     );
     const autoLockMutation = useAutoLockMinutesMutation();

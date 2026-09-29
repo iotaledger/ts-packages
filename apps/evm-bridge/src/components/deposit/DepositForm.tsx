@@ -87,10 +87,12 @@ export function DepositForm({
         if (!isTransactionLoading) {
             setValue(BridgeFormInputName.DepositAmount, '');
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isTransactionLoading]);
 
     const onSubmit: SubmitHandler<DepositFormData> = useCallback(() => {
         deposit();
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [deposit, setValue]);
 
     const fromAddress = isFromLayer1 ? layer1Account?.address : layer2Account?.address;
@@ -133,9 +135,7 @@ export function DepositForm({
             ? `${formattedAvailableBalance} ${symbol} Available`
             : '--';
     const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onBlur: _onBlur,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onChange: _onChange,
         ...registerDepositAmount
     } = register(BridgeFormInputName.DepositAmount);

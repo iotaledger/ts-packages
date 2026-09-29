@@ -75,12 +75,14 @@ export function SiteConnectPage() {
                 handleOnFinish();
             }
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [requestID, accountsToConnect, permissionRequest, dispatch],
     );
     useEffect(() => {
         if (!loading && !permissionRequest) {
             handleOnFinish();
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [loading, permissionRequest]);
 
     const parsedOrigin = useMemo(

@@ -16,7 +16,7 @@ import {
 import type { SignatureFlag, SignatureScheme } from '../cryptography/signature-scheme.js';
 import { parseSerializedSignature } from '../cryptography/signature.js';
 import { normalizeIotaAddress } from '../utils/iota-types.js';
-// eslint-disable-next-line import/no-cycle
+// oxlint-disable-next-line import/no-cycle
 import { publicKeyFromRawBytes } from '../verify/index.js';
 import { MultiSigSigner } from './signer.js';
 

@@ -46,6 +46,7 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
                 onSelectResult?.();
             }
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [addRecentSearch, onSelectResult, query],
     );
 
@@ -71,6 +72,7 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
                 if (result) handleClickResult(result);
             }
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [results, activeIndex, handleClickResult, debouncedQuery],
     );
 

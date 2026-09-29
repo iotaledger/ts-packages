@@ -139,7 +139,7 @@ export const getObjectOrPastObjectQuery = <TSelectData = UseGetObjectOrPastObjec
 ) => {
     return {
         select,
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['object-or-past-object', objectId],
         queryFn: () => fetchObjectOrPastObject(client, objectId),
         enabled: !!objectId,

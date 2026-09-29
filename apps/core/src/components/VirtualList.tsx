@@ -62,6 +62,7 @@ export function VirtualList<T>({
 
         resizeObserver.observe(el);
         return () => resizeObserver.disconnect();
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const virtualItems = virtualizer.getVirtualItems();

@@ -52,6 +52,6 @@ Builds the app for production to the `build` folder.
 
 It bundles React in production mode and optimizes the build for the best performance.
 
-### `pnpm explorer lint`
+### `pnpm lint`
 
-Run linting check (prettier/eslint).
+Run linting check (oxlint/oxfmt).

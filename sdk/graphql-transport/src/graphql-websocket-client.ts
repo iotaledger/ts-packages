@@ -67,7 +67,7 @@ export class GraphQLWebSocketConnectionError extends Error {}
 
 export type GraphQLSubscriptionVariables = Record<string, unknown>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export type GraphQLSubscriptionRequest<T = any> = {
     query: GraphQLDocument;
     /** Resolved on every send, so a resubscribe can carry a resume cursor. */
@@ -382,7 +382,7 @@ export class GraphQLWebSocketClient {
 }
 
 class GraphQLSubscription {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     #request: GraphQLSubscriptionRequest<any>;
     #active = false;
     #socket: WebSocket | null = null;

@@ -69,7 +69,7 @@ export function MigrationDialog({
                 console.error('Error creating migration transaction', error);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isMigrationError, error]);
 
     async function handleMigrate(): Promise<void> {

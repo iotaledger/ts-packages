@@ -90,7 +90,7 @@ function convertCommandArgumentToString(arg: CommandArgTypes): string | null {
             case 'NestedResult':
                 return `NestedResult(${'NestedResult' in arg ? `${arg.NestedResult[0]}, ${arg.NestedResult[1]})` : 'unknown'}`;
             default:
-                // eslint-disable-next-line no-console
+                // oxlint-disable-next-line no-console
                 console.warn('Unexpected command argument type.', arg);
                 return null;
         }

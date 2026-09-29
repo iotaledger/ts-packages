@@ -34,7 +34,7 @@ You can also run both the wallet and `apps-backend` in one single command with:
 pnpm wallet-dev
 ```
 
-This will build the app in the [dist/](./dist/) directory, watch for changes and rebuild it. (Also runs prettier to format the files that changed.)
+This will build the app in the [dist/](./dist/) directory, watch for changes and rebuild it.
 
 ## Environment Variables
 

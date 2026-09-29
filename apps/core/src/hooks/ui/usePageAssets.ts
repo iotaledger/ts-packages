@@ -92,6 +92,7 @@ export function usePageAssets(address: string | null, hiddenAssets?: HiddenAsset
                         : null;
             setSelectedAssetCategory(defaultCategory);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [ownedAssets]);
 
     // Fetch the next page if there are no visual assets, other + hidden assets are present in multiples of 50, and there are more pages to fetch
@@ -106,6 +107,7 @@ export function usePageAssets(address: string | null, hiddenAssets?: HiddenAsset
             fetchNextPage();
             setSelectedAssetCategory(null);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [hasNextPage, ownedAssets, isFetchingNextPage]);
 
     return {
