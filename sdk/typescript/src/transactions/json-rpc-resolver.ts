@@ -110,12 +110,21 @@ async function setGasPayment(
     options: BuildTransactionOptions,
 ) {
     if (!transactionData.gasData.payment) {
-        const coins = await getClient(options).getCoins({
-            owner: transactionData.gasData.owner || transactionData.sender!,
-            coinType: IOTA_TYPE_ARG,
-        });
+        const MAX_GAS_OBJECTS = 256;
 
-        const paymentCoins = coins.data
+        const coins = [];
+        let cursor: string | null | undefined = null;
+        do {
+            const page = await getClient(options).getCoins({
+                owner: transactionData.gasData.owner || transactionData.sender!,
+                coinType: IOTA_TYPE_ARG,
+                cursor,
+            });
+            coins.push(...page.data);
+            cursor = page.hasNextPage ? page.nextCursor : null;
+        } while (cursor && coins.length < MAX_GAS_OBJECTS);
+
+        const paymentCoins = coins
             // Filter out coins that are also used as input:
             .filter((coin) => {
                 const matchingInput = transactionData.inputs.find((input) => {
@@ -132,7 +141,8 @@ async function setGasPayment(
                 objectId: coin.coinObjectId,
                 digest: coin.digest,
                 version: coin.version,
-            }));
+            }))
+            .slice(0, MAX_GAS_OBJECTS);
 
         if (!paymentCoins.length) {
             throw new Error('No valid gas coins found for the transaction.');
