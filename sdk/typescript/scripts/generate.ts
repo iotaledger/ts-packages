@@ -245,7 +245,11 @@ export class FileGenerator {
 
         const nodes = ts.factory.createNodeArray([...this.imports, ...this.statements]);
 
-        const result = printer.printList(ts.ListFormat.SourceFileStatements, nodes, sourcefile);
+        const result = printer
+            .printList(ts.ListFormat.SourceFileStatements, nodes, sourcefile)
+            // The printer emits a union member's doc comment after its `|`, which the formatter
+            // then attaches to the previous member instead of the one it documents.
+            .replace(/ \| (\/\*\*[\s\S]*?\*\/)\n/g, '\n$1\n| ');
 
         const formatted = await format('generated.ts', result, formatOptions);
 
