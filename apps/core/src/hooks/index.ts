@@ -24,7 +24,7 @@ export * from './useCookieConsentBanner';
 export * from './useGetKioskContents';
 export * from './useZodForm';
 export * from './useElementDimensions';
-export * from './useIsAssetTransferable';
+export * from './useAssetActions';
 export * from './useLocalStorage';
 export * from './useTokenPrice';
 export * from './useKioskClient';

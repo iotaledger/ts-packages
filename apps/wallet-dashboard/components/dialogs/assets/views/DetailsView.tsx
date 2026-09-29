@@ -12,14 +12,18 @@ import {
     useGetDefaultIotaName,
     formatIotaName,
     NamedAddressTooltip,
+    toast,
 } from '@iota/core';
 import { Button, ButtonType, Header, KeyValueInfo } from '@iota/apps-ui-kit';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { DialogLayoutBody, DialogLayoutFooter } from '../../layout';
 import { IotaObjectData } from '@iota/iota-sdk/client';
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { useCurrentAccount } from '@iota/dapp-kit';
+import { useCurrentAccount, useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { useExternalLink } from '@/hooks';
+import { Transaction } from '@iota/iota-sdk/transactions';
+import { Loader } from '@iota/apps-ui-icons';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DetailsViewProps {
     asset: IotaObjectData;
@@ -45,9 +49,13 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
         isContainedInKiosk,
         kioskItem,
         objectData,
+        nftBurnFunction,
     } = useNftDetails(objectId, senderAddress);
     const { data: iotaName } = useGetDefaultIotaName(ownerAddress);
     const { fileExtensionType, filePath } = useNFTBasicData(objectData);
+    const { mutateAsync: signAndExecuteTransaction, isPending: isTransactionPending } =
+        useSignAndExecuteTransaction();
+    const queryClient = useQueryClient();
 
     const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/', {
         type: 'ts-sdk-documentation',
@@ -59,6 +67,44 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
             type: 'marketplace',
         },
     );
+
+    const handleBurnAsset = async () => {
+        if (!account || !objectId || !nftBurnFunction) return;
+        try {
+            const tx = new Transaction();
+
+            tx.setSender(account.address);
+
+            tx.moveCall({
+                target: nftBurnFunction,
+                arguments: [tx.object(objectId)],
+            });
+
+            await signAndExecuteTransaction(
+                {
+                    transaction: tx,
+                    options: {
+                        showEffects: true,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        toast.success('Asset burnt successfully');
+                        queryClient.invalidateQueries({
+                            queryKey: ['get-owned-objects', senderAddress],
+                        });
+                        onClose();
+                    },
+                    onError: () => {
+                        toast.error('Failed to burn asset');
+                    },
+                },
+            );
+        } catch (error) {
+            toast.error('Failed to burn asset');
+            console.error('Failed to burn asset:', error);
+        }
+    };
 
     return (
         <>
@@ -178,9 +224,9 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                 </div>
             </DialogLayoutBody>
             <DialogLayoutFooter>
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-2">
                     {isContainedInKiosk && kioskItem?.isLocked ? (
-                        <div className="flex flex-col gap-2">
+                        <>
                             <Button
                                 type={ButtonType.Secondary}
                                 onClick={handleMoreAboutKiosk}
@@ -191,14 +237,31 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                                 onClick={handleMarketplace}
                                 text="Marketplace"
                             />
-                        </div>
+                        </>
                     ) : (
-                        <Button
-                            disabled={!isAssetTransferable}
-                            onClick={onSend}
-                            text="Send"
-                            fullWidth
-                        />
+                        <>
+                            {nftBurnFunction && (
+                                <Button
+                                    fullWidth
+                                    type={ButtonType.Destructive}
+                                    disabled={isTransactionPending}
+                                    text="Burn"
+                                    icon={
+                                        isTransactionPending ? (
+                                            <Loader className="animate-spin" />
+                                        ) : undefined
+                                    }
+                                    iconAfterText
+                                    onClick={handleBurnAsset}
+                                />
+                            )}
+                            <Button
+                                disabled={!isAssetTransferable}
+                                onClick={onSend}
+                                text="Send"
+                                fullWidth
+                            />
+                        </>
                     )}
                 </div>
             </DialogLayoutFooter>
