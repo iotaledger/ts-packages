@@ -3,13 +3,16 @@
 
 import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import { BinaryWriter, WireType } from '@bufbuild/protobuf/wire';
+import { toBase58, toHex } from '@iota/bcs';
 import { describe, expect, it } from 'vitest';
 
 import {
     EmptyResponseFieldError,
     ServerError,
     UnexpectedEndOfStreamError,
+    UnexpectedObjectError,
     UnexpectedResultCountError,
+    UnexpectedTransactionError,
     UnknownVariantError,
 } from '../../../src/errors.js';
 import { StatusSchema } from '../../../src/proto/google/rpc/status_pb.js';
@@ -19,9 +22,18 @@ import {
     ObjectResultSchema,
     TransactionResultSchema,
 } from '../../../src/proto/iota/grpc/v1/ledger_service_pb.js';
+import type { Object$ } from '../../../src/proto/iota/grpc/v1/object_pb.js';
 import { ObjectSchema } from '../../../src/proto/iota/grpc/v1/object_pb.js';
+import type { ExecutedTransaction } from '../../../src/proto/iota/grpc/v1/transaction_pb.js';
 import { ExecutedTransactionSchema } from '../../../src/proto/iota/grpc/v1/transaction_pb.js';
-import { checkResultCount, collectStream, toItemResult } from '../../../src/reassembly/batch.js';
+import {
+    checkObjectIdentity,
+    checkResultCount,
+    checkTransactionIdentity,
+    collectStream,
+    toItemResult,
+} from '../../../src/reassembly/batch.js';
+import type { ItemResult } from '../../../src/results.js';
 
 describe('toItemResult', () => {
     it('returns the object on success', () => {
@@ -206,5 +218,107 @@ describe('checkResultCount', () => {
         expect(() => checkResultCount(actual, expected)).toThrow(
             new UnexpectedResultCountError(expected, actual.length),
         );
+    });
+});
+
+function id(byte: number): Uint8Array {
+    return new Uint8Array(32).fill(byte);
+}
+
+function objectWithId(objectId: Uint8Array): ItemResult<Object$> {
+    return { ok: true, value: create(ObjectSchema, { reference: { objectId: { objectId } } }) };
+}
+
+function transactionWithDigest(digest: Uint8Array): ItemResult<ExecutedTransaction> {
+    return {
+        ok: true,
+        value: create(ExecutedTransactionSchema, { transaction: { digest: { digest } } }),
+    };
+}
+
+const failedSlot = { ok: false, error: new ServerError(5, 'not found') } as const;
+
+describe('checkObjectIdentity', () => {
+    const a = id(0xaa);
+    const b = id(0xbb);
+
+    it('accepts objects answered in request order', () => {
+        expect(() => checkObjectIdentity([objectWithId(a), objectWithId(b)], [a, b])).not.toThrow();
+    });
+
+    it('accepts the same object requested twice', () => {
+        expect(() => checkObjectIdentity([objectWithId(a), objectWithId(a)], [a, a])).not.toThrow();
+    });
+
+    it('compares bytes, not array identity', () => {
+        expect(() => checkObjectIdentity([objectWithId(id(0xaa))], [id(0xaa)])).not.toThrow();
+    });
+
+    it('rejects swapped objects at the first wrong position', () => {
+        expect(() => checkObjectIdentity([objectWithId(b), objectWithId(a)], [a, b])).toThrow(
+            new UnexpectedObjectError(0, `0x${toHex(a)}`, `0x${toHex(b)}`),
+        );
+    });
+
+    it('reports the position of a mismatch past the first slot', () => {
+        const c = id(0xcc);
+
+        expect(() =>
+            checkObjectIdentity([objectWithId(a), objectWithId(b), objectWithId(a)], [a, b, c]),
+        ).toThrow(new UnexpectedObjectError(2, `0x${toHex(c)}`, `0x${toHex(a)}`));
+    });
+
+    it('rejects an id of a different length', () => {
+        expect(() => checkObjectIdentity([objectWithId(a.subarray(0, 31))], [a])).toThrow(
+            UnexpectedObjectError,
+        );
+    });
+
+    it('skips error slots', () => {
+        expect(() => checkObjectIdentity([failedSlot, objectWithId(b)], [a, b])).not.toThrow();
+    });
+
+    it('skips objects whose reference was masked out', () => {
+        expect(() =>
+            checkObjectIdentity([{ ok: true, value: create(ObjectSchema) }], [a]),
+        ).not.toThrow();
+    });
+});
+
+describe('checkTransactionIdentity', () => {
+    const a = id(0x11);
+    const b = id(0x22);
+
+    it('accepts transactions answered in request order', () => {
+        expect(() =>
+            checkTransactionIdentity([transactionWithDigest(a), transactionWithDigest(b)], [a, b]),
+        ).not.toThrow();
+    });
+
+    it('rejects swapped transactions with base58 digests in the error', () => {
+        expect(() =>
+            checkTransactionIdentity([transactionWithDigest(b), transactionWithDigest(a)], [a, b]),
+        ).toThrow(new UnexpectedTransactionError(0, toBase58(a), toBase58(b)));
+    });
+
+    it('skips error slots', () => {
+        expect(() =>
+            checkTransactionIdentity([failedSlot, transactionWithDigest(b)], [a, b]),
+        ).not.toThrow();
+    });
+
+    it('skips transactions whose digest was masked out', () => {
+        expect(() =>
+            checkTransactionIdentity(
+                [
+                    { ok: true, value: create(ExecutedTransactionSchema) },
+                    {
+                        ok: true,
+                        value: create(ExecutedTransactionSchema, { transaction: {} }),
+                    },
+                ],
+                [a, b],
+            ),
+        ).not.toThrow();
     });
 });
