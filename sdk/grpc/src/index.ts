@@ -5,3 +5,4 @@ export * from './client.js';
 export * from './errors.js';
 export * from './transport.js';
 export * from './read-masks.js';
+export * from './metadata.js';
