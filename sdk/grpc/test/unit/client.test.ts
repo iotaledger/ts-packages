@@ -5,12 +5,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
     DEFAULT_MAX_MESSAGE_SIZE_BYTES,
+    getGrpcUrl,
     GRPC_URLS,
     IotaGrpcClient,
+    isIotaGrpcClient,
     MAX_MESSAGE_SIZE_BYTES,
     MIN_MESSAGE_SIZE_BYTES,
-    getGrpcUrl,
-    isIotaGrpcClient,
 } from '../../src/index.js';
 import { IotaGrpcTestClient } from '../test-client.js';
 
