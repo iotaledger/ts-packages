@@ -12,7 +12,7 @@
         "**/*.mdx",
         "**/*.yml",
         "**/*.yaml",
-        "/apps/icons/src",
+        "/apps/ui-icons/src",
         "npm-debug.log*",
         "package-lock.json",
         "yarn-debug.log*",
