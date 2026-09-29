@@ -17,7 +17,6 @@ import type {
 import type { IotaObjectRef } from '@iota/iota-sdk/client';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 
-import type { ObjectOut } from '@iota/iota-sdk/src/bcs/effects.js';
 import type { Rpc_Transaction_FieldsFragment } from '../generated/queries.js';
 import { toShortTypeString } from './util.js';
 
@@ -372,7 +371,7 @@ const ADDRESS_ZERO = normalizeIotaAddress('0x0');
 export function mapEffects(data: string): IotaTransactionBlockResponse['effects'] {
     const effects = bcs.TransactionEffects.parse(fromBase64(data));
 
-    type InferredOwner = Exclude<(typeof ObjectOut)['$inferType']['ObjectWrite'], undefined>[1];
+    type InferredOwner = (typeof bcs.Owner)['$inferType'];
 
     const sharedObjects = effects.V1.unchangedSharedObjects.map(([id, sharedObject]) => {
         switch (sharedObject.$kind) {

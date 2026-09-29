@@ -13,8 +13,7 @@
     "scripts": {
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "build-package": "tsc --project tsconfig.package.json && vite build",
-        "build": "cross-env BUILD_ENV=package pnpm run build-package",
+        "build": "tsc --project tsconfig.package.json && tsdown",
         "dev": "pnpm run storybook"
     },
     "exports": {
@@ -38,7 +37,13 @@
     },
     "peerDependencies": {
         "react": "^18 || ^19",
-        "react-dom": "^18 || ^19"
+        "react-dom": "^18 || ^19",
+        "tailwindcss": "^3"
+    },
+    "peerDependenciesMeta": {
+        "tailwindcss": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@chromatic-com/storybook": "^5.1.2",
@@ -47,21 +52,22 @@
         "@storybook/addon-themes": "^10.3.6",
         "@storybook/react": "^10.3.6",
         "@storybook/react-vite": "^10.3.6",
+        "@tsdown/css": "^0.23.0",
         "@types/lodash.merge": "^4.6.9",
         "@types/node": "^24.0.0",
         "@types/react": "^18.3.3",
         "@types/react-dom": "^18.3.0",
         "@vitejs/plugin-react-swc": "^4.3.0",
         "autoprefixer": "^10.4.19",
-        "cross-env": "^7.0.3",
         "memfs": "^4.11.1",
         "postcss": "^8.4.31",
+        "postcss-url": "^10.1.4",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "storybook": "^10.3.6",
         "tailwindcss": "^3.3.3",
-        "typescript": "^5.5.3",
-        "vite": "^8.0.1",
-        "vite-plugin-dts": "^4.5.4"
+        "tsdown": "^0.23.0",
+        "typescript": "^7.0.2",
+        "vite": "^8.0.1"
     }
 }

@@ -60,7 +60,7 @@
         "@types/node": "^24.0.0",
         "axios": "^1.15.0",
         "size-limit": "^11.1.4",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0"
     }
 }

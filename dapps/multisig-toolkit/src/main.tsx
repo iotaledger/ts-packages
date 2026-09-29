@@ -4,8 +4,8 @@
 
 import '@iota/dapp-kit/dist/index.css';
 import './index.css';
-import '@fontsource-variable/inter';
-import '@fontsource-variable/red-hat-mono';
+import '@fontsource-variable/inter/index.css';
+import '@fontsource-variable/red-hat-mono/index.css';
 
 import { IotaClientProvider, WalletProvider } from '@iota/dapp-kit';
 import { getRpcUrl } from '@iota/iota-sdk/client';

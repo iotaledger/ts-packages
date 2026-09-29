@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaObjectData } from '@iota/iota-sdk/src/client';
+import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { type ControllerCap } from './types';
 
 /**
