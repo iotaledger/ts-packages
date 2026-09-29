@@ -17,15 +17,21 @@ interface TableCellBaseProps {
      * Whether the cell content should be centered.
      */
     isContentCentered?: boolean;
+    /**
+     * The number of columns the cell should span.
+     */
+    colSpan?: number;
 }
 
 export function TableCellBase({
     children,
     hasLastBorderNoneClass,
     isContentCentered,
+    colSpan,
 }: PropsWithChildren<TableCellBaseProps>) {
     return (
         <td
+            colSpan={colSpan}
             className={cx(
                 'table-cell-border-color h-14  border-b px-md',
                 { 'last:border-none': hasLastBorderNoneClass },

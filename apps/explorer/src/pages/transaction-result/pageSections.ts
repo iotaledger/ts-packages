@@ -3,16 +3,20 @@
 
 export enum PageSection {
     Overview = 'overview-section',
+    Gas = 'gas-section',
+    Signatures = 'signatures-section',
+    Effects = 'effects-section',
     Changes = 'changes-section',
-    Inputs = 'inputs-section',
-    Transactions = 'transactions-section',
+    ProgrammableTx = 'ptb-section',
     Events = 'events-section',
 }
 
 export const PAGE_SECTION_LABELS: Record<PageSection, string> = {
     [PageSection.Overview]: 'Overview',
+    [PageSection.Gas]: 'Gas',
+    [PageSection.Signatures]: 'Signatures',
+    [PageSection.Effects]: 'Effects',
     [PageSection.Changes]: 'Changes',
-    [PageSection.Inputs]: 'Inputs',
-    [PageSection.Transactions]: 'Transactions',
+    [PageSection.ProgrammableTx]: 'Programmable Tx',
     [PageSection.Events]: 'Events',
 };

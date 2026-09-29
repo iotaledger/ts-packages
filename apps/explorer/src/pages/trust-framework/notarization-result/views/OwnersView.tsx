@@ -12,18 +12,15 @@ import {
     InfoBoxType,
     KeyValueInfo,
     LoadingIndicator,
-    Title,
     TitleSize,
     TooltipPosition,
 } from '@iota/apps-ui-kit';
-import { formatDate } from '@iota/core';
 import { formatDigest } from '@iota/iota-sdk/utils';
 import { Warning, Person } from '@iota/apps-ui-icons';
 import {
     AddressLink,
     CollapsibleCard,
-    ErrorBoundary,
-    IconBadge,
+    DateDisplay,
     ObjectLink,
     TransactionLink,
 } from '~/components';
@@ -52,58 +49,49 @@ export function OwnersView({ objectId }: OwnersViewProps): JSX.Element {
     const showRetentionNotice = !hasNextPage && !(owners?.length && data?.hasCreationEntry);
 
     return (
-        <ErrorBoundary>
-            <div className="flex w-full flex-col gap-sm">
-                <Title
-                    title="Owners History"
-                    tooltipPosition={TooltipPosition.Left}
-                    tooltipText="The history of addresses that have owned this notarization object, ordered from most recent to oldest."
-                />
-                <div className="flex flex-col gap-sm">
-                    {isPending && (
-                        <div className="flex justify-center">
-                            <LoadingIndicator size="w-6 h-6" text="Loading owners..." />
-                        </div>
-                    )}
-                    {isError && (
-                        <InfoBox
-                            title="Error Fetching Owners"
-                            supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
-                            icon={<Warning />}
-                            type={InfoBoxType.Error}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
-                    {owners && showRetentionNotice && (
-                        <InfoBox
-                            title={RETENTION_BANNER_TITLE}
-                            supportingText={RETENTION_BANNER_TEXT}
-                            icon={<Warning />}
-                            type={InfoBoxType.Warning}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                    )}
-                    {owners?.map((owner, index) => (
-                        <OwnerCard
-                            key={owner.transactionDigest}
-                            owner={owner}
-                            label={index === 0 ? OwnerLabel.Current : OwnerLabel.Previous}
-                        />
-                    ))}
-                    {hasNextPage && (
-                        <div className="flex justify-center">
-                            <Button
-                                size={ButtonSize.Small}
-                                type={ButtonType.Ghost}
-                                text={isFetchingNextPage ? 'Loading...' : 'Identify More Owners'}
-                                disabled={isFetchingNextPage}
-                                onClick={() => fetchNextPage()}
-                            />
-                        </div>
-                    )}
+        <div className="flex flex-col gap-sm">
+            {isPending && (
+                <div className="flex justify-center">
+                    <LoadingIndicator size="w-6 h-6" text="Loading owners..." />
                 </div>
-            </div>
-        </ErrorBoundary>
+            )}
+            {isError && (
+                <InfoBox
+                    title="Error Fetching Owners"
+                    supportingText={`Could not fetch owner history for object ${objectId} on the current network.`}
+                    icon={<Warning />}
+                    type={InfoBoxType.Error}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
+            {owners && showRetentionNotice && (
+                <InfoBox
+                    title={RETENTION_BANNER_TITLE}
+                    supportingText={RETENTION_BANNER_TEXT}
+                    icon={<Warning />}
+                    type={InfoBoxType.Warning}
+                    style={InfoBoxStyle.Elevated}
+                />
+            )}
+            {owners?.map((owner, index) => (
+                <OwnerCard
+                    key={owner.transactionDigest}
+                    owner={owner}
+                    label={index === 0 ? OwnerLabel.Current : OwnerLabel.Previous}
+                />
+            ))}
+            {hasNextPage && (
+                <div className="flex justify-center">
+                    <Button
+                        size={ButtonSize.Small}
+                        type={ButtonType.Ghost}
+                        text={isFetchingNextPage ? 'Loading...' : 'Identify More Owners'}
+                        disabled={isFetchingNextPage}
+                        onClick={() => fetchNextPage()}
+                    />
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -114,15 +102,6 @@ interface OwnerCardProps {
 
 function OwnerCard({ owner, label }: OwnerCardProps): JSX.Element {
     const badgeType = label === OwnerLabel.Current ? BadgeType.PrimarySoft : BadgeType.Neutral;
-    const timestamp = owner.timestampMs
-        ? formatDate(new Date(Number(owner.timestampMs)), [
-              'year',
-              'month',
-              'day',
-              'hour',
-              'minute',
-          ])
-        : null;
 
     return (
         <CollapsibleCard
@@ -132,7 +111,7 @@ function OwnerCard({ owner, label }: OwnerCardProps): JSX.Element {
             supportingTitleElement={
                 <div className="ml-1 flex gap-x-1">
                     <Badge label={owner.ownerType} type={BadgeType.Neutral} />
-                    <IconBadge label={label} type={badgeType} icon={<Person />} />
+                    <Badge label={label} type={badgeType} icon={<Person />} />
                 </div>
             }
             footer={<OwnerCardFooter owner={owner} />}
@@ -140,7 +119,7 @@ function OwnerCard({ owner, label }: OwnerCardProps): JSX.Element {
             <div className="flex flex-col gap-4 py-sm--rs">
                 <OwnerType owner={owner} />
                 <OwnershipTransactionLink owner={owner} />
-                <TransactionDate timestamp={timestamp} />
+                <TransactionDate timestampMs={owner.timestampMs} />
             </div>
         </CollapsibleCard>
     );
@@ -153,7 +132,7 @@ function OwnerType({ owner }: { owner: OwnerEntry }) {
                 keyText="Type"
                 value={owner.ownerType}
                 fullwidth
-                tooltipPosition={TooltipPosition.Left}
+                tooltipPosition={TooltipPosition.Top}
                 tooltipText="The ownership type: address-owned, object-owned, or shared."
             />
         </div>
@@ -172,7 +151,7 @@ function OwnerAddress({ owner }: { owner: OwnerEntry }) {
                     />
                 }
                 fullwidth
-                tooltipPosition={TooltipPosition.Left}
+                tooltipPosition={TooltipPosition.Top}
                 tooltipText="The address that owns or owned this notarization object."
             />
         </div>
@@ -219,15 +198,15 @@ function OwnerCardFooter({ owner }: OwnerCardFooterProps): JSX.Element {
     );
 }
 
-function TransactionDate({ timestamp }: { timestamp: string | null }) {
+function TransactionDate({ timestampMs }: { timestampMs?: string | number | null }) {
     return (
-        timestamp && (
+        timestampMs && (
             <div className="flex flex-wrap px-md--rs">
                 <KeyValueInfo
                     keyText="Date"
-                    value={timestamp}
+                    value={<DateDisplay timestamp={timestampMs} />}
                     fullwidth
-                    tooltipPosition={TooltipPosition.Left}
+                    tooltipPosition={TooltipPosition.Top}
                     tooltipText="When this ownership change occurred."
                 />
             </div>
@@ -246,7 +225,7 @@ function OwnershipTransactionLink({ owner }: { owner: OwnerEntry }) {
                     </TransactionLink>
                 }
                 fullwidth
-                tooltipPosition={TooltipPosition.Left}
+                tooltipPosition={TooltipPosition.Top}
                 tooltipText="The transaction that assigned this owner to the notarization object."
             />
         </div>

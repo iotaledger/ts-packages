@@ -10,3 +10,5 @@ export * from './generateBalanceChangesTableColumns';
 export * from './generateObjectChangesTableColumns';
 export * from './generateActivityTableColumns';
 export * from './objectField';
+export * from './generatePackageVersionsTableColumns';
+export * from './formatMoveType';

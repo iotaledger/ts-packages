@@ -19,7 +19,7 @@ export function extractDidDoc(objectData: IotaObjectData): FieldObject | null {
  * @returns An array of controller capabilities.
  */
 export function extractControllerCaps(objectData: IotaObjectData): ControllerCap[] {
-    if (objectData.content == null) {
+    if (!objectData.content) {
         return [];
     }
 
@@ -39,7 +39,7 @@ export function extractControllerCaps(objectData: IotaObjectData): ControllerCap
  * @returns The threshold value as a string, or null if not found.
  */
 export function extractThreshold(objectData: IotaObjectData): string | null {
-    if (objectData.content == null) {
+    if (!objectData.content) {
         return null;
     }
 

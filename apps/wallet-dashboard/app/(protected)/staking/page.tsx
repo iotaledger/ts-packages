@@ -34,6 +34,7 @@ import {
     useGetAllOwnedObjects,
     TIMELOCK_IOTA_TYPE,
     mapTimelockObjects,
+    AmountWithFiat,
 } from '@iota/core';
 import { useCurrentAccount, useIotaClient, useIotaClientQuery } from '@iota/dapp-kit';
 import { useMemo } from 'react';
@@ -167,13 +168,23 @@ function StakingDashboardPage(): React.JSX.Element {
                             <div className="flex gap-xs">
                                 <DisplayStats
                                     label="Your stake"
-                                    value={totalDelegatedStakeFormatted}
-                                    supportingLabel={symbol}
+                                    value={
+                                        <AmountWithFiat
+                                            amount={totalDelegatedStake}
+                                            formatted={totalDelegatedStakeFormatted}
+                                            symbol={symbol}
+                                        />
+                                    }
                                 />
                                 <DisplayStats
                                     label="Earned"
-                                    value={totalDelegatedRewardsFormatted}
-                                    supportingLabel={symbol}
+                                    value={
+                                        <AmountWithFiat
+                                            amount={totalDelegatedRewards}
+                                            formatted={totalDelegatedRewardsFormatted}
+                                            symbol={symbol}
+                                        />
+                                    }
                                 />
                             </div>
                             <Title title="In progress" size={TitleSize.Small} />

@@ -2,12 +2,11 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFormatCoin, ImageIconSize, CoinIcon } from '@iota/core';
+import { useFormatCoin, ImageIconSize, CoinIcon, CoinFiatValue } from '@iota/core';
 import {
     Card,
     CardAction,
     CardActionType,
-    CardBody,
     CardImage,
     CardType,
     ImageType,
@@ -30,10 +29,25 @@ export function TxnAmount({ amount, coinType, subtitle, approximation }: TxnAmou
             <CardImage type={ImageType.BgSolid}>
                 <CoinIcon coinType={coinType} rounded size={ImageIconSize.Small} />
             </CardImage>
-            <CardBody
-                title={`${approximation ? '~' : ''}${formatAmount} ${symbol}`}
-                subtitle={subtitle}
-            />
+            <div className="flex w-full flex-col">
+                <div className="flex flex-row items-center gap-x-xxs">
+                    <div className="card-body-title-color flex items-baseline gap-1 text-start font-inter text-title-md">
+                        <span>
+                            {approximation ? '~' : ''}
+                            {formatAmount} {symbol}
+                        </span>
+                        <CoinFiatValue
+                            amount={amount}
+                            coinType={coinType}
+                            withParentheses={false}
+                            showApproxSymbol
+                        />
+                    </div>
+                </div>
+                <div className="card-body-subtitle-color text-start font-inter text-body-md">
+                    {subtitle}
+                </div>
+            </div>
             <CardAction type={CardActionType.SupportingText} />
         </Card>
     ) : null;

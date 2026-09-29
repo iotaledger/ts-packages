@@ -1,5 +1,18 @@
 # @iota/apps-ui-kit
 
+## 0.12.0
+
+### Minor Changes
+
+-   352991b: fix checkbox alignment
+
+### Patch Changes
+
+-   dd41759: Add icon for Badge
+-   437f907: Fix Tooltip not closing on scroll and overflowing the viewport.
+-   3ac0260: add prop to disable state layer in the accordion and add a receipt layout option for the keyvalue
+-   2dcb8d1: update some types in displaystats and keyvalueinfo components
+
 ## 0.11.0
 
 ### Minor Changes

@@ -3,37 +3,39 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect, useState } from 'react';
-import { type Direction } from 'react-resizable-panels';
 
-import { SplitPanes, useSearchParamsMerged, VerticalList } from '~/components/ui';
+import { useSearchParamsMerged, VerticalList } from '~/components/ui';
 import {
     ButtonSegment,
     ButtonSegmentType,
+    ButtonUnstyled,
     Divider,
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
     ListItem,
+    LoadingIndicator,
+    Panel,
     Search,
-    SegmentedButton,
-    SegmentedButtonType,
     type Suggestion,
+    Title,
+    TitleSize,
 } from '@iota/apps-ui-kit';
-import { ModuleFunctionsInteraction } from './module-functions-interaction';
+import { ArrowDown, Warning } from '@iota/apps-ui-icons';
+import cx from 'clsx';
 import { ModuleCodeTabs } from './ModuleCodeTabs';
-import { TabbedContentWrapper, ListTabContent } from './TabbedContentWrapper';
-import { TabsProvider, type TabItem } from '../tabs';
+import { ModuleFunctionsList } from './ModuleFunctionsList';
+import { ModuleStructsList } from './ModuleStructsList';
+import { useNormalizedMoveModule } from '~/hooks/useNormalizedMoveModule';
 
 type ModuleType = [moduleName: string, code: string];
 
 interface PkgModulesWrapperProps {
     id: string;
     modules: ModuleType[];
-    splitPanelOrientation: Direction;
 }
 
-export function PkgModulesWrapper({
-    id,
-    modules,
-    splitPanelOrientation,
-}: PkgModulesWrapperProps): JSX.Element {
+export function PkgModulesWrapper({ id, modules }: PkgModulesWrapperProps): JSX.Element {
     const [searchParams, setSearchParams] = useSearchParamsMerged();
     const [query, setQuery] = useState('');
 
@@ -67,31 +69,14 @@ export function PkgModulesWrapper({
         );
     };
 
-    const panelContent = [
-        {
-            panel: (
-                <ModuleCodeTabs
-                    packageId={id}
-                    moduleName={selectedModuleName}
-                    moduleBytecode={selectedModuleCode}
-                />
-            ),
-            defaultSize: 40,
-        },
-        {
-            panel: <ExecutePanelContent packageId={id} moduleName={selectedModuleName} />,
-            defaultSize: 60,
-        },
-    ];
-
     const searchSuggestions: Suggestion[] = filteredModules.map((item) => ({
         id: item,
         label: item,
     }));
 
     return (
-        <div className="flex h-full flex-col items-stretch gap-md--rs md:flex-row md:flex-nowrap">
-            <div className="flex w-full flex-col md:min-h-[560px] md:w-1/5">
+        <div className="flex flex-col items-stretch gap-md--rs md:h-[70vh] md:flex-row md:flex-nowrap">
+            <div className="flex w-full flex-col md:h-full md:w-1/5">
                 <div className="relative z-[1]">
                     <Search
                         searchValue={query}
@@ -119,7 +104,7 @@ export function PkgModulesWrapper({
                         )}
                     />
                 </div>
-                <div className="max-h-[560px] flex-1 overflow-auto pt-sm">
+                <div className="max-h-[320px] min-h-0 flex-1 overflow-auto pt-sm md:max-h-none">
                     <VerticalList>
                         <div className="flex flex-col gap-sm">
                             {moduleNames.map((name) => (
@@ -138,58 +123,93 @@ export function PkgModulesWrapper({
             <div className="block pt-sm md:hidden">
                 <Divider />
             </div>
-            <div className="hidden w-4/5 md:block">
-                <SplitPanes direction={splitPanelOrientation} splitPanels={panelContent} />
-            </div>
-            <div className="block md:hidden">
-                {panelContent.map((panel, index) => (
-                    <div key={index}>{panel.panel}</div>
-                ))}
+            <div className="w-full md:h-full md:min-h-0 md:w-4/5 md:overflow-auto">
+                <ModuleContent
+                    key={`${id}-${selectedModuleName}`}
+                    packageId={id}
+                    moduleName={selectedModuleName}
+                    moduleBytecode={selectedModuleCode}
+                />
             </div>
         </div>
     );
 }
 
-function ExecutePanelContent({
+function ModuleContent({
     packageId,
     moduleName,
+    moduleBytecode,
 }: {
     packageId: string;
     moduleName: string;
-}): React.JSX.Element {
-    const EXECUTE_TAB: TabItem = {
-        id: 'execute',
-        label: 'Execute',
-    };
-    const TABS: TabItem[] = [EXECUTE_TAB];
+    moduleBytecode: string;
+}): JSX.Element {
+    const {
+        data: normalizedModule,
+        error,
+        isPending,
+    } = useNormalizedMoveModule(packageId, moduleName);
+    const [isCodeExpanded, setIsCodeExpanded] = useState(false);
 
     return (
-        <TabbedContentWrapper>
-            <TabsProvider tabs={TABS}>
-                <SegmentedButton
-                    type={SegmentedButtonType.Transparent}
-                    shape={ButtonSegmentType.Underlined}
-                >
-                    {TABS.map(({ id, label }) => (
-                        <ButtonSegment
-                            type={ButtonSegmentType.Underlined}
-                            label={label}
-                            key={id}
-                            selected
-                        />
-                    ))}
-                </SegmentedButton>
-
-                <div className="max-h-[560px] overflow-y-auto pr-md--rs">
-                    <ListTabContent id={EXECUTE_TAB.id}>
-                        <ModuleFunctionsInteraction
-                            key={`${packageId}-${moduleName}`}
+        <div className="flex flex-col gap-md--rs">
+            <Panel hasBorder>
+                <Title
+                    size={TitleSize.Small}
+                    title="Bytecode"
+                    trailingElement={
+                        <ButtonUnstyled
+                            className="flex flex-row items-center gap-xxxs pr-md--rs text-label-md text-iota-primary-30 dark:text-iota-primary-80"
+                            aria-controls="module-bytecode"
+                            aria-expanded={isCodeExpanded}
+                            onClick={() => setIsCodeExpanded((expanded) => !expanded)}
+                        >
+                            {isCodeExpanded ? 'Show Less' : 'Show More'}
+                            <ArrowDown
+                                className={cx(
+                                    'h-4 w-4 transition-transform ease-linear',
+                                    isCodeExpanded && 'rotate-180',
+                                )}
+                            />
+                        </ButtonUnstyled>
+                    }
+                />
+                {isCodeExpanded && (
+                    <div id="module-bytecode" className="p-md--rs">
+                        <ModuleCodeTabs
                             packageId={packageId}
                             moduleName={moduleName}
+                            moduleBytecode={moduleBytecode}
                         />
-                    </ListTabContent>
+                    </div>
+                )}
+            </Panel>
+            {error ? (
+                <InfoBox
+                    style={InfoBoxStyle.Elevated}
+                    type={InfoBoxType.Error}
+                    icon={<Warning />}
+                    supportingText={`Error loading module ${moduleName} details.`}
+                />
+            ) : isPending ? (
+                <div className="flex w-full justify-center py-md">
+                    <LoadingIndicator />
                 </div>
-            </TabsProvider>
-        </TabbedContentWrapper>
+            ) : (
+                normalizedModule && (
+                    <>
+                        <ModuleFunctionsList
+                            packageId={packageId}
+                            moduleName={moduleName}
+                            functions={normalizedModule.exposedFunctions}
+                        />
+                        <ModuleStructsList
+                            packageId={packageId}
+                            structs={normalizedModule.structs}
+                        />
+                    </>
+                )
+            )}
+        </div>
     );
 }

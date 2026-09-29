@@ -1,5 +1,33 @@
 # @iota/iota-sdk
 
+## 1.16.0
+
+### Minor Changes
+
+-   b43f870: Add a `waitForTransaction` option to `IotaClientOptions` so `pollInterval` and
+    `timeout` can be set once per client instead of on every `waitForTransaction` call
+-   8be9ef4: Add an optional `onError` to subscribe options, called when a subscription ends without
+    the caller unsubscribing
+-   858756f: Add `startAfter` to `subscribeEvent` and `subscribeTransaction` to resume a
+    subscription after a given transaction digest over GraphQL, and fill `id.txDigest` on subscribed
+    events
+
+### Patch Changes
+
+-   1d8e175: Update generated GraphQL package version types to use `UInt53`.
+-   4f0bc5e: Update the GraphQL schema and open-rpc types: add the `AFFECTED` transaction
+    relationship, `TransactionBlockFilter.affectedAddress`, `Checkpoint.bcs` and
+    `Query.transactionsByDigests`, and deprecate `Query.transactionBlocksByDigests` and the
+    `scanLimit` argument.
+
+    Update the GraphQL schema and open-rpc types for the transaction deny rules system transactions:
+    add `TransactionDenyRulesUpdateTransaction` to the `TransactionBlockKind` union and
+    `TransactionDenyRulesCreateTransaction` to the `EndOfEpochTransactionKind` union, with the
+    matching `TransactionDenyRulesUpdate` and `TransactionDenyRulesCreate` transaction kinds in the
+    JSON-RPC types.
+
+-   361df87: Add `abortCode` to `TransactionBlockEffects` in the generated GraphQL types.
+
 ## 1.15.1
 
 ### Patch Changes

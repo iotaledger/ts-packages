@@ -16,7 +16,7 @@ type ObjectOwnerVariants = Extract<ObjectOwner, object>;
  * @returns The owner address, or null if not found.
  */
 export function getOwnerAddress(owner?: ObjectOwner | null): string | null {
-    if (owner == null) {
+    if (!owner) {
         return null;
     }
 
@@ -40,7 +40,7 @@ export function getOwnerAddress(owner?: ObjectOwner | null): string | null {
  * @returns The type of the owner as a string or null
  */
 export function getOwnerType(owner?: ObjectOwner | null): ObjectOwnerKeyVariants | null {
-    if (owner == null) {
+    if (!owner) {
         return null;
     }
 

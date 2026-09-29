@@ -4,7 +4,7 @@
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { IotaTransactionBlockResponse } from '../../src/client';
+import { getRpcUrl, IotaClient, IotaTransactionBlockResponse } from '../../src/client';
 import { Transaction } from '../../src/transactions';
 import { executePayIotaNTimes, setup, TestToolbox } from './utils/setup';
 
@@ -89,6 +89,38 @@ describe('Transaction Reading API', () => {
             ).rejects.toThrowError('The operation was aborted due to timeout');
 
             // Because JS event loop is somewhat unpredictable, we don't know exactly how long this will take, but we should have _at least_ 2 calls.
+            expect(spy.mock.calls.length).toBeGreaterThan(2);
+        });
+
+        it('uses the client-level pollInterval and timeout defaults', async () => {
+            const client = new IotaClient({
+                url: getRpcUrl('localnet'),
+                waitForTransaction: { pollInterval: 10, timeout: 55 },
+            });
+            const spy = vi
+                .spyOn(client, 'getTransactionBlock')
+                .mockImplementation(() => Promise.reject());
+
+            await expect(client.waitForTransaction({ digest: 'foobar' })).rejects.toThrowError(
+                'The operation was aborted due to timeout',
+            );
+
+            expect(spy.mock.calls.length).toBeGreaterThan(2);
+        });
+
+        it('lets per-call arguments override the client-level defaults', async () => {
+            const client = new IotaClient({
+                url: getRpcUrl('localnet'),
+                waitForTransaction: { pollInterval: 10_000, timeout: 60_000 },
+            });
+            const spy = vi
+                .spyOn(client, 'getTransactionBlock')
+                .mockImplementation(() => Promise.reject());
+
+            await expect(
+                client.waitForTransaction({ digest: 'foobar', pollInterval: 10, timeout: 55 }),
+            ).rejects.toThrowError('The operation was aborted due to timeout');
+
             expect(spy.mock.calls.length).toBeGreaterThan(2);
         });
     });

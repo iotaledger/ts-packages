@@ -31,7 +31,7 @@ export interface BaseInputProps extends InputWrapperProps {
     /**
      * Amount counter that is shown at the side of the caption text.
      */
-    amountCounter?: string | number;
+    amountCounter?: React.ReactNode;
     /**
      * Trailing element that is shown after the input
      */
@@ -47,7 +47,7 @@ export interface BaseInputProps extends InputWrapperProps {
     /**
      * Text that is shown below the value of the input.
      */
-    supportingValue?: string | null;
+    supportingValue?: React.ReactNode;
     /**
      * Default value of the input
      */

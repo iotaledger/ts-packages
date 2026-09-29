@@ -11,6 +11,7 @@ import {
     toast,
     getGasBudgetErrorMessage,
     useCoinMetadata,
+    CoinFiatValue,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -96,7 +97,16 @@ export function EnterTimelockedAmountView({
         format: CoinFormat.Full,
     });
 
-    const caption = `${maxTokenFormatted} ${maxTokenFormattedSymbol} Available`;
+    const caption = (
+        <span className="flex flex-col">
+            <span>{`${maxTokenFormatted} ${maxTokenFormattedSymbol} Available`}</span>
+            <CoinFiatValue
+                amount={maxStakableTimelockedAmount}
+                withParentheses={false}
+                showApproxSymbol
+            />
+        </span>
+    );
     const info = useMemo(() => {
         if (isSearchingProtocolMaxAmount) {
             let message = 'The current amount is not valid due to the large number of objects. ';

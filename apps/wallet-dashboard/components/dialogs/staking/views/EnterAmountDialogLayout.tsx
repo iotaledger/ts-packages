@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    AmountWithFiat,
     useFormatCoin,
     useIsValidatorCommitteeMember,
     useStakeTxnInfo,
@@ -35,7 +36,8 @@ interface FormValues {
 interface EnterAmountDialogLayoutProps {
     selectedValidator: string;
     senderAddress: string;
-    caption: string;
+    caption: React.ReactNode;
+    supportingValue?: React.ReactNode;
     renderInfo?: React.JSX.Element;
     isLoading: boolean;
     onBack: () => void;
@@ -52,6 +54,7 @@ export function EnterAmountDialogLayout({
     totalGas,
     senderAddress,
     caption,
+    supportingValue,
     renderInfo,
     isLoading,
     isStakeDisabled,
@@ -106,6 +109,9 @@ export function EnterAmountDialogLayout({
                                             errorMessage={
                                                 values.amount && meta.error ? meta.error : undefined
                                             }
+                                            supportingValue={
+                                                !meta.error ? supportingValue : undefined
+                                            }
                                             caption={caption}
                                             trailingElement={renderInputAction}
                                         />
@@ -138,8 +144,17 @@ export function EnterAmountDialogLayout({
                                 <Divider />
                                 <KeyValueInfo
                                     keyText="Gas fee"
-                                    value={gas || '--'}
-                                    supportingLabel={symbol}
+                                    value={
+                                        gas ? (
+                                            <AmountWithFiat
+                                                amount={totalGas ?? 0}
+                                                formatted={gas}
+                                                symbol={symbol}
+                                            />
+                                        ) : (
+                                            '--'
+                                        )
+                                    }
                                     fullwidth
                                 />
                             </div>

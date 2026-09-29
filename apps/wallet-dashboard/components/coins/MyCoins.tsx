@@ -42,6 +42,25 @@ const TOKEN_CATEGORIES = [
     },
 ];
 
+interface CoinRowProps {
+    coin: CoinBalance;
+    isRecognized: boolean;
+    onClick: () => void;
+}
+
+function CoinRow({ coin, isRecognized, onClick }: CoinRowProps): JSX.Element {
+    return (
+        <CoinItem
+            coinType={coin.coinType}
+            balance={BigInt(coin.totalBalance)}
+            onClick={onClick}
+            icon={
+                isRecognized ? <RecognizedBadge className="h-4 w-4 text-iota-primary-40" /> : null
+            }
+        />
+    );
+}
+
 export function MyCoins(): React.JSX.Element {
     const [selectedTokenCategory, setSelectedTokenCategory] = useState(TokenCategory.All);
     const [isSendTokenDialogOpen, setIsSendTokenDialogOpen] = useState(false);
@@ -62,15 +81,10 @@ export function MyCoins(): React.JSX.Element {
 
     const virtualItem = (isRecognized: boolean, coin: CoinBalance): JSX.Element => {
         return (
-            <CoinItem
-                coinType={coin.coinType}
-                balance={BigInt(coin.totalBalance)}
+            <CoinRow
+                coin={coin}
+                isRecognized={isRecognized}
                 onClick={() => openSendTokenDialog(coin)}
-                icon={
-                    isRecognized ? (
-                        <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
-                    ) : null
-                }
             />
         );
     };

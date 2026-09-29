@@ -1,5 +1,20 @@
 # @iota/create-dapp
 
+## 0.5.3
+
+### Patch Changes
+
+-   Updated dependencies [da813ab]
+-   Updated dependencies [1d8e175]
+-   Updated dependencies [b43f870]
+-   Updated dependencies [4f0bc5e]
+-   Updated dependencies [361df87]
+-   Updated dependencies [8be9ef4]
+-   Updated dependencies [858756f]
+-   Updated dependencies [da61128]
+    -   @iota/dapp-kit@0.11.0
+    -   @iota/iota-sdk@1.16.0
+
 ## 0.5.2
 
 ### Patch Changes

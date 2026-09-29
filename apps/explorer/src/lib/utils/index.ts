@@ -16,3 +16,4 @@ export * from './iotaMoveTypeConverters';
 export * from './getSupplyChangeAfterEpochEnd';
 export * from './onCopySuccess';
 export * from './getSendRecipients';
+export * from './getTransactionSponsor';

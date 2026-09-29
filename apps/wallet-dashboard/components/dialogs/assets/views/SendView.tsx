@@ -10,6 +10,7 @@ import {
     useFormatCoin,
     useNftDetails,
     useGetIotaNameRecord,
+    AmountWithFiat,
 } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -67,8 +68,17 @@ export function SendView({ objectId, senderAddress, objectType, onClose, onBack 
                         <Divider />
                         <KeyValueInfo
                             keyText={'Est. Gas Fees'}
-                            value={gasFormatted}
-                            supportingLabel={gasSymbol}
+                            value={
+                                gasFormatted ? (
+                                    <AmountWithFiat
+                                        amount={gasBudgetEst ?? 0}
+                                        formatted={gasFormatted}
+                                        symbol={gasSymbol}
+                                    />
+                                ) : (
+                                    gasFormatted
+                                )
+                            }
                             fullwidth
                         />
                     </div>

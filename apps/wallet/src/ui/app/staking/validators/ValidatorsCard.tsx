@@ -12,6 +12,7 @@ import {
     DELEGATED_STAKES_QUERY_STALE_TIME,
     useFormatCoin,
     StakedCard,
+    AmountWithFiat,
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAddress } from '_hooks';
@@ -115,13 +116,25 @@ export function ValidatorsCard() {
             <div className="flex gap-xs py-md">
                 <DisplayStats
                     label="Your stake"
-                    value={totalDelegatedStakeFormatted}
-                    supportingLabel={symbol}
+                    value={
+                        <AmountWithFiat
+                            amount={totalDelegatedStake}
+                            formatted={totalDelegatedStakeFormatted}
+                            symbol={symbol}
+                            direction="column"
+                        />
+                    }
                 />
                 <DisplayStats
                     label="Earned"
-                    value={totalDelegatedRewardsFormatted}
-                    supportingLabel={symbol}
+                    value={
+                        <AmountWithFiat
+                            amount={totalDelegatedRewards}
+                            formatted={totalDelegatedRewardsFormatted}
+                            symbol={symbol}
+                            direction="column"
+                        />
+                    }
                 />
             </div>
             <Title title="In progress" size={TitleSize.Small} />

@@ -1,8 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaObjectData } from '@iota/iota-sdk/src/client';
-import { type MetaItem } from '~/components/ui/PageHeaderMeta';
+import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { IdentityPackageOfficial } from './views/IdentityPackageOfficial';
 
 const IDENTITY_MODULE = 'identity';
@@ -18,39 +17,8 @@ const metadata = {
     },
 };
 
-export class MetadataBuilder {
-    items: MetaItem[];
-
-    public constructor() {
-        this.items = [];
-    }
-
-    static create(): MetadataBuilder {
-        return new MetadataBuilder();
-    }
-
-    addItem(item: MetaItem | null): MetadataBuilder {
-        if (item != null) {
-            this.items.push(item);
-        }
-        return this;
-    }
-
-    build(): MetaItem[] {
-        return this.items;
-    }
-}
-
-/**
- * Determines the identity type of an IOTA DID object based on its type.
- *
- * @param didObject - The IOTA object data to analyze.
- * @param pkgId - The package ID to compare against for official identity package.
- * @returns A MetaItem object containing identity type information, or null if
- *          the objectData is null or has no type.
- */
-export function getIdentityType(didObject: IotaObjectData | null, pkgId: string): MetaItem | null {
-    if (didObject == null || didObject.type == null) {
+export function getIdentityType(didObject: IotaObjectData | null, pkgId: string) {
+    if (!didObject || !didObject.type) {
         return null;
     }
     const tooltipText =
@@ -64,7 +32,7 @@ export function getIdentityType(didObject: IotaObjectData | null, pkgId: string)
             value: IdentityPackageOfficial({ value: metadata.type.badge, copyValue: _package }),
             visible: true,
             tooltipText,
-        } as MetaItem;
+        };
     }
 
     return {
@@ -72,17 +40,11 @@ export function getIdentityType(didObject: IotaObjectData | null, pkgId: string)
         value: didObject.type,
         visible: true,
         tooltipText,
-    } as MetaItem;
+    };
 }
 
-/**
- * Extracts legacy metadata from an IOTA DID object if available.
- *
- * @param didObject - The IOTA DID object data containing potential legacy ID information.
- * @returns A MetaItem containing the legacy ID if found, otherwise null.
- */
-export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | null {
-    if (didObject == null) {
+export function getLegacyMetadata(didObject: IotaObjectData | null) {
+    if (!didObject) {
         return null;
     }
 
@@ -95,7 +57,7 @@ export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | 
     }
 
     const legacyId = didObject.content.fields.legacy_id;
-    if (legacyId == null) {
+    if (!legacyId) {
         return null;
     }
 
@@ -103,5 +65,5 @@ export function getLegacyMetadata(didObject: IotaObjectData | null): MetaItem | 
         label: metadata.legacyId.label,
         value: legacyId,
         visible: true,
-    } as MetaItem;
+    };
 }

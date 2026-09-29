@@ -1,7 +1,12 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-export const IOTA_IDENTITY_PKG_ID = import.meta.env.VITE_IOTA_IDENTITY_PKG_ID;
-export const IOTA_NOTARIZATION_PKG_ID = import.meta.env.VITE_IOTA_NOTARIZATION_PKG_ID;
+export const IOTA_IDENTITY_PKG_ID: string | undefined = import.meta.env.VITE_IOTA_IDENTITY_PKG_ID;
+export const IOTA_NOTARIZATION_PKG_ID: string | undefined = import.meta.env
+    .VITE_IOTA_NOTARIZATION_PKG_ID;
+export const IOTA_AUDIT_TRAIL_PKG_ID: string | undefined = import.meta.env
+    .VITE_IOTA_AUDIT_TRAIL_PKG_ID;
+export const IOTA_TF_COMPONENTS_PKG_ID: string | undefined = import.meta.env
+    .VITE_IOTA_TF_COMPONENTS_PKG_ID;
 export const DID_PROTOCOL_SEGMENT_SYMBOL = ':';
 export const DID_URL_SEGMENT_SYMBOL = '-';

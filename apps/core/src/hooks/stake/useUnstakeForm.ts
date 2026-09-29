@@ -109,8 +109,9 @@ export function useUnstakeForm({
 
     const transaction = activeUnstakeData?.transaction;
 
+    const gasAmount = activeUnstakeData?.gasSummary?.totalGas;
     const [gasFormatted, gasSymbol] = useFormatCoin({
-        balance: activeUnstakeData?.gasSummary?.totalGas,
+        balance: gasAmount,
         format: CoinFormat.Full,
     });
 
@@ -159,6 +160,7 @@ export function useUnstakeForm({
         activeIsLoading,
 
         // Gas
+        gasAmount,
         gasFormatted,
         gasSymbol,
 

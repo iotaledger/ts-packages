@@ -3,8 +3,10 @@
 
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { Select, SelectOption } from '@iota/apps-ui-kit';
-import { CoinBalance } from '@iota/iota-sdk/client';
-import { useFormatCoin } from '../../hooks';
+import { CoinBalance, type Network } from '@iota/iota-sdk/client';
+import { useIotaClientContext } from '@iota/dapp-kit';
+import { useBalanceInUSD, useFormatCoin } from '../../hooks';
+import { formatBalanceToUSD } from '../../utils';
 import { CoinIcon } from './CoinIcon';
 import { ImageIconSize } from '../icon';
 
@@ -58,6 +60,10 @@ function CoinSelectOption({
     });
     const isIota = coinType === IOTA_TYPE_ARG;
 
+    const { network } = useIotaClientContext();
+    const usd = useBalanceInUSD(coinType, totalBalance, network as Network);
+    const hasFiatValue = usd !== null && usd !== undefined && usd !== 0;
+
     return (
         <div className="flex w-full flex-row items-center justify-between">
             <div className="flex flex-row items-center gap-x-md">
@@ -73,9 +79,16 @@ function CoinSelectOption({
                     {isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol}
                 </span>
             </div>
-            <span className="text-label-lg text-iota-neutral-60">
-                {formatted} {symbol}
-            </span>
+            <div className="flex flex-row items-baseline gap-1">
+                <span className="text-label-lg text-iota-neutral-60">
+                    {formatted} {symbol}
+                </span>
+                {hasFiatValue && (
+                    <span className="key-supporting-text-color text-body-sm">
+                        ~ {formatBalanceToUSD(usd as number)}
+                    </span>
+                )}
+            </div>
         </div>
     );
 }

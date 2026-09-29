@@ -30,7 +30,12 @@ export function TransactionSummary({ transaction }: TransactionChangesProps): JS
                     {transactionKindName === 'ProgrammableTransaction' && (
                         <BalanceChanges changes={balanceChanges ?? null} />
                     )}
-                    {objectSummary && <ObjectChanges objectSummary={objectSummary} />}
+                    {objectSummary && (
+                        <ObjectChanges
+                            objectSummary={objectSummary}
+                            modifiedAtVersions={transaction.effects?.modifiedAtVersions}
+                        />
+                    )}
                 </div>
             </CollapsibleCard>
             {upgradedSystemPackages && <UpgradedSystemPackages data={upgradedSystemPackages} />}

@@ -14,6 +14,7 @@ import {
     useMaxCommitteeSize,
     useGetCandidateValidators,
     sanitizeValidatorObjects,
+    CoinFiatValue,
     type IotaValidatorSummaryExtended,
 } from '@iota/core';
 import {
@@ -32,7 +33,7 @@ import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEnhancedRpcClient } from '~/hooks';
-import { IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorSearch, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
@@ -241,15 +242,25 @@ function ValidatorPageResult(): JSX.Element {
 
     const [formattedTotalStakedAmount, totalStakedSymbol] = useFormatCoin({
         balance: totalStaked,
+        format: CoinFormat.Full,
     });
     const [formattedlastEpochRewardOnAllValidatorsAmount, lastEpochRewardOnAllValidatorsSymbol] =
-        useFormatCoin({ balance: lastEpochRewardOnAllValidators });
+        useFormatCoin({ balance: lastEpochRewardOnAllValidators, format: CoinFormat.Full });
 
     const validatorsMainStats = [
         {
             title: 'Committee Stake',
-            value: formattedTotalStakedAmount,
-            supportingLabel: totalStakedSymbol,
+            value: (
+                <div className="flex flex-col gap-xxs">
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">{formattedTotalStakedAmount}</span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {totalStakedSymbol}
+                        </span>
+                    </div>
+                    <CoinFiatValue amount={totalStaked} withParentheses={false} />
+                </div>
+            ),
             tooltipText:
                 "The combined amount of tokens staked with validators selected for the upcoming epoch's active committee.",
         },
@@ -277,12 +288,24 @@ function ValidatorPageResult(): JSX.Element {
         },
         {
             title: 'Last Epoch Rewards',
-            value: lastEpochRewardOnAllValidators
-                ? formattedlastEpochRewardOnAllValidatorsAmount
-                : '--',
-            supportingLabel: formattedlastEpochRewardOnAllValidatorsAmount
-                ? lastEpochRewardOnAllValidatorsSymbol
-                : undefined,
+            value: lastEpochRewardOnAllValidators ? (
+                <div className="flex flex-col gap-xxs">
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">
+                            {formattedlastEpochRewardOnAllValidatorsAmount}
+                        </span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {lastEpochRewardOnAllValidatorsSymbol}
+                        </span>
+                    </div>
+                    <CoinFiatValue
+                        amount={lastEpochRewardOnAllValidators}
+                        withParentheses={false}
+                    />
+                </div>
+            ) : (
+                '--'
+            ),
             tooltipText: 'The staking rewards earned in the previous epoch.',
         },
         {
@@ -333,7 +356,6 @@ function ValidatorPageResult(): JSX.Element {
                                     label={stat.title}
                                     tooltipText={stat.tooltipText}
                                     value={stat.value}
-                                    supportingLabel={stat.supportingLabel}
                                     size={DisplayStatsSize.Large}
                                     tooltipPosition={TooltipPosition.Right}
                                 />

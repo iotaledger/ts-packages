@@ -14,16 +14,16 @@ async function search(page: Page, text: string, resultLabel?: string) {
 
     if (resultLabel === 'checkpoint') {
         result = page
-            .getByRole('button')
+            .getByRole('link')
             .filter({ hasText: /^Checkpoint\s+\d+/i })
             .first();
     } else if (resultLabel === 'epoch') {
         result = page
-            .getByRole('button')
+            .getByRole('link')
             .filter({ hasText: /^Epoch\s+\d+/i })
             .first();
     } else {
-        result = page.getByRole('button').filter({ hasText: text }).first();
+        result = page.getByRole('link').filter({ hasText: text }).first();
     }
 
     await expect(result).toBeVisible();
