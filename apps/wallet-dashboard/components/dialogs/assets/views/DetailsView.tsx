@@ -70,40 +70,36 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
 
     const handleBurnAsset = async () => {
         if (!account || !objectId || !nftBurnFunction) return;
-        try {
-            const tx = new Transaction();
+        const tx = new Transaction();
 
-            tx.setSender(account.address);
+        tx.setSender(account.address);
 
-            tx.moveCall({
-                target: nftBurnFunction,
-                arguments: [tx.object(objectId)],
-            });
+        tx.moveCall({
+            target: nftBurnFunction,
+            arguments: [tx.object(objectId)],
+        });
 
-            await signAndExecuteTransaction(
-                {
-                    transaction: tx,
-                    options: {
-                        showEffects: true,
-                    },
+        await signAndExecuteTransaction(
+            {
+                transaction: tx,
+                options: {
+                    showEffects: true,
                 },
-                {
-                    onSuccess: () => {
-                        toast.success('Asset burnt successfully');
-                        queryClient.invalidateQueries({
-                            queryKey: ['get-owned-objects', senderAddress],
-                        });
-                        onClose();
-                    },
-                    onError: () => {
-                        toast.error('Failed to burn asset');
-                    },
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Asset burnt successfully');
+                    queryClient.invalidateQueries({
+                        queryKey: ['get-owned-objects', senderAddress],
+                    });
+                    onClose();
                 },
-            );
-        } catch (error) {
-            toast.error('Failed to burn asset');
-            console.error('Failed to burn asset:', error);
-        }
+                onError: (error) => {
+                    toast.error('Failed to burn asset');
+                    console.error('Failed to burn asset:', error);
+                },
+            },
+        );
     };
 
     return (

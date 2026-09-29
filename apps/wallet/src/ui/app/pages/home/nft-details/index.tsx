@@ -19,7 +19,7 @@ import {
 } from '_components';
 import { useNFTBasicData, useNftDetails, Collapsible, toast } from '@iota/core';
 import { formatAddress } from '@iota/iota-sdk/utils';
-import cl, { clsx } from 'clsx';
+import { clsx as cx } from 'clsx';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, ButtonType, KeyValueInfo } from '@iota/apps-ui-kit';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -123,7 +123,7 @@ export function NFTDetailsPage() {
     return (
         <PageTemplate title="Visual Asset" isTitleCentered>
             <div
-                className={cl('flex h-full flex-1 flex-col flex-nowrap gap-5', {
+                className={cx('flex h-full flex-1 flex-col flex-nowrap gap-5', {
                     'items-center': isPending,
                 })}
             >
@@ -288,9 +288,9 @@ export function NFTDetailsPage() {
 
                                                     <ConfirmationModal
                                                         isOpen={isConfirmationDeletionVisible}
-                                                        confirmText="Delete NFT"
+                                                        confirmText="Burn NFT"
                                                         confirmStyle={ButtonType.Destructive}
-                                                        title="Are you sure you want to permanently delete this NFT?"
+                                                        title="Are you sure you want to permanently burn this NFT?"
                                                         hint="This action cannot be undone."
                                                         onResponse={async (confirmed) => {
                                                             setIsConfirmationDeletionVisible(false);
@@ -303,7 +303,7 @@ export function NFTDetailsPage() {
                                                 </div>
                                             )}
                                             <div
-                                                className={clsx(
+                                                className={cx(
                                                     nftBurnFunction ? 'col-span-2' : 'col-span-3',
                                                 )}
                                             >
