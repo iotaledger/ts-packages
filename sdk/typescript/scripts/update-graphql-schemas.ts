@@ -97,28 +97,6 @@ function assertSchemaVersion(
     }
 }
 
-// compares two `MAJOR.MINOR.PATCH` versions: returns true if `newLatestVersion` is a new node
-// version and false if both are the same version; the node version can never be older than the
-// one of the old latest
-function isNewNodeVersion(newLatestVersion: string, oldLatestVersion: string) {
-    const [newLatestParts, oldLatestParts] = [newLatestVersion, oldLatestVersion].map((version) =>
-        version.split('.').map(Number),
-    );
-
-    const difference =
-        newLatestParts
-            .map((part, index) => part - oldLatestParts[index])
-            .find((partDifference) => partDifference !== 0) ?? 0;
-
-    if (difference < 0) {
-        throw new Error(
-            `iota node version ${newLatestVersion} is older than the ${LATEST} GraphQL schema version ${oldLatestVersion}`,
-        );
-    }
-
-    return difference > 0;
-}
-
 // reads the `MAJOR.MINOR.PATCH` release of the iota node, without its prerelease suffix (e.g. `-alpha`)
 async function readNodeVersion() {
     const cargoToml = TOML.parse(await readFile(nodeCargoTomlPath, 'utf-8')) as {
@@ -154,13 +132,8 @@ async function writeCurrentLatest(version: string) {
     );
 }
 
-// copies the `latest` schema into its version and generates all of its files; a frozen version is
-// never overwritten
+// copies the `latest` schema into its version and generates all of its files
 async function freezeLatestSchema(version: string) {
-    if (existsSync(resolve(packageRoot, `src/graphql/generated/${version}/`))) {
-        throw new Error(`GraphQL schema version ${version} is already frozen`);
-    }
-
     await writeSchemaVersion(version, latestSchemaPath);
 }
 
@@ -171,8 +144,7 @@ const newLatestVersion = await readNodeVersion();
 const oldLatestVersion = await readCurrentLatest();
 
 // 1. check whether the node version and the node schema have changed
-const hasNewVersion =
-    oldLatestVersion !== undefined && isNewNodeVersion(newLatestVersion, oldLatestVersion);
+const hasNewVersion = oldLatestVersion !== undefined && newLatestVersion !== oldLatestVersion;
 const hasNewSchema = !(await isSameSchema(schemaSourceFilePath, latestSchemaPath));
 
 if (!hasNewSchema) {
