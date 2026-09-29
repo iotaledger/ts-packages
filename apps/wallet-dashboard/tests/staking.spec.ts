@@ -14,7 +14,7 @@ import {
     submitAndVerifyUnstaking,
     submitAndVerifyPartialUnstaking,
 } from './utils/staking';
-import { LONG_TIMEOUT, SHORT_TIMEOUT } from './constants/timeout.constants';
+import { LONG_TIMEOUT } from './constants/timeout.constants';
 
 const STAKE_AMOUNT = 100;
 
@@ -218,7 +218,7 @@ test.describe('Wallet staking', () => {
             await submitAndVerifyUnstaking(dashboardPage, context);
         });
 
-        test('should show error message when staking with over 50 small-amount coin objects', async ({
+        test('should stake using over 50 small-amount coin objects and then unstake', async ({
             pageWithFreshWallet,
             context,
             sharedState,
@@ -236,9 +236,14 @@ test.describe('Wallet staking', () => {
             await navigateToDashboardStakePage(dashboardPage);
 
             await dashboardPage.getByLabel('Amount').fill('500');
-            await expect(dashboardPage.getByTestId('error-info-box')).toBeVisible({
-                timeout: SHORT_TIMEOUT,
-            });
+
+            await submitAndVerifyStaking(dashboardPage, context);
+
+            await dashboardPage.reload();
+            const stakedAmount = await getStakedAmount(dashboardPage);
+            expect(stakedAmount).toEqual('500');
+
+            await submitAndVerifyUnstaking(dashboardPage, context);
         });
     });
 });
