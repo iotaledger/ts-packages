@@ -6,7 +6,7 @@
         "metamaskVersion": "12.20.0"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --port 5173 --strictPort",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "eslint:check": "eslint --max-warnings=0 \"./src/**/*.{js,jsx,ts,tsx}\"",

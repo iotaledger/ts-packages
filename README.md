@@ -46,8 +46,6 @@ pnpm install
 
 ### Local Dev Ports
 
-Each app runs on a fixed port and fails to start if it is already in use, so apps can run side by side without shifting ports.
-
 | App | Port |
 | --- | --- |
 | Explorer | 3000 |
@@ -55,6 +53,7 @@ Each app runs on a fixed port and fails to start if it is already in use, so app
 | Apps Backend | 3003 |
 | Names dApp | 3005 |
 | Names Display | 3006 |
+| EVM Bridge | 5173 |
 | UI Kit (Storybook) | 6006 |
 
 ### Common Commands
