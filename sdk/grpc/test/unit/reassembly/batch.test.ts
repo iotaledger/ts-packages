@@ -5,15 +5,23 @@ import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import { BinaryWriter, WireType } from '@bufbuild/protobuf/wire';
 import { describe, expect, it } from 'vitest';
 
-import { EmptyResponseFieldError, ServerError, UnknownVariantError } from '../../../src/errors.js';
-import { StatusSchema } from '../../../src/proto/google/rpc/status_pb.js';
 import {
+    EmptyResponseFieldError,
+    ServerError,
+    UnexpectedEndOfStreamError,
+    UnexpectedResultCountError,
+    UnknownVariantError,
+} from '../../../src/errors.js';
+import { StatusSchema } from '../../../src/proto/google/rpc/status_pb.js';
+import type { GetObjectsResponse } from '../../../src/proto/iota/grpc/v1/ledger_service_pb.js';
+import {
+    GetObjectsResponseSchema,
     ObjectResultSchema,
     TransactionResultSchema,
 } from '../../../src/proto/iota/grpc/v1/ledger_service_pb.js';
 import { ObjectSchema } from '../../../src/proto/iota/grpc/v1/object_pb.js';
 import { ExecutedTransactionSchema } from '../../../src/proto/iota/grpc/v1/transaction_pb.js';
-import { toItemResult } from '../../../src/reassembly/batch.js';
+import { checkResultCount, collectStream, toItemResult } from '../../../src/reassembly/batch.js';
 
 describe('toItemResult', () => {
     it('returns the object on success', () => {
@@ -99,5 +107,104 @@ describe('toItemResult', () => {
         );
 
         expect(toItemResult(message, 'object result').ok).toBe(true);
+    });
+});
+
+async function* frames<T>(...messages: T[]): AsyncGenerator<T> {
+    for (const message of messages) {
+        yield message;
+    }
+}
+
+function objectsResponse(versions: bigint[], hasNext: boolean): GetObjectsResponse {
+    return create(GetObjectsResponseSchema, {
+        hasNext,
+        objects: versions.map((version) =>
+            create(ObjectResultSchema, {
+                result: {
+                    case: 'object',
+                    value: create(ObjectSchema, { reference: { version } }),
+                },
+            }),
+        ),
+    });
+}
+
+function extractObjects(message: GetObjectsResponse) {
+    return {
+        hasNext: message.hasNext,
+        items: message.objects.map((object) => toItemResult(object, 'object result')),
+    };
+}
+
+describe('collectStream', () => {
+    it('concatenates items across messages in order', async () => {
+        const results = await collectStream(
+            frames(
+                objectsResponse([1n, 2n], true),
+                objectsResponse([3n], true),
+                objectsResponse([4n, 5n], false),
+            ),
+            extractObjects,
+        );
+
+        expect(results.map((result) => result.ok && result.value.reference?.version)).toEqual([
+            1n,
+            2n,
+            3n,
+            4n,
+            5n,
+        ]);
+    });
+
+    it('throws when the stream ends with hasNext still set', async () => {
+        await expect(
+            collectStream(
+                frames(objectsResponse([1n], true), objectsResponse([2n], true)),
+                extractObjects,
+            ),
+        ).rejects.toBeInstanceOf(UnexpectedEndOfStreamError);
+    });
+
+    it('returns an empty list for an empty stream', async () => {
+        await expect(collectStream(frames<GetObjectsResponse>(), extractObjects)).resolves.toEqual(
+            [],
+        );
+    });
+
+    it('propagates an error from the source unchanged', async () => {
+        const failure = new Error('connection reset');
+
+        async function* failing(): AsyncGenerator<GetObjectsResponse> {
+            yield objectsResponse([1n], true);
+            throw failure;
+        }
+
+        await expect(collectStream(failing(), extractObjects)).rejects.toBe(failure);
+    });
+
+    it('propagates an error from extract unchanged', async () => {
+        const failure = new Error('bad message');
+
+        await expect(
+            collectStream(frames(objectsResponse([1n], false)), () => {
+                throw failure;
+            }),
+        ).rejects.toBe(failure);
+    });
+});
+
+describe('checkResultCount', () => {
+    it('accepts a matching count', () => {
+        expect(() => checkResultCount([1, 2], 2)).not.toThrow();
+    });
+
+    it.each([
+        { actual: [1], expected: 2 },
+        { actual: [1, 2, 3], expected: 2 },
+    ])('rejects $actual.length results for $expected requests', ({ actual, expected }) => {
+        expect(() => checkResultCount(actual, expected)).toThrow(
+            new UnexpectedResultCountError(expected, actual.length),
+        );
     });
 });
