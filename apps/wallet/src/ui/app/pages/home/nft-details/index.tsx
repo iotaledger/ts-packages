@@ -94,6 +94,7 @@ export function NFTDetailsPage() {
                 }
             } catch (error) {
                 toast.error('Failed to burn asset');
+                // eslint-disable-next-line no-console
                 console.error('Failed to burn asset:', error);
             }
         },
