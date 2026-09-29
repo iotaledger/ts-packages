@@ -2,6 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+// GraphQL schema of iota node 1.33.0
+
 import { initGraphQLTada } from 'gql.tada';
 
 import type { introspection } from '../../generated/latest/tada-env.js';

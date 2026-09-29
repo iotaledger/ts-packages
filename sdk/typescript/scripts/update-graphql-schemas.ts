@@ -4,7 +4,8 @@
 
 import { existsSync } from 'node:fs';
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
-import path, { dirname, resolve } from 'node:path';
+import path, { resolve } from 'node:path';
+import TOML from '@iarna/toml';
 import {
     createSchemaTsConfigFile,
     generateSchema,
@@ -14,8 +15,12 @@ import {
 
 const LATEST = 'latest';
 
-// a version list item in the versions file, e.g. `2025.2` or `2026.9.0`
-const SCHEMA_VERSION_LINE = /^-\s+(\d{4}\.\d{1,2}(?:\.\d+)?)$/;
+// a schema version: the `MAJOR.MINOR.PATCH` release of the iota node, e.g. `1.33.0`
+const SCHEMA_VERSION = /^\d+\.\d+\.\d+$/;
+
+// comment in the `latest` index file with the node version it was generated from
+const LATEST_VERSION_COMMENT = '// GraphQL schema of iota node';
+const LATEST_VERSION_LINE = new RegExp(`^${LATEST_VERSION_COMMENT} (.*)$`, 'm');
 
 const packageRoot = path.resolve(import.meta.url.slice(5), '../..');
 const workspaceRoot = path.resolve(packageRoot, '../..');
@@ -24,8 +29,9 @@ const schemaSourceFilePath = path.resolve(
     'external/iota/crates/iota-graphql-rpc',
     'schema.graphql',
 );
+const nodeCargoTomlPath = path.resolve(workspaceRoot, 'external/iota/Cargo.toml');
 const latestSchemaPath = resolve(packageRoot, `src/graphql/generated/${LATEST}/schema.graphql`);
-const versionsFilePath = resolve(packageRoot, 'scripts/graphql-schema-versions.md');
+const latestIndexPath = resolve(packageRoot, `src/graphql/schemas/${LATEST}/index.ts`);
 
 // creates the stub package.json used by resolvers that don't support the `exports` field
 async function createSchemaStubPackageJson(name: string) {
@@ -81,79 +87,111 @@ async function isSameSchema(schemaPath: string, otherSchemaPath: string) {
     );
 }
 
-// copies the `latest` schema into the version it is referenced by; an already frozen version is
-// never overwritten
-async function freezeLatestSchema(version: string) {
-    const frozenSchemaPath = resolve(
-        packageRoot,
-        `src/graphql/generated/${version}/schema.graphql`,
+// checks that a version is a `MAJOR.MINOR.PATCH` schema version
+function assertSchemaVersion(
+    version: string | undefined,
+    source: string,
+): asserts version is string {
+    if (!version || !SCHEMA_VERSION.test(version)) {
+        throw new Error(`Invalid GraphQL schema version "${version ?? ''}" in ${source}`);
+    }
+}
+
+// compares two `MAJOR.MINOR.PATCH` versions: returns true if `newLatestVersion` is a new node
+// version and false if both are the same version; the node version can never be older than the
+// one of the old latest
+function isNewNodeVersion(newLatestVersion: string, oldLatestVersion: string) {
+    const [newLatestParts, oldLatestParts] = [newLatestVersion, oldLatestVersion].map((version) =>
+        version.split('.').map(Number),
     );
 
-    if (existsSync(frozenSchemaPath)) {
-        if (
-            existsSync(latestSchemaPath) &&
-            !(await isSameSchema(frozenSchemaPath, latestSchemaPath))
-        ) {
-            throw new Error(
-                `GraphQL schema version ${version} is already frozen with a different schema than ${LATEST}`,
-            );
-        }
-        return;
+    const difference =
+        newLatestParts
+            .map((part, index) => part - oldLatestParts[index])
+            .find((partDifference) => partDifference !== 0) ?? 0;
+
+    if (difference < 0) {
+        throw new Error(
+            `iota node version ${newLatestVersion} is older than the ${LATEST} GraphQL schema version ${oldLatestVersion}`,
+        );
     }
 
-    await mkdir(dirname(frozenSchemaPath), { recursive: true });
-    await copyFile(latestSchemaPath, frozenSchemaPath);
+    return difference > 0;
 }
 
-// reads the schema versions listed in the versions file
-async function readSchemaVersions() {
-    const content = await readFile(versionsFilePath, 'utf-8');
+// reads the `MAJOR.MINOR.PATCH` release of the iota node, without its prerelease suffix (e.g. `-alpha`)
+async function readNodeVersion() {
+    const cargoToml = TOML.parse(await readFile(nodeCargoTomlPath, 'utf-8')) as {
+        workspace?: { package?: { version?: string } };
+    };
+    const version = cargoToml.workspace?.package?.version?.split('-')[0];
+    assertSchemaVersion(version, nodeCargoTomlPath);
 
-    return content
-        .split('\n')
-        .map((line) => line.trim().match(SCHEMA_VERSION_LINE)?.[1])
-        .filter((version): version is string => version !== undefined);
+    return version;
 }
 
-// appends a schema version to the versions file, using the list style prettier formats to
-async function appendSchemaVersion(version: string) {
-    const content = await readFile(versionsFilePath, 'utf-8');
-
-    await writeFile(versionsFilePath, `${content.trimEnd()}\n-   ${version}\n`);
-}
-
-// returns the `YYYY.M.PATCH` version for the given date, bumping the patch if the month already has one
-function getNextSchemaVersion(versions: string[], date: Date) {
-    const month = `${date.getUTCFullYear()}.${date.getUTCMonth() + 1}`;
-    const patches = versions
-        .filter((version) => version.startsWith(`${month}.`))
-        .map((version) => Number(version.slice(month.length + 1)));
-
-    const patch = patches.length > 0 ? Math.max(...patches) + 1 : 0;
-
-    return `${month}.${patch}`;
-}
-
-// the last version of the versions file references the schema currently in `latest`: when the
-// iota submodule schema changes, freeze `latest`, regenerate every frozen version, generate a new
-// `latest` from the submodule and reference it with a new version
-if (!(await isSameSchema(schemaSourceFilePath, latestSchemaPath))) {
-    const versions = await readSchemaVersions();
-
-    // 1. freeze the current latest before it gets overwritten
-    const latestVersion = versions.at(-1);
-    if (latestVersion) {
-        await freezeLatestSchema(latestVersion);
+// reads the node version the current `latest` was generated from, stored as a comment in its index
+// file; undefined when there is no `latest` yet
+async function readCurrentLatest() {
+    if (!existsSync(latestIndexPath)) {
+        return undefined;
     }
 
-    // 2. frozen versions
-    for (const version of versions) {
-        await regenerateSchemaVersion(version);
+    const version = (await readFile(latestIndexPath, 'utf-8')).match(LATEST_VERSION_LINE)?.[1];
+    assertSchemaVersion(version, latestIndexPath);
+
+    return version;
+}
+
+// stores the node version the current `latest` was generated from as a comment in its index file,
+// right after the license header
+async function writeCurrentLatest(version: string) {
+    const [licenseHeader, ...code] = (await readFile(latestIndexPath, 'utf-8')).split('\n\n');
+
+    await writeFile(
+        latestIndexPath,
+        [licenseHeader, `${LATEST_VERSION_COMMENT} ${version}`, ...code].join('\n\n'),
+    );
+}
+
+// copies the `latest` schema into its version and generates all of its files; a frozen version is
+// never overwritten
+async function freezeLatestSchema(version: string) {
+    if (existsSync(resolve(packageRoot, `src/graphql/generated/${version}/`))) {
+        throw new Error(`GraphQL schema version ${version} is already frozen`);
     }
 
-    // 3. latest
+    await writeSchemaVersion(version, latestSchemaPath);
+}
+
+// `latest` follows the schema of the iota node in the submodule, and its index file stores the node
+// version it was generated from. A schema change in a new node version freezes `latest` under the
+// previous one.
+const newLatestVersion = await readNodeVersion();
+const oldLatestVersion = await readCurrentLatest();
+
+// 1. check whether the node version and the node schema have changed
+const hasNewVersion =
+    oldLatestVersion !== undefined && isNewNodeVersion(newLatestVersion, oldLatestVersion);
+const hasNewSchema = !(await isSameSchema(schemaSourceFilePath, latestSchemaPath));
+
+if (!hasNewSchema) {
+    console.log(
+        `GraphQL schema of iota node ${newLatestVersion} is unchanged, ${LATEST} (${oldLatestVersion}) is up to date`,
+    );
+} else {
+    // 2. a new node version freezes the old latest
+    if (hasNewVersion) {
+        await freezeLatestSchema(oldLatestVersion);
+    }
+
+    // 3. update latest with the new node schema and reference its node version
     await writeSchemaVersion(LATEST, schemaSourceFilePath);
+    await writeCurrentLatest(newLatestVersion);
 
-    // 4. reference the new latest
-    await appendSchemaVersion(getNextSchemaVersion(versions, new Date()));
+    console.log(
+        hasNewVersion
+            ? `Froze GraphQL schema ${oldLatestVersion} and updated ${LATEST} to ${newLatestVersion}`
+            : `Updated ${LATEST} (${newLatestVersion}) with the new GraphQL schema`,
+    );
 }
