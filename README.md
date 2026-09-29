@@ -44,6 +44,19 @@ pnpm install
 | [EVM Bridge](./apps/evm-bridge) | UI for bridging assets between IOTA and EVM chains. |
 | [Names dApp](./apps/names) | Frontend for the IOTA Names Service. |
 
+### Local Dev Ports
+
+Each app runs on a fixed port and fails to start if it is already in use, so apps can run side by side without shifting ports.
+
+| App | Port |
+| --- | --- |
+| Explorer | 3000 |
+| Wallet Dashboard | 3004 |
+| Apps Backend | 3003 |
+| Names dApp | 3005 |
+| Names Display | 3006 |
+| UI Kit (Storybook) | 6006 |
+
 ### Common Commands
 
 ```bash

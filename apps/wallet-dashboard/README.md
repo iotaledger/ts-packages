@@ -20,7 +20,7 @@ To start the wallet dashboard dev server, you can run the following command:
 pnpm wallet-dashboard dev
 ```
 
-This will start the dev server on port 3000, which should be accessible on http://localhost:3000/
+This will start the dev server on port 3004, which should be accessible on http://localhost:3004/
 
 ## To run end-to-end localnet test
 
