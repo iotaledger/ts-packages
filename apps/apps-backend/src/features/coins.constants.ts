@@ -48,8 +48,11 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
         trust: CoinTrust.Recognized,
     },
     {
-        type: '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
+        coinType:
+            '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
         name: 'USDT0',
+        trust: CoinTrust.Recognized,
+        valuation: { kind: 'market', priceId: 'usdt0' },
     },
 ];
 
