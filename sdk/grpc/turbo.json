@@ -1,0 +1,11 @@
+{
+    "extends": ["//"],
+    "tasks": {
+        "test": {
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "$TURBO_ROOT$/external/iota-rust-sdk/crates/iota-sdk-grpc-types/src/read_masks.rs"
+            ]
+        }
+    }
+}
