@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { expect } from '@playwright/test';
 import {
     checkL2CoinBalanceForAddressWithRetries,

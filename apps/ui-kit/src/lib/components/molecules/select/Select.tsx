@@ -17,8 +17,7 @@ export type SelectOption =
     | { id: string; label: React.ReactNode };
 
 interface SelectProps
-    extends Pick<React.HTMLProps<HTMLSelectElement>, 'disabled'>,
-        React.AriaAttributes {
+    extends Pick<React.HTMLProps<HTMLSelectElement>, 'disabled'>, React.AriaAttributes {
     /**
      * The selected option value.
      */

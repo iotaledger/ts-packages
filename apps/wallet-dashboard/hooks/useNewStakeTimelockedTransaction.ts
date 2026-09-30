@@ -29,7 +29,7 @@ export function useNewStakeTimelockedTransaction(
     const client = useIotaClient();
     const { data: maxTxSizeBytes = Infinity } = useMaxTransactionSizeBytes();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'stake-timelocked-transaction',
             validator,

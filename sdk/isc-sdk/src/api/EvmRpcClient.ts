@@ -30,10 +30,10 @@ export class EvmRpcClient {
         }
 
         const response = await fetch(url, {
-            ...(options ?? {}),
+            ...options,
             headers: {
                 'Content-Type': 'application/json',
-                ...(options?.headers || {}),
+                ...options?.headers,
             },
         });
 

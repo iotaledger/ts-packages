@@ -3,7 +3,7 @@
 
 import { getDefaultNetwork, Network } from '@iota/iota-sdk/client';
 import { useLayoutEffect, useMemo } from 'react';
-// eslint-disable-next-line no-restricted-imports
+// oxlint-disable-next-line no-restricted-imports
 import { useSearchParams } from 'react-router-dom';
 import { appsBackendClient } from '~/lib/utils/apps-backend';
 import { queryClient } from '~/lib/utils/queryClient';

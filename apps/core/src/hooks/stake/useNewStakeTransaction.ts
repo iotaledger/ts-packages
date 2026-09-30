@@ -10,7 +10,7 @@ import { Transaction } from '@iota/iota-sdk/transactions';
 export function useNewStakeTransaction(validator: string, amount: bigint, senderAddress: string) {
     const client = useIotaClient();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['stake-transaction', validator, amount.toString(), senderAddress],
         queryFn: async () => {
             const transaction = createStakeTransaction(amount, validator);

@@ -209,6 +209,7 @@ function ValidatorPageResult(): JSX.Element {
                 }
                 return true;
             }),
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [allValidators, atRiskAddresses, currentValidatorStatus, searchTerm],
     );
 

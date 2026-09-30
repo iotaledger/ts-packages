@@ -19,6 +19,7 @@ export const useOnScreen = (elementRef: MutableRefObject<Element | null>) => {
         );
         observer.observe(node);
         return () => observer.disconnect();
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [elementRef.current]);
 
     return { isIntersecting };

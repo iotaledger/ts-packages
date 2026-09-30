@@ -27,7 +27,7 @@ export function ImportSeedPage() {
 
     return (
         <PageTemplate title="Import Seed" isTitleCentered>
-            <div className="flex h-full w-full flex-col items-center ">
+            <div className="flex h-full w-full flex-col items-center">
                 <div className="w-full grow">
                     <ImportSeedForm onSubmit={handleOnSubmit} />
                 </div>

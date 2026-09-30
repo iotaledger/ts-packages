@@ -40,6 +40,7 @@ export function ThemeProvider({
         // Make the theme preference listener wait
         // until the preference is loaded in the next render
         setIsLoadingPreference(false);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // When the theme preference changes..

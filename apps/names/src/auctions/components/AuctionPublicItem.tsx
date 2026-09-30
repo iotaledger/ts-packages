@@ -39,6 +39,7 @@ export function AuctionPublicItem({ auction, onBidClick }: AuctionPublicItemProp
     const account = useCurrentAccount();
 
     const normalizedName = normalizeIotaName(auction.name);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
     const censoredName = useMemo(() => censorName(normalizedName, FORBIDDEN_LIST), [auction.name]);
     const isCensored = normalizedName !== censoredName;
     const valueToCopy = isCensored ? normalizedName : censoredName;

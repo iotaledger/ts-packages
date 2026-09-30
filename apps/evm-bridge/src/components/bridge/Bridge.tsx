@@ -26,7 +26,7 @@ export function Bridge() {
 
     const formMethods = useForm({
         mode: 'all',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(formSchema as any),
         defaultValues: {
             [BridgeFormInputName.IsFromLayer1]: true,

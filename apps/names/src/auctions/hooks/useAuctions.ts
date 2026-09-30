@@ -93,7 +93,7 @@ export function useAuctions({
         isLoading: isLoadingAllAuctions,
         error: allAuctionsError,
     } = useQuery<AuctionsResponse>({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             ...queryKey.auctionList(),
             search,
@@ -120,7 +120,7 @@ export function useAuctions({
         isLoading: isLoadingUserAuctions,
         error: userAuctionsError,
     } = useQuery<AuctionsResponse>({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...queryKey.userAuctionHistory(userAddress)],
         queryFn: async () => {
             if (!indexerClient || !userAddress || !shouldFetchUserAuctions) {

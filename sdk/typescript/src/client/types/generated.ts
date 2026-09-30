@@ -310,13 +310,16 @@ export type IotaEventFilter =
     /** Query by sender address. */
     | {
           Sender: string;
-      } /** Return events emitted by the given transaction. */
+      }
+    /** Return events emitted by the given transaction. */
     | {
           Transaction: string;
-      } /** Return events emitted in a specified Package. */
+      }
+    /** Return events emitted in a specified Package. */
     | {
           Package: string;
-      } /**
+      }
+    /**
      * Return events emitted in a specified Move module. If the event is defined in Module A but emitted in
      * a tx with Module B, query `MoveModule` by module B returns the event. Query `MoveEventModule` by
      * module A returns the event too.
@@ -328,13 +331,15 @@ export type IotaEventFilter =
               /** the Move package ID */
               package: string;
           };
-      } /**
+      }
+    /**
      * Return events with the given Move event struct name (struct tag). For example, if the event is
      * defined in `0xabcd::MyModule`, and named `Foo`, then the struct tag is `0xabcd::MyModule::Foo`.
      */
     | {
           MoveEventType: string;
-      } /**
+      }
+    /**
      * Return events with the given Move module name where the event struct is defined. If the event is
      * defined in Module A but emitted in a tx with Module B, query `MoveEventModule` by module A returns
      * the event. Query `MoveModule` by module B returns the event too.
@@ -352,7 +357,8 @@ export type IotaEventFilter =
               path: string;
               value: unknown;
           };
-      } /** Return events emitted in [start_time, end_time] interval */
+      }
+    /** Return events emitted in [start_time, end_time] interval */
     | {
           TimeRange: {
               /** right endpoint of time interval, milliseconds since epoch, exclusive */
@@ -447,13 +453,16 @@ export type InputObjectKind =
       };
 /** An argument to a transaction in a programmable transaction block */
 export type IotaArgument =
-    | 'GasCoin' /** One of the input objects or primitive values (from `ProgrammableTransactionBlock` inputs) */
+    | 'GasCoin'
+    /** One of the input objects or primitive values (from `ProgrammableTransactionBlock` inputs) */
     | {
           Input: number;
-      } /** The result of another transaction (from `ProgrammableTransactionBlock` transactions) */
+      }
+    /** The result of another transaction (from `ProgrammableTransactionBlock` transactions) */
     | {
           Result: number;
-      } /**
+      }
+    /**
      * Like a `Result` but it accesses a nested result. Currently, the only usage of this is to access a
      * value from a Move call with multiple return values.
      */
@@ -625,7 +634,8 @@ export type IotaMoveViewCallResults =
     /** Execution error from executing the move view call */
     | {
           executionError: string;
-      } /** The return values of the move view function */
+      }
+    /** The return values of the move view function */
     | {
           functionReturnValues: MoveValue[];
       };
@@ -660,10 +670,12 @@ export type IotaObjectDataFilter =
       }
     | {
           MatchNone: IotaObjectDataFilter[];
-      } /** Query by type a specified Package. */
+      }
+    /** Query by type a specified Package. */
     | {
           Package: string;
-      } /** Query by type a specified Move module. */
+      }
+    /** Query by type a specified Move module. */
     | {
           MoveModule: {
               /** the module name */
@@ -671,7 +683,8 @@ export type IotaObjectDataFilter =
               /** the Move package ID */
               package: string;
           };
-      } /** Query by type */
+      }
+    /** Query by type */
     | {
           StructType: string;
       }
@@ -941,32 +954,38 @@ export type IotaTransaction =
     /** A call to either an entry or a public Move function */
     | {
           MoveCall: MoveCallIotaTransaction;
-      } /**
+      }
+    /**
      * `(Vec<forall T:key+store. T>, address)` It sends n-objects to the specified address. These objects
      * must have store (public transfer) and either the previous owner must be an address or the object
      * must be newly created.
      */
     | {
           TransferObjects: [IotaArgument[], IotaArgument];
-      } /**
+      }
+    /**
      * `(&mut Coin<T>, Vec<u64>)` -> `Vec<Coin<T>>` It splits off some amounts into a new coins with those
      * amounts
      */
     | {
           SplitCoins: [IotaArgument, IotaArgument[]];
-      } /** `(&mut Coin<T>, Vec<Coin<T>>)` It merges n-coins into the first coin */
+      }
+    /** `(&mut Coin<T>, Vec<Coin<T>>)` It merges n-coins into the first coin */
     | {
           MergeCoins: [IotaArgument, IotaArgument[]];
-      } /**
+      }
+    /**
      * Publishes a Move package. It takes the package bytes and a list of the package's transitive
      * dependencies to link against on-chain.
      */
     | {
           Publish: string[];
-      } /** Upgrades a Move package */
+      }
+    /** Upgrades a Move package */
     | {
           Upgrade: [string[], string, IotaArgument];
-      } /**
+      }
+    /**
      * `forall T: Vec<T> -> vector<T>` Given n-values of the same type, it constructs a vector. For non
      * objects or an empty vector, the type tag must be specified.
      */
@@ -1128,7 +1147,8 @@ export type IotaObjectChange =
           packageId: string;
           type: 'published';
           version: string;
-      } /** Transfer objects to new address / wrap in another object */
+      }
+    /** Transfer objects to new address / wrap in another object */
     | {
           digest: string;
           objectId: string;
@@ -1137,7 +1157,8 @@ export type IotaObjectChange =
           sender: string;
           type: 'transferred';
           version: string;
-      } /** Object mutated. */
+      }
+    /** Object mutated. */
     | {
           digest: string;
           objectId: string;
@@ -1147,21 +1168,24 @@ export type IotaObjectChange =
           sender: string;
           type: 'mutated';
           version: string;
-      } /** Delete object */
+      }
+    /** Delete object */
     | {
           objectId: string;
           objectType: string;
           sender: string;
           type: 'deleted';
           version: string;
-      } /** Wrapped object */
+      }
+    /** Wrapped object */
     | {
           objectId: string;
           objectType: string;
           sender: string;
           type: 'wrapped';
           version: string;
-      } /** Unwrapped object */
+      }
+    /** Unwrapped object */
     | {
           digest: string;
           objectId: string;
@@ -1170,7 +1194,8 @@ export type IotaObjectChange =
           sender: string;
           type: 'unwrapped';
           version: string;
-      } /** New object creation */
+      }
+    /** New object creation */
     | {
           digest: string;
           objectId: string;
@@ -1241,19 +1266,23 @@ export type ObjectRead =
     | {
           details: IotaObjectData;
           status: 'VersionFound';
-      } /** The object does not exist */
+      }
+    /** The object does not exist */
     | {
           details: string;
           status: 'ObjectNotExists';
-      } /** The object is found to be deleted with this version */
+      }
+    /** The object is found to be deleted with this version */
     | {
           details: IotaObjectRef;
           status: 'ObjectDeleted';
-      } /** The object exists but not found with this version */
+      }
+    /** The object exists but not found with this version */
     | {
           details: [string, string];
           status: 'VersionNotFound';
-      } /** The asked object version is higher than the latest */
+      }
+    /** The asked object version is higher than the latest */
     | {
           details: {
               asked_version: string;
@@ -1321,13 +1350,15 @@ export type ObjectOwner =
     /** Object is exclusively owned by a single address, and is mutable. */
     | {
           AddressOwner: string;
-      } /**
+      }
+    /**
      * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
      * Address as Address is universal.
      */
     | {
           ObjectOwner: string;
-      } /** Object is shared, can be used by any address, and is mutable. */
+      }
+    /** Object is shared, can be used by any address, and is mutable. */
     | {
           Shared: {
               /** The version at which the object became shared */
@@ -1609,7 +1640,8 @@ export type IotaTransactionBlockKind =
           events: EventId[];
           kind: 'Genesis';
           objects: string[];
-      } /** A system transaction marking the start of a series of transactions scheduled as part of a checkpoint */
+      }
+    /** A system transaction marking the start of a series of transactions scheduled as part of a checkpoint */
     | {
           commit_timestamp_ms: string;
           consensus_commit_digest: string;
@@ -1618,7 +1650,8 @@ export type IotaTransactionBlockKind =
           kind: 'ConsensusCommitPrologueV1';
           round: string;
           sub_dag_index?: string | null;
-      } /** A series of transactions where the results of one transaction can be used in future transactions */
+      }
+    /** A series of transactions where the results of one transaction can be used in future transactions */
     | {
           /** Input objects or primitive values */
           inputs: IotaCallArg[];
@@ -1628,13 +1661,15 @@ export type IotaTransactionBlockKind =
            * failure of the entire programmable transaction block.
            */
           transactions: IotaTransaction[];
-      } /** A transaction which updates global randomness state */
+      }
+    /** A transaction which updates global randomness state */
     | {
           epoch: string;
           kind: 'RandomnessStateUpdate';
           random_bytes: number[];
           randomness_round: string;
-      } /** A transaction which applies an add/remove delta to the on-chain transaction deny rules */
+      }
+    /** A transaction which applies an add/remove delta to the on-chain transaction deny rules */
     | {
           added_addresses: string[];
           added_objects: string[];
@@ -1651,7 +1686,8 @@ export type IotaTransactionBlockKind =
           round: string;
           shared_object_disabled: boolean;
           user_transaction_disabled: boolean;
-      } /** The transaction which occurs only at the end of the epoch */
+      }
+    /** The transaction which occurs only at the end of the epoch */
     | {
           kind: 'EndOfEpochTransaction';
           transactions: IotaEndOfEpochTransactionKind[];
@@ -1705,40 +1741,49 @@ export type TransactionFilter =
     /** Query by checkpoint. */
     | {
           Checkpoint: string;
-      } /** Query by move function. */
+      }
+    /** Query by move function. */
     | {
           MoveFunction: {
               function?: string | null;
               module?: string | null;
               package: string;
           };
-      } /** Query by input object. */
+      }
+    /** Query by input object. */
     | {
           InputObject: string;
-      } /** Query by changed object, including created, mutated and unwrapped objects. */
+      }
+    /** Query by changed object, including created, mutated and unwrapped objects. */
     | {
           ChangedObject: string;
-      } /** Query by sender address. */
+      }
+    /** Query by sender address. */
     | {
           FromAddress: string;
-      } /** Query by recipient address. */
+      }
+    /** Query by recipient address. */
     | {
           ToAddress: string;
-      } /** Query by sender and recipient address. */
+      }
+    /** Query by sender and recipient address. */
     | {
           FromAndToAddress: {
               from: string;
               to: string;
           };
-      } /** Query txs that have a given address as sender or recipient. */
+      }
+    /** Query txs that have a given address as sender or recipient. */
     | {
           FromOrToAddress: {
               addr: string;
           };
-      } /** Query by transaction kind */
+      }
+    /** Query by transaction kind */
     | {
           TransactionKind: IotaTransactionKind;
-      } /** Query transactions of any given kind in the input. */
+      }
+    /** Query transactions of any given kind in the input. */
     | {
           TransactionKindIn: IotaTransactionKind[];
       };
@@ -1746,46 +1791,56 @@ export type TransactionFilterV2 =
     /** Query by checkpoint. */
     | {
           Checkpoint: string;
-      } /** Query by move function. */
+      }
+    /** Query by move function. */
     | {
           MoveFunction: {
               function?: string | null;
               module?: string | null;
               package: string;
           };
-      } /** Query by input object. */
+      }
+    /** Query by input object. */
     | {
           InputObject: string;
-      } /** Query by changed object, including created, mutated and unwrapped objects. */
+      }
+    /** Query by changed object, including created, mutated and unwrapped objects. */
     | {
           ChangedObject: string;
-      } /**
+      }
+    /**
      * Query transactions that wrapped or deleted the specified object. Includes transactions that either
      * created and immediately wrapped the object or unwrapped and immediately deleted it.
      */
     | {
           WrappedOrDeletedObject: string;
-      } /** Query by sender address. */
+      }
+    /** Query by sender address. */
     | {
           FromAddress: string;
-      } /** Query by recipient address. */
+      }
+    /** Query by recipient address. */
     | {
           ToAddress: string;
-      } /** Query by sender and recipient address. */
+      }
+    /** Query by sender and recipient address. */
     | {
           FromAndToAddress: {
               from: string;
               to: string;
           };
-      } /** Query txs that have a given address as sender or recipient. */
+      }
+    /** Query txs that have a given address as sender or recipient. */
     | {
           FromOrToAddress: {
               addr: string;
           };
-      } /** Query by transaction kind */
+      }
+    /** Query by transaction kind */
     | {
           TransactionKind: IotaTransactionKind;
-      } /** Query transactions of any given kind in the input. */
+      }
+    /** Query transactions of any given kind in the input. */
     | {
           TransactionKindIn: IotaTransactionKind[];
       };

@@ -32,6 +32,7 @@ export function useCountdownByTimestamp(
         }, MILLISECONDS_PER_SECOND);
 
         return () => clearInterval(interval);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [initialTimestamp]);
     const formattedCountdown = formatCountdown(timeRemainingMs, options);
     return formattedCountdown;

@@ -26,7 +26,7 @@ export function useGasEstimateL2({
     const client = usePublicClient();
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'l2-deposit-transaction-gas-estimate',
             address,

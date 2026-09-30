@@ -62,7 +62,7 @@ const isValidPath = (path: string): boolean => {
         .split('/')
         .slice(1)
         .map(replaceDerive)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         .some(isNaN as any /* ts T_T*/);
 };
 

@@ -32,7 +32,7 @@ export function Footer(): JSX.Element {
     return (
         <footer className="sticky top-[100%] bg-iota-neutral-96 py-10 md:py-14 dark:bg-iota-neutral-10">
             <nav className="container flex flex-col justify-center gap-md md:gap-lg">
-                <div className="gap-7.5 flex flex-col-reverse items-center md:flex-row md:justify-between ">
+                <div className="gap-7.5 flex flex-col-reverse items-center md:flex-row md:justify-between">
                     <div className="hidden self-center md:flex md:self-start">
                         <ThemedIotaLogo />
                     </div>

@@ -35,7 +35,7 @@ async function loadCookieConsentBanner<T>(
     options: CookieConsentConfig,
 ) {
     await import('vanilla-cookieconsent');
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     await import('vanilla-cookieconsent/dist/cookieconsent.css');
     await options.onBeforeLoad();

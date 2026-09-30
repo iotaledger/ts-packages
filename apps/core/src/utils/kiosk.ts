@@ -27,6 +27,6 @@ export function getKioskIdFromOwnerCap(object: IotaObjectResponse | IotaObjectDa
                   cap?: { fields: { for: string } };
               })
             : null;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     return fields?.for ?? fields?.kiosk ?? fields?.cap?.fields.for!;
 }

@@ -36,7 +36,7 @@ export function useAuctionBid({ name, bidNanos }: UseActionBidParams) {
     const isAuctionPresent = !!auctionMetadata;
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             ...queryKey.placeBid(address || ''),
             name,

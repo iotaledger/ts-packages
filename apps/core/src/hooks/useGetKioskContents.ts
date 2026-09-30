@@ -47,7 +47,7 @@ export function useGetKioskContents(address?: string | null) {
     const { network } = useIotaClientContext();
     const kioskClient = useKioskClient();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['get-kiosk-contents', address, network, kioskClient.network],
         queryFn: async () => {
             const iotaKiosks = await getIotaKioskContents(address!, kioskClient);
