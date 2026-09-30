@@ -74,10 +74,10 @@ async function writeSchemaVersion(name: string, sourceSchemaPath: string, nodeVe
     await createSchemaIndexFile(targetFolderSchemas, name, generatedComment(nodeVersion));
 }
 
-// checks whether `latest` was fully written from the node schema of the node version
-async function isLatestUpToDate(nodeVersion: string, latestVersion: string | undefined) {
+// checks whether `latest` was fully written from the node schema
+async function isLatestUpToDate(latestVersion: string | undefined) {
     return (
-        latestVersion === nodeVersion &&
+        latestVersion !== undefined &&
         existsSync(latestSchemaPath) &&
         (await readFile(schemaSourceFilePath, 'utf-8')) ===
             (await readFile(latestSchemaPath, 'utf-8'))
@@ -132,7 +132,7 @@ const oldLatestVersion = await readLatestVersion();
 
 // 1. check whether the node version and the node schema have changed
 const hasNewVersion = oldLatestVersion !== undefined && newLatestVersion !== oldLatestVersion;
-const hasNewSchema = !(await isLatestUpToDate(newLatestVersion, oldLatestVersion));
+const hasNewSchema = !(await isLatestUpToDate(oldLatestVersion));
 
 // frozen schema versions are published, so an older node version must not replace a newer `latest`
 if (hasNewVersion && compareSchemaVersions(newLatestVersion, oldLatestVersion) < 0) {
