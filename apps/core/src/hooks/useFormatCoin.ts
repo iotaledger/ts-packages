@@ -21,7 +21,7 @@ const ELLIPSIS = '\u{2026}';
 const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
-export function useCoinMetadata(coinType?: string | null) {
+export function useCoinMetadata(coinType?: string | null, truncateSymbol?: boolean) {
     const client = useIotaClient();
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
 
@@ -88,7 +88,7 @@ export function useCoinMetadata(coinType?: string | null) {
             return {
                 ...data,
                 symbol:
-                    data.symbol.length > SYMBOL_TRUNCATE_LENGTH
+                    truncateSymbol && data.symbol.length > SYMBOL_TRUNCATE_LENGTH
                         ? data.symbol.slice(0, SYMBOL_TRUNCATE_LENGTH) + ELLIPSIS
                         : data.symbol,
                 name:
@@ -119,6 +119,7 @@ interface FormatCoinOptions {
     format?: CoinFormat;
     showSign?: boolean;
     useGroupSeparator?: boolean;
+    truncateSymbol?: boolean;
 }
 // TODO #1: This handles undefined values to make it easier to integrate with
 // the reset of the app as it is today, but it really shouldn't in a perfect world.
@@ -128,12 +129,13 @@ export function useFormatCoin({
     format = CoinFormat.Rounded,
     showSign = false,
     useGroupSeparator = true,
+    truncateSymbol = true,
 }: FormatCoinOptions): FormattedCoin {
     const fallbackSymbol = useMemo(
         () => (coinType ? (getCoinSymbol(coinType) ?? '') : ''),
         [coinType],
     );
-    const queryResult = useCoinMetadata(coinType);
+    const queryResult = useCoinMetadata(coinType, truncateSymbol);
     const { isFetched, data } = queryResult;
 
     const formatted = useMemo(() => {

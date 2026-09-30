@@ -3,3 +3,4 @@
 
 export * from './getCoinRegistryEntry';
 export * from './getTransactionCoinBalances';
+export * from './isRecognizedCoinType';
