@@ -2,65 +2,60 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
-import { useCoinMetadata, ImageIcon, ImageIconSize } from '../../';
+import { useCoinMetadata } from '../../hooks';
+import { ImageIcon, ImageIconSize } from '../icon';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
 import { IOTA_TYPE_ARG, normalizeStructTag } from '@iota/iota-sdk/utils';
 import cx from 'clsx';
 
-interface NonIotaCoinProps {
-    coinType: string;
-    size?: ImageIconSize;
-    rounded?: boolean;
-}
+const IOTA_LOGO_INSET: Partial<Record<ImageIconSize, string>> = {
+    [ImageIconSize.Large]: 'size-5',
+};
 
-function NonIotaCoin({ coinType, size = ImageIconSize.Full, rounded }: NonIotaCoinProps) {
+function NonIotaCoin({ coinType }: { coinType: string }) {
     const { data: coinMeta } = useCoinMetadata(coinType);
     return (
-        <div className="flex h-full w-full items-center justify-center rounded-full bg-iota-neutral-96 dark:bg-iota-neutral-12">
+        <div className="flex size-full items-center justify-center bg-iota-neutral-96 dark:bg-iota-neutral-12">
             <ImageIcon
                 key={coinMeta?.iconUrl}
                 src={coinMeta?.iconUrl}
                 label={coinMeta?.name || coinType}
                 fallback={coinMeta?.name || coinType}
-                size={coinMeta?.iconUrl ? ImageIconSize.Full : size}
-                fallbackSize={size}
-                rounded={rounded}
+                size={ImageIconSize.Full}
+                fallbackSize={ImageIconSize.Small}
+                rounded
             />
         </div>
     );
 }
+
 export interface CoinIconProps {
     coinType: string;
     size?: ImageIconSize;
-    rounded?: boolean;
-}
-
-export function CoinIcon({ coinType, size = ImageIconSize.Full, rounded }: CoinIconProps) {
-    const normalizedCoinType = normalizeStructTag(coinType);
-    const isIota = normalizedCoinType === normalizeStructTag(IOTA_TYPE_ARG);
-
-    return isIota ? (
-        <div className={cx(size, 'text-iota-neutral-10 dark:text-iota-neutral-92')}>
-            <IotaLogoMark className="h-full w-full" />
-        </div>
-    ) : (
-        <NonIotaCoin rounded={rounded} size={size} coinType={coinType} />
-    );
-}
-type CoinIconWrapperProps = React.PropsWithChildren<Pick<CoinIconProps, 'size'>> & {
     hasBorder?: boolean;
-};
-export function CoinIconWrapper({ children, size, hasBorder }: CoinIconWrapperProps) {
+}
+
+export function CoinIcon({ coinType, size = ImageIconSize.Full, hasBorder }: CoinIconProps) {
+    const isIota = normalizeStructTag(coinType) === normalizeStructTag(IOTA_TYPE_ARG);
+
     return (
         <div
             className={cx(
                 size,
+                'flex shrink-0 items-center justify-center overflow-hidden rounded-full',
                 hasBorder && 'border border-shader-neutral-light-8',
-                'flex items-center justify-center rounded-full bg-iota-neutral-100',
             )}
         >
-            {children}
+            {isIota ? (
+                <IotaLogoMark
+                    className={cx(
+                        IOTA_LOGO_INSET[size] ?? 'size-full',
+                        'text-iota-neutral-10 dark:text-iota-neutral-92',
+                    )}
+                />
+            ) : (
+                <NonIotaCoin coinType={coinType} />
+            )}
         </div>
     );
 }

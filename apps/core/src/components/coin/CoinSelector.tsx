@@ -59,9 +59,7 @@ function CoinSelectOption({ coin: { coinType, totalBalance } }: CoinSelectOption
     return (
         <div className="flex w-full flex-row items-center justify-between">
             <div className="flex flex-row items-center gap-x-md">
-                <div className="flex h-6 w-6 items-center justify-center">
-                    <CoinIcon size={ImageIconSize.Small} coinType={coinType} rounded />
-                </div>
+                <CoinIcon size={ImageIconSize.Small} coinType={coinType} />
                 <span className="text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                     {isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol}
                 </span>
