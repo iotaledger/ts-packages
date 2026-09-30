@@ -30,8 +30,11 @@ const schemaSourceFilePath = path.resolve(
     'schema.graphql',
 );
 const nodeCargoTomlPath = path.resolve(workspaceRoot, 'external/iota/Cargo.toml');
-const latestSchemaPath = resolve(packageRoot, `src/graphql/generated/${LATEST}/schema.graphql`);
-const latestIndexPath = resolve(packageRoot, `src/graphql/schemas/${LATEST}/index.ts`);
+const latestSchemaPath = path.resolve(
+    packageRoot,
+    `src/graphql/generated/${LATEST}/schema.graphql`,
+);
+const latestIndexPath = path.resolve(packageRoot, `src/graphql/schemas/${LATEST}/index.ts`);
 
 // creates the stub package.json used by resolvers that don't support the `exports` field
 async function createSchemaStubPackageJson(name: string) {
@@ -48,42 +51,28 @@ async function createSchemaStubPackageJson(name: string) {
     await writeFile(resolve(stubFolder, 'package.json'), `${JSON.stringify(stub, null, '    ')}\n`);
 }
 
-// regenerates every file of a schema version (types, index, stub and export) from its own schema.graphql
-async function regenerateSchemaVersion(name: string) {
+// writes a schema version from a schema file: schema, types, index, stub and export
+async function writeSchemaVersion(name: string, sourceSchemaPath: string) {
     const targetFolderGenerated = resolve(packageRoot, `src/graphql/generated/${name}/`);
     const targetFolderSchemas = resolve(packageRoot, `src/graphql/schemas/${name}/`);
 
-    if (!existsSync(resolve(targetFolderGenerated, 'schema.graphql'))) {
-        throw new Error(`Missing schema.graphql for GraphQL schema version ${name}`);
-    }
-
+    await mkdir(targetFolderGenerated, { recursive: true });
     await mkdir(targetFolderSchemas, { recursive: true });
+    await copyFile(sourceSchemaPath, resolve(targetFolderGenerated, 'schema.graphql'));
 
     await createSchemaTsConfigFile(targetFolderGenerated, name);
     await generateSchema(targetFolderGenerated);
     await createSchemaIndexFile(targetFolderSchemas, name);
     await createSchemaStubPackageJson(name);
-
-    // add exports to package.json
     await addExportsToPackageJson(packageRoot, [name]);
 }
 
-// copies a source schema into a schema version and generates all of its files
-async function writeSchemaVersion(name: string, sourceSchemaPath: string) {
-    const targetFolderGenerated = resolve(packageRoot, `src/graphql/generated/${name}/`);
-
-    await mkdir(targetFolderGenerated, { recursive: true });
-    await copyFile(sourceSchemaPath, resolve(targetFolderGenerated, 'schema.graphql'));
-
-    await regenerateSchemaVersion(name);
-}
-
-// checks whether two schema files exist and have the same content
-async function isSameSchema(schemaPath: string, otherSchemaPath: string) {
+// checks whether `latest` already has the node schema
+async function isLatestUpToDate() {
     return (
-        existsSync(schemaPath) &&
-        existsSync(otherSchemaPath) &&
-        (await readFile(schemaPath, 'utf-8')) === (await readFile(otherSchemaPath, 'utf-8'))
+        existsSync(latestSchemaPath) &&
+        (await readFile(schemaSourceFilePath, 'utf-8')) ===
+            (await readFile(latestSchemaPath, 'utf-8'))
     );
 }
 
@@ -97,7 +86,7 @@ function assertSchemaVersion(
     }
 }
 
-// reads the `MAJOR.MINOR.PATCH` release of the iota node, without its prerelease suffix (e.g. `-alpha`)
+// reads the iota version in the submodule, without its prerelease suffix (e.g. `-alpha`)
 async function readNodeVersion() {
     const cargoToml = TOML.parse(await readFile(nodeCargoTomlPath, 'utf-8')) as {
         workspace?: { package?: { version?: string } };
@@ -108,9 +97,8 @@ async function readNodeVersion() {
     return version;
 }
 
-// reads the node version the current `latest` was generated from, stored as a comment in its index
-// file; undefined when there is no `latest` yet
-async function readCurrentLatest() {
+// reads the node version of `latest` from its index file, if `latest` exists
+async function readLatestVersion() {
     if (!existsSync(latestIndexPath)) {
         return undefined;
     }
@@ -121,9 +109,8 @@ async function readCurrentLatest() {
     return version;
 }
 
-// stores the node version the current `latest` was generated from as a comment in its index file,
-// right after the license header
-async function writeCurrentLatest(version: string) {
+// writes the node version of `latest` in its index file, after the license header
+async function writeLatestVersion(version: string) {
     const [licenseHeader, ...code] = (await readFile(latestIndexPath, 'utf-8')).split('\n\n');
 
     await writeFile(
@@ -132,15 +119,14 @@ async function writeCurrentLatest(version: string) {
     );
 }
 
-// `latest` follows the schema of the iota node in the submodule, and its index file stores the node
-// version it was generated from. A schema change in a new node version freezes `latest` under the
-// previous one.
+// `latest` follows the node schema in the submodule. A schema change in a new node version freezes
+// the old `latest` under its version.
 const newLatestVersion = await readNodeVersion();
-const oldLatestVersion = await readCurrentLatest();
+const oldLatestVersion = await readLatestVersion();
 
 // 1. check whether the node version and the node schema have changed
 const hasNewVersion = oldLatestVersion !== undefined && newLatestVersion !== oldLatestVersion;
-const hasNewSchema = !(await isSameSchema(schemaSourceFilePath, latestSchemaPath));
+const hasNewSchema = !(await isLatestUpToDate());
 
 if (!hasNewSchema) {
     console.log(
@@ -152,9 +138,9 @@ if (!hasNewSchema) {
         await writeSchemaVersion(oldLatestVersion, latestSchemaPath);
     }
 
-    // 3. update latest with the new node schema and reference its node version
+    // 3. update `latest` and store its node version
     await writeSchemaVersion(LATEST, schemaSourceFilePath);
-    await writeCurrentLatest(newLatestVersion);
+    await writeLatestVersion(newLatestVersion);
 
     console.log(
         hasNewVersion
