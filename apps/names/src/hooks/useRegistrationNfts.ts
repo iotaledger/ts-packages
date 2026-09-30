@@ -43,7 +43,8 @@ export function useRegistrationNfts(type: RegistrationNftType = 'name') {
                     | { expiration_timestamp_ms?: string; name_str?: string };
                 const fields =
                     type === 'subname'
-                        ? (content?.fields as { nft: { fields: NameFields } }).nft.fields
+                        ? (content?.fields as { nft: { fields: NameFields } } | undefined)?.nft
+                              ?.fields
                         : (content?.fields as NameFields);
                 const expirationDate = new Date(Number(fields?.expiration_timestamp_ms) || 0);
                 return {

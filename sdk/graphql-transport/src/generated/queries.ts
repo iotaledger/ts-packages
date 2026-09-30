@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-/* eslint-disable */
+/* oxlint-disable */
 
 import { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
@@ -1221,6 +1221,8 @@ export type DryRunResult = {
    * including contents of mutated references and return values.
    */
   results?: Maybe<Array<DryRunEffect>>;
+  /** If an input object is congested, suggest a gas price to use. */
+  suggestedGasPrice?: Maybe<Scalars['BigInt']['output']>;
   /** The transaction block representing the dry run execution. */
   transaction?: Maybe<TransactionBlock>;
 };
@@ -5334,10 +5336,20 @@ export type TransactionArgument = GasCoin | Input | Result;
 export type TransactionBlock = {
   __typename?: 'TransactionBlock';
   /**
-   * Serialized form of this transaction's `SenderSignedTransaction`, BCS
-   * serialized and Base64 encoded.
+   * This transaction's `SenderSignedTransaction`, BCS serialized and Base64
+   * encoded.
+   *
+   * `null` for simulated transactions, which have no signatures. use
+   * `bcsUnsigned` for them instead.
    */
   bcs?: Maybe<Scalars['Base64']['output']>;
+  /**
+   * This transaction's `TransactionData` (the transaction without its
+   * signatures), BCS serialized and Base64 encoded.
+   *
+   * Available for every transaction, including simulated ones.
+   */
+  bcsUnsigned?: Maybe<Scalars['Base64']['output']>;
   /**
    * A 32-byte hash that uniquely identifies the transaction block contents,
    * encoded in Base58. This serves as a unique id for the block on

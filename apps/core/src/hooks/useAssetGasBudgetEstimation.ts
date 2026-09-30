@@ -80,7 +80,7 @@ export function useAssetGasBudgetEstimation({
     };
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'asset-transaction-gas-budget-estimate',
             {

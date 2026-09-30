@@ -51,7 +51,6 @@ class ApiProvider {
             this.setNewJsonRpcProvider();
         }
         return {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             fullNode: this._apiFullNodeProvider!,
         };
     }

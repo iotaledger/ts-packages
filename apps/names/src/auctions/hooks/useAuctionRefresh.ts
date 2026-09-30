@@ -27,5 +27,6 @@ export function useAuctionRefresh(auctionMetadata?: AuctionMetadata | null) {
 
             return () => clearTimeout(timeout);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [auctionMetadata?.name, auctionMetadata?.isActive]);
 }

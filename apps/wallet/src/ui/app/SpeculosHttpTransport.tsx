@@ -32,9 +32,9 @@ enum SpeculosButton {
 export default class SpeculosHttpTransport extends Transport {
     instance: AxiosInstance;
     opts: SpeculosHttpTransportOpts;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     eventStream: any; // ReadStream?
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     automationEvents: Subject<Record<string, any>> = new Subject();
 
     constructor(instance: AxiosInstance, opts: SpeculosHttpTransportOpts) {
@@ -45,9 +45,9 @@ export default class SpeculosHttpTransport extends Transport {
 
     static isSupported = (): Promise<boolean> => Promise.resolve(true);
     // this transport is not discoverable
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     static list = (): any => Promise.resolve([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     static listen = (_observer: any) => ({
         unsubscribe: () => {},
     });
@@ -80,7 +80,6 @@ export default class SpeculosHttpTransport extends Transport {
                     const reader = stream.pipeThrough(new TextDecoderStream()).getReader();
 
                     const readChunk = async () => {
-                        // eslint-disable-next-line no-constant-condition
                         while (true) {
                             const { value, done } = await reader.read();
                             if (done) {
@@ -138,7 +137,7 @@ export default class SpeculosHttpTransport extends Transport {
         return false;
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     async exchange(apdu: Buffer): Promise<any> {
         const hex = apdu.toString('hex');
         log('apdu', '=> ' + hex);

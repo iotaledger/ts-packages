@@ -97,6 +97,7 @@ export function EpochDetail() {
             includeColumns,
             currentEpoch: epochData.epoch,
         });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [epochData, validatorEvents, committeeMembers]);
 
     if (isPending) return <PageLayout content={<LoadingIndicator />} />;

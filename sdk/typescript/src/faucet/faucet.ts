@@ -36,7 +36,7 @@ type BatchStatusFaucetResponse = {
 type FaucetRequest = {
     host: string;
     path: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     body?: Record<string, any>;
     headers?: HeadersInit;
     method: 'GET' | 'POST';
@@ -49,7 +49,7 @@ async function faucetRequest({ host, path, body, headers, method }: FaucetReques
         body: body ? JSON.stringify(body) : undefined,
         headers: {
             'Content-Type': 'application/json',
-            ...(headers || {}),
+            ...headers,
         },
     });
 

@@ -111,7 +111,7 @@ async function retryAction<T>(action: () => Promise<T>, maxRetries = 3, delay = 
             return;
         } catch (error: unknown) {
             if (attempt < maxRetries) {
-                // eslint-disable-next-line no-console
+                // oxlint-disable-next-line no-console
                 console.log(`Retrying action in ${delay} ms`);
                 await new Promise((resolve) => setTimeout(resolve, delay));
             }

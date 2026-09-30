@@ -90,7 +90,7 @@ export function useUpdateNameTransaction({ address, updates }: UseUpdateNameTran
     const client = useIotaClient();
     const { iotaNamesClient } = useIotaNamesClient();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [...queryKey.updateName(address), updates],
         queryFn: async () => {
             const tx = new Transaction();

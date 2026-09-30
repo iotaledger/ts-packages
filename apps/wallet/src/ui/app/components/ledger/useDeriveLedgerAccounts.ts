@@ -24,7 +24,7 @@ export function useDeriveLedgerAccounts({ chunkSize }: UseDeriveLedgerAccountOpt
     const [chunk, setChunk] = useState(0);
 
     const mainPublicKey = useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['derive-main-public-key-ledger'],
         queryFn: async () => {
             if (!iotaLedgerClient) {

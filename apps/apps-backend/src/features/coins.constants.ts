@@ -47,6 +47,10 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
         name: 'Virtue USD',
         trust: CoinTrust.Recognized,
     },
+    {
+        type: '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
+        name: 'USDT0',
+    },
 ];
 
 export const MARKET_PRICE_IDS: string[] = COIN_REGISTRY.flatMap((entry) =>

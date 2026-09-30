@@ -36,7 +36,7 @@ export class Tab {
                 active: true,
             })
             .catch((e) => {
-                // eslint-disable-next-line no-console
+                // oxlint-disable-next-line no-console
                 console.error('Failed to create a new tab:', e);
                 return Browser.tabs.create({ url: this._url, active: true });
             });

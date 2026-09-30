@@ -1,4 +1,7 @@
-/* eslint-disable no-empty-pattern */
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
+/* oxlint-disable no-empty-pattern */
 import path from 'path';
 import { test as base, chromium, Page, type BrowserContext } from '@playwright/test';
 import { createPage, waitForExtension, waitForExtensions } from './browser';

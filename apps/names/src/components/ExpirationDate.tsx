@@ -43,6 +43,7 @@ export function ExpirationDate({
         if (isParentExpiration && parentExpirationDate) {
             onChange(parentExpirationDate);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [parentExpirationTime, isParentExpiration]);
 
     function handleDateChange(date: Date) {

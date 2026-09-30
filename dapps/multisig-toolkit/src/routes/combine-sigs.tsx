@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable @typescript-eslint/no-explicit-any */
 
 import { PublicKey } from '@iota/iota-sdk/cryptography';
 import { MultiSigPublicKey } from '@iota/iota-sdk/multisig';
@@ -45,7 +45,7 @@ export default function MultiSigCombineSignatureGenerator() {
         if (threshold) {
             setValue('threshold', threshold);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
 
     const generateThresholdsUrl = () => {

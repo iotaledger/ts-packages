@@ -144,7 +144,7 @@ interface TokenViewProps {
 }
 
 export function TokenView({ data }: TokenViewProps): JSX.Element {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+    // oxlint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
     const objectId = data.data?.objectId!;
 
     return (

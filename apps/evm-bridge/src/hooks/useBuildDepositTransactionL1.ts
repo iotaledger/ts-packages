@@ -29,7 +29,7 @@ export function useBuildDepositTransactionL1({
     const client = useIotaClient();
     const variables = useNetworkVariables();
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['l1-deposit-transaction', receivingAddress, amount.toString(), senderAddress],
         queryFn: async () => {
             if (!receivingAddress) {

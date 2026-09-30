@@ -22,7 +22,7 @@ const config = {
     },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 function collectHeadings(node: any) {
     const sections: Heading[] = [];
     if (node && node.name === 'article') {

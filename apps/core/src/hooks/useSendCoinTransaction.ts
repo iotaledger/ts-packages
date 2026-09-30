@@ -33,7 +33,7 @@ export function useSendCoinTransaction({
     const client = useIotaClient();
     const { data: coinMetadata } = useCoinMetadata(coinType);
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'token-transfer-transaction',
             recipientAddress,

@@ -4,13 +4,13 @@
 
 import { forwardRef, useCallback, useMemo } from 'react';
 import {
-    // eslint-disable-next-line no-restricted-imports
+    // oxlint-disable-next-line no-restricted-imports
     Link,
     useHref,
     useLocation,
-    // eslint-disable-next-line no-restricted-imports
+    // oxlint-disable-next-line no-restricted-imports
     useSearchParams,
-    // eslint-disable-next-line no-restricted-imports
+    // oxlint-disable-next-line no-restricted-imports
     useNavigate,
     type NavigateOptions,
     type LinkProps,

@@ -38,7 +38,7 @@ export class Window {
                 left: Math.floor(left + width - 450),
             })
             .catch((e) => {
-                // eslint-disable-next-line no-console
+                // oxlint-disable-next-line no-console
                 console.error('Failed to create window with specified bounds:', e);
 
                 // Fallback to a safe position in the center of the screen

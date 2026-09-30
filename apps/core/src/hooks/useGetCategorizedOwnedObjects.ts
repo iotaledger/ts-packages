@@ -163,6 +163,7 @@ export function useGetCategorizedOwnedObjects(
         ) {
             ownedObjectsQuery.fetchNextPage();
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [
         ownedObjectsQuery.hasNextPage,
         ownedObjectsQuery.isFetchingNextPage,

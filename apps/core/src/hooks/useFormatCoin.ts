@@ -48,7 +48,7 @@ export function useCoinMetadata(coinType?: string | null) {
                 // but the GraphQL Node does
 
                 const structType = `0x2::coin_manager::CoinManager<${coinType}>`;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // oxlint-disable-next-line @typescript-eslint/no-explicit-any
                 const { data: graphqlData } = await iotaGraphQLClient.query<any>({
                     query: graphql(`
                         query getCoinManager($type: String!) {
@@ -142,6 +142,7 @@ export function useFormatCoin({
         if (!isFetched) return '...';
 
         return formatBalance(balance, data?.decimals ?? 0, format, showSign, { useGroupSeparator });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [data?.decimals, isFetched, balance, format, useGroupSeparator]);
 
     return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];

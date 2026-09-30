@@ -99,6 +99,7 @@ export function SetPermissionsDialog({ name, setOpen }: CreateSubnameProps) {
             setEditIsAllowingRenew(namePermissions.allowTimeExtension);
             setEditIsAllowSubnames(namePermissions.allowChildCreation);
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [namePermissions?.allowChildCreation, namePermissions?.allowTimeExtension]);
 
     const { updates } = createSetUpdates({

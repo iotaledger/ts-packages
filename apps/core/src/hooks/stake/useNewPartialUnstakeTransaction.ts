@@ -14,7 +14,7 @@ export function useNewPartialUnstakeTransaction(
     const client = useIotaClient();
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: [
             'partial-unstake-transaction',
             unstakeIotaId,
