@@ -33,11 +33,11 @@ export async function generateSchema(targetFolder: string) {
     execSync(`pnpm run generate-schema -c ${filePath}`);
 }
 
-// creates the schema index file in the respective target folder, with an optional comment after the license header
+// creates the schema index file in the respective target folder, with a comment after the license header
 export async function createSchemaIndexFile(
     targetFolder: string,
     minorVersion: string,
-    headerComment?: string,
+    headerComment: string,
 ) {
     // create index.ts
     await writeFile(
@@ -46,7 +46,9 @@ export async function createSchemaIndexFile(
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
-${headerComment ? `\n${headerComment}\n` : ''}
+
+${headerComment}
+
 import { initGraphQLTada } from 'gql.tada';
 
 import type { introspection } from '../../generated/${minorVersion}/tada-env.js';
