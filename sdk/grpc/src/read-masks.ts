@@ -500,6 +500,7 @@ export function mergeReadMasks(...masks: (readonly string[])[]): string[] {
 
 /**
  * Builds the request `FieldMask` from one path or many, using `fallback` when `fields` is undefined.
+ * A string is split on commas, like Rust's `ReadMask::from("effects,checkpoint")`.
  * An empty list selects nothing: the server returns every field unset.
  */
 export function toReadMask(
@@ -511,7 +512,7 @@ export function toReadMask(
     if (fields === undefined) {
         paths = fallback;
     } else if (typeof fields === 'string') {
-        paths = [fields];
+        paths = fields.split(',');
     } else {
         paths = fields;
     }

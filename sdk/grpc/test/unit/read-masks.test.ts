@@ -131,6 +131,11 @@ describe('toReadMask', () => {
         expect(toReadMask(ObjectField.BCS, DEFAULT_READ_MASKS.getObjects).paths).toEqual(['bcs']);
     });
 
+    it('splits a comma-separated string into paths', () => {
+        const mask = toReadMask('bcs,reference,', DEFAULT_READ_MASKS.getObjects);
+        expect(sorted(mask.paths)).toEqual(['bcs', 'reference']);
+    });
+
     it('normalizes a list of fields', () => {
         const mask = toReadMask(
             [ObjectField.REFERENCE, ObjectField.REFERENCE_OBJECT_ID, ObjectField.BCS],
