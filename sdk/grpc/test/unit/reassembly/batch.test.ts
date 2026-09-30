@@ -34,6 +34,7 @@ import {
     toItemResult,
 } from '../../../src/reassembly/batch.js';
 import type { ItemResult } from '../../../src/results.js';
+import { frames } from '../../frames.js';
 
 describe('toItemResult', () => {
     it('returns the object on success', () => {
@@ -121,12 +122,6 @@ describe('toItemResult', () => {
         expect(toItemResult(message, 'object result').ok).toBe(true);
     });
 });
-
-async function* frames<T>(...messages: T[]): AsyncGenerator<T> {
-    for (const message of messages) {
-        yield message;
-    }
-}
 
 function objectsResponse(versions: bigint[], hasNext: boolean): GetObjectsResponse {
     return create(GetObjectsResponseSchema, {
