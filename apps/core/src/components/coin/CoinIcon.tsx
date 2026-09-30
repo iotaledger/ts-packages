@@ -5,7 +5,7 @@
 import React from 'react';
 import { useCoinMetadata, ImageIcon, ImageIconSize } from '../../';
 import { IotaLogoMark } from '@iota/apps-ui-icons';
-import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IOTA_TYPE_ARG, normalizeStructTag } from '@iota/iota-sdk/utils';
 import cx from 'clsx';
 
 interface NonIotaCoinProps {
@@ -34,24 +34,16 @@ export interface CoinIconProps {
     coinType: string;
     size?: ImageIconSize;
     rounded?: boolean;
-    hasCoinWrapper?: boolean;
 }
 
-export function CoinIcon({
-    coinType,
-    size = ImageIconSize.Full,
-    rounded,
-    hasCoinWrapper,
-}: CoinIconProps) {
-    const Component = hasCoinWrapper ? CoinIconWrapper : React.Fragment;
-    const coinWrapperProps = hasCoinWrapper ? { hasBorder: true, size: ImageIconSize.Large } : {};
+export function CoinIcon({ coinType, size = ImageIconSize.Full, rounded }: CoinIconProps) {
+    const normalizedCoinType = normalizeStructTag(coinType);
+    const isIota = normalizedCoinType === normalizeStructTag(IOTA_TYPE_ARG);
 
-    return coinType === IOTA_TYPE_ARG ? (
-        <Component {...coinWrapperProps}>
-            <div className={cx(size, 'text-iota-neutral-10 dark:text-iota-neutral-92')}>
-                <IotaLogoMark className="h-full w-full" />
-            </div>
-        </Component>
+    return isIota ? (
+        <div className={cx(size, 'text-iota-neutral-10 dark:text-iota-neutral-92')}>
+            <IotaLogoMark className="h-full w-full" />
+        </div>
     ) : (
         <NonIotaCoin rounded={rounded} size={size} coinType={coinType} />
     );
