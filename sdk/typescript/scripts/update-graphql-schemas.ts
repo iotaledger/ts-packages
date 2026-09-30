@@ -82,6 +82,13 @@ async function isLatestUpToDate(nodeVersion: string, latestVersion: string | und
     );
 }
 
+// compares two `MAJOR.MINOR.PATCH` schema versions
+function compareSchemaVersions(a: string, b: string) {
+    const [partsA, partsB] = [a, b].map((version) => version.split('.').map(Number));
+
+    return partsA.map((part, i) => part - partsB[i]).find((diff) => diff !== 0) ?? 0;
+}
+
 // checks that a version is a `MAJOR.MINOR.PATCH` schema version
 function assertSchemaVersion(
     version: string | undefined,
@@ -125,13 +132,21 @@ const oldLatestVersion = await readLatestVersion();
 const hasNewVersion = oldLatestVersion !== undefined && newLatestVersion !== oldLatestVersion;
 const hasNewSchema = !(await isLatestUpToDate(newLatestVersion, oldLatestVersion));
 
+// frozen schema versions are published, so an older node version must not replace a newer `latest`
+if (hasNewVersion && compareSchemaVersions(newLatestVersion, oldLatestVersion) < 0) {
+    throw new Error(
+        `iota node ${newLatestVersion} is older than ${LATEST} (${oldLatestVersion}), check out a newer node in the submodule`,
+    );
+}
+
 if (!hasNewSchema) {
     console.log(
         `GraphQL schema of iota node ${newLatestVersion} is unchanged, ${LATEST} (${oldLatestVersion}) is up to date`,
     );
 } else {
-    // 2. a new node version freezes the old latest
-    if (hasNewVersion) {
+    // 2. a new node version freezes the old latest, unless an interrupted run already froze it
+    const isAlreadyFrozen = hasNewVersion && existsSync(schemaIndexPath(oldLatestVersion));
+    if (hasNewVersion && !isAlreadyFrozen) {
         await writeSchemaVersion(oldLatestVersion, latestSchemaPath);
     }
 
@@ -143,8 +158,10 @@ if (!hasNewSchema) {
     );
 
     console.log(
-        hasNewVersion
-            ? `Froze GraphQL schema ${oldLatestVersion} and updated ${LATEST} to ${newLatestVersion}`
-            : `Updated ${LATEST} (${newLatestVersion}) with the new GraphQL schema`,
+        isAlreadyFrozen
+            ? `GraphQL schema ${oldLatestVersion} was already frozen, updated ${LATEST} to ${newLatestVersion}`
+            : hasNewVersion
+              ? `Froze GraphQL schema ${oldLatestVersion} and updated ${LATEST} to ${newLatestVersion}`
+              : `Updated ${LATEST} (${newLatestVersion}) with the new GraphQL schema`,
     );
 }
