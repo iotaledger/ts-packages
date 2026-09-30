@@ -23,11 +23,10 @@ export function formatDate(
     };
 
     const formatOptions = format.reduce((accumulator, current: Format) => {
-        const responseObj = {
+        return {
             ...accumulator,
-            ...{ [current]: options[current] },
+            [current]: options[current],
         };
-        return responseObj;
     }, {});
 
     return new Intl.DateTimeFormat('en-GB', { ...formatOptions, timeZone }).format(dateTime);

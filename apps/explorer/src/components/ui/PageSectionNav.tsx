@@ -34,7 +34,6 @@ export function PageSectionNav({
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         function onScroll() {
             const spyLine =
@@ -56,6 +55,7 @@ export function PageSectionNav({
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [sections.map(({ id }) => id).join(',')]);
 
     if (!sections.length) return null;

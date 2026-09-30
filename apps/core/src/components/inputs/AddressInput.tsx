@@ -48,6 +48,7 @@ export function AddressInput({
         }
 
         validateField(fieldId);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [nameRecord, resolvedNameFieldId, field.value, fieldId, resolvedAddressField.value]);
 
     async function handleOnChange(e: React.ChangeEvent<HTMLInputElement>) {

@@ -34,6 +34,7 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
         } else if (navigationType === 'POP') {
             setDepth((prev) => Math.max(0, prev - 1));
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [location.key, navigationType]);
 
     return (

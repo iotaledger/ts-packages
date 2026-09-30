@@ -133,7 +133,7 @@ describe('bcs', () => {
             'vector([1, null, 3])',
             bcs.vector(bcs.option(bcs.u8())),
             [1, null, 3],
-            // eslint-disable-next-line no-useless-concat
+            // oxlint-disable-next-line no-useless-concat
             '03' + '0101' + '00' + '0103',
         );
     });
@@ -145,7 +145,7 @@ describe('bcs', () => {
             'fixedVector([1, null, 3])',
             bcs.fixedArray(3, bcs.option(bcs.u8())),
             [1, null, 3],
-            // eslint-disable-next-line no-useless-concat
+            // oxlint-disable-next-line no-useless-concat
             '0101' + '00' + '0103',
         );
     });
@@ -159,7 +159,7 @@ describe('bcs', () => {
             'optional vector([1, 2, 3])',
             bcs.option(bcs.vector(bcs.option(bcs.u8()))),
             [1, null, 3],
-            // eslint-disable-next-line no-useless-concat
+            // oxlint-disable-next-line no-useless-concat
             '01' + '03' + '0101' + '00' + '0103',
         );
     });

@@ -60,6 +60,7 @@ export function useConnectedApps() {
                         permissionID: aPermission.id,
                     };
                 }),
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [allPermissions, ecosystemApps],
     );
 

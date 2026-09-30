@@ -82,6 +82,7 @@ export function DepositLayer2() {
             queryClient.invalidateQueries({ queryKey: balanceQueryKey });
             refetchL2Balance();
         }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [isTransactionSuccess]);
 
     useEffect(() => {

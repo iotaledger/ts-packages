@@ -18,7 +18,7 @@ export function useNewUnstakeTimelockedTransaction(
     const { data: maxSizeBytes = Infinity } = useMaxTransactionSizeBytes();
 
     return useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['timelocked-unstake-transaction', timelockedUnstakeIotaIds, senderAddress],
         queryFn: async () => {
             const transaction = createTimelockedUnstakeTransaction(timelockedUnstakeIotaIds);

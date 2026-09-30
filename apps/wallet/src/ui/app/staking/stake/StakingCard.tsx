@@ -47,6 +47,7 @@ export function StakingCard() {
                     : undefined,
             );
         },
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [queryClient, navigate],
     );
 

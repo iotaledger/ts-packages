@@ -34,11 +34,11 @@ type NotificationMessageParams = {
     result: object;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type SubscriptionRequest<T = any> = {
     method: string;
     unsubscribe: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     params: any[];
     onMessage: (event: T) => void;
     signal?: AbortSignal;
@@ -106,7 +106,7 @@ export class WebsocketClient {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     async makeRequest<T>(method: string, params: any[], signal?: AbortSignal): Promise<T> {
         const webSocket = await this.#setupWebSocket();
 
@@ -209,7 +209,7 @@ export class WebsocketClient {
 
 class RpcSubscription {
     subscriptionId: number | null = null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     input: SubscriptionRequest<any>;
     subscribed = false;
 

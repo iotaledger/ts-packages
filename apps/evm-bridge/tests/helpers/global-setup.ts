@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import {
     generate24WordMnemonic,

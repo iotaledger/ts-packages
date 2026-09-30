@@ -20,13 +20,7 @@
     "types": "./dist/cjs/index.d.ts",
     "scripts": {
         "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
-        "build": "tsc --build",
-        "prettier:check": "prettier -c --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
-        "prettier:fix": "prettier -w --ignore-unknown --ignore-path=../../.prettierignore --ignore-path=.prettierignore .",
-        "eslint:check": "eslint --max-warnings=0 .",
-        "eslint:fix": "pnpm run eslint:check --fix",
-        "lint": "pnpm run eslint:check && pnpm run prettier:check",
-        "lint:fix": "pnpm run eslint:fix && pnpm run prettier:fix"
+        "build": "tsc --build"
     },
     "bugs": {
         "url": "https://github.com/iotaledger/ts-packages/issues/new"

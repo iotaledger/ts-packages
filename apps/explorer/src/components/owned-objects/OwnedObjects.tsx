@@ -186,6 +186,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
         }
 
         return [...hasImageUrl, ...noImageUrl];
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [filteredData]);
 
     const ownedObjectsCount = sortedDataByDisplayImages.length;

@@ -51,7 +51,7 @@ export abstract class AsyncCache {
     }
 
     async getObjects(ids: string[]) {
-        return Promise.all([...ids.map((id) => this.getObject(id))]);
+        return Promise.all(ids.map((id) => this.getObject(id)));
     }
 
     async addObject(object: ObjectCacheEntry) {

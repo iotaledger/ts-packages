@@ -94,9 +94,9 @@ interface ResponseTypes {
 }
 
 export const RPC_METHODS: {
-    [K in keyof IotaClient as IotaClient[K] extends (...args: any[]) => Promise<any>
-        ? K
-        : never]?: IotaClient[K] extends (...args: any[]) => infer R
+    [
+        K in keyof IotaClient as IotaClient[K] extends (...args: any[]) => Promise<any> ? K : never
+    ]?: IotaClient[K] extends (...args: any[]) => infer R
         ? (
               transport: IotaClientGraphQLTransport,
               inputs: any[],

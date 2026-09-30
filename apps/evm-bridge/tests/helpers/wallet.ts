@@ -1,3 +1,6 @@
+// Copyright (c) 2025 IOTA Stiftung
+// SPDX-License-Identifier: Apache-2.0
+
 import { BrowserContext, expect, Page } from '@playwright/test';
 import { CONFIG } from '../config/config';
 import { WALLET_CUSTOMRPC_INPUT_TEST_ID, WALLET_PASSWORD } from '../utils/constants';

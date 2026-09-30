@@ -75,6 +75,7 @@ export function useAccountsFinder({
                 }
             },
         });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [
         client,
         backgroundClient,

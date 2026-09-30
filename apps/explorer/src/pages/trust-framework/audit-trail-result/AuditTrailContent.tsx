@@ -39,9 +39,9 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
 
     const isLoading = Boolean(
         isAuditTrailObjectLoading ||
-            isObjectLoading ||
-            isAuditTrailHandleLoading ||
-            auditTrailClientStatus === 'pending',
+        isObjectLoading ||
+        isAuditTrailHandleLoading ||
+        auditTrailClientStatus === 'pending',
     );
 
     const copyToClipboard = useCopyToClipboard(onCopySuccess);

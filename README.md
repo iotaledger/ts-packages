@@ -60,7 +60,7 @@ pnpm install
 
 ```bash
 pnpm wallet dev          # Run a single workspace command
-pnpm lint                # eslint + prettier
+pnpm lint                # oxlint + oxfmt
 pnpm test                # Run all test suites via turbo
 ```
 
