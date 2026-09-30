@@ -10,7 +10,7 @@ import {
     ACTION_LABELS,
     getTransactionCoinBalances,
 } from '@iota/core';
-import { TableCoinDisplay, DateDisplay } from '~/components';
+import { TableCoinChanges, DateDisplay } from '~/components';
 import type {
     IotaTransactionBlockKind,
     IotaTransactionBlockResponse,
@@ -167,15 +167,7 @@ export function generateTransactionsTableColumns(
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            <div className="flex flex-col gap-y-xxs py-xs">
-                                {balanceChanges.map(({ amount, coinType }, index) => (
-                                    <TableCoinDisplay
-                                        key={index}
-                                        amount={amount}
-                                        coinType={coinType}
-                                    />
-                                ))}
-                            </div>
+                            <TableCoinChanges changes={balanceChanges} />
                         </TableCellText>
                     </TableCellBase>
                 );

@@ -15,7 +15,7 @@ import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
 import { CoinFormat, formatBalance, formatDigest, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
-import { TableCoinDisplay, DateDisplay } from '~/components';
+import { TableCoinChanges, DateDisplay } from '~/components';
 import { getLastMoveCall, getTransactionTypeLabel } from './generateTransactionsTableColumns';
 
 function getCounterpartyAddress(
@@ -177,15 +177,7 @@ export function generateActivityTableColumns(
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            <div className="flex flex-col gap-y-xxs py-xs">
-                                {balanceChanges.map(({ amount, coinType }, index) => (
-                                    <TableCoinDisplay
-                                        key={index}
-                                        amount={amount}
-                                        coinType={coinType}
-                                    />
-                                ))}
-                            </div>
+                            <TableCoinChanges changes={balanceChanges} />
                         </TableCellText>
                     </TableCellBase>
                 );
