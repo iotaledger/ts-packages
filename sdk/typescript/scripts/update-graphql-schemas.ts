@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path, { resolve } from 'node:path';
 import TOML from '@iarna/toml';
 import {
@@ -34,7 +34,6 @@ const latestSchemaPath = path.resolve(
     packageRoot,
     `src/graphql/generated/${LATEST}/schema.graphql`,
 );
-const latestIndexPath = path.resolve(packageRoot, `src/graphql/schemas/${LATEST}/index.ts`);
 
 // creates the stub package.json used by resolvers that don't support the `exports` field
 async function createSchemaStubPackageJson(name: string) {
@@ -51,25 +50,32 @@ async function createSchemaStubPackageJson(name: string) {
     await writeFile(resolve(stubFolder, 'package.json'), `${JSON.stringify(stub, null, '    ')}\n`);
 }
 
-// writes a schema version from a schema file: schema, types, index, stub and export
-async function writeSchemaVersion(name: string, sourceSchemaPath: string) {
+function schemaIndexPath(name: string) {
+    return resolve(packageRoot, `src/graphql/schemas/${name}/index.ts`);
+}
+
+// writes a schema version from a schema file: schema, types, stub, export and index. The index is
+// removed first and written last, so a schema version without an index is an interrupted write.
+async function writeSchemaVersion(name: string, sourceSchemaPath: string, headerComment?: string) {
     const targetFolderGenerated = resolve(packageRoot, `src/graphql/generated/${name}/`);
     const targetFolderSchemas = resolve(packageRoot, `src/graphql/schemas/${name}/`);
 
+    await rm(schemaIndexPath(name), { force: true });
     await mkdir(targetFolderGenerated, { recursive: true });
     await mkdir(targetFolderSchemas, { recursive: true });
     await copyFile(sourceSchemaPath, resolve(targetFolderGenerated, 'schema.graphql'));
 
     await createSchemaTsConfigFile(targetFolderGenerated, name);
     await generateSchema(targetFolderGenerated);
-    await createSchemaIndexFile(targetFolderSchemas, name);
     await createSchemaStubPackageJson(name);
     await addExportsToPackageJson(packageRoot, [name]);
+    await createSchemaIndexFile(targetFolderSchemas, name, headerComment);
 }
 
-// checks whether `latest` already has the node schema
-async function isLatestUpToDate() {
+// checks whether `latest` was fully written from the node schema of the node version
+async function isLatestUpToDate(nodeVersion: string, latestVersion: string | undefined) {
     return (
+        latestVersion === nodeVersion &&
         existsSync(latestSchemaPath) &&
         (await readFile(schemaSourceFilePath, 'utf-8')) ===
             (await readFile(latestSchemaPath, 'utf-8'))
@@ -99,6 +105,7 @@ async function readNodeVersion() {
 
 // reads the node version of `latest` from its index file, if `latest` exists
 async function readLatestVersion() {
+    const latestIndexPath = schemaIndexPath(LATEST);
     if (!existsSync(latestIndexPath)) {
         return undefined;
     }
@@ -109,16 +116,6 @@ async function readLatestVersion() {
     return version;
 }
 
-// writes the node version of `latest` in its index file, after the license header
-async function writeLatestVersion(version: string) {
-    const [licenseHeader, ...code] = (await readFile(latestIndexPath, 'utf-8')).split('\n\n');
-
-    await writeFile(
-        latestIndexPath,
-        [licenseHeader, `${LATEST_VERSION_COMMENT} ${version}`, ...code].join('\n\n'),
-    );
-}
-
 // `latest` follows the node schema in the submodule. A schema change in a new node version freezes
 // the old `latest` under its version.
 const newLatestVersion = await readNodeVersion();
@@ -126,7 +123,7 @@ const oldLatestVersion = await readLatestVersion();
 
 // 1. check whether the node version and the node schema have changed
 const hasNewVersion = oldLatestVersion !== undefined && newLatestVersion !== oldLatestVersion;
-const hasNewSchema = !(await isLatestUpToDate());
+const hasNewSchema = !(await isLatestUpToDate(newLatestVersion, oldLatestVersion));
 
 if (!hasNewSchema) {
     console.log(
@@ -139,8 +136,11 @@ if (!hasNewSchema) {
     }
 
     // 3. update `latest` and store its node version
-    await writeSchemaVersion(LATEST, schemaSourceFilePath);
-    await writeLatestVersion(newLatestVersion);
+    await writeSchemaVersion(
+        LATEST,
+        schemaSourceFilePath,
+        `${LATEST_VERSION_COMMENT} ${newLatestVersion}`,
+    );
 
     console.log(
         hasNewVersion
