@@ -32,4 +32,8 @@ export const RECOGNIZED_COIN_PACKAGES: RecognizedCoinPackage[] = [
         type: '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
         name: 'Virtue USD',
     },
+    {
+        type: '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
+        name: 'USDT0',
+    },
 ];
