@@ -146,9 +146,8 @@ if (!hasNewSchema) {
         `GraphQL schema of iota node ${newLatestVersion} is unchanged, ${LATEST} (${oldLatestVersion}) is up to date`,
     );
 } else {
-    // 2. a new node version freezes the old latest, unless an interrupted run already froze it
-    const isAlreadyFrozen = hasNewVersion && existsSync(schemaIndexPath(oldLatestVersion));
-    if (hasNewVersion && !isAlreadyFrozen) {
+    // 2. a new node version freezes the old latest
+    if (hasNewVersion) {
         await writeSchemaVersion(oldLatestVersion, latestSchemaPath, oldLatestVersion);
     }
 
@@ -156,10 +155,8 @@ if (!hasNewSchema) {
     await writeSchemaVersion(LATEST, schemaSourceFilePath, newLatestVersion);
 
     console.log(
-        isAlreadyFrozen
-            ? `GraphQL schema ${oldLatestVersion} was already frozen, updated ${LATEST} to ${newLatestVersion}`
-            : hasNewVersion
-              ? `Froze GraphQL schema ${oldLatestVersion} and updated ${LATEST} to ${newLatestVersion}`
-              : `Updated ${LATEST} (${newLatestVersion}) with the new GraphQL schema`,
+        hasNewVersion
+            ? `Froze GraphQL schema ${oldLatestVersion} and updated ${LATEST} to ${newLatestVersion}`
+            : `Updated ${LATEST} (${newLatestVersion}) with the new GraphQL schema`,
     );
 }
