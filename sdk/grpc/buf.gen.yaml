@@ -1,0 +1,11 @@
+version: v2
+
+inputs:
+  - directory: ../../external/iota-rust-sdk/crates/iota-sdk-grpc-types/proto
+
+plugins:
+  - local: protoc-gen-es
+    out: src/proto
+    opt:
+      - target=ts
+      - import_extension=js
