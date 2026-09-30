@@ -24,7 +24,10 @@ export function getTransactionCoinBalances(
 
     for (const balanceChange of transaction.balanceChanges) {
         const { owner, ownerType } = getBalanceChangeOwner(balanceChange.owner);
-        const coinType = normalizeStructTag(balanceChange.coinType);
+        const coinType =
+            normalizeStructTag(balanceChange.coinType) === IOTA_COIN_TYPE
+                ? IOTA_TYPE_ARG
+                : normalizeStructTag(balanceChange.coinType);
 
         let transactionOwnerData = coinBalancesByOwner.get(owner);
         if (!transactionOwnerData) {
@@ -74,8 +77,8 @@ function removeGasFromPayer(
     if (!payerEntry) return;
 
     payerEntry.amounts.set(
-        IOTA_COIN_TYPE,
-        (payerEntry.amounts.get(IOTA_COIN_TYPE) ?? 0n) + gasAmount,
+        IOTA_TYPE_ARG,
+        (payerEntry.amounts.get(IOTA_TYPE_ARG) ?? 0n) + gasAmount,
     );
 }
 

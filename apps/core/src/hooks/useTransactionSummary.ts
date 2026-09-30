@@ -14,6 +14,7 @@ import {
     getTransactionAction,
     getObjectChangeSummary,
     getObjectDisplayLookup,
+    getTransactionCoinBalances,
 } from '../utils';
 import { useMultiGetObjects } from './useMultiGetObjects';
 
@@ -49,6 +50,7 @@ export function useTransactionSummary({
         const objectSummary = getObjectChangeSummary(objectChangesWithDisplay);
         const balanceChangeSummary = getBalanceChangeSummary(transaction, recognizedPackagesList);
         const gas = getGasSummary(transaction);
+        const coinBalances = getTransactionCoinBalances(transaction);
 
         if ('digest' in transaction) {
             // Non-dry-run transaction:
@@ -64,6 +66,7 @@ export function useTransactionSummary({
                 upgradedSystemPackages: transaction.effects?.mutated?.filter(
                     ({ owner }) => owner === 'Immutable',
                 ),
+                coinBalances,
             };
         } else {
             // Dry run transaction:
@@ -71,6 +74,7 @@ export function useTransactionSummary({
                 gas,
                 objectSummary,
                 balanceChanges: balanceChangeSummary,
+                coinBalances,
             };
         }
     }, [transaction, objectChangesWithDisplay, recognizedPackagesList, currentAddress]);
