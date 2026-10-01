@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* tslint:disable */
-/* eslint-disable */
+/* oxlint-disable */
 // @ts-nocheck
 /**
  * Ampli - A strong typed wrapper for your Analytics

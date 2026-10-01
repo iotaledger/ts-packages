@@ -28,6 +28,7 @@ export function PlaceholderTable({
 }: PlaceholderTableProps): JSX.Element {
     const rowEntry = useMemo(
         () => Object.fromEntries(colHeadings.map((index) => [`a${index}`, null])),
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
         [colHeadings, rowHeight],
     );
 

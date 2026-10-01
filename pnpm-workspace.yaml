@@ -23,7 +23,7 @@ packages:
   - "!sdk/typescript/utils"
   - "!sdk/typescript/verify"
   - "!sdk/move-bytecode-template/pkg"
-  - "!sdk/typescript/graphql/schemas/2025.2"
+  - "!sdk/typescript/graphql/schemas/*"
   - "!sdk/signers/aws"
   - "!sdk/signers/gcp"
   - "!sdk/signers/ledger"

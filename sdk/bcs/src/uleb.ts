@@ -35,7 +35,7 @@ export function ulebDecode(arr: number[] | Uint8Array): {
     let shift = 0n;
     let len = 0;
 
-    // eslint-disable-next-line no-constant-condition
+    // oxlint-disable-next-line no-constant-condition
     while (true) {
         if (len >= arr.length) {
             throw new Error('ULEB decode error: buffer overflow');

@@ -71,7 +71,7 @@ export const respondToTransactionRequest = createAsyncThunk<
                     }
                 } else {
                     throw new Error(
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
                         `Unexpected type: ${(txRequest.tx as any).type}`,
                     );
                 }
@@ -100,7 +100,7 @@ const slice = createSlice({
             state.initialized = false;
         },
         setTransactionRequests: (state, { payload }: PayloadAction<ApprovalRequest[]>) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // oxlint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             txRequestsAdapter.setAll(state, payload);
             state.initialized = true;

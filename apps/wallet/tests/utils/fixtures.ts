@@ -19,7 +19,7 @@ export const test = base.extend<{
     demoPageUrl: string;
     extensionName: string;
 }>({
-    // eslint-disable-next-line no-empty-pattern
+    // oxlint-disable-next-line no-empty-pattern
     context: async ({}, use) => {
         const context = await chromium.launchPersistentContext('', {
             headless: false,
@@ -51,7 +51,7 @@ export const test = base.extend<{
         await page.close();
         await use(extensionName);
     },
-    // eslint-disable-next-line no-empty-pattern
+    // oxlint-disable-next-line no-empty-pattern
     demoPageUrl: async ({}, use) => {
         await use('http://localhost:5181');
     },

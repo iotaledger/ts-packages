@@ -49,6 +49,7 @@ export function ThemeProvider({
         // Make the theme preference listener wait
         // until the preference is loaded in the next render
         setIsLoadingPreference(false);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // When the theme preference changes..
@@ -94,6 +95,7 @@ export function ThemeProvider({
         documentElement.toggle(UIKitTheme.Dark, theme === UIKitTheme.Dark);
         documentElement.toggle(UIKitTheme.Light, theme === UIKitTheme.Light);
         documentElement.toggle(UIKitTheme.Names, theme === UIKitTheme.Names);
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [theme]);
 
     return (

@@ -31,6 +31,7 @@ export function CoinSelector() {
             shouldValidate: true,
             shouldTouch: true,
         });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(sortedCoinsCoinTypes), isFromLayer1, setValue]);
 
     return (

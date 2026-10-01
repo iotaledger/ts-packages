@@ -74,6 +74,7 @@ export function ValidatorsCard() {
                 validatorAddress: delegation.validatorAddress,
             }));
         });
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [committeeMembers, delegatedStake]);
 
     // Get total rewards for all delegations

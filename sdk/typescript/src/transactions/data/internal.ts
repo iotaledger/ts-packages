@@ -29,7 +29,7 @@ import { isValidIotaAddress, normalizeIotaAddress } from '../../utils/iota-types
 
 type Simplify<T> = {
     [K in keyof T]: T[K];
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // oxlint-disable-next-line @typescript-eslint/ban-types
 } & {};
 
 type EnumSchemaInput<T extends Record<string, GenericSchema<any>>> = EnumInputShape<

@@ -232,8 +232,9 @@ function ObjectChangeByOwnerPanel({
                                 <ExpandableList
                                     initialShowAll={open}
                                     defaultItemsToShow={5}
-                                    items={change.changesWithDisplay.map((change) => (
+                                    items={change.changesWithDisplay.map((change, index) => (
                                         <ObjectChangeDisplay
+                                            key={index}
                                             change={change}
                                             renderExplorerLink={renderExplorerLink}
                                         />
@@ -246,8 +247,9 @@ function ObjectChangeByOwnerPanel({
                             <ExpandableList
                                 defaultItemsToShow={5}
                                 initialShowAll={open}
-                                items={change.changes.map((change) => (
+                                items={change.changes.map((change, index) => (
                                     <ObjectDetail
+                                        key={index}
                                         renderExplorerLink={renderExplorerLink}
                                         change={change}
                                     />
