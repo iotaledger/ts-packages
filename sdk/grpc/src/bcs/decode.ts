@@ -12,13 +12,14 @@ import type {
     CheckpointSummary as ProtoCheckpointSummary,
 } from '../proto/iota/grpc/v1/checkpoint_pb.js';
 import type { Event as ProtoEvent } from '../proto/iota/grpc/v1/event_pb.js';
-import type { Object$ } from '../proto/iota/grpc/v1/object_pb.js';
+import type { Object$, Objects } from '../proto/iota/grpc/v1/object_pb.js';
 import type {
     UserSignature as ProtoUserSignature,
     ValidatorAggregatedSignature as ProtoValidatorAggregatedSignature,
 } from '../proto/iota/grpc/v1/signatures_pb.js';
 import type { ExecutionError as ProtoExecutionError } from '../proto/iota/grpc/v1/transaction_execution_service_pb.js';
 import type {
+    ExecutedTransaction,
     Transaction as ProtoTransaction,
     TransactionEffects as ProtoTransactionEffects,
     TransactionEvents as ProtoTransactionEvents,
@@ -117,4 +118,59 @@ export function decodeUserSignature(signature: ProtoUserSignature): string {
 
 export function decodeExecutionError(error: ProtoExecutionError): ExecutionError {
     return decode(ExecutionError, error.bcsKind, 'bcs_kind');
+}
+
+export interface CheckpointTransaction {
+    transaction: {
+        transaction: ReturnType<typeof decodeTransaction>;
+        signatures: string[];
+    };
+    effects: ReturnType<typeof decodeTransactionEffects>;
+    /** `null` when the read mask left the events out. */
+    events: Event[] | null;
+    inputObjects: IotaObject[];
+    outputObjects: IotaObject[];
+}
+
+/** Every part of an executed transaction. Fails if any part other than the events is absent. */
+export function decodeCheckpointTransaction(executed: ExecutedTransaction): CheckpointTransaction {
+    const { transaction, signatures, effects, events, inputObjects, outputObjects } = executed;
+
+    return {
+        transaction: {
+            transaction: decode(
+                bcs.TransactionData,
+                required(transaction, 'transaction').bcs,
+                'transaction.bcs',
+            ),
+            signatures: required(signatures, 'signatures').signatures.map((signature, index) =>
+                decode(UserSignature, signature.bcs, `signatures.signatures[${index}].bcs`),
+            ),
+        },
+        effects: decode(bcs.TransactionEffects, required(effects, 'effects').bcs, 'effects.bcs'),
+        events:
+            events === undefined
+                ? null
+                : (events.events?.events ?? []).map(
+                      (event, index) =>
+                          decode(VersionedEvent, event.bcs, `events.events.events[${index}].bcs`)
+                              .V1!,
+                  ),
+        inputObjects: decodeObjects(required(inputObjects, 'input_objects'), 'input_objects'),
+        outputObjects: decodeObjects(required(outputObjects, 'output_objects'), 'output_objects'),
+    };
+}
+
+function decodeObjects(objects: Objects, field: string): IotaObject[] {
+    return objects.objects.map(
+        (object, index) =>
+            decode(VersionedObject, object.bcs, `${field}.objects[${index}].bcs`).V1!,
+    );
+}
+
+function required<T>(value: T | undefined, field: string): T {
+    if (value === undefined) {
+        throw new ProtoConversionError(`missing field '${field}'`);
+    }
+    return value;
 }
