@@ -1,13 +1,16 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { create, fromBinary, toBinary } from '@bufbuild/protobuf';
 import { BinaryWriter, WireType } from '@bufbuild/protobuf/wire';
-import { toBase58, toHex } from '@iota/bcs';
+import { fromBase58, fromHex, toBase58, toHex } from '@iota/bcs';
 import { describe, expect, it } from 'vitest';
 
 import {
     EmptyResponseFieldError,
+    ProtoConversionError,
     ServerError,
     UnexpectedEndOfStreamError,
     UnexpectedObjectError,
@@ -233,6 +236,25 @@ function transactionWithDigest(digest: Uint8Array): ItemResult<ExecutedTransacti
 
 const failedSlot = { ok: false, error: new ServerError(5, 'not found') } as const;
 
+function readFixture(name: string) {
+    return JSON.parse(readFileSync(path.resolve(__dirname, `../../fixtures/${name}`), 'utf8'));
+}
+
+const fixtureObjects: { kind: string; objectId: string; bcs: string }[] =
+    readFixture('objects.json').objects;
+const [fixtureTransaction] = readFixture('user-signatures.json').transactions;
+
+function objectWithBcsOnly(hex: string): ItemResult<Object$> {
+    return { ok: true, value: create(ObjectSchema, { bcs: { data: fromHex(hex) } }) };
+}
+
+function transactionWithBcsOnly(hex: string): ItemResult<ExecutedTransaction> {
+    return {
+        ok: true,
+        value: create(ExecutedTransactionSchema, { transaction: { bcs: { data: fromHex(hex) } } }),
+    };
+}
+
 describe('checkObjectIdentity', () => {
     const a = id(0xaa);
     const b = id(0xbb);
@@ -278,6 +300,24 @@ describe('checkObjectIdentity', () => {
             checkObjectIdentity([{ ok: true, value: create(ObjectSchema) }], [a]),
         ).not.toThrow();
     });
+
+    it.each(fixtureObjects.map((object) => [object.kind, object] as const))(
+        'reads the id of a %s from its BCS when the reference was masked out',
+        (_, object) => {
+            const answered = [objectWithBcsOnly(object.bcs)];
+
+            expect(() => checkObjectIdentity(answered, [fromHex(object.objectId)])).not.toThrow();
+            expect(() => checkObjectIdentity(answered, [a])).toThrow(
+                new UnexpectedObjectError(0, `0x${toHex(a)}`, object.objectId),
+            );
+        },
+    );
+
+    it('reports BCS that does not decode', () => {
+        expect(() => checkObjectIdentity([objectWithBcsOnly('00ff')], [a])).toThrow(
+            ProtoConversionError,
+        );
+    });
 });
 
 describe('checkTransactionIdentity', () => {
@@ -315,5 +355,21 @@ describe('checkTransactionIdentity', () => {
                 [a, b],
             ),
         ).not.toThrow();
+    });
+
+    it('computes the digest from the BCS when the digest was masked out', () => {
+        const answered = [transactionWithBcsOnly(fixtureTransaction.transactionBcs)];
+        const digest = fromBase58(fixtureTransaction.transaction);
+
+        expect(() => checkTransactionIdentity(answered, [digest])).not.toThrow();
+        expect(() => checkTransactionIdentity(answered, [a])).toThrow(
+            new UnexpectedTransactionError(0, toBase58(a), fixtureTransaction.transaction),
+        );
+    });
+
+    it('reports BCS that does not decode', () => {
+        expect(() => checkTransactionIdentity([transactionWithBcsOnly('00ff')], [a])).toThrow(
+            ProtoConversionError,
+        );
     });
 });
