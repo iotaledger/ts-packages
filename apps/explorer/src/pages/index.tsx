@@ -16,6 +16,7 @@ import { Recent } from './recent';
 import { TransactionResult } from './transaction-result/TransactionResult';
 import { ValidatorDetails } from './validator/ValidatorDetails';
 import { ValidatorPageResult } from './validators/Validators';
+import { CoinsPageResult } from './coins/Coins';
 import { Layout } from '~/components';
 import { IdentityResult } from './trust-framework/identity-result/IdentityResult';
 import { NotarizationResult } from './trust-framework/notarization-result/NotarizationResult';
@@ -54,6 +55,7 @@ export const router = sentryCreateBrowserRouter([
             { path: 'identity/:id', element: <IdentityResult /> },
             { path: 'notarization/:id', element: <NotarizationResult /> },
             { path: 'audit-trail/:id', element: <AuditTrailResult /> },
+            { path: 'coins', element: <CoinsPageResult /> },
         ],
     },
     {

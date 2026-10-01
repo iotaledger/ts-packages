@@ -30,3 +30,4 @@ export * from './useLocalTablePagination';
 export * from './useDeserializedSignatures';
 export * from './useAddressBalanceSummary';
 export * from './useValidatorByAddress';
+export * from './useGetAllCoins';
