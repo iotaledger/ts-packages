@@ -76,7 +76,7 @@ export function FieldsContent({ objectId }: FieldsContentProps) {
     const fieldsCount = normalizedStructData?.fields.length;
     const FIELDS_CATEGORIES = [
         {
-            label: `${fieldsCount !== undefined ? `${fieldsCount} ` : ''}Fields`,
+            label: `${fieldsCount !== undefined ? `${fieldsCount} ` : ''}Field${fieldsCount === 1 ? '' : 's'}`,
             value: FieldCategory.Fields,
         },
         {
