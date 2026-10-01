@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CheckpointContents, VersionedCheckpointSummary } from '../../../src/bcs/checkpoint.js';
 import { VersionedEvent } from '../../../src/bcs/event.js';
+import { IotaObject, VersionedObject } from '../../../src/bcs/object.js';
 import { VersionedValidatorAggregatedSignature } from '../../../src/bcs/signatures.js';
 import { kebabToCamel, readAbnfRule } from '../../abnf.js';
 
@@ -31,6 +32,19 @@ const summary = VersionedCheckpointSummary.parse(
 
 const endOfEpoch = summary.endOfEpochData!;
 const contents = CheckpointContents.parse(fromHex(checkpointsFixture.recent.contentsBcs)).V1!;
+const objects = JSON.parse(
+    readFileSync(path.resolve(__dirname, '../../fixtures/objects.json'), 'utf8'),
+).objects.map(({ bcs }: { bcs: string }) => VersionedObject.parse(fromHex(bcs)).V1!);
+const moveStructs = objects.flatMap((object: typeof IotaObject.$inferType) =>
+    object.data.Struct ? [object.data.Struct] : [],
+);
+const movePackage = objects.find((object: typeof IotaObject.$inferType) => object.data.Package)!
+    .data.Package!;
+
+function variantNames(rule: string): (string | undefined)[] {
+    return readAbnfRule(rule).map(({ name }) => name);
+}
+
 const quorumSignature = VersionedValidatorAggregatedSignature.parse(
     fromHex(checkpointsFixture.recent.signatureBcs),
 ).V1!;
@@ -100,5 +114,63 @@ describe('BCS schemas match bcs-schema.abnf', () => {
 
     it('execution-digests', () => {
         expect(Object.keys(contents.digests[0])).toEqual(fieldNames('execution-digests'));
+    });
+
+    it('object', () => {
+        expect(Object.keys(objects[0])).toEqual(fieldNames('object'));
+    });
+
+    it('object-data, every variant in the fixture', () => {
+        expect(
+            [...new Set(objects.map((o: typeof IotaObject.$inferType) => o.data.$kind))].sort(),
+        ).toEqual(variantNames('object-data').sort());
+    });
+
+    it('move-struct', () => {
+        expect(Object.keys(moveStructs[0])).toEqual(fieldNames('move-struct'));
+    });
+
+    it('compressed-struct-tag, every variant in the fixture', () => {
+        expect(
+            [
+                ...new Set(
+                    moveStructs.map((s: { objectType: { $kind: string } }) => s.objectType.$kind),
+                ),
+            ].sort(),
+        ).toEqual(variantNames('compressed-struct-tag').sort());
+    });
+
+    it('move-package', () => {
+        expect(Object.keys(movePackage)).toEqual(fieldNames('move-package'));
+    });
+
+    it('type-origin', () => {
+        expect(Object.keys(movePackage.typeOriginTable[0])).toEqual(fieldNames('type-origin'));
+    });
+
+    it('upgrade-info, which no captured package links', () => {
+        const [upgradedId, upgradedVersion] = fieldNames('upgrade-info') as string[];
+        const linked = {
+            ...objects.find((object: typeof IotaObject.$inferType) => object.data.Package)!,
+            data: {
+                Package: {
+                    ...movePackage,
+                    linkageTable: new Map([
+                        [movePackage.id, { [upgradedId]: movePackage.id, [upgradedVersion]: '1' }],
+                    ]),
+                },
+            },
+        };
+
+        const relinked = IotaObject.parse(IotaObject.serialize(linked as never).toBytes());
+
+        expect(Object.keys([...relinked.data.Package!.linkageTable.values()][0])).toEqual([
+            upgradedId,
+            upgradedVersion,
+        ]);
+    });
+
+    it('owner, reused from @iota/iota-sdk, has the same four variants', () => {
+        expect(variantNames('owner')).toEqual(['Address', 'Object', 'Shared', 'Immutable']);
     });
 });
