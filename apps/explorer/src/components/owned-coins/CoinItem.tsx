@@ -16,6 +16,7 @@ export function CoinItem({ coin }: CoinItemProps): JSX.Element {
         balance: coin.balance,
         coinType: coin.coinType,
         format: CoinFormat.Full,
+        truncateSymbol: false,
     });
 
     const objectLink = (

@@ -52,6 +52,7 @@ export function generateBalanceChangesTableColumns(): ColumnDef<BalanceChangeTab
                         coinType={coinType}
                         showSign
                         showTrustedBadge
+                        truncateSymbol={false}
                     />
                 </TableCellBase>
             ),

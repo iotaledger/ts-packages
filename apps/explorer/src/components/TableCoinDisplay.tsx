@@ -17,12 +17,14 @@ interface TableCoinDisplayProps {
     coinType: string;
     showSign?: boolean;
     showTrustedBadge?: boolean;
+    truncateSymbol?: boolean;
 }
 export function TableCoinDisplay({
     amount,
     coinType,
     showSign = false,
     showTrustedBadge = false,
+    truncateSymbol,
 }: TableCoinDisplayProps) {
     const isPositive = BigInt(amount) > BigInt(0);
 
@@ -33,6 +35,7 @@ export function TableCoinDisplay({
         balance: amount,
         coinType,
         showSign,
+        truncateSymbol,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';

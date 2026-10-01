@@ -32,6 +32,7 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                 <CoinItem
                     coinType={coin.coinType}
                     balance={BigInt(coin.totalBalance)}
+                    truncateSymbol={false}
                     icon={
                         coin.isRecognized && (
                             <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
