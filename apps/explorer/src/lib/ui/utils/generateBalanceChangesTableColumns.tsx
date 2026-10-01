@@ -47,7 +47,12 @@ export function generateBalanceChangesTableColumns(): ColumnDef<BalanceChangeTab
                 },
             }) => (
                 <TableCellBase>
-                    <TableCoinDisplay amount={amount} coinType={coinType} />
+                    <TableCoinDisplay
+                        amount={amount}
+                        coinType={coinType}
+                        showSign
+                        showTrustedBadge
+                    />
                 </TableCellBase>
             ),
         },

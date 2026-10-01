@@ -284,11 +284,7 @@ export function generateValidatorsTableColumns({
                 return (
                     <TableCellBase>
                         {lastReward !== undefined ? (
-                            <TableCoinDisplay
-                                amount={lastReward}
-                                coinType={IOTA_TYPE_ARG}
-                                showSign={false}
-                            />
+                            <TableCoinDisplay amount={lastReward} coinType={IOTA_TYPE_ARG} />
                         ) : (
                             <TableCellText>--</TableCellText>
                         )}
