@@ -11,12 +11,12 @@ import { TransactionEvents, VersionedEvent } from '../../../src/bcs/event.js';
 import { typeDigest } from '../../digest.js';
 
 /**
- * Every field the server sends for one mainnet transaction's events, captured
- * with the full `transactions.events` mask. The separate fields are the
- * server's own reading of the same bytes, so they check the decoder.
+ * Every field the server sends for one transaction's events. The separate
+ * fields are the server's own reading of the same bytes, so they check the
+ * decoder.
  */
 interface EventsFixture {
-    source: { network: string; checkpoint: string; transaction: string; capturedAt: string };
+    transaction: string;
     eventsDigest: string;
     events: {
         bcs: string;
@@ -34,7 +34,7 @@ const fixture: EventsFixture = JSON.parse(
 
 describe('VersionedEvent', () => {
     describe.each(fixture.events.map((event, index) => [index, event] as const))(
-        'mainnet event %i',
+        'event %i',
         (_, expected) => {
             const bytes = fromHex(expected.bcs);
             const decoded = VersionedEvent.parse(bytes);

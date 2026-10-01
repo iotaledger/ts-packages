@@ -38,7 +38,7 @@ describe.each([
     ['recent', fixture.recent, fixture.recent.transactions],
     // The end-of-epoch transaction is left out here and covered below.
     ['end-of-epoch', fixture.endOfEpoch, fixture.endOfEpoch.transactions.slice(0, -1)],
-] as const)('CheckpointContents, %s mainnet checkpoint', (_, expected, signedTransactions) => {
+] as const)('CheckpointContents, %s checkpoint', (_, expected, signedTransactions) => {
     const bytes = fromHex(expected.contentsBcs);
     const decoded = CheckpointContents.parse(bytes);
     const contents = decoded.V1!;

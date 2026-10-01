@@ -10,10 +10,10 @@ import { CheckpointSummary, VersionedCheckpointSummary } from '../../../src/bcs/
 import { typeDigest } from '../../digest.js';
 
 /**
- * Two mainnet checkpoint summaries: a recent one, and the last checkpoint of
- * an epoch, the only kind with end-of-epoch data. Each comes with what the
- * checkpoint header, the previous checkpoint, its transactions and `GetEpoch`
- * for the next epoch say about it.
+ * A mid-epoch checkpoint summary and the last checkpoint of an epoch, the only
+ * kind with end-of-epoch data. Each comes with what the checkpoint header, the
+ * previous checkpoint, its transactions and `GetEpoch` for the next epoch say
+ * about it.
  */
 interface CheckpointFixture {
     sequenceNumber: string;
@@ -26,7 +26,6 @@ interface CheckpointFixture {
 }
 
 interface CheckpointsFixture {
-    source: { network: string; capturedAt: string };
     recent: CheckpointFixture;
     endOfEpoch: CheckpointFixture & {
         nextEpoch: {
@@ -44,7 +43,7 @@ const fixture: CheckpointsFixture = JSON.parse(
 describe.each([
     ['recent', fixture.recent],
     ['end-of-epoch', fixture.endOfEpoch],
-] as const)('VersionedCheckpointSummary, %s mainnet checkpoint', (_, expected) => {
+] as const)('VersionedCheckpointSummary, %s checkpoint', (_, expected) => {
     const bytes = fromHex(expected.summaryBcs);
     const decoded = VersionedCheckpointSummary.parse(bytes);
     const summary = decoded.V1!;

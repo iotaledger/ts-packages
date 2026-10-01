@@ -10,13 +10,12 @@ import { IotaObject, VersionedObject } from '../../../src/bcs/object.js';
 import { typeDigest } from '../../digest.js';
 
 /**
- * The smallest mainnet object seen for each combination of data variant,
- * compressed type and owner variant, plus the `0x1` package, each with the
- * reference the server sent alongside. `kind` names the variants by the raw
- * tags in the bytes, using the ABNF's names.
+ * One object for each combination of data variant, compressed type and owner
+ * variant, plus the `0x1` package, each with the reference the server sent
+ * alongside. `kind` names the variants by the raw tags in the bytes, using the
+ * ABNF's names.
  */
 interface ObjectsFixture {
-    source: { network: string; capturedAt: string };
     objects: { kind: string; objectId: string; version: string; digest: string; bcs: string }[];
 }
 
@@ -41,7 +40,7 @@ function sample(kind: string) {
 }
 
 describe.each(fixture.objects.map((object) => [object.kind, object] as const))(
-    'VersionedObject, mainnet %s',
+    'VersionedObject, %s',
     (kind, expected) => {
         const bytes = fromHex(expected.bcs);
         const decoded = VersionedObject.parse(bytes);

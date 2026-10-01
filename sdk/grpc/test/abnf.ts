@@ -60,7 +60,7 @@ export function kebabToCamel(name: string): string {
 /**
  * The smallest bytes a grammar body accepts: the first alternative of every
  * choice, empty sequences, absent options and zeroed fixed-width fields. Lets a
- * test reach enum variants that no captured fixture exercises.
+ * test reach enum variants that no fixture covers.
  */
 export function minimalBcs(body: string): number[] {
     return tokens(body).flatMap(minimalToken);
