@@ -82,4 +82,8 @@ describe('BCS schemas match bcs-schema.abnf', () => {
     it('validator-aggregated-signature', () => {
         expect(Object.keys(quorumSignature)).toEqual(fieldNames('validator-aggregated-signature'));
     });
+
+    it('user-signature is opaque bytes', () => {
+        expect(readAbnfRule('user-signature')).toEqual([{ body: 'bytes', name: undefined }]);
+    });
 });
