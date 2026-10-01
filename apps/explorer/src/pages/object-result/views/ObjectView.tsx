@@ -16,7 +16,13 @@ import { SortByDefault } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { OwnerDisplay } from '~/components/object';
-import { Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
+import {
+    AmountWithSymbol,
+    Link,
+    ObjectLink,
+    ObjectVideoImage,
+    TransactionLink,
+} from '~/components/ui';
 import {
     extractName,
     onCopySuccess,
@@ -208,12 +214,7 @@ function StorageRebateCard({ storageRebate }: StorageRebateCardProps): JSX.Eleme
             tooltipPosition={TooltipPosition.Top}
             value={
                 <div className="flex min-w-0 flex-col gap-xxs">
-                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                        <span className="break-all">{storageRebateFormatted}</span>
-                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                            {symbol}
-                        </span>
-                    </div>
+                    <AmountWithSymbol amount={storageRebateFormatted} symbol={symbol} />
                     <CoinFiatValue amount={storageRebate} withParentheses={false} />
                 </div>
             }

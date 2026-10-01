@@ -6,6 +6,7 @@ import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
 import { CoinFiatValue, getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
+import { AmountWithSymbol } from '~/components/ui';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -21,10 +22,10 @@ export function ValidatorStats({
     apy,
     isEarningCurrentEpoch,
 }: StatsCardProps): JSX.Element {
-    const totalStake = Number(validatorData.stakingPoolIotaBalance);
+    const totalStake = validatorData.stakingPoolIotaBalance;
 
     const effectiveCommissionRate = getValidatorEffectiveCommission(validatorData);
-    const rewardsPoolBalance = Number(validatorData.rewardsPool);
+    const rewardsPoolBalance = validatorData.rewardsPool;
 
     const [formattedTotalStakeAmount, totalStakeSymbol] = useFormatCoin({
         balance: totalStake,
@@ -79,12 +80,10 @@ export function ValidatorStats({
                         label="Total IOTA Staked"
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
-                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                    <span className="break-all">{formattedTotalStakeAmount}</span>
-                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                                        {totalStakeSymbol}
-                                    </span>
-                                </div>
+                                <AmountWithSymbol
+                                    amount={formattedTotalStakeAmount}
+                                    symbol={totalStakeSymbol}
+                                />
                                 <CoinFiatValue amount={totalStake} withParentheses={false} />
                             </div>
                         }
@@ -95,12 +94,10 @@ export function ValidatorStats({
                         label="Reward Balance"
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
-                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                    <span className="break-all">{formattedRewardsPoolBalance}</span>
-                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                                        {rewardsPoolBalanceSymbol}
-                                    </span>
-                                </div>
+                                <AmountWithSymbol
+                                    amount={formattedRewardsPoolBalance}
+                                    symbol={rewardsPoolBalanceSymbol}
+                                />
                                 <CoinFiatValue
                                     amount={rewardsPoolBalance}
                                     withParentheses={false}

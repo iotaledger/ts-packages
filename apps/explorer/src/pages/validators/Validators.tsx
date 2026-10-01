@@ -28,7 +28,13 @@ import {
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard } from '~/components';
+import {
+    AmountWithSymbol,
+    ErrorBoundary,
+    PageLayout,
+    PlaceholderTable,
+    TableCard,
+} from '~/components';
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -96,10 +102,10 @@ function ValidatorPageResult(): JSX.Element {
     const { data: participationMetrics } = useIotaClientQuery('getParticipationMetrics');
 
     const totalStaked = useMemo(() => {
-        if (!data) return 0;
+        if (!data) return 0n;
         const validators = data.committeeMembers;
 
-        return validators.reduce((acc, cur) => acc + Number(cur.stakingPoolIotaBalance), 0);
+        return validators.reduce((acc, cur) => acc + BigInt(cur.stakingPoolIotaBalance), 0n);
     }, [data]);
 
     const averageAPY = useMemo(() => {
@@ -143,7 +149,7 @@ function ValidatorPageResult(): JSX.Element {
         let ratio = null;
         if (totalSupplyData?.value && totalStaked) {
             const totalSupplyValue = Number(totalSupplyData.value);
-            ratio = Number(((totalStaked / totalSupplyValue) * 100).toFixed(2));
+            ratio = Number(((Number(totalStaked) / totalSupplyValue) * 100).toFixed(2));
         }
         return formatPercentageDisplay(ratio);
     })();
@@ -253,12 +259,10 @@ function ValidatorPageResult(): JSX.Element {
             title: 'Committee Stake',
             value: (
                 <div className="flex flex-col gap-xxs">
-                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                        <span className="break-all">{formattedTotalStakedAmount}</span>
-                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                            {totalStakedSymbol}
-                        </span>
-                    </div>
+                    <AmountWithSymbol
+                        amount={formattedTotalStakedAmount}
+                        symbol={totalStakedSymbol}
+                    />
                     <CoinFiatValue amount={totalStaked} withParentheses={false} />
                 </div>
             ),
@@ -291,14 +295,10 @@ function ValidatorPageResult(): JSX.Element {
             title: 'Last Epoch Rewards',
             value: lastEpochRewardOnAllValidators ? (
                 <div className="flex flex-col gap-xxs">
-                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                        <span className="break-all">
-                            {formattedlastEpochRewardOnAllValidatorsAmount}
-                        </span>
-                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                            {lastEpochRewardOnAllValidatorsSymbol}
-                        </span>
-                    </div>
+                    <AmountWithSymbol
+                        amount={formattedlastEpochRewardOnAllValidatorsAmount}
+                        symbol={lastEpochRewardOnAllValidatorsSymbol}
+                    />
                     <CoinFiatValue
                         amount={lastEpochRewardOnAllValidators}
                         withParentheses={false}

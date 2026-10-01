@@ -17,6 +17,7 @@ import {
     CoinFormat,
     formatBalance,
     formatDigest,
+    IOTA_DECIMALS,
     IOTA_TYPE_ARG,
     NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
@@ -190,8 +191,8 @@ export function generateActivityTableColumns(
 
                 const amount = balanceChange.amount;
                 const formatted = formatBalance(
-                    Math.abs(Number(amount)) / Number(NANOS_PER_IOTA),
-                    0,
+                    amount.replace('-', ''),
+                    IOTA_DECIMALS,
                     CoinFormat.Full,
                 );
                 const isPositive = Number(amount) >= 0;

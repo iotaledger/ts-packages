@@ -14,6 +14,7 @@ import {
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import {
+    AmountWithSymbol,
     PageLayout,
     ValidatorMeta,
     ValidatorStakingHistory,
@@ -94,7 +95,7 @@ function ValidatorDetails(): JSX.Element {
     const atRiskRemainingEpochs = getAtRiskRemainingEpochs(systemStateData, id);
 
     const [formattedNextEpochStake, nextEpochStakeSymbol] = useFormatCoin({
-        balance: Number(activeValidatorData?.nextEpochStake ?? 0),
+        balance: activeValidatorData?.nextEpochStake ?? 0,
         format: CoinFormat.Full,
     });
 
@@ -222,14 +223,10 @@ function ValidatorDetails(): JSX.Element {
                                             '--'
                                         ) : (
                                             <div className="flex min-w-0 flex-col gap-xxs">
-                                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                                    <span className="break-all">
-                                                        {formattedPrevEpochRewards}
-                                                    </span>
-                                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                                                        {prevEpochRewardsSymbol}
-                                                    </span>
-                                                </div>
+                                                <AmountWithSymbol
+                                                    amount={formattedPrevEpochRewards}
+                                                    symbol={prevEpochRewardsSymbol}
+                                                />
                                                 <CoinFiatValue
                                                     amount={validatorRewards}
                                                     withParentheses={false}
@@ -266,14 +263,10 @@ function ValidatorDetails(): JSX.Element {
                                     label="Stake"
                                     text={
                                         <div className="flex min-w-0 flex-col gap-xxs">
-                                            <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                                <span className="break-all">
-                                                    {formattedNextEpochStake}
-                                                </span>
-                                                <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                                                    {nextEpochStakeSymbol}
-                                                </span>
-                                            </div>
+                                            <AmountWithSymbol
+                                                amount={formattedNextEpochStake}
+                                                symbol={nextEpochStakeSymbol}
+                                            />
                                             <CoinFiatValue
                                                 amount={activeValidatorData.nextEpochStake ?? 0}
                                                 withParentheses={false}
