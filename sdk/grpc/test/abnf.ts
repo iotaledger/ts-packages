@@ -28,7 +28,8 @@ export interface AbnfTerm {
  */
 export function readAbnfRule(rule: string): AbnfTerm[] {
     const lines = readFileSync(BCS_SCHEMA_ABNF, 'utf8').split('\n');
-    const start = lines.findIndex((line) => line.startsWith(`${rule} =`));
+    const head = new RegExp(`^${rule}\\s+=`);
+    const start = lines.findIndex((line) => head.test(line));
     if (start === -1) {
         throw new Error(`no ABNF rule '${rule}'`);
     }
@@ -42,7 +43,7 @@ export function readAbnfRule(rule: string): AbnfTerm[] {
         const [grammar, comment] = line.split(';');
         terms.push({
             body: grammar
-                .replace(offset === 0 ? `${rule} =` : '', '')
+                .replace(offset === 0 ? head : '', '')
                 .replace(/^\s*\/\s*/, '')
                 .trim(),
             name: comment?.trim(),
@@ -54,4 +55,66 @@ export function readAbnfRule(rule: string): AbnfTerm[] {
 
 export function kebabToCamel(name: string): string {
     return name.replace(/-([a-z0-9])/g, (_, char: string) => char.toUpperCase());
+}
+
+/**
+ * The smallest bytes a grammar body accepts: the first alternative of every
+ * choice, empty sequences, absent options and zeroed fixed-width fields. Lets a
+ * test reach enum variants that no captured fixture exercises.
+ */
+export function minimalBcs(body: string): number[] {
+    return tokens(body).flatMap(minimalToken);
+}
+
+function minimalToken(token: string): number[] {
+    if (token.startsWith('(')) {
+        return minimalBcs(firstAlternative(token.slice(1, -1)));
+    }
+    if (token.startsWith('*')) {
+        return [];
+    }
+    if (token === 'size') {
+        return [0];
+    }
+
+    const literal = /^%d(\d+)$/.exec(token);
+    if (literal) {
+        return [Number(literal[1])];
+    }
+
+    const octets = /^(\d+)OCTET$/.exec(token);
+    if (octets) {
+        return Array.from({ length: Number(octets[1]) }, () => 0);
+    }
+
+    const terms = readAbnfRule(token);
+    return terms[0].body.startsWith('%d')
+        ? minimalBcs(terms[0].body)
+        : terms.flatMap(({ body }) => minimalBcs(body));
+}
+
+function firstAlternative(group: string): string {
+    const parts = splitTopLevel(group, '/');
+    return parts[0].trim();
+}
+
+function tokens(body: string): string[] {
+    return splitTopLevel(body, ' ').filter(Boolean);
+}
+
+function splitTopLevel(text: string, separator: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let current = '';
+    for (const char of text) {
+        depth += char === '(' ? 1 : char === ')' ? -1 : 0;
+        if (char === separator && depth === 0) {
+            parts.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    parts.push(current);
+    return parts;
 }
