@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useRef, useState, useLayoutEffect } from 'react';
-import type { PropsWithChildren, ReactNode } from 'react';
+import type { MouseEvent, PropsWithChildren, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import cx from 'classnames';
 import { TooltipPosition } from './tooltip.enums';
@@ -15,6 +15,13 @@ interface TooltipProps {
     openDelay?: number;
     closeDelay?: number;
 }
+
+const OPPOSITE_POSITION: Record<TooltipPosition, TooltipPosition> = {
+    [TooltipPosition.Top]: TooltipPosition.Bottom,
+    [TooltipPosition.Bottom]: TooltipPosition.Top,
+    [TooltipPosition.Left]: TooltipPosition.Right,
+    [TooltipPosition.Right]: TooltipPosition.Left,
+};
 
 export function Tooltip({
     text,
@@ -29,7 +36,7 @@ export function Tooltip({
     const tooltipRef = useRef<HTMLDivElement>(null);
 
     const [visible, setVisible] = useState(false);
-    const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+    const [coords, setCoords] = useState({ top: 0, left: 0, overlapsTrigger: false });
 
     const openTimer = useRef<ReturnType<typeof setTimeout>>();
     const closeTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -49,7 +56,7 @@ export function Tooltip({
         closeTimer.current = setTimeout(() => setVisible(false), closeDelay);
     };
 
-    const computePosition = (rect: DOMRect) =>
+    const computePosition = (rect: DOMRect, placement: TooltipPosition) =>
         ({
             [TooltipPosition.Top]: {
                 top: rect.top - offset,
@@ -79,7 +86,7 @@ export function Tooltip({
                 anchorX: 0,
                 anchorY: 0.5,
             },
-        })[position];
+        })[placement];
 
     const clampDelta = (boxStart: number, size: number, viewportSize: number, margin: number) => {
         const boxEnd = boxStart + size;
@@ -95,11 +102,23 @@ export function Tooltip({
         const tooltipEl = tooltipRef.current;
         if (!rect || !tooltipEl) return;
 
-        const pos = computePosition(rect);
-        tooltipEl.style.transform = pos.transform;
-
         const { width, height } = tooltipEl.getBoundingClientRect();
         const margin = 8;
+        const isVertical = position === TooltipPosition.Top || position === TooltipPosition.Bottom;
+
+        const fitsMainAxis = (pos: ReturnType<typeof computePosition>) =>
+            isVertical
+                ? clampDelta(pos.top - height * pos.anchorY, height, window.innerHeight, margin) ===
+                  0
+                : clampDelta(pos.left - width * pos.anchorX, width, window.innerWidth, margin) ===
+                  0;
+
+        let pos = computePosition(rect, position);
+        if (!fitsMainAxis(pos)) {
+            const flipped = computePosition(rect, OPPOSITE_POSITION[position]);
+            if (fitsMainAxis(flipped)) pos = flipped;
+        }
+        tooltipEl.style.transform = pos.transform;
 
         const boxLeft = pos.left - width * pos.anchorX;
         const boxTop = pos.top - height * pos.anchorY;
@@ -107,7 +126,15 @@ export function Tooltip({
         const deltaX = clampDelta(boxLeft, width, window.innerWidth, margin);
         const deltaY = clampDelta(boxTop, height, window.innerHeight, margin);
 
-        setCoords({ top: pos.top + deltaY, left: pos.left + deltaX });
+        const left = boxLeft + deltaX;
+        const top = boxTop + deltaY;
+        const overlapsTrigger =
+            left < rect.right &&
+            left + width > rect.left &&
+            top < rect.bottom &&
+            top + height > rect.top;
+
+        setCoords({ top: pos.top + deltaY, left: pos.left + deltaX, overlapsTrigger });
     }, [visible, position, offset]);
 
     useLayoutEffect(() => {
@@ -124,6 +151,15 @@ export function Tooltip({
         };
     }, [visible]);
 
+    // Keeps a link or button wrapping the trigger from acting on clicks meant to open the tooltip.
+    const handleTriggerClick = (event: MouseEvent<HTMLDivElement>) => {
+        const interactive = (event.target as Element).closest('a, button');
+        if (!interactive || triggerRef.current?.contains(interactive)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        open();
+    };
+
     // z-[9999999999]: needed because we must exceed the popup’s ≈2 147 483 647 z-index;
     // otherwise the tooltip renders but stays invisible inside a Chrome extension
     const base = 'z-[9999999999] w-max rounded p-xs tooltip-bg tooltip-text-color';
@@ -137,6 +173,7 @@ export function Tooltip({
                 onFocus={open}
                 onMouseLeave={close}
                 onBlur={close}
+                onClick={handleTriggerClick}
             >
                 {children}
             </div>
@@ -153,7 +190,11 @@ export function Tooltip({
                             transition: 'opacity .15s ease',
                             opacity: 1,
                         }}
-                        className={cx(base, maxWidth)}
+                        className={cx(
+                            base,
+                            maxWidth,
+                            coords.overlapsTrigger && 'pointer-events-none',
+                        )}
                         onMouseEnter={open}
                         onMouseLeave={close}
                     >
