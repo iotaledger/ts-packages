@@ -3,6 +3,7 @@
 
 import { type OnChainAuditTrail } from '@iota/audit-trails/web';
 import { SyntaxHighlighter } from '~/components';
+import { toSyntaxHighlightedData } from './RecordsView';
 
 interface MetadataViewProps {
     auditTrail: OnChainAuditTrail;
@@ -10,13 +11,14 @@ interface MetadataViewProps {
 
 export function MetadataView({ auditTrail }: MetadataViewProps) {
     const { immutableMetadata, updatableMetadata } = auditTrail;
+    const { code, language } = toSyntaxHighlightedData(updatableMetadata ?? '');
 
     return (
         <div className="flex flex-col gap-y-md">
             <div className="flex flex-col">
-                <SyntaxHighlighter code={updatableMetadata ?? ''} language="text" />
+                <SyntaxHighlighter code={code} language={language} />
                 <span className="mt-1 text-body-sm text-gray-500 dark:text-gray-400">
-                    Updatable Metadata (Text)
+                    Updatable Metadata ({language === 'json' ? 'JSON' : 'Text'})
                 </span>
             </div>
             <div className="flex flex-col">
