@@ -7,6 +7,7 @@ import { parse } from 'valibot';
 import type { BcsType } from '../bcs/index.js';
 import { bcs } from '../bcs/index.js';
 import type { IotaClient } from '../client/client.js';
+import type { CoinStruct } from '../client/index.js';
 import { normalizeIotaAddress, normalizeIotaObjectId, IOTA_TYPE_ARG } from '../utils/index.js';
 import { ObjectRef } from './data/internal.js';
 import type { Argument, CallArg, Command, OpenMoveTypeSignature } from './data/internal.js';
@@ -20,6 +21,8 @@ const MAX_OBJECTS_PER_FETCH = 50;
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
 const GAS_SAFE_OVERHEAD = 1000n;
 const MAX_GAS = 50_000_000_000;
+// The protocol requires fewer than `max_gas_payment_objects` (256) gas coins.
+const MAX_GAS_OBJECTS = 255;
 
 export interface BuildTransactionOptions {
     client?: IotaClient;
@@ -104,52 +107,96 @@ async function setGasBudget(
     );
 }
 
-// The current default is just picking _all_ coins we can which may not be ideal.
+// Uses all coins of the first page. If the owner has more pages, keeps the highest-balance coins
+// seen so far and only fetches the next page while they cannot pay for the transaction.
 async function setGasPayment(
     transactionData: TransactionDataBuilder,
     options: BuildTransactionOptions,
 ) {
-    if (!transactionData.gasData.payment) {
-        const MAX_GAS_OBJECTS = 256;
+    if (transactionData.gasData.payment) {
+        return;
+    }
 
-        const coins = [];
-        let cursor: string | null | undefined = null;
-        do {
-            const page = await getClient(options).getCoins({
-                owner: transactionData.gasData.owner || transactionData.sender!,
-                coinType: IOTA_TYPE_ARG,
-                cursor,
-            });
-            coins.push(...page.data);
-            cursor = page.hasNextPage ? page.nextCursor : null;
-        } while (cursor && coins.length < MAX_GAS_OBJECTS);
+    const client = getClient(options);
+    const inputObjectIds = new Set(
+        transactionData.inputs.flatMap((input) =>
+            input.Object?.ImmOrOwnedObject ? [input.Object.ImmOrOwnedObject.objectId] : [],
+        ),
+    );
 
-        const paymentCoins = coins
+    let paymentCoins: CoinStruct[] = [];
+    let cursor: string | null | undefined = null;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+        const page = await client.getCoins({
+            owner: transactionData.gasData.owner || transactionData.sender!,
+            coinType: IOTA_TYPE_ARG,
+            cursor,
+        });
+        cursor = page.nextCursor;
+        hasNextPage = page.hasNextPage;
+
+        paymentCoins = [
+            ...paymentCoins,
             // Filter out coins that are also used as input:
-            .filter((coin) => {
-                const matchingInput = transactionData.inputs.find((input) => {
-                    if (input.Object?.ImmOrOwnedObject) {
-                        return coin.coinObjectId === input.Object.ImmOrOwnedObject.objectId;
-                    }
-
-                    return false;
-                });
-
-                return !matchingInput;
+            ...page.data.filter((coin) => !inputObjectIds.has(coin.coinObjectId)),
+        ]
+            .sort((a, b) => {
+                const diff = BigInt(b.balance) - BigInt(a.balance);
+                return diff > 0n ? 1 : diff < 0n ? -1 : 0;
             })
-            .map((coin) => ({
-                objectId: coin.coinObjectId,
-                digest: coin.digest,
-                version: coin.version,
-            }))
             .slice(0, MAX_GAS_OBJECTS);
 
-        if (!paymentCoins.length) {
-            throw new Error('No valid gas coins found for the transaction.');
+        if (hasNextPage && (await canPayGas(transactionData, paymentCoins, client))) {
+            break;
         }
-
-        transactionData.gasData.payment = paymentCoins.map((payment) => parse(ObjectRef, payment));
     }
+
+    if (!paymentCoins.length) {
+        throw new Error('No valid gas coins found for the transaction.');
+    }
+
+    transactionData.gasData.payment = toGasPayment(paymentCoins);
+}
+
+async function canPayGas(
+    transactionData: TransactionDataBuilder,
+    coins: CoinStruct[],
+    client: IotaClient,
+) {
+    const totalBalance = coins.reduce((total, coin) => total + BigInt(coin.balance), 0n);
+    if (totalBalance < BigInt(transactionData.gasData.budget ?? 0)) {
+        return false;
+    }
+
+    try {
+        const dryRunResult = await client.dryRunTransactionBlock({
+            transactionBlock: transactionData.build({
+                overrides: { gasData: { payment: toGasPayment(coins) } },
+            }),
+        });
+
+        return !dryRunResult.effects.status.error?.includes('InsufficientCoinBalance');
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            /GasBalanceTooLow|lower than the needed amount/.test(error.message)
+        ) {
+            return false;
+        }
+        throw error;
+    }
+}
+
+function toGasPayment(coins: CoinStruct[]) {
+    return coins.map((coin) =>
+        parse(ObjectRef, {
+            objectId: coin.coinObjectId,
+            digest: coin.digest,
+            version: coin.version,
+        }),
+    );
 }
 
 async function resolveObjectReferences(
