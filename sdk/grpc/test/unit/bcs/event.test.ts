@@ -3,12 +3,12 @@
 
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { fromHex, toBase58, toHex } from '@iota/bcs';
+import { fromHex, toHex } from '@iota/bcs';
 import { TypeTagSerializer } from '@iota/iota-sdk/bcs';
-import { blake2b } from '@noble/hashes/blake2';
 import { describe, expect, it } from 'vitest';
 
 import { TransactionEvents, VersionedEvent } from '../../../src/bcs/event.js';
+import { typeDigest } from '../../digest.js';
 
 /**
  * Every field the server sends for one mainnet transaction's events, captured
@@ -31,11 +31,6 @@ interface EventsFixture {
 const fixture: EventsFixture = JSON.parse(
     readFileSync(path.resolve(__dirname, '../../fixtures/events.json'), 'utf8'),
 );
-
-function transactionEventsDigest(bcs: Uint8Array): string {
-    const salt = new TextEncoder().encode('TransactionEvents::');
-    return toBase58(blake2b(new Uint8Array([...salt, ...bcs]), { dkLen: 32 }));
-}
 
 describe('VersionedEvent', () => {
     describe.each(fixture.events.map((event, index) => [index, event] as const))(
@@ -86,7 +81,7 @@ describe('TransactionEvents', () => {
     it('hashes to the events digest the server sent', () => {
         const bcs = TransactionEvents.serialize(events).toBytes();
 
-        expect(transactionEventsDigest(bcs)).toBe(fixture.eventsDigest);
+        expect(typeDigest('TransactionEvents', bcs)).toBe(fixture.eventsDigest);
     });
 
     it('round-trips', () => {
