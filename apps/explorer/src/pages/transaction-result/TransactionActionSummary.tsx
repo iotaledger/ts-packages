@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+    type CoinAmountChange,
     CoinFiatValue,
     CoinIcon,
     CoinOwnerType,
     ImageIcon,
     ImageIconSize,
     STAKING_REQUEST_EVENT,
+    STARDUST_PACKAGE_ID,
     UNSTAKING_REQUEST_EVENT,
     getTransactionCoinBalances,
     isMigrationTransaction,
@@ -18,13 +20,28 @@ import {
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
 import { Copy, IotaLogoMark } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { CoinFormat, IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
+import {
+    CoinFormat,
+    IOTA_FRAMEWORK_ADDRESS,
+    IOTA_SYSTEM_ADDRESS,
+    IOTA_TYPE_ARG,
+    MOVE_STDLIB_ADDRESS,
+    formatAddress,
+    normalizeIotaAddress,
+} from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { type ReactNode, useMemo, useState } from 'react';
-import { AddressLink, ValidatorLink } from '~/components/ui';
+import { AddressLink, ObjectLink, ValidatorLink } from '~/components/ui';
 import { getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
+const SYSTEM_PACKAGE_ID = normalizeIotaAddress(IOTA_SYSTEM_ADDRESS);
+const FRAMEWORK_PACKAGE_IDS = [
+    MOVE_STDLIB_ADDRESS,
+    IOTA_FRAMEWORK_ADDRESS,
+    SYSTEM_PACKAGE_ID,
+    STARDUST_PACKAGE_ID,
+].map((address) => normalizeIotaAddress(address));
 
 type SummaryAction =
     | { type: 'stake'; amount: bigint; vested: boolean; validatorAddress: string }
@@ -35,40 +52,63 @@ type SummaryAction =
     | { type: 'unlockCoin'; coinType: string; amount: bigint }
     | { type: 'unlockAssets' }
     | { type: 'sendCoin'; coinType: string; amount: bigint; recipient: string }
-    | { type: 'sendNfts'; count: number; recipient: string };
+    | { type: 'sendNfts'; count: number; recipient: string }
+    | {
+          type: 'moveCall';
+          packageId: string;
+          functionName: string;
+          otherCallsCount: number;
+          coinChanges: CoinAmountChange[];
+      }
+    | { type: 'genesis' };
 
 function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAction[] {
     const sender = transaction.transaction?.data.sender;
+    const transactionKind = transaction.transaction?.data.transaction;
+    if (transactionKind?.kind === 'Genesis') return [{ type: 'genesis' }];
+
     const actions: SummaryAction[] = [];
 
     for (const event of transaction.events ?? []) {
+        // Liquid staking pools stake and unstake internally; those events are not the sender's.
+        if (normalizeIotaAddress(event.packageId) !== SYSTEM_PACKAGE_ID) continue;
         const vested = event.transactionModule === 'timelocked_staking';
+        const json = event.parsedJson as {
+            amount?: string;
+            principal_amount?: string;
+            reward_amount?: string;
+            validator_address: string;
+        };
+        let type: 'stake' | 'unstake';
+        let amount: bigint;
         if (event.type === STAKING_REQUEST_EVENT) {
-            const json = event.parsedJson as { amount?: string; validator_address: string };
-            actions.push({
-                type: 'stake',
-                amount: BigInt(json.amount ?? 0),
-                vested,
-                validatorAddress: json.validator_address,
-            });
+            type = 'stake';
+            amount = BigInt(json.amount ?? 0);
         } else if (event.type === UNSTAKING_REQUEST_EVENT) {
-            const json = event.parsedJson as {
-                principal_amount?: string;
-                reward_amount?: string;
-                validator_address: string;
-            };
-            actions.push({
-                type: 'unstake',
-                amount: BigInt(json.principal_amount ?? 0) + BigInt(json.reward_amount ?? 0),
-                vested,
-                validatorAddress: json.validator_address,
-            });
+            type = 'unstake';
+            amount = BigInt(json.principal_amount ?? 0) + BigInt(json.reward_amount ?? 0);
+        } else {
+            continue;
+        }
+
+        const sameValidatorAction = actions.find(
+            (action): action is Extract<SummaryAction, { type: 'stake' | 'unstake' }> =>
+                action.type === type &&
+                action.vested === vested &&
+                action.validatorAddress === json.validator_address,
+        );
+        if (sameValidatorAction) {
+            sameValidatorAction.amount += amount;
+        } else {
+            actions.push({ type, amount, vested, validatorAddress: json.validator_address });
         }
     }
 
     const owners = getTransactionCoinBalances(transaction)?.owners ?? [];
-    const receivedBySender = (owners.find(({ owner }) => owner === sender)?.changes ?? []).filter(
-        ({ amount }) => amount > 0n,
+    const senderChanges = owners.find(({ owner }) => owner === sender)?.changes ?? [];
+    const receivedBySender = senderChanges.filter(({ amount }) => amount > 0n);
+    const coinTypesSpentBySender = new Set(
+        senderChanges.filter(({ amount }) => amount < 0n).map(({ coinType }) => coinType),
     );
 
     if (isMigrationTransaction(transaction.transaction)) {
@@ -80,7 +120,7 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
         }
         if (nftCount) actions.push({ type: 'migrateNfts', count: nftCount });
         if (!receivedBySender.length && !nftCount) actions.push({ type: 'migrateAssets' });
-    } else if (isUnlockTimelockedObjectTransaction(transaction.transaction)) {
+    } else if (!actions.length && isUnlockTimelockedObjectTransaction(transaction.transaction)) {
         for (const { coinType, amount } of receivedBySender) {
             actions.push({ type: 'unlockCoin', coinType, amount });
         }
@@ -90,7 +130,9 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
     for (const { owner, ownerType, changes } of owners) {
         if (owner === sender || ownerType !== CoinOwnerType.Address) continue;
         for (const { coinType, amount } of changes) {
-            if (amount > 0n) actions.push({ type: 'sendCoin', coinType, amount, recipient: owner });
+            if (amount > 0n && coinTypesSpentBySender.has(coinType)) {
+                actions.push({ type: 'sendCoin', coinType, amount, recipient: owner });
+            }
         }
     }
 
@@ -100,6 +142,28 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
     }
     for (const [recipient, count] of nftCountByRecipient) {
         actions.push({ type: 'sendNfts', count, recipient });
+    }
+
+    const moveCalls =
+        transactionKind?.kind === 'ProgrammableTransaction'
+            ? transactionKind.transactions.flatMap((command) =>
+                  'MoveCall' in command &&
+                  !FRAMEWORK_PACKAGE_IDS.includes(normalizeIotaAddress(command.MoveCall.package))
+                      ? [command.MoveCall]
+                      : [],
+              )
+            : [];
+    if (moveCalls.length) {
+        const distinctCalls = new Set(
+            moveCalls.map((call) => `${call.package}::${call.module}::${call.function}`),
+        );
+        actions.push({
+            type: 'moveCall',
+            packageId: moveCalls[0].package,
+            functionName: moveCalls[0].function,
+            otherCallsCount: distinctCalls.size - 1,
+            coinChanges: actions.length ? [] : senderChanges,
+        });
     }
 
     return actions;
@@ -208,6 +272,35 @@ function ActionSummaryLine({ action }: { action: SummaryAction }): JSX.Element {
                     <NftCount count={action.count} />
                     <span>to</span>
                     <AddressLink address={action.recipient} copyText={action.recipient} />
+                </SummaryLine>
+            );
+        case 'moveCall':
+            return (
+                <SummaryLine>
+                    <span>Call</span>
+                    <span className="font-mono">{action.functionName}</span>
+                    <span>from</span>
+                    <ObjectLink objectId={action.packageId} copyText={action.packageId} />
+                    {action.otherCallsCount > 0 && (
+                        <span>
+                            and {action.otherCallsCount} more function
+                            {action.otherCallsCount > 1 ? 's' : ''}
+                        </span>
+                    )}
+                    {action.coinChanges.map(({ coinType, amount }) => (
+                        <CoinAmount
+                            key={coinType}
+                            coinType={coinType}
+                            amount={amount < 0n ? -amount : amount}
+                            outgoing={amount < 0n}
+                        />
+                    ))}
+                </SummaryLine>
+            );
+        case 'genesis':
+            return (
+                <SummaryLine>
+                    <span>Genesis</span>
                 </SummaryLine>
             );
     }
