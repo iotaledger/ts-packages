@@ -28,7 +28,7 @@ const ROARING_COOKIES = [12346, 12347];
 describe.each([
     ['recent', fixture.recent],
     ['end-of-epoch', fixture.endOfEpoch],
-] as const)('VersionedValidatorAggregatedSignature, %s mainnet checkpoint', (_, expected) => {
+] as const)('VersionedValidatorAggregatedSignature, %s checkpoint', (_, expected) => {
     const bytes = fromHex(expected.signatureBcs);
     const decoded = VersionedValidatorAggregatedSignature.parse(bytes);
     const signature = decoded.V1!;

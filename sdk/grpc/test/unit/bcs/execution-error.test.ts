@@ -10,15 +10,13 @@ import { ExecutionError } from '../../../src/bcs/execution-error.js';
 import { minimalBcs, readAbnfRule } from '../../abnf.js';
 
 /**
- * Effects of failed transactions, one per error variant seen on the network.
- * Effects start with the V1 tag and the Failure status, so the error starts
- * at byte 2 and is followed by the optional command index and the epoch.
+ * Effects of failed transactions, one per error variant. Effects start with the
+ * V1 tag and the Failure status, so the error starts at byte 2 and is followed
+ * by the optional command index and the epoch.
  */
 interface ExecutionErrorsFixture {
-    source: { network: string; capturedAt: string };
     failures: {
         tag: number;
-        checkpoint: string;
         transaction: string;
         epoch: string;
         effectsBcs: string;
@@ -82,7 +80,7 @@ describe.each(fixture.failures.map((failure) => [failure.tag, failure] as const)
     },
 );
 
-describe('ExecutionError, MoveAbort from testnet', () => {
+describe('ExecutionError, MoveAbort', () => {
     const failure = fixture.failures.find(({ tag }) => tag === 12)!;
     const error = ExecutionError.parse(fromHex(failure.effectsBcs).slice(ERROR_OFFSET));
 

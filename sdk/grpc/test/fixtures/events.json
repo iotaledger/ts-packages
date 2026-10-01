@@ -1,10 +1,5 @@
 {
-    "source": {
-        "network": "mainnet",
-        "checkpoint": "198107431",
-        "transaction": "2WVoLAax1oJyFU673yYcw8neLL4XZouKHtwtiw9GNYoT",
-        "capturedAt": "2026-10-01"
-    },
+    "transaction": "2WVoLAax1oJyFU673yYcw8neLL4XZouKHtwtiw9GNYoT",
     "eventsDigest": "DJME2D86ap24aqKJg1rqDw1cQJZtk84wWxjUN7yJUJdK",
     "events": [
         {

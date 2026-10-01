@@ -1,8 +1,4 @@
 {
-    "source": {
-        "network": "mainnet",
-        "capturedAt": "2026-10-01"
-    },
     "objects": [
         {
             "kind": "Package",

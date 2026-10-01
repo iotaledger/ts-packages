@@ -14,16 +14,13 @@ import { describe, expect, it } from 'vitest';
 import { UserSignature } from '../../../src/bcs/signatures.js';
 
 /**
- * One live programmable transaction per signature scheme seen on the network,
- * with the TransactionData BCS its signatures sign and the UserSignature BCS
- * of each. The Ed25519 one is sponsored, so it carries two signatures.
+ * One programmable transaction per signature scheme, with the TransactionData
+ * BCS its signatures sign and the UserSignature BCS of each. The Ed25519 one is
+ * sponsored, so it carries two signatures.
  */
 interface UserSignaturesFixture {
-    capturedAt: string;
     transactions: {
         flag: number;
-        network: string;
-        checkpoint: string;
         transaction: string;
         transactionBcs: string;
         signatures: string[];
@@ -65,7 +62,7 @@ describe.each(
     });
 
     describe.each(tx.signatures.map((signature, index) => [index, signature] as const))(
-        `${tx.network} transaction ${tx.transaction}, signature %i`,
+        `transaction ${tx.transaction}, signature %i`,
         (_, expected) => {
             const bytes = fromHex(expected);
             const signature = UserSignature.parse(bytes);
