@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { VersionedCheckpointSummary } from '../../../src/bcs/checkpoint.js';
 import { VersionedEvent } from '../../../src/bcs/event.js';
+import { VersionedValidatorAggregatedSignature } from '../../../src/bcs/signatures.js';
 import { kebabToCamel, readAbnfRule } from '../../abnf.js';
 
 /**
@@ -29,6 +30,9 @@ const summary = VersionedCheckpointSummary.parse(
 ).V1!;
 
 const endOfEpoch = summary.endOfEpochData!;
+const quorumSignature = VersionedValidatorAggregatedSignature.parse(
+    fromHex(checkpointsFixture.recent.signatureBcs),
+).V1!;
 
 function fieldNames(rule: string): (string | undefined)[] {
     return readAbnfRule(rule).map(({ name }) => name && kebabToCamel(name));
@@ -73,5 +77,9 @@ describe('BCS schemas match bcs-schema.abnf', () => {
         expect(readAbnfRule('checkpoint-commitment')).toEqual([
             { body: '%d00 digest', name: 'EcmhLiveObjectSet' },
         ]);
+    });
+
+    it('validator-aggregated-signature', () => {
+        expect(Object.keys(quorumSignature)).toEqual(fieldNames('validator-aggregated-signature'));
     });
 });
