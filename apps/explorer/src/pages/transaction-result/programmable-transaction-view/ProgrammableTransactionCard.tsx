@@ -63,7 +63,7 @@ export function ProgrammableTransactionCard({
                 <RawJsonContent rawData={{ inputs, transactions }} />
             ) : (
                 <div className="flex flex-col gap-lg pb-lg pt-xs">
-                    {view === 'Inputs + Commands' && (
+                    {view === 'Inputs + Commands' && inputs.length > 0 && (
                         <div className="flex flex-col gap-xs">
                             <Title title="Inputs" />
                             <div className="px-md--rs">

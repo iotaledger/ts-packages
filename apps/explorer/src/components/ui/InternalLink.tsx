@@ -87,7 +87,7 @@ function createInternalLink<T extends string>(
                                 ) : null}
                                 <Link
                                     className={clsx(
-                                        'min-w-0 text-iota-primary-30 dark:text-iota-primary-80',
+                                        'shrink-0 text-iota-primary-30 dark:text-iota-primary-80',
                                         className,
                                     )}
                                     variant="mono"
