@@ -3,7 +3,8 @@
 
 import { Network } from '@iota/iota-sdk/client';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
-import { RECOGNIZED_COIN_PACKAGES } from './coins.constants';
+import { CoinTrust } from '@iota/core/enums/coins.enums';
+import { COIN_REGISTRY } from './coins.constants';
 
 type FeatureEnabledByNetwork = Record<Network, boolean>;
 
@@ -130,5 +131,7 @@ export const RECOGNIZED_PACKAGES = [
     '0x0000000000000000000000000000000000000000000000000000000000000003',
     '0x0000000000000000000000000000000000000000000000000000000000000001',
     '0x000000000000000000000000000000000000000000000000000000000000107a',
-    ...RECOGNIZED_COIN_PACKAGES.map((coin) => coin.type.split('::')[0]),
+    ...COIN_REGISTRY.filter((coin) => coin.trust === CoinTrust.Recognized).map(
+        (coin) => coin.coinType.split('::')[0],
+    ),
 ];
