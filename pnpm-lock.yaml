@@ -1830,7 +1830,7 @@ importers:
         specifier: workspace:*
         version: link:../build-scripts
       '@noble/hashes':
-        specifier: ^1.8.0
+        specifier: ^1.4.0
         version: 1.8.0
       typescript:
         specifier: ^5.5.3
