@@ -1,8 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
-// Modifications Copyright (c) 2024 IOTA Stiftung
+// Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
 import { RecognizedBadge } from '@iota/apps-ui-icons';
-import { Badge, BadgeType, Panel } from '@iota/apps-ui-kit';
+import { Badge, BadgeType, Panel, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useCoinRegistryEntry } from '@iota/core';
 
 type CoinMetaProps = {
@@ -10,9 +10,16 @@ type CoinMetaProps = {
     description?: string;
     iconUrl?: string | undefined | null;
     coinType: string;
+    symbol?: string;
 };
 
-export function CoinMeta({ name, description, iconUrl, coinType }: CoinMetaProps): JSX.Element {
+export function CoinMeta({
+    name,
+    description,
+    iconUrl,
+    coinType,
+    symbol,
+}: CoinMetaProps): JSX.Element {
     const isRecognized = !!useCoinRegistryEntry(coinType);
     return (
         <div className="flex w-full flex-col gap-md md:flex-row">
@@ -35,6 +42,13 @@ export function CoinMeta({ name, description, iconUrl, coinType }: CoinMetaProps
                                 </span>
                                 {isRecognized && (
                                     <RecognizedBadge className="size-4 text-iota-primary-40" />
+                                )}
+                                {symbol && (
+                                    <Tooltip text="Coin Symbol" position={TooltipPosition.Top}>
+                                        <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                                            {symbol}
+                                        </span>
+                                    </Tooltip>
                                 )}
                                 <Badge type={BadgeType.Neutral} label="Coin" />
                             </div>

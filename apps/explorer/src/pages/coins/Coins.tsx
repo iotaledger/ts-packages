@@ -21,11 +21,11 @@ import {
     TableCard,
     TableSearch,
 } from '~/components';
-import { normalizeStructTag } from '@iota/iota-sdk/utils';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { useGetAllCoins, useGetRecognizedCoins } from '~/hooks';
+import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import { toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Symbol', 'Creator', 'Supply', 'Created', 'Decimals'];
 
@@ -59,6 +59,16 @@ function CoinsPageResult(): JSX.Element {
 
     const { data: recognizedCoins = [], isPending: isRecognizedCoinsPending } =
         useGetRecognizedCoins();
+    const { data: coinsCount } = useGetCoinsCount();
+
+    const filterCounts = useMemo(() => {
+        if (coinsCount === undefined || isRecognizedCoinsPending) return undefined;
+        return {
+            All: coinsCount,
+            Recognized: recognizedCoins.length,
+            'Not Recognized': coinsCount - recognizedCoins.length,
+        };
+    }, [coinsCount, isRecognizedCoinsPending, recognizedCoins.length]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
@@ -123,6 +133,7 @@ function CoinsPageResult(): JSX.Element {
                                     <CoinFilters
                                         selectedFilter={filter}
                                         onFilterChange={handleFilterChange}
+                                        counts={filterCounts}
                                     />
                                 </div>
                                 <InfoBox
@@ -187,15 +198,6 @@ function CoinsPageResult(): JSX.Element {
             }
         />
     );
-}
-
-function toCoinType(value: string): string | null {
-    if (value.split('::').length < 3) return null;
-    try {
-        return normalizeStructTag(value);
-    } catch {
-        return null;
-    }
 }
 
 export { CoinsPageResult };

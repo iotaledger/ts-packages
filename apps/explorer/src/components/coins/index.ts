@@ -3,3 +3,4 @@
 
 export * from './CoinFilters';
 export * from './CoinMeta';
+export * from './CoinStats';

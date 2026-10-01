@@ -3,7 +3,13 @@
 
 import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
-import { ImageIcon, ImageIconSize, useCoinRegistryEntry, useCopyToClipboard } from '@iota/core';
+import {
+    CoinFiatValue,
+    ImageIcon,
+    ImageIconSize,
+    useCoinRegistryEntry,
+    useCopyToClipboard,
+} from '@iota/core';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { AddressLink, CoinLink } from '~/components/ui';
 import { DateDisplay } from '~/components';
@@ -99,6 +105,7 @@ export function generateCoinsTableColumns({
     includeColumns,
     recognizedCoins,
 }: GenerateCoinsTableColumnsArgs = {}): ColumnDef<OnChainCoin>[] {
+    const recognizedTypes = new Set(recognizedCoins?.map(({ coinType }) => coinType));
     let columns: ColumnDef<OnChainCoin>[] = [
         {
             header: 'Coin',
@@ -156,14 +163,28 @@ export function generateCoinsTableColumns({
             },
             accessorKey: 'supply',
             cell({ row }) {
-                const { supply, decimals, symbol } = row.original;
+                const { supply, decimals, symbol, coinType } = row.original;
+                if (!supply) {
+                    return (
+                        <TableCellBase>
+                            <TableCellText>--</TableCellText>
+                        </TableCellBase>
+                    );
+                }
                 return (
                     <TableCellBase>
-                        <TableCellText>
-                            {supply
-                                ? `${formatBalance(supply, decimals, CoinFormat.Rounded)} ${symbol}`
-                                : '--'}
-                        </TableCellText>
+                        <div className="flex flex-col gap-0.5">
+                            <TableCellText>
+                                {`${formatBalance(supply, decimals, CoinFormat.Rounded)} ${symbol}`}
+                            </TableCellText>
+                            {recognizedTypes.has(coinType) && (
+                                <CoinFiatValue
+                                    amount={supply}
+                                    coinType={coinType}
+                                    withParentheses={false}
+                                />
+                            )}
+                        </div>
                     </TableCellBase>
                 );
             },
