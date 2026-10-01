@@ -78,20 +78,24 @@ function ValidatorDetails(): JSX.Element {
         limit: numberOfActiveValidators,
         order: 'descending',
     });
+    const activeValidatorData = systemStateData?.activeValidators.find(
+        ({ iotaAddress, stakingPoolId }) => iotaAddress === id || stakingPoolId === id,
+    );
+    const validatorAddress = activeValidatorData?.iotaAddress;
     const epochId = systemStateData?.epoch;
     const prevEpochEvent =
-        validatorEvents && id && epochId
-            ? (getValidatorMoveEvent(validatorEvents, id, epochId) as PrevEpochEventData | null)
+        validatorEvents && validatorAddress && epochId
+            ? (getValidatorMoveEvent(
+                  validatorEvents,
+                  validatorAddress,
+                  epochId,
+              ) as PrevEpochEventData | null)
             : null;
     const validatorRewards = prevEpochEvent?.pool_staking_reward
         ? Number(prevEpochEvent.pool_staking_reward)
         : null;
 
-    const activeValidatorData = systemStateData?.activeValidators.find(
-        ({ iotaAddress, stakingPoolId }) => iotaAddress === id || stakingPoolId === id,
-    );
-
-    const atRiskRemainingEpochs = getAtRiskRemainingEpochs(systemStateData, id);
+    const atRiskRemainingEpochs = getAtRiskRemainingEpochs(systemStateData, validatorAddress);
 
     const [formattedNextEpochStake, nextEpochStakeSymbol] = useFormatCoin({
         balance: Number(activeValidatorData?.nextEpochStake ?? 0),
@@ -152,7 +156,7 @@ function ValidatorDetails(): JSX.Element {
         );
     }
 
-    if (!activeValidatorData || !systemStateData || !validatorEvents || !id) {
+    if (!activeValidatorData || !validatorAddress || !systemStateData || !validatorEvents) {
         return (
             <PageLayout
                 content={
@@ -169,18 +173,18 @@ function ValidatorDetails(): JSX.Element {
             />
         );
     }
-    const { apy, isApyApproxZero } = rollingAverageApys?.[id] ?? { apy: null };
+    const { apy, isApyApproxZero } = rollingAverageApys?.[validatorAddress] ?? { apy: null };
 
     const nextEpochCommission = Number(activeValidatorData.nextEpochCommissionRate) / 100;
 
     const isEarningCurrentEpoch = systemStateData.committeeMembers.some(
-        (member) => member.iotaAddress === id,
+        (member) => member.iotaAddress === validatorAddress,
     );
     const validatorsSortedByStake = [...systemStateData.activeValidators].sort((a, b) =>
         BigInt(b.stakingPoolIotaBalance) > BigInt(a.stakingPoolIotaBalance) ? 1 : -1,
     );
     const topValidators = validatorsSortedByStake.slice(0, maxCommitteeSize ?? 0);
-    const isInTopStakers = topValidators.some((v) => v.iotaAddress === id);
+    const isInTopStakers = topValidators.some((v) => v.iotaAddress === validatorAddress);
     const isEarningNextEpoch =
         (atRiskRemainingEpochs === null || atRiskRemainingEpochs > 1) && isInTopStakers;
     return (
@@ -306,7 +310,10 @@ function ValidatorDetails(): JSX.Element {
                         />
                     )}
                     <ValidatorStatusLegend />
-                    <ValidatorStakingHistory validatorAddress={activeValidatorData.iotaAddress} />
+                    <ValidatorStakingHistory
+                        key={validatorAddress}
+                        validatorAddress={validatorAddress}
+                    />
                 </div>
             }
         />
