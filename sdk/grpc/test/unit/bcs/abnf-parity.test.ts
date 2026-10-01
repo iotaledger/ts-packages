@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fromHex } from '@iota/bcs';
 import { describe, expect, it } from 'vitest';
 
-import { VersionedCheckpointSummary } from '../../../src/bcs/checkpoint.js';
+import { CheckpointContents, VersionedCheckpointSummary } from '../../../src/bcs/checkpoint.js';
 import { VersionedEvent } from '../../../src/bcs/event.js';
 import { VersionedValidatorAggregatedSignature } from '../../../src/bcs/signatures.js';
 import { kebabToCamel, readAbnfRule } from '../../abnf.js';
@@ -30,6 +30,7 @@ const summary = VersionedCheckpointSummary.parse(
 ).V1!;
 
 const endOfEpoch = summary.endOfEpochData!;
+const contents = CheckpointContents.parse(fromHex(checkpointsFixture.recent.contentsBcs)).V1!;
 const quorumSignature = VersionedValidatorAggregatedSignature.parse(
     fromHex(checkpointsFixture.recent.signatureBcs),
 ).V1!;
@@ -85,5 +86,19 @@ describe('BCS schemas match bcs-schema.abnf', () => {
 
     it('user-signature is opaque bytes', () => {
         expect(readAbnfRule('user-signature')).toEqual([{ body: 'bytes', name: undefined }]);
+    });
+
+    it('checkpoint-contents carries its own V1 discriminant', () => {
+        expect(readAbnfRule('checkpoint-contents')).toEqual([
+            { body: '%d00 checkpoint-contents-v1', name: 'V1' },
+        ]);
+    });
+
+    it('checkpoint-contents-v1', () => {
+        expect(Object.keys(contents)).toEqual(fieldNames('checkpoint-contents-v1'));
+    });
+
+    it('execution-digests', () => {
+        expect(Object.keys(contents.digests[0])).toEqual(fieldNames('execution-digests'));
     });
 });

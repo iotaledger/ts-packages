@@ -3,6 +3,7 @@
 
 import { bcs } from '@iota/iota-sdk/bcs';
 
+import { UserSignature } from './signatures.js';
 import { versioned } from './versioned.js';
 
 const i64 = bcs.u64().transform({
@@ -42,3 +43,19 @@ export const CheckpointSummary = bcs.struct('CheckpointSummary', {
 export type CheckpointSummary = typeof CheckpointSummary.$inferType;
 
 export const VersionedCheckpointSummary = versioned('CheckpointSummary', CheckpointSummary);
+
+const ExecutionDigests = bcs.struct('ExecutionDigests', {
+    transaction: bcs.ObjectDigest,
+    effects: bcs.ObjectDigest,
+});
+
+const CheckpointContentsV1 = bcs.struct('CheckpointContentsV1', {
+    digests: bcs.vector(ExecutionDigests),
+    signatures: bcs.vector(bcs.vector(UserSignature)),
+});
+
+export const CheckpointContents = bcs.enum('CheckpointContents', {
+    V1: CheckpointContentsV1,
+});
+
+export type CheckpointContents = typeof CheckpointContents.$inferType;
