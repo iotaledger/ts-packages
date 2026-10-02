@@ -5,3 +5,4 @@ export * from './balanceChange.interfaces';
 export * from './transactions.interfaces';
 export * from './stakeEvent.interfaces';
 export * from './timelock.interfaces';
+export * from './coins.interfaces';

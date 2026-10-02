@@ -11,3 +11,4 @@ export * from './validators';
 export * from './schema';
 export * from './nestedResult';
 export * from './stakeObject';
+export * from './coins';
