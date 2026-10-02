@@ -5,7 +5,6 @@ import { useState } from 'react';
 import cn from 'clsx';
 
 export enum ImageIconSize {
-    XSmall = 'size-4',
     Small = 'size-5',
     Medium = 'size-8',
     Large = 'size-10',

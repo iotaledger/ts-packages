@@ -59,7 +59,6 @@ type SummaryAction =
           type: 'moveCall';
           packageId: string;
           functionName: string;
-          otherCallsCount: number;
           coinChanges: CoinAmountChange[];
       }
     | { type: 'genesis' };
@@ -129,23 +128,23 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
         if (!receivedBySender.length) actions.push({ type: 'unlockAssets' });
     }
 
-    if (getTransactionAction(transaction, sender) !== TransactionAction.Send) return actions;
-
-    for (const { owner, ownerType, changes } of owners) {
-        if (owner === sender || ownerType !== CoinOwnerType.Address) continue;
-        for (const { coinType, amount } of changes) {
-            if (amount > 0n && coinTypesSpentBySender.has(coinType)) {
-                actions.push({ type: 'sendCoin', coinType, amount, recipient: owner });
+    if (getTransactionAction(transaction, sender) === TransactionAction.Send) {
+        for (const { owner, ownerType, changes } of owners) {
+            if (owner === sender || ownerType !== CoinOwnerType.Address) continue;
+            for (const { coinType, amount } of changes) {
+                if (amount > 0n && coinTypesSpentBySender.has(coinType)) {
+                    actions.push({ type: 'sendCoin', coinType, amount, recipient: owner });
+                }
             }
         }
-    }
 
-    const nftCountByRecipient = new Map<string, number>();
-    for (const recipient of getSendRecipients(transaction, sender).objectRecipients) {
-        nftCountByRecipient.set(recipient, (nftCountByRecipient.get(recipient) ?? 0) + 1);
-    }
-    for (const [recipient, count] of nftCountByRecipient) {
-        actions.push({ type: 'sendNfts', count, recipient });
+        const nftCountByRecipient = new Map<string, number>();
+        for (const recipient of getSendRecipients(transaction, sender).objectRecipients) {
+            nftCountByRecipient.set(recipient, (nftCountByRecipient.get(recipient) ?? 0) + 1);
+        }
+        for (const [recipient, count] of nftCountByRecipient) {
+            actions.push({ type: 'sendNfts', count, recipient });
+        }
     }
 
     const moveCalls =
@@ -157,15 +156,14 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
                       : [],
               )
             : [];
-    if (moveCalls.length) {
-        const distinctCalls = new Set(
-            moveCalls.map((call) => `${call.package}::${call.module}::${call.function}`),
-        );
+    const distinctCalls = new Set(
+        moveCalls.map((call) => `${call.package}::${call.module}::${call.function}`),
+    );
+    if (distinctCalls.size === 1) {
         actions.push({
             type: 'moveCall',
             packageId: moveCalls[0].package,
             functionName: moveCalls[0].function,
-            otherCallsCount: distinctCalls.size - 1,
             coinChanges: actions.length ? [] : senderChanges,
         });
     }
@@ -197,7 +195,7 @@ export function TransactionActionSummary({
                     className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
                     onClick={() => setShowAll(!showAll)}
                 >
-                    {showAll ? 'Show less' : `Show all ${actions.length} actions`}
+                    {showAll ? 'Show Less' : `Show all ${actions.length} actions`}
                 </ButtonUnstyled>
             )}
         </div>
@@ -285,12 +283,6 @@ function ActionSummaryLine({ action }: { action: SummaryAction }): JSX.Element {
                     <span className="font-mono">{action.functionName}</span>
                     <span>from</span>
                     <ObjectLink objectId={action.packageId} copyText={action.packageId} />
-                    {action.otherCallsCount > 0 && (
-                        <span>
-                            and {action.otherCallsCount} more function
-                            {action.otherCallsCount > 1 ? 's' : ''}
-                        </span>
-                    )}
                     {action.coinChanges.map(({ coinType, amount }) => (
                         <CoinAmount
                             key={coinType}
@@ -335,6 +327,7 @@ function CoinAmount({
         balance: amount,
         coinType,
         format: CoinFormat.Full,
+        truncate: false,
     });
 
     return (

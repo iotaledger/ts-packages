@@ -25,6 +25,7 @@ interface CoinItemProps {
     clickableAction?: ReactNode;
     format?: CoinFormat;
     hideMask?: boolean;
+    truncate?: boolean;
 }
 
 export function CoinItem({
@@ -35,8 +36,14 @@ export function CoinItem({
     clickableAction,
     format,
     hideMask,
+    truncate = true,
 }: CoinItemProps): React.JSX.Element {
-    const [formatted, symbol, { data: coinMeta }] = useFormatCoin({ balance, coinType, format });
+    const [formatted, symbol, { data: coinMeta }] = useFormatCoin({
+        balance,
+        coinType,
+        format,
+        truncate,
+    });
     const isBalanceVisible = useBalanceVisible() || hideMask;
     const isIota = coinType === IOTA_TYPE_ARG;
 
@@ -50,6 +57,7 @@ export function CoinItem({
                 subtitle={symbol}
                 clickableAction={clickableAction}
                 icon={icon}
+                isTextTruncated={!truncate}
             />
             <CardAction
                 type={CardActionType.SupportingText}
