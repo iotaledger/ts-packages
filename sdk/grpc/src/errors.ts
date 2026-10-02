@@ -1,6 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { Code } from '@connectrpc/connect';
+import { ConnectError } from '@connectrpc/connect';
+
 export class IotaGrpcError extends Error {}
 
 /** The server responded with an error for this item. */
@@ -43,7 +46,10 @@ export class UnexpectedEndOfStreamError extends IotaGrpcError {
 
 /** Network or gRPC transport failure. The message comes from the failure itself. */
 export class TransportError extends IotaGrpcError {
-    constructor(detail: string) {
+    constructor(
+        readonly code: Code,
+        readonly detail: string,
+    ) {
         super(`grpc error: ${detail}`);
     }
 }
@@ -134,4 +140,13 @@ export class IncompleteStreamError extends CheckpointStreamError {
     constructor(readonly sequenceNumber: bigint) {
         super(`stream ended with incomplete data for checkpoint ${sequenceNumber}`);
     }
+}
+
+export function toIotaGrpcError(error: unknown): IotaGrpcError {
+    if (error instanceof IotaGrpcError) {
+        return error;
+    }
+
+    const connectError = ConnectError.from(error);
+    return new TransportError(connectError.code, connectError.rawMessage);
 }
