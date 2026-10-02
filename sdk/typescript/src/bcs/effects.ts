@@ -2,6 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { BcsType } from '@iota/bcs';
 import { bcs } from '@iota/bcs';
 
 import { Address, ObjectDigest, Owner } from './bcs.js';
@@ -45,12 +46,18 @@ const CommandArgumentError = bcs.enum('CommandArgumentError', {
     InvalidObjectByValue: null,
     InvalidObjectByMutRef: null,
     SharedObjectOperationNotAllowed: null,
+    InvalidArgumentArity: null,
 });
 
 const TypeArgumentError = bcs.enum('TypeArgumentError', {
     TypeNotFound: null,
     ConstraintNotSatisfied: null,
 });
+
+// `MoveAuthentication` nests an ExecutionFailureStatus. The annotation breaks the
+// type-level cycle, at the cost of typing the nested error as unknown.
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
+const NestedExecutionFailureStatus: BcsType<unknown, any> = bcs.lazy(() => ExecutionFailureStatus);
 
 const ExecutionFailureStatus = bcs.enum('ExecutionFailureStatus', {
     InsufficientGas: null,
@@ -118,6 +125,27 @@ const ExecutionFailureStatus = bcs.enum('ExecutionFailureStatus', {
     }),
     CoinTypeGlobalPause: bcs.struct('CoinTypeGlobalPause', { coinType: bcs.string() }),
     ExecutionCancelledDueToRandomnessUnavailable: null,
+    ExecutionCancelledDueToSharedObjectCongestionV2: bcs.struct(
+        'ExecutionCancelledDueToSharedObjectCongestionV2',
+        {
+            congestedObjects: bcs.vector(Address),
+            suggestedGasPrice: bcs.u64(),
+        },
+    ),
+    InvalidLinkage: null,
+    MoveAuthentication: bcs.struct('MoveAuthentication', { error: NestedExecutionFailureStatus }),
+    ExecutionCancelledDueToExecutionWorkerCongestion: bcs.struct(
+        'ExecutionCancelledDueToExecutionWorkerCongestion',
+        { suggestedGasPrice: bcs.u64() },
+    ),
+    MoveVectorElemTooBig: bcs.struct('MoveVectorElemTooBig', {
+        valueSize: bcs.u64(),
+        maxScaledSize: bcs.u64(),
+    }),
+    MoveRawValueTooBig: bcs.struct('MoveRawValueTooBig', {
+        valueSize: bcs.u64(),
+        maxScaledSize: bcs.u64(),
+    }),
 });
 
 const ExecutionStatus = bcs.enum('ExecutionStatus', {
@@ -128,7 +156,7 @@ const ExecutionStatus = bcs.enum('ExecutionStatus', {
     }),
 });
 
-const GasCostSummary = bcs.struct('GasCostSummary', {
+export const GasCostSummary = bcs.struct('GasCostSummary', {
     computationCost: bcs.u64(),
     computationCostBurned: bcs.u64(),
     storageCost: bcs.u64(),
