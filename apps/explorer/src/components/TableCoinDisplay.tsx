@@ -10,6 +10,7 @@ import {
     useFormatCoin,
     useRecognizedPackages,
 } from '@iota/core';
+import { CoinFormat } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 
 interface TableCoinDisplayProps {
@@ -17,12 +18,14 @@ interface TableCoinDisplayProps {
     coinType: string;
     showSign?: boolean;
     showTrustedBadge?: boolean;
+    truncate?: boolean;
 }
 export function TableCoinDisplay({
     amount,
     coinType,
     showSign = false,
     showTrustedBadge = false,
+    truncate,
 }: TableCoinDisplayProps) {
     const isPositive = BigInt(amount) > BigInt(0);
 
@@ -33,6 +36,8 @@ export function TableCoinDisplay({
         balance: amount,
         coinType,
         showSign,
+        format: CoinFormat.Full,
+        truncate,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';

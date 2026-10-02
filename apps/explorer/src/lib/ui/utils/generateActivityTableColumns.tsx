@@ -176,9 +176,7 @@ export function generateActivityTableColumns(
 
                 return (
                     <TableCellBase>
-                        <TableCellText>
-                            <TableCoinChanges changes={balanceChanges} />
-                        </TableCellText>
+                        <TableCoinChanges changes={balanceChanges} />
                     </TableCellBase>
                 );
             },
