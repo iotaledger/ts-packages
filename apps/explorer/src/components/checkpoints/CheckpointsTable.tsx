@@ -6,7 +6,7 @@ import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/ap
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { Warning } from '@iota/apps-ui-icons';
 import { useMemo, useState } from 'react';
-import { PlaceholderTable, TableCard } from '~/components/ui';
+import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { DEFAULT_CHECKPOINTS_LIMIT, useGetCheckpoints } from '~/hooks/useGetCheckpoints';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateCheckpointsTableColumns } from '~/lib/ui';
@@ -27,6 +27,7 @@ export function CheckpointsTable({
     initialCursor,
     maxCursor,
 }: CheckpointsTableProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(initialLimit);
 
     const countQuery = useIotaClientQuery('getLatestCheckpointSequenceNumber');
@@ -70,6 +71,9 @@ export function CheckpointsTable({
                 <TableCard
                     data={data.data}
                     columns={tableColumns}
+                    onRowClick={({ digest }) =>
+                        navigateWithQuery(`/checkpoint/${encodeURI(digest)}`, {})
+                    }
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
                     viewAll={disablePagination ? '/recent?tab=checkpoints' : undefined}
                     paginationOptions={

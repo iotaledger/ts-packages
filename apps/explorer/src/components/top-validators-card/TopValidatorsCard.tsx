@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Link, PlaceholderTable, TableCard } from '~/components/ui';
+import { Link, PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import {
     Button,
@@ -36,6 +36,7 @@ type TopValidatorsCardProps = {
 };
 
 export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: maxCommitteeSize } = useMaxCommitteeSize();
@@ -116,6 +117,9 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
                                 defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
                                 data={activeValidators}
                                 columns={tableColumns}
+                                onRowClick={({ iotaAddress }) =>
+                                    navigateWithQuery(`/validator/${encodeURI(iotaAddress)}`, {})
+                                }
                                 rowLimit={rowCount}
                             />
                         </ErrorBoundary>

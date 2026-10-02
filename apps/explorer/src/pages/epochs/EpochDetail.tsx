@@ -20,7 +20,7 @@ import {
     SegmentedButtonType,
 } from '@iota/apps-ui-kit';
 import { CheckpointsTable, PageLayout } from '~/components';
-import { LinkWithQuery, TableCard } from '~/components/ui';
+import { LinkWithQuery, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { EpochStats, EpochStatsGrid } from './stats/EpochStats';
 import { ValidatorStatus } from './stats/ValidatorStatus';
@@ -41,6 +41,7 @@ enum EpochTabs {
 }
 
 export function EpochDetail() {
+    const navigateWithQuery = useNavigateWithQuery();
     const [activeTabId, setActiveTabId] = useState(EpochTabs.Checkpoints);
     const { id } = useParams();
     const enhancedRpc = useEnhancedRpcClient();
@@ -243,6 +244,12 @@ export function EpochDetail() {
                                     defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
                                     data={committeeMembers}
                                     columns={tableColumns}
+                                    onRowClick={({ iotaAddress }) =>
+                                        navigateWithQuery(
+                                            `/validator/${encodeURI(iotaAddress)}`,
+                                            {},
+                                        )
+                                    }
                                 />
                             ) : null}
                         </div>
