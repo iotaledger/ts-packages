@@ -25,6 +25,7 @@ interface CoinItemProps {
     clickableAction?: ReactNode;
     format?: CoinFormat;
     hideMask?: boolean;
+    truncate?: boolean;
 }
 
 export function CoinItem({
@@ -35,23 +36,28 @@ export function CoinItem({
     clickableAction,
     format,
     hideMask,
+    truncate = true,
 }: CoinItemProps): React.JSX.Element {
-    const [formatted, symbol, { data: coinMeta }] = useFormatCoin({ balance, coinType, format });
+    const [formatted, symbol, { data: coinMeta }] = useFormatCoin({
+        balance,
+        coinType,
+        format,
+        truncate,
+    });
     const isBalanceVisible = useBalanceVisible() || hideMask;
     const isIota = coinType === IOTA_TYPE_ARG;
 
     return (
         <Card type={CardType.Default} onClick={onClick}>
             <CardImage type={ImageType.BgTransparent}>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-shader-neutral-light-8 text-iota-neutral-10 dark:text-iota-neutral-92">
-                    <CoinIcon coinType={coinType} rounded size={ImageIconSize.Small} />
-                </div>
+                <CoinIcon coinType={coinType} size={ImageIconSize.Large} hasBorder />
             </CardImage>
             <CardBody
                 title={isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol}
                 subtitle={symbol}
                 clickableAction={clickableAction}
                 icon={icon}
+                isTextTruncated={!truncate}
             />
             <CardAction
                 type={CardActionType.SupportingText}

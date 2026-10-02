@@ -5,8 +5,9 @@
 import type { EpochMetrics } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
-import { CheckpointSequenceLink, DateDisplay, EpochLink, StakeColumn } from '~/components';
+import { CheckpointSequenceLink, DateDisplay, EpochLink, TableCoinDisplay } from '~/components';
 import { getEpochStorageFundFlow } from '~/lib/utils';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 /**
  * Generate table columns renderers for the epochs data.
@@ -55,7 +56,10 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                         {isCurrentEpoch || !totalStakeRewardsDistributed ? (
                             <TableCellText>--</TableCellText>
                         ) : (
-                            <StakeColumn stake={totalStakeRewardsDistributed} />
+                            <TableCoinDisplay
+                                amount={totalStakeRewardsDistributed}
+                                coinType={IOTA_TYPE_ARG}
+                            />
                         )}
                     </TableCellBase>
                 );
@@ -88,7 +92,7 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                         {storageNetInflow === null ? (
                             <TableCellText>--</TableCellText>
                         ) : (
-                            <StakeColumn stake={storageNetInflow} />
+                            <TableCoinDisplay amount={storageNetInflow} coinType={IOTA_TYPE_ARG} />
                         )}
                     </TableCellBase>
                 );

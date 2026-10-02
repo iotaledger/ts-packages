@@ -32,3 +32,5 @@ export * from './GraphTooltipContent';
 export * from './IotaTokenCard';
 export * from './TransactionsCardGraph';
 export * from './ThemedIotaLogo';
+export * from './TableCoinDisplay';
+export * from './TableCoinChanges';

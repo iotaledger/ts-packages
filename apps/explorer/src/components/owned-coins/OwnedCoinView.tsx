@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import { type CoinBalanceVerified, type SortField, type SortOrder } from './OwnedCoins';
 import { CoinsPanel } from './OwnedCoinsPanel';
-import { ArrowUp } from '@iota/apps-ui-icons';
+import { ArrowUp, RecognizedBadge } from '@iota/apps-ui-icons';
 
 type OwnedCoinViewProps = {
     coin: CoinBalanceVerified;
@@ -29,7 +29,16 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     'flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
                 )}
             >
-                <CoinItem coinType={coin.coinType} balance={BigInt(coin.totalBalance)} />
+                <CoinItem
+                    coinType={coin.coinType}
+                    balance={BigInt(coin.totalBalance)}
+                    truncate={false}
+                    icon={
+                        coin.isRecognized && (
+                            <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
+                        )
+                    }
+                />
 
                 <div
                     className={clsx(

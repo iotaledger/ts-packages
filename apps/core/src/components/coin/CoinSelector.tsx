@@ -10,11 +10,7 @@ import { formatFiat } from '../../utils';
 import { CoinIcon } from './CoinIcon';
 import { ImageIconSize } from '../icon';
 
-interface CoinSelectorBaseProps {
-    hasCoinWrapper?: boolean;
-}
-
-interface CoinSelectorProps extends CoinSelectorBaseProps {
+interface CoinSelectorProps {
     activeCoinType: string;
     coins: CoinBalance[];
     onClick: (coinType: string) => void;
@@ -24,14 +20,13 @@ export function CoinSelector({
     activeCoinType = IOTA_TYPE_ARG,
     coins,
     onClick,
-    hasCoinWrapper,
 }: CoinSelectorProps) {
     const activeCoin = coins?.find(({ coinType }) => coinType === activeCoinType) ?? coins?.[0];
     const initialValue = activeCoin?.coinType;
     const coinsOptions: SelectOption[] =
         coins?.map((coin) => ({
             id: coin.coinType,
-            renderLabel: () => <CoinSelectOption hasCoinWrapper={hasCoinWrapper} coin={coin} />,
+            renderLabel: () => <CoinSelectOption coin={coin} />,
         })) || [];
 
     return (
@@ -46,14 +41,11 @@ export function CoinSelector({
     );
 }
 
-interface CoinSelectOptionProps extends CoinSelectorBaseProps {
+interface CoinSelectOptionProps {
     coin: CoinBalance;
 }
 
-function CoinSelectOption({
-    coin: { coinType, totalBalance },
-    hasCoinWrapper,
-}: CoinSelectOptionProps) {
+function CoinSelectOption({ coin: { coinType, totalBalance } }: CoinSelectOptionProps) {
     const [formatted, symbol, { data: coinMeta }] = useFormatCoin({
         balance: totalBalance,
         coinType,
@@ -67,14 +59,7 @@ function CoinSelectOption({
     return (
         <div className="flex w-full flex-row items-center justify-between">
             <div className="flex flex-row items-center gap-x-md">
-                <div className="flex h-6 w-6 items-center justify-center">
-                    <CoinIcon
-                        size={ImageIconSize.Small}
-                        coinType={coinType}
-                        rounded
-                        hasCoinWrapper={hasCoinWrapper}
-                    />
-                </div>
+                <CoinIcon size={ImageIconSize.Small} coinType={coinType} />
                 <span className="text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
                     {isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol}
                 </span>
