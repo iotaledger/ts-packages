@@ -114,6 +114,10 @@ export class IotaGrpcClient {
         return this.ledgerClient;
     }
 
+    /**
+     * Checks that the node is serving recent checkpoints. Throws a `TransportError` with code
+     * `UNAVAILABLE` when its latest checkpoint is older than `thresholdMs` (server default: 5s).
+     */
     async getHealth(options?: {
         thresholdMs?: bigint;
         signal?: AbortSignal;
@@ -128,6 +132,7 @@ export class IotaGrpcClient {
         );
     }
 
+    /** The node's chain, epoch, checkpoint heights and server version. */
     async getServiceInfo(options?: {
         readMask?: ServiceInfoField | readonly ServiceInfoField[];
         signal?: AbortSignal;
@@ -142,6 +147,7 @@ export class IotaGrpcClient {
         );
     }
 
+    /** The given epoch, or the current one when `epoch` is omitted. */
     async getEpoch(options?: {
         epoch?: bigint;
         readMask?: EpochField | readonly EpochField[];
@@ -164,6 +170,7 @@ export class IotaGrpcClient {
         return { body: body.epoch, metadata };
     }
 
+    /** The current epoch's reference gas price, in NANOS. */
     async getReferenceGasPrice(options?: { signal?: AbortSignal }): Promise<WithMetadata<bigint>> {
         const request = {
             readMask: toReadMask([EpochField.REFERENCE_GAS_PRICE], []),
@@ -183,6 +190,11 @@ export class IotaGrpcClient {
         return { body: referenceGasPrice, metadata };
     }
 
+    /**
+     * One result per ref, in request order. A missing object (never existed, deleted or pruned)
+     * fails only its own slot with `NOT_FOUND`. Throws when the node answers with a different
+     * count or a different object at some position.
+     */
     async getObjects(
         refs: readonly (string | { objectId: string; version?: bigint })[],
         options?: { readMask?: ObjectField | readonly ObjectField[]; signal?: AbortSignal },
@@ -216,6 +228,13 @@ export class IotaGrpcClient {
         return { body, metadata };
     }
 
+    /**
+     * One result per digest, in request order. A transaction the node does not have fails only
+     * its own slot with `NOT_FOUND`. Masks that include input or output objects, balance changes
+     * or object changes fail a slot with `FAILED_PRECONDITION` once those objects are pruned.
+     * Throws when the node answers with a different count or a different transaction at some
+     * position.
+     */
     async getTransactions(
         digests: readonly string[],
         options?: {
