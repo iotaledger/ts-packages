@@ -8,17 +8,27 @@ import { describe, expect, it } from 'vitest';
 
 import {
     DEFAULT_READ_MASKS,
+    EmptyRequestError,
     EpochField,
     IotaGrpcClient,
     normalizeReadMask,
+    ObjectField,
     ProtoConversionError,
+    ServerError,
     ServiceInfoField,
+    TransactionField,
     TransportError,
+    UnexpectedEndOfStreamError,
+    UnexpectedObjectError,
+    UnexpectedResultCountError,
+    UnexpectedTransactionError,
 } from '../../src/index.js';
 import type {
     GetEpochRequest,
     GetHealthRequest,
+    GetObjectsRequest,
     GetServiceInfoRequest,
+    GetTransactionsRequest,
 } from '../../src/proto/iota/grpc/v1/ledger_service_pb.js';
 import { LedgerService } from '../../src/proto/iota/grpc/v1/ledger_service_pb.js';
 
@@ -38,8 +48,12 @@ const METADATA = {
     checkpointHeight: 1000n,
 };
 
-function clientFor(ledger: Partial<ServiceImpl<typeof LedgerService>>) {
+function clientFor(
+    ledger: Partial<ServiceImpl<typeof LedgerService>>,
+    options: { maxMessageSizeBytes?: number } = {},
+) {
     return new IotaGrpcClient({
+        ...options,
         transport: createRouterTransport(({ service }) => service(LedgerService, ledger)),
     });
 }
@@ -234,5 +248,327 @@ describe('call errors', () => {
 
         expect(error).toBeInstanceOf(TransportError);
         expect(error).toMatchObject({ code: Code.Unimplemented });
+    });
+});
+
+/** A 32-byte value whose last byte is `last`, like the ID `0x…<last>` or a digest. */
+function bytes32(last: number): Uint8Array {
+    const bytes = new Uint8Array(32);
+    bytes[31] = last;
+    return bytes;
+}
+
+function objectResult(objectId: Uint8Array, version: bigint) {
+    return {
+        result: {
+            case: 'object' as const,
+            value: { reference: { objectId: { objectId }, version } },
+        },
+    };
+}
+
+function notFound(message: string) {
+    return { result: { case: 'error' as const, value: { code: Code.NotFound, message } } };
+}
+
+function transactionResult(digest: Uint8Array) {
+    return {
+        result: {
+            case: 'executedTransaction' as const,
+            value: { transaction: { digest: { digest } } },
+        },
+    };
+}
+
+describe('getObjects', () => {
+    it('rejects an empty request without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            async *getObjects() {
+                called = true;
+                yield* [];
+            },
+        });
+
+        await expect(client.getObjects([])).rejects.toThrow(EmptyRequestError);
+        expect(called).toBe(false);
+    });
+
+    it('rejects a malformed object ID without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            async *getObjects() {
+                called = true;
+                yield* [];
+            },
+        });
+
+        await expect(client.getObjects(['0x2', 'not-an-id'])).rejects.toThrow(TypeError);
+        expect(called).toBe(false);
+    });
+
+    it('sends padded 32-byte IDs, versions, the default read mask and the message size', async () => {
+        const requests: GetObjectsRequest[] = [];
+        const client = clientFor(
+            {
+                async *getObjects(request) {
+                    requests.push(request);
+                    yield {
+                        hasNext: false,
+                        objects: [objectResult(bytes32(2), 1n), objectResult(bytes32(5), 7n)],
+                    };
+                },
+            },
+            { maxMessageSizeBytes: 8 * 1024 * 1024 },
+        );
+
+        await client.getObjects(['0x2', { objectId: '0x5', version: 7n }]);
+
+        const [request] = requests;
+        expect(
+            request.requests?.requests.map(({ objectRef }) => ({
+                objectId: objectRef?.objectId?.objectId,
+                version: objectRef?.version,
+            })),
+        ).toEqual([
+            { objectId: bytes32(2), version: undefined },
+            { objectId: bytes32(5), version: 7n },
+        ]);
+        expect(request.readMask?.paths).toEqual(normalizeReadMask(DEFAULT_READ_MASKS.getObjects));
+        expect(request.maxMessageSizeBytes).toBe(8 * 1024 * 1024);
+    });
+
+    it('sends the given read mask', async () => {
+        const requests: GetObjectsRequest[] = [];
+        const client = clientFor({
+            async *getObjects(request) {
+                requests.push(request);
+                yield { hasNext: false, objects: [objectResult(bytes32(2), 1n)] };
+            },
+        });
+
+        await client.getObjects(['0x2'], { readMask: ObjectField.REFERENCE_OBJECT_ID });
+
+        expect(requests[0].readMask?.paths).toEqual(['reference.object_id']);
+    });
+
+    it('concatenates results across messages, in request order, with the metadata', async () => {
+        const client = clientFor({
+            async *getObjects(_request, context) {
+                sendMetadata(context);
+                yield { hasNext: true, objects: [objectResult(bytes32(1), 10n)] };
+                yield {
+                    hasNext: false,
+                    objects: [objectResult(bytes32(2), 20n), objectResult(bytes32(3), 30n)],
+                };
+            },
+        });
+
+        const { body, metadata } = await client.getObjects(['0x1', '0x2', '0x3']);
+
+        expect(body.map((result) => result.ok && result.value.reference?.version)).toEqual([
+            10n,
+            20n,
+            30n,
+        ]);
+        expect(metadata).toMatchObject(METADATA);
+    });
+
+    it('keeps a missing object to its own slot', async () => {
+        const client = clientFor({
+            async *getObjects() {
+                yield {
+                    hasNext: false,
+                    objects: [
+                        objectResult(bytes32(1), 10n),
+                        notFound('object 0x2 not found'),
+                        objectResult(bytes32(3), 30n),
+                    ],
+                };
+            },
+        });
+
+        const { body } = await client.getObjects(['0x1', '0x2', '0x3']);
+
+        expect(body.map((result) => result.ok)).toEqual([true, false, true]);
+        const [, missing] = body;
+        if (missing.ok) return;
+        expect(missing.error).toBeInstanceOf(ServerError);
+        expect(missing.error).toMatchObject({ code: Code.NotFound });
+    });
+
+    it('rejects a different number of results than requested', async () => {
+        const client = clientFor({
+            async *getObjects() {
+                yield { hasNext: false, objects: [objectResult(bytes32(1), 10n)] };
+            },
+        });
+
+        await expect(client.getObjects(['0x1', '0x2'])).rejects.toThrow(
+            new UnexpectedResultCountError(2, 1),
+        );
+    });
+
+    it('rejects an answer for a different object than requested', async () => {
+        const client = clientFor({
+            async *getObjects() {
+                yield {
+                    hasNext: false,
+                    objects: [objectResult(bytes32(1), 10n), objectResult(bytes32(9), 20n)],
+                };
+            },
+        });
+
+        await expect(client.getObjects(['0x1', '0x2'])).rejects.toThrow(UnexpectedObjectError);
+    });
+
+    it('rejects a stream cut off while more results were promised', async () => {
+        const client = clientFor({
+            async *getObjects() {
+                yield { hasNext: true, objects: [objectResult(bytes32(1), 10n)] };
+            },
+        });
+
+        await expect(client.getObjects(['0x1', '0x2'])).rejects.toThrow(UnexpectedEndOfStreamError);
+    });
+
+    it('maps a failure part-way through the stream to a TransportError', async () => {
+        const client = clientFor({
+            async *getObjects() {
+                yield { hasNext: true, objects: [objectResult(bytes32(1), 10n)] };
+                throw new ConnectError('node is shutting down', Code.Unavailable);
+            },
+        });
+
+        const error = await client.getObjects(['0x1', '0x2']).catch((error: unknown) => error);
+
+        expect(error).toBeInstanceOf(TransportError);
+        expect(error).toMatchObject({ code: Code.Unavailable, detail: 'node is shutting down' });
+    });
+});
+
+describe('getTransactions', () => {
+    it('rejects an empty request without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            async *getTransactions() {
+                called = true;
+                yield* [];
+            },
+        });
+
+        await expect(client.getTransactions([])).rejects.toThrow(EmptyRequestError);
+        expect(called).toBe(false);
+    });
+
+    it('rejects a malformed digest without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            async *getTransactions() {
+                called = true;
+                yield* [];
+            },
+        });
+
+        await expect(client.getTransactions(['0OIl'])).rejects.toThrow(TypeError);
+        await expect(client.getTransactions([toBase58(new Uint8Array(31))])).rejects.toThrow(
+            TypeError,
+        );
+        expect(called).toBe(false);
+    });
+
+    it('sends the digests, the default read mask and the message size', async () => {
+        const requests: GetTransactionsRequest[] = [];
+        const client = clientFor({
+            async *getTransactions(request) {
+                requests.push(request);
+                yield {
+                    hasNext: false,
+                    transactionResults: [
+                        transactionResult(bytes32(1)),
+                        transactionResult(bytes32(2)),
+                    ],
+                };
+            },
+        });
+
+        await client.getTransactions([toBase58(bytes32(1)), toBase58(bytes32(2))]);
+
+        const [request] = requests;
+        expect(request.requests?.requests.map(({ digest }) => digest?.digest)).toEqual([
+            bytes32(1),
+            bytes32(2),
+        ]);
+        expect(request.readMask?.paths).toEqual(
+            normalizeReadMask(DEFAULT_READ_MASKS.getTransactions),
+        );
+        expect(request.maxMessageSizeBytes).toBe(client.maxMessageSizeBytes);
+    });
+
+    it('sends the given read mask', async () => {
+        const requests: GetTransactionsRequest[] = [];
+        const client = clientFor({
+            async *getTransactions(request) {
+                requests.push(request);
+                yield { hasNext: false, transactionResults: [transactionResult(bytes32(1))] };
+            },
+        });
+
+        await client.getTransactions([toBase58(bytes32(1))], {
+            readMask: [TransactionField.EFFECTS, TransactionField.TRANSACTION_DIGEST],
+        });
+
+        expect(requests[0].readMask?.paths).toEqual(['effects', 'transaction.digest']);
+    });
+
+    it('concatenates results across messages, keeping a missing one to its slot', async () => {
+        const client = clientFor({
+            async *getTransactions(_request, context) {
+                sendMetadata(context);
+                yield { hasNext: true, transactionResults: [transactionResult(bytes32(1))] };
+                yield {
+                    hasNext: false,
+                    transactionResults: [notFound('transaction not found')],
+                };
+            },
+        });
+
+        const { body, metadata } = await client.getTransactions([
+            toBase58(bytes32(1)),
+            toBase58(bytes32(2)),
+        ]);
+
+        expect(body.map((result) => result.ok)).toEqual([true, false]);
+        expect(metadata).toMatchObject(METADATA);
+    });
+
+    it('rejects a different number of results than requested', async () => {
+        const client = clientFor({
+            async *getTransactions() {
+                yield {
+                    hasNext: false,
+                    transactionResults: [
+                        transactionResult(bytes32(1)),
+                        transactionResult(bytes32(2)),
+                    ],
+                };
+            },
+        });
+
+        await expect(client.getTransactions([toBase58(bytes32(1))])).rejects.toThrow(
+            new UnexpectedResultCountError(1, 2),
+        );
+    });
+
+    it('rejects an answer for a different transaction than requested', async () => {
+        const client = clientFor({
+            async *getTransactions() {
+                yield { hasNext: false, transactionResults: [transactionResult(bytes32(9))] };
+            },
+        });
+
+        await expect(client.getTransactions([toBase58(bytes32(1))])).rejects.toThrow(
+            UnexpectedTransactionError,
+        );
     });
 });

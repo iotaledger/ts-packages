@@ -3,8 +3,10 @@
 
 import type { CallOptions, Client, Transport } from '@connectrpc/connect';
 import { createClient } from '@connectrpc/connect';
+import { fromBase58, fromHex } from '@iota/bcs';
+import { isValidIotaObjectId, normalizeIotaObjectId } from '@iota/iota-sdk/utils';
 
-import { ProtoConversionError, toIotaGrpcError } from './errors.js';
+import { EmptyRequestError, ProtoConversionError, toIotaGrpcError } from './errors.js';
 import type { ResponseMetadata } from './metadata.js';
 import { parseResponseMetadata } from './metadata.js';
 import type { Epoch } from './proto/iota/grpc/v1/epoch_pb.js';
@@ -13,9 +15,19 @@ import type {
     GetServiceInfoResponse,
 } from './proto/iota/grpc/v1/ledger_service_pb.js';
 import { LedgerService } from './proto/iota/grpc/v1/ledger_service_pb.js';
-import type { ServiceInfoField } from './read-masks.js';
+import type { Object$ } from './proto/iota/grpc/v1/object_pb.js';
+import type { ExecutedTransaction } from './proto/iota/grpc/v1/transaction_pb.js';
+import type { ObjectField, ServiceInfoField, TransactionField } from './read-masks.js';
 import { DEFAULT_READ_MASKS, EpochField, toReadMask } from './read-masks.js';
-import type { WithMetadata } from './results.js';
+import {
+    checkObjectIdentity,
+    checkResultCount,
+    checkTransactionIdentity,
+    collectStream,
+    extractObjects,
+    extractTransactions,
+} from './reassembly/batch.js';
+import type { ItemResult, WithMetadata } from './results.js';
 import { createGrpcNodeTransport } from './transport.js';
 import type { GrpcNetwork } from './transport.js';
 
@@ -26,7 +38,7 @@ export const MAX_MESSAGE_SIZE_BYTES = 128 * 1024 * 1024;
 
 /** Same shape as `IotaClientOptions` in the main SDK. */
 export type IotaGrpcClientOptions = NetworkOrUrlOrTransport & {
-    /** Above this the server splits a response. Not sent yet: no method can be chunked until phase 1. */
+    /** Sent with every batched or streamed read: above this size the server splits a response. */
     maxMessageSizeBytes?: number;
 };
 
@@ -93,8 +105,7 @@ export class IotaGrpcClient {
 
     /**
      * Raw generated client for the node's LedgerService. Not public: it hands
-     * out frame streams, and reassembly must not be skippable. Phase 1 wraps
-     * these and exposes the methods flat on the client.
+     * out frame streams, and reassembly must not be skippable.
      *
      * Built on first use, so services you never touch are never built.
      */
@@ -172,6 +183,70 @@ export class IotaGrpcClient {
         return { body: referenceGasPrice, metadata };
     }
 
+    async getObjects(
+        refs: readonly (string | { objectId: string; version?: bigint })[],
+        options?: { readMask?: ObjectField | readonly ObjectField[]; signal?: AbortSignal },
+    ): Promise<WithMetadata<ItemResult<Object$>[]>> {
+        if (refs.length === 0) {
+            throw new EmptyRequestError();
+        }
+
+        const requested = refs.map((ref) => (typeof ref === 'string' ? { objectId: ref } : ref));
+        const ids = requested.map(({ objectId }) => objectIdBytes(objectId));
+
+        const request = {
+            requests: {
+                requests: requested.map(({ version }, i) => ({
+                    objectRef: { objectId: { objectId: ids[i] }, version },
+                })),
+            },
+            readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getObjects),
+            maxMessageSizeBytes: this.maxMessageSizeBytes,
+        };
+
+        const { body, metadata } = await this.collect(
+            (callOptions) => this.ledger.getObjects(request, callOptions),
+            extractObjects,
+            options?.signal,
+        );
+
+        checkResultCount(body, ids.length);
+        checkObjectIdentity(body, ids);
+
+        return { body, metadata };
+    }
+
+    async getTransactions(
+        digests: readonly string[],
+        options?: {
+            readMask?: TransactionField | readonly TransactionField[];
+            signal?: AbortSignal;
+        },
+    ): Promise<WithMetadata<ItemResult<ExecutedTransaction>[]>> {
+        if (digests.length === 0) {
+            throw new EmptyRequestError();
+        }
+
+        const digestsByteArrays = digests.map(digestBytes);
+
+        const request = {
+            requests: { requests: digestsByteArrays.map((digest) => ({ digest: { digest } })) },
+            readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getTransactions),
+            maxMessageSizeBytes: this.maxMessageSizeBytes,
+        };
+
+        const { body, metadata } = await this.collect(
+            (callOptions) => this.ledger.getTransactions(request, callOptions),
+            extractTransactions,
+            options?.signal,
+        );
+
+        checkResultCount(body, digests.length);
+        checkTransactionIdentity(body, digestsByteArrays);
+
+        return { body, metadata };
+    }
+
     private async unary<T>(
         call: (options: CallOptions) => Promise<T>,
         signal?: AbortSignal,
@@ -187,4 +262,45 @@ export class IotaGrpcClient {
             throw toIotaGrpcError(error);
         }
     }
+
+    private async collect<M, I>(
+        call: (options: CallOptions) => AsyncIterable<M>,
+        extract: (message: M) => { hasNext: boolean; items: I[] },
+        signal?: AbortSignal,
+    ): Promise<WithMetadata<I[]>> {
+        let metadata: ResponseMetadata = {};
+        try {
+            const body = await collectStream(
+                call({
+                    signal,
+                    onHeader: (headers) => (metadata = parseResponseMetadata(headers)),
+                }),
+                extract,
+            );
+            return { body, metadata };
+        } catch (error) {
+            throw toIotaGrpcError(error);
+        }
+    }
+}
+
+function objectIdBytes(objectId: string): Uint8Array {
+    const normalized = normalizeIotaObjectId(objectId);
+    if (!isValidIotaObjectId(normalized)) {
+        throw new TypeError(`invalid object ID: ${objectId}`);
+    }
+    return fromHex(normalized);
+}
+
+function digestBytes(digest: string): Uint8Array {
+    let bytes: Uint8Array;
+    try {
+        bytes = fromBase58(digest);
+    } catch {
+        throw new TypeError(`invalid transaction digest: ${digest}`);
+    }
+    if (bytes.length !== 32) {
+        throw new TypeError(`invalid transaction digest: ${digest}`);
+    }
+    return bytes;
 }
