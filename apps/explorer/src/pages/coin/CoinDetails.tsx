@@ -1,12 +1,34 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { InfoBox, InfoBoxStyle, InfoBoxType, LoadingIndicator } from '@iota/apps-ui-kit';
+import {
+    InfoBox,
+    InfoBoxStyle,
+    InfoBoxType,
+    LoadingIndicator,
+    Panel,
+    Select,
+    SelectSize,
+    Title,
+} from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
-import { CoinMeta, CoinStats, PageLayout } from '~/components';
-import { useGetAllCoins } from '~/hooks';
+import { useCursorPagination } from '@iota/core';
+import {
+    CoinMeta,
+    CoinStats,
+    ErrorBoundary,
+    PageLayout,
+    PlaceholderTable,
+    TableCard,
+} from '~/components';
+import { useGetAllCoins, useGetCoinObjects } from '~/hooks';
+import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import { generateCoinObjectsTableColumns } from '~/lib/ui';
 import { toCoinType } from '~/lib/utils';
+
+const COIN_OBJECTS_COLUMN_HEADINGS = ['Object', 'Owner', 'Balance'];
 
 function CoinDetails(): JSX.Element {
     const { id } = useParams<{ id: string }>();
@@ -58,7 +80,6 @@ function CoinDetailsContent({ coinType }: { coinType: string }): JSX.Element {
             />
         );
     }
-
     return (
         <PageLayout
             content={
@@ -79,9 +100,82 @@ function CoinDetailsContent({ coinType }: { coinType: string }): JSX.Element {
                         supply={coin.supply}
                         symbol={coin.symbol}
                     />
+                    <CoinObjectsTable
+                        coinType={coin.coinType}
+                        decimals={coin.decimals}
+                        symbol={coin.symbol}
+                    />
                 </div>
             }
         />
+    );
+}
+
+interface CoinObjectsTableProps {
+    coinType: string;
+    decimals: number;
+    symbol: string;
+}
+
+function CoinObjectsTable({ coinType, decimals, symbol }: CoinObjectsTableProps): JSX.Element {
+    const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
+    const { data, pagination, isError, isPending, isFetching } = useCursorPagination(
+        useGetCoinObjects(coinType, limit),
+    );
+    const columns = useMemo(
+        () => generateCoinObjectsTableColumns({ coinType, decimals, symbol }),
+        [coinType, decimals, symbol],
+    );
+
+    return (
+        <Panel>
+            <Title
+                title="Balances"
+                tooltipText="Each row is one balance of this coin and the address that holds it. An address can appear more than once. Coins locked in apps, like liquidity pools, aren't shown."
+            />
+            <div className="p-md">
+                {isError ? (
+                    <InfoBox
+                        title="Failed to load balances"
+                        supportingText="Try again later."
+                        icon={<Warning />}
+                        type={InfoBoxType.Error}
+                        style={InfoBoxStyle.Elevated}
+                    />
+                ) : (
+                    <ErrorBoundary>
+                        {isPending || isFetching || !data ? (
+                            <PlaceholderTable
+                                rowCount={limit}
+                                rowHeight="16px"
+                                colHeadings={COIN_OBJECTS_COLUMN_HEADINGS}
+                            />
+                        ) : (
+                            <TableCard
+                                data={data.coinObjects}
+                                columns={columns}
+                                areHeadersCentered={false}
+                                paginationOptions={pagination}
+                                pageSizeSelector={
+                                    <Select
+                                        value={limit.toString()}
+                                        options={PAGE_SIZES_RANGE_20_60.map((size) => ({
+                                            label: `${size} / page`,
+                                            id: size.toString(),
+                                        }))}
+                                        size={SelectSize.Small}
+                                        onValueChange={(value) => {
+                                            setLimit(Number(value));
+                                            pagination.onFirst();
+                                        }}
+                                    />
+                                }
+                            />
+                        )}
+                    </ErrorBoundary>
+                )}
+            </div>
+        </Panel>
     );
 }
 

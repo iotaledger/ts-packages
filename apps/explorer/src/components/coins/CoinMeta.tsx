@@ -32,7 +32,8 @@ export function CoinMeta({
                                 label={name}
                                 fallback={name}
                                 rounded
-                                size={iconUrl ? ImageIconSize.Full : ImageIconSize.Large}
+                                size={ImageIconSize.Full}
+                                fallbackSize={ImageIconSize.Large}
                             />
                         </div>
                         <div className="flex min-w-0 flex-col gap-sm">

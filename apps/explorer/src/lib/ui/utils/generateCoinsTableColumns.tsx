@@ -1,7 +1,15 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import {
+    Badge,
+    BadgeSize,
+    BadgeType,
+    TableCellBase,
+    TableCellText,
+    Tooltip,
+    TooltipPosition,
+} from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     CoinFiatValue,
@@ -46,6 +54,11 @@ function CoinWithImage({
                     {name}
                 </span>
                 {isRecognized && <RecognizedBadge className="size-4 text-iota-primary-40" />}
+                <Tooltip text="Coin Symbol" position={TooltipPosition.Top}>
+                    <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                        {symbol}
+                    </span>
+                </Tooltip>
                 {isPossibleImitation && (
                     <span title="Same name or symbol as a recognized coin, but a different coin type.">
                         <Badge
@@ -123,20 +136,6 @@ export function generateCoinsTableColumns({
             },
         },
         {
-            header: 'Symbol',
-            accessorKey: 'symbol',
-            enableSorting: true,
-            sortingFn: (row1, row2, columnId) =>
-                sortByString(row1.getValue<string>(columnId), row2.getValue<string>(columnId)),
-            cell({ getValue }) {
-                return (
-                    <TableCellBase>
-                        <TableCellText>{getValue<OnChainCoin['symbol']>()}</TableCellText>
-                    </TableCellBase>
-                );
-            },
-        },
-        {
             header: 'Creator',
             meta: {
                 tooltip: 'The address that published this coin.',
@@ -204,18 +203,6 @@ export function generateCoinsTableColumns({
                         <TableCellText>
                             {createdAt ? <DateDisplay timestamp={createdAt} type="table" /> : '--'}
                         </TableCellText>
-                    </TableCellBase>
-                );
-            },
-        },
-        {
-            header: 'Decimals',
-            accessorKey: 'decimals',
-            enableSorting: true,
-            cell({ getValue }) {
-                return (
-                    <TableCellBase>
-                        <TableCellText>{getValue<OnChainCoin['decimals']>()}</TableCellText>
                     </TableCellBase>
                 );
             },

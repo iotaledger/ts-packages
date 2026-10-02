@@ -21,18 +21,20 @@ import {
     TableCard,
     TableSearch,
 } from '~/components';
+import { useNavigateWithQuery } from '~/components/ui';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { toCoinType } from '~/lib/utils';
 
-const COLUMN_HEADINGS = ['Coin', 'Symbol', 'Creator', 'Supply', 'Created', 'Decimals'];
+const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
 
 function CoinsPageResult(): JSX.Element {
     const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
+    const navigateWithQuery = useNavigateWithQuery();
     const searchedCoinType = useMemo(() => toCoinType(searchTerm.trim()), [searchTerm]);
 
     const { data, pagination, isError, isPending, isFetching } = useCursorPagination(
@@ -120,7 +122,13 @@ function CoinsPageResult(): JSX.Element {
                         <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                             Coins
                         </div>
-
+                        <InfoBox
+                            title="Anyone can create a coin"
+                            supportingText="Names, symbols and icons can be copied. Check the coin type to make sure it's the coin you expect."
+                            icon={<Info />}
+                            type={InfoBoxType.Default}
+                            style={InfoBoxStyle.Elevated}
+                        />
                         <Panel>
                             <Title title="All Coins" />
 
@@ -136,13 +144,6 @@ function CoinsPageResult(): JSX.Element {
                                         counts={filterCounts}
                                     />
                                 </div>
-                                <InfoBox
-                                    title="Anyone can create a coin"
-                                    supportingText="Names, symbols and icons can be copied. Check the coin type to make sure it's the coin you expect."
-                                    icon={<Info />}
-                                    type={InfoBoxType.Default}
-                                    style={InfoBoxStyle.Elevated}
-                                />
                             </div>
                             <div className="p-md">
                                 {isInvalidSearch && (
@@ -167,6 +168,12 @@ function CoinsPageResult(): JSX.Element {
                                             data={visibleCoins}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
+                                            onRowClick={({ coinType }) =>
+                                                navigateWithQuery(
+                                                    `/coin/${encodeURI(coinType)}`,
+                                                    {},
+                                                )
+                                            }
                                             paginationOptions={
                                                 isRecognizedFilter ? undefined : pagination
                                             }

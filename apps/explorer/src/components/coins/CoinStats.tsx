@@ -65,18 +65,6 @@ export function CoinStats({
             </div>
             <div className="grid grid-cols-1 gap-md--rs md:grid-cols-3">
                 <DisplayStats
-                    label="Created At"
-                    tooltipText="The timestamp when the coin was created."
-                    tooltipPosition={TooltipPosition.Top}
-                    value={createdAt ? <DateDisplay timestamp={createdAt} type="package" /> : '--'}
-                />
-                <DisplayStats
-                    label="Decimals"
-                    tooltipText="The number of decimal places for the coin."
-                    tooltipPosition={TooltipPosition.Top}
-                    value={decimals}
-                />
-                <DisplayStats
                     label="Supply"
                     tooltipText={
                         supply
@@ -105,6 +93,18 @@ export function CoinStats({
                             '--'
                         )
                     }
+                />
+                <DisplayStats
+                    label="Created At"
+                    tooltipText="The timestamp when the coin was created."
+                    tooltipPosition={TooltipPosition.Top}
+                    value={createdAt ? <DateDisplay timestamp={createdAt} type="package" /> : '--'}
+                />
+                <DisplayStats
+                    label="Decimals"
+                    tooltipText="The number of decimal places for the coin."
+                    tooltipPosition={TooltipPosition.Top}
+                    value={decimals}
                 />
             </div>
         </div>

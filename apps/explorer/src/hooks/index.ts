@@ -31,3 +31,4 @@ export * from './useDeserializedSignatures';
 export * from './useAddressBalanceSummary';
 export * from './useValidatorByAddress';
 export * from './useGetAllCoins';
+export * from './useGetCoinObjects';
