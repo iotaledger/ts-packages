@@ -16,6 +16,10 @@ import {
     UnknownVariantError,
 } from '../errors.js';
 import type { Status } from '../proto/google/rpc/status_pb.js';
+import type {
+    GetObjectsResponse,
+    GetTransactionsResponse,
+} from '../proto/iota/grpc/v1/ledger_service_pb.js';
 import type { Object$ } from '../proto/iota/grpc/v1/object_pb.js';
 import type { ExecutedTransaction } from '../proto/iota/grpc/v1/transaction_pb.js';
 import type { ItemResult } from '../results.js';
@@ -73,6 +77,22 @@ export async function collectStream<T, I>(
     }
 
     return items;
+}
+
+export function extractObjects(message: GetObjectsResponse) {
+    return {
+        hasNext: message.hasNext,
+        items: message.objects.map((object) => toItemResult(object, 'object result')),
+    };
+}
+
+export function extractTransactions(message: GetTransactionsResponse) {
+    return {
+        hasNext: message.hasNext,
+        items: message.transactionResults.map((result) =>
+            toItemResult(result, 'transaction result'),
+        ),
+    };
 }
 
 export function checkResultCount(results: unknown[], expected: number): void {

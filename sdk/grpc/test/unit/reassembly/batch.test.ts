@@ -34,6 +34,7 @@ import {
     checkResultCount,
     checkTransactionIdentity,
     collectStream,
+    extractObjects,
     toItemResult,
 } from '../../../src/reassembly/batch.js';
 import type { ItemResult } from '../../../src/results.js';
@@ -138,13 +139,6 @@ function objectsResponse(versions: bigint[], hasNext: boolean): GetObjectsRespon
             }),
         ),
     });
-}
-
-function extractObjects(message: GetObjectsResponse) {
-    return {
-        hasNext: message.hasNext,
-        items: message.objects.map((object) => toItemResult(object, 'object result')),
-    };
 }
 
 describe('collectStream', () => {
