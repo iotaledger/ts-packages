@@ -242,6 +242,7 @@ function CoinAmount({
         balance: amount,
         coinType,
         format: CoinFormat.Full,
+        truncate: false,
     });
 
     return (
