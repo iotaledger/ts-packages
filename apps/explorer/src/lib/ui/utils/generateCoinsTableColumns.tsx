@@ -175,7 +175,7 @@ export function generateCoinsTableColumns({
                     <TableCellBase>
                         <div className="flex flex-col gap-0.5">
                             <TableCellText>
-                                {`${formatBalance(supply, decimals, CoinFormat.Rounded)} ${symbol}`}
+                                {`${formatBalance(supply, decimals, CoinFormat.Full)} ${symbol}`}
                             </TableCellText>
                             {recognizedTypes.has(coinType) && (
                                 <CoinFiatValue

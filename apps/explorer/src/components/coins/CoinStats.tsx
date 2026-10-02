@@ -39,6 +39,7 @@ export function CoinStats({
                             objectId={`${address}?module=${module}`}
                             label={truncatedCoinType}
                             showAddressAlias={false}
+                            copyText={coinType}
                         />
                     }
                 />
