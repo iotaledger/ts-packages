@@ -99,7 +99,7 @@ export class WebCryptoSigner extends Signer {
                 hash: 'SHA-256',
             },
             this.privateKey,
-            bytes,
+            new Uint8Array(bytes),
         );
 
         const signature = secp256r1.Signature.fromCompact(new Uint8Array(rawSignature));

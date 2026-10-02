@@ -4,6 +4,7 @@
         "target": "ES2020",
         "module": "esnext",
         "lib": ["dom", "esnext"],
+        "types": ["node"],
         // output .d.ts declaration files for consumers
         "declaration": true,
         "emitDeclarationOnly": true,
@@ -19,8 +20,8 @@
         // noUnused* overlap with @typescript-eslint/no-unused-vars, can disable if duplicative
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        // use Node's module resolution algorithm, instead of the legacy TS one
-        "moduleResolution": "node",
+        // resolve package exports the way bundlers and modern Node do
+        "moduleResolution": "bundler",
         // transpile JSX to React.createElement
         "jsx": "react",
         // interop between ESM and CJS modules. Recommended by TS

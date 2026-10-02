@@ -374,10 +374,8 @@ export class IotaNamesClient {
      */
     async getRestrictedList(type: 'reserved' | 'blocked'): Promise<string[]> {
         const { reservedTableId, blockedTableId } = await this.getDenyListTableIds();
-        if (type === 'reserved' && !reservedTableId) return [];
-        if (type === 'blocked' && !blockedTableId) return [];
-
         const tableId = type === 'reserved' ? reservedTableId : blockedTableId;
+        if (!tableId) return [];
 
         const results: string[] = [];
         let cursor: string | null = null;

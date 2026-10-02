@@ -21,9 +21,6 @@ const config: StorybookConfig = {
     },
     typescript: {
         reactDocgen: 'react-docgen-typescript',
-        reactDocgenTypescriptOptions: {
-            exclude: ['**/.storybook/**'],
-        },
     },
     docs: {},
 };

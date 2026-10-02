@@ -69,7 +69,7 @@ export class BrowserPasskeyProvider implements PasskeyProvider {
                     name: this.#name,
                     displayName: this.#name,
                     ...this.#options.user,
-                    id: randomBytes(10),
+                    id: new Uint8Array(randomBytes(10)),
                 },
                 challenge: new TextEncoder().encode('Create passkey wallet on IOTA'),
                 pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
@@ -90,7 +90,7 @@ export class BrowserPasskeyProvider implements PasskeyProvider {
     ): Promise<AuthenticationCredential> {
         return (await navigator.credentials.get({
             publicKey: {
-                challenge,
+                challenge: new Uint8Array(challenge),
                 userVerification:
                     this.#options.authenticatorSelection?.userVerification || 'required',
                 timeout: this.#options.timeout ?? 60000,
@@ -99,7 +99,7 @@ export class BrowserPasskeyProvider implements PasskeyProvider {
                     ? {
                           allowCredentials: allowCredentialIds.map((id) => ({
                               type: 'public-key',
-                              id,
+                              id: new Uint8Array(id),
                           })),
                       }
                     : {}),

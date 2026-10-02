@@ -32,7 +32,7 @@ import { getEpochStorageFundFlow } from '~/lib/utils';
 import { ArrowLeft, ArrowRight, Warning } from '@iota/apps-ui-icons';
 import { VALIDATORS_EVENTS_QUERY } from '@iota/core';
 import { useEndOfEpochTransactionFromCheckpoint } from '~/hooks/useEndOfEpochTransactionFromCheckpoint';
-import { type IotaEvent } from '@iota/iota-sdk/src/client';
+import { type IotaEvent } from '@iota/iota-sdk/client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 
 enum EpochTabs {

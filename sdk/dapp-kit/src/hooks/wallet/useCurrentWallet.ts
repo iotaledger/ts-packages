@@ -2,6 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { WalletWithRequiredFeatures } from '@iota/wallet-standard';
+
 import { useWalletStore } from './useWalletStore.js';
 
 /**
@@ -34,7 +36,7 @@ export function useCurrentWallet() {
         case 'connected': {
             return {
                 connectionStatus,
-                currentWallet: currentWallet!,
+                currentWallet: currentWallet as WalletWithRequiredFeatures,
                 isDisconnected: false,
                 isConnecting: false,
                 isConnected: true,
