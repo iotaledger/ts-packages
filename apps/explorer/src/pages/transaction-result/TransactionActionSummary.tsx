@@ -133,7 +133,7 @@ export function TransactionActionSummary({
                     className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
                     onClick={() => setShowAll(!showAll)}
                 >
-                    {showAll ? 'Show less' : `Show all ${actions.length} actions`}
+                    {showAll ? 'Show Less' : `Show all ${actions.length} actions`}
                 </ButtonUnstyled>
             )}
         </div>

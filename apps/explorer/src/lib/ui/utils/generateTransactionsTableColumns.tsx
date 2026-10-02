@@ -166,9 +166,7 @@ export function generateTransactionsTableColumns(
 
                 return (
                     <TableCellBase>
-                        <TableCellText>
-                            <TableCoinChanges changes={balanceChanges} />
-                        </TableCellText>
+                        <TableCoinChanges changes={balanceChanges} />
                     </TableCellBase>
                 );
             },
