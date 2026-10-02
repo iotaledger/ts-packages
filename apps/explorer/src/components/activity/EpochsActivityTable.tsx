@@ -8,7 +8,7 @@ import { useCursorPagination } from '@iota/core';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { PlaceholderTable, TableCard } from '~/components/ui';
+import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateEpochsTableColumns } from '~/lib/ui';
 import { numberSuffix } from '~/lib/utils';
@@ -25,6 +25,7 @@ export function EpochsActivityTable({
     disablePagination,
     initialLimit = DEFAULT_EPOCHS_LIMIT,
 }: EpochsActivityTableProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(initialLimit);
     const client = useIotaClient();
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
@@ -70,6 +71,7 @@ export function EpochsActivityTable({
                 <TableCard
                     data={data.data}
                     columns={tableColumns}
+                    onRowClick={({ epoch }) => navigateWithQuery(`/epoch/${encodeURI(epoch)}`, {})}
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
                     viewAll={disablePagination ? '/recent?tab=epochs' : undefined}
                     paginationOptions={!disablePagination ? pagination : undefined}

@@ -5,7 +5,7 @@
 import { useIotaClient } from '@iota/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { PlaceholderTable, TableCard } from '~/components/ui';
+import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { useCursorPagination } from '@iota/core';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
@@ -35,6 +35,7 @@ export function TransactionsActivityTable({
     initialLimit = DEFAULT_TRANSACTIONS_LIMIT,
     transactionKindFilter,
 }: TransactionsActivityTableProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(initialLimit);
     const client = useIotaClient();
     const { data: count } = useQuery({
@@ -91,6 +92,9 @@ export function TransactionsActivityTable({
                                 <TableCard
                                     data={data.data}
                                     columns={tableColumns}
+                                    onRowClick={({ digest }) =>
+                                        navigateWithQuery(`/txblock/${encodeURI(digest)}`, {})
+                                    }
                                     totalLabel={
                                         count ? `${numberSuffix(Number(count))} Total` : '-'
                                     }

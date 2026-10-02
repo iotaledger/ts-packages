@@ -4,7 +4,7 @@
 
 import { type TransactionFilter } from '@iota/iota-sdk/client';
 import { type Dispatch, type SetStateAction, useReducer, useState } from 'react';
-import { Pagination, PlaceholderTable, TableCard } from '~/components/ui';
+import { Pagination, PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
 import { RETENTION_BANNER_TEXT, RETENTION_BANNER_TITLE } from '~/lib/constants';
 import { Warning } from '@iota/apps-ui-icons';
 import {
@@ -103,6 +103,7 @@ export function TransactionBlocksForAddress({
     filter = ObjectFilterValue.Changed,
     header,
 }: TransactionBlocksForAddressProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const [filterValue, setFilterValue] = useState(filter);
     const [currentPageState, dispatch] = useReducer(reducer, {
         [ObjectFilterValue.Input]: 0,
@@ -146,6 +147,9 @@ export function TransactionBlocksForAddress({
                                 <TableCard
                                     data={data.pages[currentPage].data}
                                     columns={tableColumns}
+                                    onRowClick={({ digest }) =>
+                                        navigateWithQuery(`/txblock/${encodeURI(digest)}`, {})
+                                    }
                                 />
                             ) : (
                                 <div className="flex justify-center py-md text-body-md text-iota-neutral-40">

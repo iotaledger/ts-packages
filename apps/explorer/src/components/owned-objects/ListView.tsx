@@ -4,7 +4,7 @@
 
 import { Placeholder } from '@iota/apps-ui-kit';
 import { type IotaObjectResponse } from '@iota/iota-sdk/client';
-import { TableCard } from '~/components/ui';
+import { TableCard, useNavigateWithQuery } from '~/components/ui';
 import { generateObjectListColumns } from '~/lib/ui/utils/generateObjectListColumns';
 
 interface ListViewProps {
@@ -14,12 +14,20 @@ interface ListViewProps {
 }
 
 export function ListView({ data, loading, hideAssetColumn }: ListViewProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const tableColumns = generateObjectListColumns({ hideAssetColumn });
 
     return (
         <div className="h-full w-full">
             {tableColumns && data && (
-                <TableCard data={data ?? []} columns={tableColumns} heightFull />
+                <TableCard
+                    data={data ?? []}
+                    columns={tableColumns}
+                    onRowClick={({ data: object }) => {
+                        if (object) navigateWithQuery(`/object/${encodeURI(object.objectId)}`, {});
+                    }}
+                    heightFull
+                />
             )}
             {loading && new Array(10).fill(0).map((_, index) => <Placeholder key={index} />)}
         </div>

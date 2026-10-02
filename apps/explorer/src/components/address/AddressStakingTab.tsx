@@ -31,7 +31,7 @@ import {
 import { Warning } from '@iota/apps-ui-icons';
 import { CoinFormat, formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
-import { TableCard, ValidatorLink } from '../ui';
+import { TableCard, ValidatorLink, useNavigateWithQuery } from '../ui';
 import { TableCoinDisplay } from '../TableCoinDisplay';
 
 const STAKED_TOOLTIP_TEXT = 'IOTA staked with validators. Cannot be used until unstaked.';
@@ -285,7 +285,16 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
 ];
 
 function DelegationsTable({ rows }: DelegationsTableProps): React.JSX.Element {
-    return <TableCard data={rows} columns={DELEGATION_COLUMNS} />;
+    const navigateWithQuery = useNavigateWithQuery();
+    return (
+        <TableCard
+            data={rows}
+            columns={DELEGATION_COLUMNS}
+            onRowClick={({ validatorAddress }) =>
+                navigateWithQuery(`/validator/${encodeURI(validatorAddress)}`, {})
+            }
+        />
+    );
 }
 
 interface ValidatorCellProps {

@@ -37,8 +37,10 @@ import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/
 import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
+import { useNavigateWithQuery } from '~/components/ui';
 
 function ValidatorPageResult(): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
     const {
         data: maxCommitteeSize,
@@ -419,6 +421,12 @@ function ValidatorPageResult(): JSX.Element {
                                                 ]}
                                                 data={filteredValidators}
                                                 columns={tableColumns}
+                                                onRowClick={({ iotaAddress }) =>
+                                                    navigateWithQuery(
+                                                        `/validator/${encodeURI(iotaAddress)}`,
+                                                        {},
+                                                    )
+                                                }
                                                 areHeadersCentered={false}
                                             />
                                         )}

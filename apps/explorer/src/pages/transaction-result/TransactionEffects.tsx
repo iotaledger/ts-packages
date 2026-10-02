@@ -10,7 +10,7 @@ import type {
 } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CollapsibleCard, ObjectLink, TransactionLink } from '~/components';
-import { TableCard } from '~/components/ui';
+import { TableCard, useNavigateWithQuery } from '~/components/ui';
 import { NewDigestCell } from '~/lib/ui';
 import { CopyButton } from './CopyButton';
 
@@ -91,6 +91,7 @@ interface TransactionEffectsProps {
 }
 
 export function TransactionEffects({ transaction }: TransactionEffectsProps): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
     const effects = transaction.effects ?? undefined;
 
     const eventsDigest = effects?.eventsDigest;
@@ -134,6 +135,9 @@ export function TransactionEffects({ transaction }: TransactionEffectsProps): JS
                         <TableCard
                             data={unchangedSharedObjects}
                             columns={UNCHANGED_SHARED_OBJECT_COLUMNS}
+                            onRowClick={({ objectId }) =>
+                                navigateWithQuery(`/object/${encodeURI(objectId)}`, {})
+                            }
                         />
                     </EffectsSection>
                 )}
