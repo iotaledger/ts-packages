@@ -51,7 +51,7 @@ export function CardAction({
                     <div className="card-action-title-color font-inter text-label-md">{title}</div>
                 )}
                 {subtitle && (
-                    <div className="card-action-subtitle-color font-inter text-label-sm">
+                    <div className="card-action-subtitle-color flex flex-row justify-end font-inter text-label-sm">
                         {subtitle}
                     </div>
                 )}

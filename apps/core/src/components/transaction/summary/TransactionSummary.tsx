@@ -59,7 +59,7 @@ export function TransactionSummary({
                         </Panel>
                     )}
                     <BalanceChanges
-                        changes={summary?.balanceChanges}
+                        changes={summary?.coinBalances?.owners}
                         renderExplorerLink={renderExplorerLink}
                         chain={chain}
                     />
