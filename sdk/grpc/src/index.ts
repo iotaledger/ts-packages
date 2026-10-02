@@ -6,3 +6,4 @@ export * from './errors.js';
 export * from './transport.js';
 export * from './read-masks.js';
 export * from './metadata.js';
+export * from './results.js';
