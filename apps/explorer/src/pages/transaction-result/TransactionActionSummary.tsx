@@ -8,7 +8,9 @@ import {
     ImageIcon,
     ImageIconSize,
     STAKING_REQUEST_EVENT,
+    TransactionAction,
     UNSTAKING_REQUEST_EVENT,
+    getTransactionAction,
     getTransactionCoinBalances,
     isMigrationTransaction,
     isUnlockTimelockedObjectTransaction,
@@ -86,6 +88,8 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
         }
         if (!receivedBySender.length) actions.push({ type: 'unlockAssets' });
     }
+
+    if (getTransactionAction(transaction, sender) !== TransactionAction.Send) return actions;
 
     for (const { owner, ownerType, changes } of owners) {
         if (owner === sender || ownerType !== CoinOwnerType.Address) continue;
