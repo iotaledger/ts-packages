@@ -6,10 +6,10 @@ import {
     CoinFiatValue,
     CoinIcon,
     ImageIconSize,
+    isRecognizedCoinType,
     useFormatCoin,
     useRecognizedPackages,
 } from '@iota/core';
-import { normalizeStructTag, parseStructTag } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 
 interface TableCoinDisplayProps {
@@ -21,16 +21,13 @@ interface TableCoinDisplayProps {
 export function TableCoinDisplay({
     amount,
     coinType,
-    showSign = true,
-    showTrustedBadge = true,
+    showSign = false,
+    showTrustedBadge = false,
 }: TableCoinDisplayProps) {
     const isPositive = BigInt(amount) > BigInt(0);
 
     const recognizedPackages = useRecognizedPackages();
-    const normalizedCoinType = normalizeStructTag(coinType);
-    const { address } = parseStructTag(normalizedCoinType);
-
-    const showTrusted = showTrustedBadge && recognizedPackages.includes(address);
+    const showTrusted = showTrustedBadge && isRecognizedCoinType(coinType, recognizedPackages);
 
     const [formatted, symbol] = useFormatCoin({
         balance: amount,
@@ -38,12 +35,12 @@ export function TableCoinDisplay({
         showSign,
     });
 
-    const CHANGE_COLOR_CLASS = isPositive ? 'coin-change-positive' : 'coin-change-negative';
+    const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
 
     return (
         <div className="flex flex-row items-center gap-1.5">
-            <CoinIcon coinType={coinType} size={ImageIconSize.XSmall} />
-            <span className={clsx(showSign ? CHANGE_COLOR_CLASS : 'table-text-color')}>
+            <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+            <span className={clsx(showSign ? changeColorClass : 'table-text-color')}>
                 {formatted} {symbol}
             </span>
             {showTrusted && <RecognizedBadge className="size-4 text-iota-primary-40" />}

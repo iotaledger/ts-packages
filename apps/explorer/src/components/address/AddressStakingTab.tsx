@@ -266,11 +266,7 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <TableCoinDisplay
-                        amount={getValue<bigint>()}
-                        showSign={false}
-                        coinType={IOTA_TYPE_ARG}
-                    />
+                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
                 </TableCellBase>
             );
         },
@@ -281,11 +277,7 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <TableCoinDisplay
-                        amount={getValue<bigint>()}
-                        showSign={false}
-                        coinType={IOTA_TYPE_ARG}
-                    />
+                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
                 </TableCellBase>
             );
         },

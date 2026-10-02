@@ -18,7 +18,13 @@ export function TableCoinChanges({ changes }: TableCoinChangesProps) {
     return (
         <div className="flex flex-col items-start gap-y-xxs py-xs">
             {visibleChanges.map(({ amount, coinType }) => (
-                <TableCoinDisplay key={coinType} amount={amount} coinType={coinType} />
+                <TableCoinDisplay
+                    key={coinType}
+                    amount={amount}
+                    coinType={coinType}
+                    showSign
+                    showTrustedBadge
+                />
             ))}
             {changes.length > MAX_VISIBLE_CHANGES && (
                 <ButtonUnstyled
