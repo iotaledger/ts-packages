@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { MessageInitShape } from '@bufbuild/protobuf';
 import type { CallOptions, Client, Transport } from '@connectrpc/connect';
 import { createClient } from '@connectrpc/connect';
 import { fromBase58, fromHex } from '@iota/bcs';
@@ -10,6 +11,7 @@ import { EmptyRequestError, ProtoConversionError, toIotaGrpcError } from './erro
 import type { ResponseMetadata } from './metadata.js';
 import { parseResponseMetadata } from './metadata.js';
 import type { Epoch } from './proto/iota/grpc/v1/epoch_pb.js';
+import type { EventFilterSchema, TransactionFilterSchema } from './proto/iota/grpc/v1/filter_pb.js';
 import type {
     GetHealthResponse,
     GetServiceInfoResponse,
@@ -17,7 +19,12 @@ import type {
 import { LedgerService } from './proto/iota/grpc/v1/ledger_service_pb.js';
 import type { Object$ } from './proto/iota/grpc/v1/object_pb.js';
 import type { ExecutedTransaction } from './proto/iota/grpc/v1/transaction_pb.js';
-import type { ObjectField, ServiceInfoField, TransactionField } from './read-masks.js';
+import type {
+    CheckpointResponseField,
+    ObjectField,
+    ServiceInfoField,
+    TransactionField,
+} from './read-masks.js';
 import { DEFAULT_READ_MASKS, EpochField, toReadMask } from './read-masks.js';
 import {
     checkObjectIdentity,
@@ -27,7 +34,9 @@ import {
     extractObjects,
     extractTransactions,
 } from './reassembly/batch.js';
-import type { ItemResult, WithMetadata } from './results.js';
+import type { CheckpointResponse, CheckpointStreamItem } from './reassembly/checkpoint.js';
+import { reassembleCheckpoints } from './reassembly/checkpoint.js';
+import type { ItemResult, StreamWithMetadata, WithMetadata } from './results.js';
 import { createGrpcNodeTransport } from './transport.js';
 import type { GrpcNetwork } from './transport.js';
 
@@ -47,6 +56,13 @@ type NetworkOrUrlOrTransport =
     | { network: GrpcNetwork; url?: never; transport?: never }
     | { url: string; network?: never; transport?: never }
     | { transport: Transport; network?: never; url?: never };
+
+type CheckpointOptions = {
+    readMask?: CheckpointResponseField | readonly CheckpointResponseField[];
+    transactionsFilter?: MessageInitShape<typeof TransactionFilterSchema>;
+    eventsFilter?: MessageInitShape<typeof EventFilterSchema>;
+    signal?: AbortSignal;
+};
 
 /** Survives two copies of this package being installed, where `instanceof` gives a silent false. */
 const IOTA_GRPC_CLIENT_BRAND = Symbol.for('@iota/IotaGrpcClient');
@@ -266,6 +282,110 @@ export class IotaGrpcClient {
         return { body, metadata };
     }
 
+    /** The latest checkpoint, or the one with the given sequence number or digest. */
+    async getCheckpoint(
+        id?: { sequenceNumber: bigint } | { digest: string },
+        options?: CheckpointOptions,
+    ): Promise<WithMetadata<CheckpointResponse>> {
+        let checkpointId:
+            | { case: 'latest'; value: boolean }
+            | { case: 'sequenceNumber'; value: bigint }
+            | { case: 'digest'; value: { digest: Uint8Array } } = { case: 'latest', value: true };
+
+        if (id !== undefined && 'sequenceNumber' in id) {
+            checkpointId = { case: 'sequenceNumber', value: id.sequenceNumber };
+        } else if (id !== undefined) {
+            checkpointId = { case: 'digest', value: { digest: digestBytes(id.digest) } };
+        }
+
+        const request = {
+            checkpointId,
+            readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getCheckpoint),
+            transactionsFilter: options?.transactionsFilter,
+            eventsFilter: options?.eventsFilter,
+            maxMessageSizeBytes: this.maxMessageSizeBytes,
+        };
+
+        let metadata: ResponseMetadata = {};
+        try {
+            const frames = this.ledger.getCheckpoint(request, {
+                signal: options?.signal,
+                onHeader: (headers) => (metadata = parseResponseMetadata(headers)),
+            });
+
+            for await (const item of reassembleCheckpoints(frames)) {
+                if (item.kind === 'checkpoint') {
+                    return { body: item, metadata };
+                }
+            }
+        } catch (error) {
+            throw toIotaGrpcError(error);
+        }
+
+        throw new ProtoConversionError("missing field 'checkpoint data'");
+    }
+
+    /**
+     * Checkpoints from `startSequenceNumber` (default: the latest) up to `endSequenceNumber`
+     * (default: unbounded, following the chain). With `filterCheckpoints`, only checkpoints with a
+     * matching transaction or event are sent, and `progress` items report how far the node has
+     * scanned in between. Nothing is requested until `items` is read.
+     */
+    streamCheckpoints(
+        options?: CheckpointOptions & {
+            startSequenceNumber?: bigint;
+            endSequenceNumber?: bigint;
+            filterCheckpoints?: boolean;
+            progressIntervalMs?: number;
+        },
+    ): StreamWithMetadata<CheckpointStreamItem> {
+        const request = {
+            startSequenceNumber: options?.startSequenceNumber,
+            endSequenceNumber: options?.endSequenceNumber,
+            filterCheckpoints: options?.filterCheckpoints,
+            progressIntervalMs: options?.progressIntervalMs,
+            readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getCheckpoint),
+            transactionsFilter: options?.transactionsFilter,
+            eventsFilter: options?.eventsFilter,
+            maxMessageSizeBytes: this.maxMessageSizeBytes,
+        };
+
+        const { promise: metadata, resolve, reject } = Promise.withResolvers<ResponseMetadata>();
+        // Callers that only read `items` already see the error there.
+        metadata.catch(() => undefined);
+
+        // A generator, so the call starts on the first read: Connect sends a server-stream request
+        // as soon as it is created, and one that fails unread is an unhandled rejection.
+        const ledger = this.ledger;
+        async function* items(): AsyncGenerator<CheckpointStreamItem> {
+            let headersReceived = false;
+            try {
+                const frames = ledger.streamCheckpoints(request, {
+                    signal: options?.signal,
+                    onHeader: (headers) => {
+                        headersReceived = true;
+                        resolve(parseResponseMetadata(headers));
+                    },
+                });
+
+                for await (const item of reassembleCheckpoints(frames)) {
+                    if (item.kind === 'progress' && !options?.filterCheckpoints) {
+                        continue;
+                    }
+                    yield item;
+                }
+            } catch (error) {
+                const mapped = toIotaGrpcError(error);
+                if (!headersReceived) {
+                    reject(mapped);
+                }
+                throw mapped;
+            }
+        }
+
+        return { items: items(), metadata };
+    }
+
     private async unary<T>(
         call: (options: CallOptions) => Promise<T>,
         signal?: AbortSignal,
@@ -316,10 +436,10 @@ function digestBytes(digest: string): Uint8Array {
     try {
         bytes = fromBase58(digest);
     } catch {
-        throw new TypeError(`invalid transaction digest: ${digest}`);
+        throw new TypeError(`invalid digest: ${digest}`);
     }
     if (bytes.length !== 32) {
-        throw new TypeError(`invalid transaction digest: ${digest}`);
+        throw new TypeError(`invalid digest: ${digest}`);
     }
     return bytes;
 }

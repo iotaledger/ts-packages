@@ -7,3 +7,4 @@ export * from './transport.js';
 export * from './read-masks.js';
 export * from './metadata.js';
 export * from './results.js';
+export type { CheckpointResponse, CheckpointStreamItem } from './reassembly/checkpoint.js';
