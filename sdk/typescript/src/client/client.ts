@@ -813,7 +813,13 @@ export class IotaClient {
 
         return await this.transport.request({
             method: 'iota_devInspectTransactionBlock',
-            params: [input.sender, devInspectTxBytes, input.gasPrice?.toString(), input.epoch],
+            params: [
+                input.sender,
+                devInspectTxBytes,
+                input.gasPrice?.toString(),
+                input.epoch,
+                input.additionalArgs,
+            ],
             signal: input.signal,
         });
     }
