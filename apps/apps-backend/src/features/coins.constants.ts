@@ -35,6 +35,7 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
         coinType: '0x346778989a9f57480ec3fee15f2cd68409c73a62112d40a3efd13987997be68c::cert::CERT',
         name: 'Staked IOTA',
         trust: CoinTrust.Recognized,
+        valuation: { kind: 'market', priceId: 'staked-iota' },
     },
     {
         coinType:
@@ -46,6 +47,7 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
         coinType: '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
         name: 'Virtue USD',
         trust: CoinTrust.Recognized,
+        valuation: { kind: 'market', priceId: 'virtue-usd' },
     },
     {
         coinType:

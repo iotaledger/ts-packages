@@ -16,6 +16,7 @@ import {
     isValidIotaAddress,
     isValidIotaObjectId,
     normalizeIotaObjectId,
+    normalizeStructTag,
 } from '@iota/iota-sdk/utils';
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 import { type IdentityClientReadOnly } from '@iota/identity-wasm/web';
@@ -131,6 +132,26 @@ const getResultsForObject = async (client: IotaClient, query: string): Promise<R
         if (!result?.data?.objectId) return null;
 
         return [{ id: result.data.objectId, label: result.data.objectId, type: 'object' }];
+    } catch {
+        return null;
+    }
+};
+
+const getResultsForCoin = async (client: IotaClient, query: string): Promise<Results | null> => {
+    if (query.split('::').length < 3) return null;
+
+    try {
+        const coinType = normalizeStructTag(query);
+        const metadata = await client.getCoinMetadata({ coinType });
+        if (!metadata) return null;
+
+        return [
+            {
+                id: coinType,
+                label: `${metadata.name} (${metadata.symbol})`,
+                type: 'coin',
+            },
+        ];
     } catch {
         return null;
     }
@@ -321,6 +342,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
                     getResultsForNotarization(notarizationClient, isTFNotarizationEnabled, query),
                     getResultsForAuditTrail(auditTrailClient, isTFAuditTrailEnabled, query),
                     getResultsForObject(client, query),
+                    getResultsForCoin(client, query),
                     getResultsForValidatorByPoolIdOrIotaAddress(systemStateSummary || null, query),
                 ])
             ).filter(

@@ -4,15 +4,15 @@
 import { useState, useCallback } from 'react';
 import { SearchBarType, Search as SearchBox } from '@iota/apps-ui-kit';
 
-interface ValidatorSearchProps {
+interface TableSearchProps {
     onSearch: (searchTerm: string) => void;
     placeholder?: string;
 }
 
-export function ValidatorSearch({
+export function TableSearch({
     onSearch,
     placeholder = 'Search by name or address…',
-}: ValidatorSearchProps): JSX.Element {
+}: TableSearchProps): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleSearch = useCallback(
