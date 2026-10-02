@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    formatBalanceToUSD,
+    formatFiat,
     getTotalGasUsed,
     getTransactionAction,
-    useBalanceInUSD,
+    useCoinFiatValue,
     TransactionIcon,
     TransactionIconSize,
     ACTION_LABELS,
@@ -43,7 +43,7 @@ export function BalanceChangeFiatValue({
     amount: bigint | string | number;
 }): JSX.Element | null {
     const { network } = useIotaClientContext();
-    const value = useBalanceInUSD(IOTA_TYPE_ARG, amount, network as Network);
+    const value = useCoinFiatValue(IOTA_TYPE_ARG, amount, network as Network);
 
     if (value === null || value === undefined || Math.abs(value) < 0.005) {
         return null;
@@ -51,7 +51,7 @@ export function BalanceChangeFiatValue({
 
     return (
         <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-            {formatBalanceToUSD(Math.abs(value))}
+            {formatFiat(Math.abs(value))}
         </span>
     );
 }

@@ -23,7 +23,6 @@ export * from './getExplorerLink';
 export * from './string';
 export * from './determineCountDownText';
 export * from './toTitleCase';
-export * from './formatBalanceToUSD';
 export * from './getGasBudgetErrorMessage';
 export * from './sumCoinBalances';
 export * from './extractMediaFileType';
@@ -33,7 +32,9 @@ export * from './formatDelegatedTimelockedStake';
 export * from './formatIotaName';
 export * from './isLegacyBrowser';
 export * from './formatUIErrors';
+export * from './formatFiat';
 
+export * from './coins';
 export * from './stake';
 export * from './transaction';
 export * from './validation';
