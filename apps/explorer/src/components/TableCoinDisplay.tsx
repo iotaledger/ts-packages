@@ -10,6 +10,7 @@ import {
     useFormatCoin,
     useRecognizedPackages,
 } from '@iota/core';
+import { CoinFormat } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 
 interface TableCoinDisplayProps {
@@ -33,6 +34,7 @@ export function TableCoinDisplay({
         balance: amount,
         coinType,
         showSign,
+        format: CoinFormat.Full,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
