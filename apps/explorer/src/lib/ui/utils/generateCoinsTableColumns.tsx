@@ -1,7 +1,13 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { TableCellBase, TableCellText, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
+import {
+    TableCellBase,
+    TableCellText,
+    Tooltip,
+    TooltipPosition,
+    ROW_LINK_PROPS,
+} from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     CoinFiatValue,
@@ -91,7 +97,7 @@ function CoinWithImage({
 
     return (
         <CoinLink
-            data-row-link
+            {...ROW_LINK_PROPS}
             coin={coinType}
             label={
                 <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">

@@ -4,15 +4,15 @@
 import { InfoBox, InfoBoxStyle, InfoBoxType, LoadingIndicator } from '@iota/apps-ui-kit';
 import { Info } from '@iota/apps-ui-icons';
 import { usePackageVersions } from '~/hooks';
-import { TableCard, useNavigateWithQuery } from '~/components/ui';
+import { TableCard } from '~/components/ui';
 import { generatePackageVersionsTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 interface PackageVersionsListProps {
     packageId: string;
 }
 
 export function PackageVersionsList({ packageId }: PackageVersionsListProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const { data: versions, isPending, isError } = usePackageVersions(packageId);
 
     if (isPending) {
@@ -44,7 +44,7 @@ export function PackageVersionsList({ packageId }: PackageVersionsListProps): JS
             <TableCard
                 data={versions}
                 columns={generatePackageVersionsTableColumns(packageId)}
-                onRowClick={({ address }) => navigateWithQuery(`/object/${encodeURI(address)}`, {})}
+                getRowHref={({ address }) => getInternalPath('object', address)}
             />
         </div>
     );

@@ -1,7 +1,14 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import {
+    Badge,
+    BadgeSize,
+    BadgeType,
+    TableCellBase,
+    TableCellText,
+    ROW_LINK_PROPS,
+} from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     type ApyByValidator,
@@ -115,7 +122,7 @@ function ValidatorWithImage({
 
     return (
         <ValidatorLink
-            data-row-link
+            {...ROW_LINK_PROPS}
             address={validator.iotaAddress}
             showAddressAlias={false}
             onClick={() =>

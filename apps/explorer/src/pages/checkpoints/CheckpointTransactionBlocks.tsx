@@ -4,7 +4,7 @@
 
 import { DropdownPosition, Select, SelectSize } from '@iota/apps-ui-kit';
 import { useState } from 'react';
-import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { PlaceholderTable, TableCard } from '~/components/ui';
 import { useCursorPagination } from '@iota/core';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
@@ -12,9 +12,9 @@ import {
 } from '~/hooks/useGetTransactionBlocks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateTransactionsTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 export function CheckpointTransactionBlocks({ id }: { id: string }): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(DEFAULT_TRANSACTIONS_LIMIT);
     const transactions = useGetTransactionBlocks(
         {
@@ -40,9 +40,7 @@ export function CheckpointTransactionBlocks({ id }: { id: string }): JSX.Element
                     <TableCard
                         data={data.data}
                         columns={tableColumns}
-                        onRowClick={({ digest }) =>
-                            navigateWithQuery(`/txblock/${encodeURI(digest)}`, {})
-                        }
+                        getRowHref={({ digest }) => getInternalPath('txblock', digest)}
                         paginationOptions={pagination}
                         pageSizeSelector={
                             <Select

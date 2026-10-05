@@ -6,11 +6,11 @@ import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/ap
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { Warning } from '@iota/apps-ui-icons';
 import { useMemo, useState } from 'react';
-import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { PlaceholderTable, TableCard } from '~/components/ui';
 import { DEFAULT_CHECKPOINTS_LIMIT, useGetCheckpoints } from '~/hooks/useGetCheckpoints';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateCheckpointsTableColumns } from '~/lib/ui';
-import { numberSuffix } from '~/lib/utils';
+import { numberSuffix, getInternalPath } from '~/lib/utils';
 import { useCursorPagination } from '@iota/core';
 
 interface CheckpointsTableProps {
@@ -27,7 +27,6 @@ export function CheckpointsTable({
     initialCursor,
     maxCursor,
 }: CheckpointsTableProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(initialLimit);
 
     const countQuery = useIotaClientQuery('getLatestCheckpointSequenceNumber');
@@ -71,9 +70,7 @@ export function CheckpointsTable({
                 <TableCard
                     data={data.data}
                     columns={tableColumns}
-                    onRowClick={({ digest }) =>
-                        navigateWithQuery(`/checkpoint/${encodeURI(digest)}`, {})
-                    }
+                    getRowHref={({ digest }) => getInternalPath('checkpoint', digest)}
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
                     viewAll={disablePagination ? '/recent?tab=checkpoints' : undefined}
                     paginationOptions={

@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Link, PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { Link, PlaceholderTable, TableCard } from '~/components/ui';
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import {
     Button,
@@ -18,6 +18,7 @@ import { ErrorBoundary } from '../error-boundary/ErrorBoundary';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { useGetValidatorsApy, useGetValidatorsEvents, useMaxCommitteeSize } from '@iota/core';
+import { getInternalPath } from '~/lib/utils';
 
 const NUMBER_OF_VALIDATORS = 5;
 
@@ -36,7 +37,6 @@ type TopValidatorsCardProps = {
 };
 
 export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
     const { data: validatorsApy } = useGetValidatorsApy();
     const { data: maxCommitteeSize } = useMaxCommitteeSize();
@@ -117,8 +117,8 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
                                 defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
                                 data={activeValidators}
                                 columns={tableColumns}
-                                onRowClick={({ iotaAddress }) =>
-                                    navigateWithQuery(`/validator/${encodeURI(iotaAddress)}`, {})
+                                getRowHref={({ iotaAddress }) =>
+                                    getInternalPath('validator', iotaAddress)
                                 }
                                 rowLimit={rowCount}
                             />

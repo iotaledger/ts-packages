@@ -4,7 +4,7 @@
 
 import type { EpochMetrics } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import { CheckpointSequenceLink, DateDisplay, EpochLink, TableCoinDisplay } from '~/components';
 import { getEpochStorageFundFlow } from '~/lib/utils';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
@@ -21,7 +21,7 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                 const epoch = getValue<EpochMetrics['epoch']>();
                 return (
                     <TableCellBase>
-                        <EpochLink data-row-link epoch={epoch}>
+                        <EpochLink {...ROW_LINK_PROPS} epoch={epoch}>
                             <TableCellText>{epoch}</TableCellText>
                         </EpochLink>
                     </TableCellBase>

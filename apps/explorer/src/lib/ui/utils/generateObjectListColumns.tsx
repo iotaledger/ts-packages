@@ -1,7 +1,7 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import type { IotaObjectResponse } from '@iota/iota-sdk/client';
@@ -44,7 +44,7 @@ export function generateObjectListColumns({
                 return (
                     <TableCellBase>
                         <ObjectLink
-                            data-row-link
+                            {...ROW_LINK_PROPS}
                             objectId={objectId}
                             display="block"
                             label={<Asset object={object} />}
@@ -62,7 +62,7 @@ export function generateObjectListColumns({
                 const type = formatType(trimStdLibPrefix(parseObjectType(object)));
                 return (
                     <TableCellBase>
-                        <ObjectLink data-row-link objectId={objectId} label={type}>
+                        <ObjectLink {...ROW_LINK_PROPS} objectId={objectId} label={type}>
                             <TableCellText>{type}</TableCellText>
                         </ObjectLink>
                     </TableCellBase>
@@ -79,7 +79,7 @@ export function generateObjectListColumns({
                 return (
                     <TableCellBase>
                         <ObjectLink
-                            data-row-link
+                            {...ROW_LINK_PROPS}
                             objectId={objectId}
                             label={
                                 <TableCellText>

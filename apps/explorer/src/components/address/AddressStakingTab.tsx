@@ -27,12 +27,14 @@ import {
     SegmentedButton,
     SegmentedButtonType,
     TableCellBase,
+    ROW_LINK_PROPS,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 import { CoinFormat, formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
-import { TableCard, ValidatorLink, useNavigateWithQuery } from '../ui';
+import { TableCard, ValidatorLink } from '../ui';
 import { TableCoinDisplay } from '../TableCoinDisplay';
+import { getInternalPath } from '~/lib/utils';
 
 const STAKED_TOOLTIP_TEXT = 'IOTA staked with validators. Cannot be used until unstaked.';
 const TIMELOCKED_STAKED_TOOLTIP_TEXT =
@@ -285,14 +287,11 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
 ];
 
 function DelegationsTable({ rows }: DelegationsTableProps): React.JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     return (
         <TableCard
             data={rows}
             columns={DELEGATION_COLUMNS}
-            onRowClick={({ validatorAddress }) =>
-                navigateWithQuery(`/validator/${encodeURI(validatorAddress)}`, {})
-            }
+            getRowHref={({ validatorAddress }) => getInternalPath('validator', validatorAddress)}
         />
     );
 }
@@ -311,7 +310,7 @@ function ValidatorCell({ address }: ValidatorCellProps): React.JSX.Element {
     return (
         <TableCellBase>
             <ValidatorLink
-                data-row-link
+                {...ROW_LINK_PROPS}
                 address={address}
                 showAddressAlias={false}
                 label={

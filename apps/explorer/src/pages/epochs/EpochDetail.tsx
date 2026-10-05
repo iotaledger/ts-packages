@@ -20,7 +20,7 @@ import {
     SegmentedButtonType,
 } from '@iota/apps-ui-kit';
 import { CheckpointsTable, PageLayout } from '~/components';
-import { LinkWithQuery, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { LinkWithQuery, TableCard } from '~/components/ui';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { EpochStats, EpochStatsGrid } from './stats/EpochStats';
 import { ValidatorStatus } from './stats/ValidatorStatus';
@@ -28,7 +28,7 @@ import { generateValidatorsTableColumns } from '~/lib/ui/utils/generateValidator
 import cx from 'clsx';
 import { TokenStats } from './stats/TokenStats';
 import { EpochTopStats } from './stats/EpochTopStats';
-import { getEpochStorageFundFlow } from '~/lib/utils';
+import { getEpochStorageFundFlow, getInternalPath } from '~/lib/utils';
 import { ArrowLeft, ArrowRight, Warning } from '@iota/apps-ui-icons';
 import { VALIDATORS_EVENTS_QUERY } from '@iota/core';
 import { useEndOfEpochTransactionFromCheckpoint } from '~/hooks/useEndOfEpochTransactionFromCheckpoint';
@@ -41,7 +41,6 @@ enum EpochTabs {
 }
 
 export function EpochDetail() {
-    const navigateWithQuery = useNavigateWithQuery();
     const [activeTabId, setActiveTabId] = useState(EpochTabs.Checkpoints);
     const { id } = useParams();
     const enhancedRpc = useEnhancedRpcClient();
@@ -244,11 +243,8 @@ export function EpochDetail() {
                                     defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
                                     data={committeeMembers}
                                     columns={tableColumns}
-                                    onRowClick={({ iotaAddress }) =>
-                                        navigateWithQuery(
-                                            `/validator/${encodeURI(iotaAddress)}`,
-                                            {},
-                                        )
+                                    getRowHref={({ iotaAddress }) =>
+                                        getInternalPath('validator', iotaAddress)
                                     }
                                 />
                             ) : null}

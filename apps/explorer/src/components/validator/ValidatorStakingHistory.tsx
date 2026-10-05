@@ -4,9 +4,10 @@
 import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
 import { useCursorPagination } from '@iota/core';
-import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { PlaceholderTable, TableCard } from '~/components/ui';
 import { useGetValidatorStakingEvents } from '~/hooks';
 import { generateStakingHistoryTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 const STAKING_HISTORY_PAGE_SIZE = 10;
 
@@ -26,7 +27,6 @@ interface ValidatorStakingHistoryProps {
 export function ValidatorStakingHistory({
     validatorAddress,
 }: ValidatorStakingHistoryProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const stakingEventsQuery = useGetValidatorStakingEvents({
         validatorAddress,
         limit: STAKING_HISTORY_PAGE_SIZE,
@@ -59,9 +59,7 @@ export function ValidatorStakingHistory({
                     <TableCard
                         data={data.data}
                         columns={tableColumns}
-                        onRowClick={({ id }) =>
-                            navigateWithQuery(`/txblock/${encodeURI(id.txDigest)}`, {})
-                        }
+                        getRowHref={({ id }) => getInternalPath('txblock', id.txDigest)}
                         paginationOptions={pagination}
                     />
                 )}

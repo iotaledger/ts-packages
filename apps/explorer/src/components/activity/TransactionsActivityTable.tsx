@@ -5,13 +5,13 @@
 import { useIotaClient } from '@iota/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { PlaceholderTable, TableCard } from '~/components/ui';
 import { useCursorPagination } from '@iota/core';
 import {
     DEFAULT_TRANSACTIONS_LIMIT,
     useGetTransactionBlocks,
 } from '~/hooks/useGetTransactionBlocks';
-import { numberSuffix } from '~/lib/utils';
+import { numberSuffix, getInternalPath } from '~/lib/utils';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
@@ -35,7 +35,6 @@ export function TransactionsActivityTable({
     initialLimit = DEFAULT_TRANSACTIONS_LIMIT,
     transactionKindFilter,
 }: TransactionsActivityTableProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(initialLimit);
     const client = useIotaClient();
     const { data: count } = useQuery({
@@ -92,9 +91,7 @@ export function TransactionsActivityTable({
                                 <TableCard
                                     data={data.data}
                                     columns={tableColumns}
-                                    onRowClick={({ digest }) =>
-                                        navigateWithQuery(`/txblock/${encodeURI(digest)}`, {})
-                                    }
+                                    getRowHref={({ digest }) => getInternalPath('txblock', digest)}
                                     totalLabel={
                                         count ? `${numberSuffix(Number(count))} Total` : '-'
                                     }

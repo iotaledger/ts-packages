@@ -4,8 +4,9 @@
 
 import { Placeholder } from '@iota/apps-ui-kit';
 import { type IotaObjectResponse } from '@iota/iota-sdk/client';
-import { TableCard, useNavigateWithQuery } from '~/components/ui';
+import { TableCard } from '~/components/ui';
 import { generateObjectListColumns } from '~/lib/ui/utils/generateObjectListColumns';
+import { getInternalPath } from '~/lib/utils';
 
 interface ListViewProps {
     data?: IotaObjectResponse[];
@@ -14,7 +15,6 @@ interface ListViewProps {
 }
 
 export function ListView({ data, loading, hideAssetColumn }: ListViewProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const tableColumns = generateObjectListColumns({ hideAssetColumn });
 
     return (
@@ -23,9 +23,9 @@ export function ListView({ data, loading, hideAssetColumn }: ListViewProps): JSX
                 <TableCard
                     data={data ?? []}
                     columns={tableColumns}
-                    onRowClick={({ data: object }) => {
-                        if (object) navigateWithQuery(`/object/${encodeURI(object.objectId)}`, {});
-                    }}
+                    getRowHref={({ data: object }) =>
+                        object ? getInternalPath('object', object.objectId) : undefined
+                    }
                     heightFull
                 />
             )}

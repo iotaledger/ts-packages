@@ -11,7 +11,7 @@ import {
 } from '@iota/core';
 import type { IotaTransactionBlockKind, IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
-import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
 import { CoinFormat, formatBalance, formatDigest, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
@@ -59,7 +59,7 @@ export function generateActivityTableColumns(
                 return (
                     <TableCellBase>
                         <TransactionLink
-                            data-row-link
+                            {...ROW_LINK_PROPS}
                             digest={digest}
                             copyText={digest}
                             label={

@@ -14,11 +14,12 @@ import {
 import { useIotaClient } from '@iota/dapp-kit';
 import { Warning } from '@iota/apps-ui-icons';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { PlaceholderTable, TableCard, useNavigateWithQuery } from '~/components/ui';
+import { PlaceholderTable, TableCard } from '~/components/ui';
 import { generateActivityTableColumns, generateTransactionsTableColumns } from '~/lib/ui';
 import { useState } from 'react';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib';
 import { useCursorPagination } from '@iota/core';
+import { getInternalPath } from '~/lib/utils';
 
 const PAGE_RANGE = PAGE_SIZES_RANGE_10_50;
 
@@ -42,7 +43,6 @@ function TransactionsForAddressContent({
     address,
     view,
 }: TransactionsForAddressProps): JSX.Element {
-    const navigateWithQuery = useNavigateWithQuery();
     const [limit, setLimit] = useState(PAGE_RANGE[0]);
     const client = useIotaClient();
 
@@ -114,7 +114,7 @@ function TransactionsForAddressContent({
         <TableCard
             data={data?.data ?? []}
             columns={tableColumns}
-            onRowClick={({ digest }) => navigateWithQuery(`/txblock/${encodeURI(digest)}`, {})}
+            getRowHref={({ digest }) => getInternalPath('txblock', digest)}
             paginationOptions={pagination}
             pageSizeSelector={
                 <Select
