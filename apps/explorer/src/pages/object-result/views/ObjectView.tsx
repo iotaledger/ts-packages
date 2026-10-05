@@ -6,7 +6,10 @@ import { DisplayStats, TooltipPosition } from '@iota/apps-ui-kit';
 import {
     capitalize,
     CoinFiatValue,
+    CoinIcon,
+    ImageIconSize,
     resolveNFTMedia,
+    useCoinMetadata,
     useFormatCoin,
     useNFTMediaHeaders,
 } from '@iota/core';
@@ -16,9 +19,16 @@ import { SortByDefault } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { useState } from 'react';
 import { OwnerDisplay } from '~/components/object';
-import { Link, ObjectLink, ObjectVideoImage, TransactionLink } from '~/components/ui';
+import {
+    Link,
+    LinkWithQuery,
+    ObjectLink,
+    ObjectVideoImage,
+    TransactionLink,
+} from '~/components/ui';
 import {
     extractName,
+    getCoinTypeOfObject,
     onCopySuccess,
     parseObjectType,
     trimStdLibPrefix,
@@ -119,6 +129,60 @@ function TypeCard({ objectType }: TypeCardCardProps): JSX.Element {
             tooltipPosition={TooltipPosition.Top}
             copyText={objectType}
             onCopySuccess={onCopySuccess}
+        />
+    );
+}
+
+interface CoinCardProps {
+    coinType: string;
+}
+
+function CoinCard({ coinType }: CoinCardProps): JSX.Element {
+    const { data: coinMetadata } = useCoinMetadata(coinType, false);
+    return (
+        <DisplayStats
+            label="Coin"
+            tooltipText="The coin this object belongs to."
+            tooltipPosition={TooltipPosition.Top}
+            value={
+                <LinkWithQuery
+                    to={`/coin/${encodeURI(coinType)}`}
+                    className="inline-flex items-center gap-x-xxs text-iota-primary-30 dark:text-iota-primary-80"
+                >
+                    <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                    {coinMetadata?.name}
+                </LinkWithQuery>
+            }
+        />
+    );
+}
+
+interface CoinBalanceCardProps {
+    coinType: string;
+    balance: string;
+}
+
+function CoinBalanceCard({ coinType, balance }: CoinBalanceCardProps): JSX.Element {
+    const [formattedBalance, symbol] = useFormatCoin({
+        balance,
+        coinType,
+        format: CoinFormat.Full,
+        truncate: false,
+    });
+    return (
+        <DisplayStats
+            label="Balance"
+            tooltipText="The amount of the coin held in this object."
+            tooltipPosition={TooltipPosition.Top}
+            value={
+                <div className="flex flex-col gap-xxs">
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">{formattedBalance}</span>
+                        <span className="whitespace-nowrap text-label-md opacity-40">{symbol}</span>
+                    </div>
+                    <CoinFiatValue amount={balance} coinType={coinType} withParentheses={false} />
+                </div>
+            }
         />
     );
 }
@@ -252,6 +316,15 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
     const objectId = data.data?.objectId;
     const lastTransactionBlockDigest = data.data?.previousTransaction;
     const objectDigest = data.data?.digest;
+    const coinType = getCoinTypeOfObject(objectType);
+    const content = data.data?.content;
+    const coinBalance =
+        coinType &&
+        content?.dataType === 'moveObject' &&
+        parseStructTag(objectType).name === 'Coin' &&
+        typeof (content.fields as { balance?: unknown }).balance === 'string'
+            ? (content.fields as { balance: string }).balance
+            : null;
 
     const heroImageTitle = name || display?.description || trimStdLibPrefix(objectType);
     const heroImageSubtitle = `1 ${capitalize(nftFileType)} File`;
@@ -324,6 +397,18 @@ export function ObjectView({ data }: ObjectViewProps): JSX.Element {
                     </div>
                 )}
             </div>
+            {coinType && (
+                <div className="flex flex-col gap-md md:flex-row">
+                    <div className="flex-1">
+                        <CoinCard coinType={coinType} />
+                    </div>
+                    {coinBalance && (
+                        <div className="flex-1">
+                            <CoinBalanceCard coinType={coinType} balance={coinBalance} />
+                        </div>
+                    )}
+                </div>
+            )}
             <div className="flex flex-row gap-md">
                 {display && display.link && (
                     <div className="flex-1">
