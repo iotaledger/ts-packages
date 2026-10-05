@@ -40,6 +40,7 @@
         "@amplitude/ampli": "^1.36.2",
         "@amplitude/analytics-types": "^2.11.0",
         "@playwright/test": "^1.60.0",
+        "@swc/core": "^1.16.13",
         "@swc/jest": "^0.2.39",
         "@tanstack/react-query-devtools": "^5.58.0",
         "@types/jest": "^29.5.2",
