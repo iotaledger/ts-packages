@@ -1,5 +1,5 @@
 {
     "extends": "./tsconfig.base.json",
-    "include": ["src/lib"],
+    "include": ["src"],
     "exclude": ["node_modules"]
 }
