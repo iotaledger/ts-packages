@@ -3,7 +3,7 @@
 
 import { RecognizedBadge } from '@iota/apps-ui-icons';
 import { Badge, BadgeType, Panel, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
-import { ImageIcon, ImageIconSize, useCoinRegistryEntry } from '@iota/core';
+import { COIN_FALLBACK_ICON, ImageIcon, ImageIconSize, useCoinRegistryEntry } from '@iota/core';
 
 interface CoinMetaProps {
     name: string;
@@ -20,7 +20,8 @@ export function CoinMeta({
     coinType,
     symbol,
 }: CoinMetaProps): JSX.Element {
-    const isRecognized = !!useCoinRegistryEntry(coinType);
+    const registryEntry = useCoinRegistryEntry(coinType);
+    const isRecognized = !!registryEntry;
     return (
         <div className="flex w-full flex-col gap-md md:flex-row">
             <Panel>
@@ -28,9 +29,9 @@ export function CoinMeta({
                     <div className="flex flex-row gap-lg">
                         <div className="h-[80px] w-[80px] shrink-0">
                             <ImageIcon
-                                src={iconUrl}
+                                src={iconUrl || registryEntry?.iconUrl}
                                 label={name}
-                                fallback={name}
+                                fallback={COIN_FALLBACK_ICON}
                                 rounded
                                 size={ImageIconSize.Full}
                                 fallbackSize={ImageIconSize.Large}

@@ -4,6 +4,7 @@
 import { TableCellBase, TableCellText, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
+    COIN_FALLBACK_ICON,
     CoinFiatValue,
     ImageIcon,
     ImageIconSize,
@@ -30,7 +31,8 @@ function CoinWithImage({
     recognizedCoins?: OnChainCoin[];
 }) {
     const { coinType, name, symbol, iconUrl } = coin;
-    const isRecognized = !!useCoinRegistryEntry(coinType);
+    const registryEntry = useCoinRegistryEntry(coinType);
+    const isRecognized = !!registryEntry;
     const matchingRecognizedCoin = findMatchingRecognizedCoin(coin, recognizedCoins);
     const truncatedCoinType = `${coinType.slice(0, 8)}…${coinType.slice(-20)}`;
     const copyToClipboard = useCopyToClipboard();
@@ -80,9 +82,9 @@ function CoinWithImage({
     const avatarElement = (
         <div className="h-8 w-8 shrink-0">
             <ImageIcon
-                src={iconUrl}
+                src={iconUrl || registryEntry?.iconUrl}
                 label={name}
-                fallback={symbol}
+                fallback={COIN_FALLBACK_ICON}
                 size={ImageIconSize.Medium}
                 rounded
             />
