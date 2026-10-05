@@ -18,7 +18,7 @@ import type { IotaEvent } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
-import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 interface GenerateValidatorsTableColumnsArgs {
     committeeMembers?: string[];
@@ -197,7 +197,7 @@ export function generateValidatorsTableColumns({
                         <TableCoinDisplay
                             amount={stakingPoolIotaBalance}
                             coinType={IOTA_TYPE_ARG}
-                            format={CoinFormat.Rounded}
+                            truncateToTwoDecimals
                         />
                     </TableCellBase>
                 );
@@ -288,7 +288,7 @@ export function generateValidatorsTableColumns({
                             <TableCoinDisplay
                                 amount={lastReward}
                                 coinType={IOTA_TYPE_ARG}
-                                format={CoinFormat.Rounded}
+                                truncateToTwoDecimals
                             />
                         ) : (
                             <TableCellText>--</TableCellText>

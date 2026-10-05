@@ -21,7 +21,7 @@ interface TableCoinDisplayProps {
     showSign?: boolean;
     showTrustedBadge?: boolean;
     truncate?: boolean;
-    format?: CoinFormat;
+    truncateToTwoDecimals?: boolean;
 }
 export function TableCoinDisplay({
     amount,
@@ -29,7 +29,7 @@ export function TableCoinDisplay({
     showSign = false,
     showTrustedBadge = false,
     truncate,
-    format = CoinFormat.Full,
+    truncateToTwoDecimals,
 }: TableCoinDisplayProps) {
     const isPositive = BigInt(amount) > BigInt(0);
 
@@ -40,8 +40,9 @@ export function TableCoinDisplay({
         balance: amount,
         coinType,
         showSign,
-        format,
+        format: CoinFormat.Full,
         truncate,
+        truncateToTwoDecimals,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
@@ -63,12 +64,7 @@ export function TableCoinDisplay({
             </span>
             {showTrusted && <RecognizedBadge className="size-4 text-iota-primary-40" />}
 
-            <CoinFiatValue
-                amount={amount}
-                coinType={coinType}
-                showApproxSymbol
-                rounded={format === CoinFormat.Rounded}
-            />
+            <CoinFiatValue amount={amount} coinType={coinType} showApproxSymbol />
         </div>
     );
 }

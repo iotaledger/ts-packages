@@ -120,6 +120,7 @@ interface FormatCoinOptions {
     showSign?: boolean;
     useGroupSeparator?: boolean;
     truncate?: boolean;
+    truncateToTwoDecimals?: boolean;
 }
 // TODO #1: This handles undefined values to make it easier to integrate with
 // the reset of the app as it is today, but it really shouldn't in a perfect world.
@@ -130,6 +131,7 @@ export function useFormatCoin({
     showSign = false,
     useGroupSeparator = true,
     truncate = true,
+    truncateToTwoDecimals = false,
 }: FormatCoinOptions): FormattedCoin {
     const fallbackSymbol = useMemo(
         () => (coinType ? (getCoinSymbol(coinType) ?? '') : ''),
@@ -143,9 +145,16 @@ export function useFormatCoin({
 
         if (!isFetched) return '...';
 
-        return formatBalance(balance, data?.decimals ?? 0, format, showSign, { useGroupSeparator });
+        const formattedBalance = formatBalance(balance, data?.decimals ?? 0, format, showSign, {
+            useGroupSeparator,
+        });
+
+        if (!truncateToTwoDecimals) return formattedBalance;
+
+        const [integerPart, decimalPart] = formattedBalance.split('.');
+        return decimalPart ? `${integerPart}.${decimalPart.slice(0, 2)}` : formattedBalance;
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [data?.decimals, isFetched, balance, format, useGroupSeparator]);
+    }, [data?.decimals, isFetched, balance, format, useGroupSeparator, truncateToTwoDecimals]);
 
     return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
 }
