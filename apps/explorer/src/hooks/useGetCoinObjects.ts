@@ -1,9 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useIotaGraphQLClientContext } from '@iota/core';
+import { setDefaultIotaNameQueryData, useIotaGraphQLClientContext } from '@iota/core';
 import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 
 export type CoinObjectOwner =
     | { kind: 'Address'; address: string }
@@ -23,7 +23,10 @@ interface CoinObjectsPage {
 }
 
 type CoinObjectOwnerNode =
-    | { __typename: 'AddressOwner'; owner?: { address: string } | null }
+    | {
+          __typename: 'AddressOwner';
+          owner?: { address: string; iotaNamesDefaultName?: string | null } | null;
+      }
     | { __typename: 'Parent'; parent?: { address: string } | null }
     | { __typename: 'Shared' }
     | { __typename: 'Immutable' };
@@ -56,6 +59,7 @@ const COIN_OBJECTS_QUERY = graphql(`
                     ... on AddressOwner {
                         owner {
                             address
+                            iotaNamesDefaultName
                         }
                     }
                     ... on Parent {
@@ -90,6 +94,7 @@ function toCoinObjectOwner(owner?: CoinObjectOwnerNode | null): CoinObjectOwner 
  */
 export function useGetCoinObjects(coinType: string, pageSize: number) {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
+    const queryClient = useQueryClient();
 
     return useInfiniteQuery<CoinObjectsPage, Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
@@ -106,6 +111,17 @@ export function useGetCoinObjects(coinType: string, pageSize: number) {
             });
             const result = response.data?.coins;
             if (!result) return { coinObjects: [], nextCursor: null };
+
+            // Owners' names come in this same query, so `AddressLink` doesn't
+            // need one name request per row.
+            for (const { owner } of result.nodes) {
+                if (owner?.__typename !== 'AddressOwner' || !owner.owner) continue;
+                setDefaultIotaNameQueryData(
+                    queryClient,
+                    owner.owner.address,
+                    owner.owner.iotaNamesDefaultName,
+                );
+            }
 
             return {
                 coinObjects: result.nodes.map(({ address, coinBalance, owner }) => ({

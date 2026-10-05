@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { GasSummaryType, BalanceChangeSummary, ObjectChangeSummary } from '.';
+import { TransactionCoinBalances } from '../interfaces';
 
 export type TransactionSummaryType = {
     balanceChanges: BalanceChangeSummary;
@@ -11,4 +12,5 @@ export type TransactionSummaryType = {
     sender?: string;
     timestamp?: string | null;
     gas?: GasSummaryType;
+    coinBalances: TransactionCoinBalances | null;
 } | null;

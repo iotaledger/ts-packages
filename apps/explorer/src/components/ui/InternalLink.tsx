@@ -28,7 +28,6 @@ interface BaseInternalLinkProps extends LinkProps {
     queryStrings?: Record<string, string>;
     copyText?: string;
     onCopyError?: (e: unknown, text: string) => void;
-    resolveIotaName?: boolean;
 }
 
 function createInternalLink<T extends string>(
@@ -46,7 +45,6 @@ function createInternalLink<T extends string>(
         renderAddressAlias,
         showAddressAlias = ['address', 'object', 'validator'].includes(base),
         hideAlias = false,
-        resolveIotaName = true,
         className,
         ...props
     }: BaseInternalLinkProps & Record<T, string>) => {
@@ -56,7 +54,7 @@ function createInternalLink<T extends string>(
 
         const to = `/${base}/${encodeURI(id)}${queryStringPrefix}`;
 
-        const isResolveIotaName = resolveIotaName && base === 'address' && isValidIotaAddress(id);
+        const isResolveIotaName = base === 'address' && isValidIotaAddress(id);
         const { data: iotaName } = useGetDefaultIotaName(isResolveIotaName ? id : null);
         const copyToClipboard = useCopyToClipboard();
 

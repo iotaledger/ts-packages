@@ -1,12 +1,24 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { chunkArray, useCoinRegistry, useIotaGraphQLClientContext } from '@iota/core';
+import {
+    chunkArray,
+    getDefaultIotaNameQueryKey,
+    setDefaultIotaNameQueryData,
+    useCoinRegistry,
+    useIotaGraphQLClientContext,
+} from '@iota/core';
 import { useIotaClient } from '@iota/dapp-kit';
 import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
 import { normalizeStructTag, parseStructTag } from '@iota/iota-sdk/utils';
 import type { IotaClient } from '@iota/iota-sdk/client';
-import { type UseQueryResult, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+    type QueryClient,
+    type UseQueryResult,
+    useInfiniteQuery,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
 
 export interface OnChainCoin {
     coinType: string;
@@ -39,6 +51,8 @@ interface CoinMetadataObjectsQueryResult {
         objects: {
             pageInfo: { hasNextPage: boolean; endCursor?: string | null };
             nodes: {
+                address: string;
+                owner?: { __typename: string } | null;
                 asMoveObject?: {
                     contents?: { type: { repr: string }; json: unknown } | null;
                     asCoinMetadata?: { supply?: string | null } | null;
@@ -77,6 +91,10 @@ const COIN_METADATA_OBJECTS_QUERY = graphql(`
                 endCursor
             }
             nodes {
+                address
+                owner {
+                    __typename
+                }
                 asMoveObject {
                     contents {
                         type {
@@ -113,11 +131,20 @@ const COIN_OBJECT_TYPES: Record<CoinSource, string> = {
     manager: '0x2::coin_manager::CoinManager',
 };
 const MAX_RPC_BATCH_SIZE = 50;
+// GraphQL caps the query part (including variables) at 5000 bytes, about 30 addresses.
+const NAME_LOOKUP_BATCH_SIZE = 25;
 
 type GraphQLClient = NonNullable<
     ReturnType<typeof useIotaGraphQLClientContext>['iotaGraphQLClient']
 >;
-type CoinWithoutPublishInfo = Omit<OnChainCoin, 'creator' | 'createdAt' | 'publishDigest'>;
+interface CoinWithoutPublishInfo extends Omit<
+    OnChainCoin,
+    'creator' | 'createdAt' | 'publishDigest'
+> {
+    // The object whose last transaction created the coin: its metadata when
+    // frozen, since frozen objects never change again, otherwise its package.
+    originObjectId: string;
+}
 
 // Most coins keep their metadata in a standalone `CoinMetadata` object. Coins
 // migrated to a `CoinManager` keep it inside the manager instead.
@@ -141,16 +168,19 @@ async function fetchCoinObjects(
     const result = response.data?.objects;
     if (!result) return { coins: [], nextCursor: null };
 
-    const coins = result.nodes.flatMap(({ asMoveObject }) => {
+    const coins = result.nodes.flatMap(({ address, owner, asMoveObject }) => {
         const contents = asMoveObject?.contents;
         const [coinTypeTag] = contents ? parseStructTag(contents.type.repr).typeParams : [];
         if (!contents || !coinTypeTag) return [];
+        const objectCoinType = normalizeStructTag(coinTypeTag);
+        const packageId = parseStructTag(objectCoinType).address;
 
         if (source === 'manager') {
             const { metadata, treasury_cap } = contents.json as CoinManagerJson;
             if (!metadata) return [];
             return {
-                coinType: normalizeStructTag(coinTypeTag),
+                coinType: objectCoinType,
+                originObjectId: packageId,
                 name: metadata.name,
                 symbol: metadata.symbol,
                 decimals: metadata.decimals,
@@ -162,7 +192,8 @@ async function fetchCoinObjects(
 
         const { name, symbol, decimals, description, icon_url } = contents.json as CoinMetadataJson;
         return {
-            coinType: normalizeStructTag(coinTypeTag),
+            coinType: objectCoinType,
+            originObjectId: owner?.__typename === 'Immutable' ? address : packageId,
             name,
             symbol,
             decimals,
@@ -218,25 +249,25 @@ async function fetchCoinsPage(
 }
 
 // GraphQL does not resolve the transaction that last touched an object, so it
-// is fetched over RPC. Packages never change after publish, so the last
-// transaction of the package that defines the coin type is its publish.
+// is fetched over RPC. Frozen metadata and packages don't change after they are
+// created, so that transaction is the coin's creation. System packages (`0x2`)
+// are upgraded in place, but their coins' metadata is frozen at genesis.
 async function withPublishInfo(
     client: IotaClient,
     coins: CoinWithoutPublishInfo[],
 ): Promise<OnChainCoin[]> {
-    const packageIds = coins.map(({ coinType }) => parseStructTag(coinType).address);
-    const uniquePackageIds = [...new Set(packageIds)];
-    const packages = (
+    const originIds = [...new Set(coins.map(({ originObjectId }) => originObjectId))];
+    const origins = (
         await Promise.all(
-            chunkArray(uniquePackageIds, MAX_RPC_BATCH_SIZE).map((ids) =>
+            chunkArray(originIds, MAX_RPC_BATCH_SIZE).map((ids) =>
                 client.multiGetObjects({ ids, options: { showPreviousTransaction: true } }),
             ),
         )
     ).flat();
-    const digestByPackageId = new Map(
-        uniquePackageIds.map((id, index) => [id, packages[index]?.data?.previousTransaction]),
+    const digestByOriginId = new Map(
+        originIds.map((id, index) => [id, origins[index]?.data?.previousTransaction]),
     );
-    const digests = packageIds.map((id) => digestByPackageId.get(id) ?? null);
+    const digests = coins.map(({ originObjectId }) => digestByOriginId.get(originObjectId) ?? null);
 
     const transactions = (
         await Promise.all(
@@ -252,7 +283,7 @@ async function withPublishInfo(
         transactions.map((transaction) => [transaction.digest, transaction]),
     );
 
-    return coins.map((coin, index) => {
+    return coins.map(({ originObjectId: _, ...coin }, index) => {
         const digest = digests[index];
         const transaction = digest ? transactionByDigest.get(digest) : undefined;
         return {
@@ -265,30 +296,92 @@ async function withPublishInfo(
 }
 
 /**
+ * Looks up the default IOTA names of the coins' creators, several per GraphQL
+ * request, and caches them for `AddressLink`. Without this every creator cell
+ * fires its own name request, which hits the GraphQL rate limit.
+ */
+async function cacheCreatorNames(
+    graphQLClient: GraphQLClient,
+    queryClient: QueryClient,
+    coins: OnChainCoin[],
+): Promise<void> {
+    const creators = [
+        ...new Set(coins.flatMap(({ creator }) => (creator ? [creator] : []))),
+    ].filter(
+        (address) => queryClient.getQueryData(getDefaultIotaNameQueryKey(address)) === undefined,
+    );
+
+    await Promise.all(
+        chunkArray(creators, NAME_LOOKUP_BATCH_SIZE).map(async (addresses) => {
+            const variables = Object.fromEntries(addresses.map((address, i) => [`a${i}`, address]));
+            const declarations = addresses.map((_, i) => `$a${i}: IotaAddress!`).join(',');
+            const fields = addresses
+                .map((_, i) => `a${i}: address(address: $a${i}) { iotaNamesDefaultName }`)
+                .join(' ');
+            const query = `query(${declarations}) { ${fields} }`;
+            try {
+                const { data } = await graphQLClient.query<
+                    Record<string, { iotaNamesDefaultName: string | null } | null>
+                >({ query, variables });
+                addresses.forEach((address, i) =>
+                    setDefaultIotaNameQueryData(
+                        queryClient,
+                        address,
+                        data?.[`a${i}`]?.iotaNamesDefaultName,
+                    ),
+                );
+            } catch {
+                // Names are optional; `AddressLink` falls back to its own lookup.
+            }
+        }),
+    );
+}
+
+/**
  * Every coin on chain, paginated. Passing a `coinType` narrows the result to
  * that single coin.
  */
 export function useGetAllCoins(pageSize = PAGE_SIZE, coinType?: string | null) {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const client = useIotaClient();
+    const queryClient = useQueryClient();
 
     return useInfiniteQuery<OnChainCoinsPage, Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['all-coins', pageSize, coinType],
         initialPageParam: { source: 'metadata', cursor: null } satisfies CoinsPageParam,
         queryFn: async ({ pageParam }) => {
-            if (coinType) {
-                const coins = await fetchCoinByType(iotaGraphQLClient!, coinType);
-                return { coins: await withPublishInfo(client, coins), nextCursor: null };
-            }
-            const { coins, nextCursor } = await fetchCoinsPage(
-                iotaGraphQLClient!,
-                pageSize,
-                pageParam as CoinsPageParam,
-            );
-            return { coins: await withPublishInfo(client, coins), nextCursor };
+            const { coins, nextCursor } = coinType
+                ? { coins: await fetchCoinByType(iotaGraphQLClient!, coinType), nextCursor: null }
+                : await fetchCoinsPage(iotaGraphQLClient!, pageSize, pageParam as CoinsPageParam);
+            const coinsWithPublishInfo = await withPublishInfo(client, coins);
+            await cacheCreatorNames(iotaGraphQLClient!, queryClient, coinsWithPublishInfo);
+            return { coins: coinsWithPublishInfo, nextCursor };
         },
         getNextPageParam: ({ nextCursor }) => nextCursor,
+        enabled: !!iotaGraphQLClient,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+/**
+ * A single coin by its type, or null when no coin with that type exists.
+ */
+export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null, Error> {
+    const { iotaGraphQLClient } = useIotaGraphQLClientContext();
+    const client = useIotaClient();
+    const queryClient = useQueryClient();
+
+    return useQuery<OnChainCoin | null, Error>({
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['coin', coinType],
+        queryFn: async () => {
+            const coins = await fetchCoinByType(iotaGraphQLClient!, coinType);
+            const [coin] = await withPublishInfo(client, coins);
+            if (!coin) return null;
+            await cacheCreatorNames(iotaGraphQLClient!, queryClient, [coin]);
+            return coin;
+        },
         enabled: !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });
@@ -300,6 +393,7 @@ export function useGetAllCoins(pageSize = PAGE_SIZE, coinType?: string | null) {
 export function useGetRecognizedCoins(): UseQueryResult<OnChainCoin[], Error> {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const client = useIotaClient();
+    const queryClient = useQueryClient();
     const coinTypes = useCoinRegistry().map(({ coinType }) => normalizeStructTag(coinType));
 
     return useQuery<OnChainCoin[], Error>({
@@ -309,7 +403,9 @@ export function useGetRecognizedCoins(): UseQueryResult<OnChainCoin[], Error> {
             const coins = await Promise.all(
                 coinTypes.map((coinType) => fetchCoinByType(iotaGraphQLClient!, coinType)),
             );
-            return withPublishInfo(client, coins.flat());
+            const coinsWithPublishInfo = await withPublishInfo(client, coins.flat());
+            await cacheCreatorNames(iotaGraphQLClient!, queryClient, coinsWithPublishInfo);
+            return coinsWithPublishInfo;
         },
         enabled: !!iotaGraphQLClient && coinTypes.length > 0,
         staleTime: 5 * 60 * 1000,

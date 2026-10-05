@@ -8,7 +8,9 @@ import {
     ImageIcon,
     ImageIconSize,
     STAKING_REQUEST_EVENT,
+    TransactionAction,
     UNSTAKING_REQUEST_EVENT,
+    getTransactionAction,
     getTransactionCoinBalances,
     isMigrationTransaction,
     isUnlockTimelockedObjectTransaction,
@@ -21,8 +23,8 @@ import { useIotaClientQuery } from '@iota/dapp-kit';
 import { CoinFormat, IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { type ReactNode, useMemo, useState } from 'react';
-import { AddressLink, ValidatorLink } from '~/components/ui';
-import { getSendRecipients } from '~/lib/utils';
+import { AddressLink, LinkWithQuery, ValidatorLink } from '~/components/ui';
+import { getCoinPagePath, getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
 
@@ -87,6 +89,8 @@ function getSummaryActions(transaction: IotaTransactionBlockResponse): SummaryAc
         if (!receivedBySender.length) actions.push({ type: 'unlockAssets' });
     }
 
+    if (getTransactionAction(transaction, sender) !== TransactionAction.Send) return actions;
+
     for (const { owner, ownerType, changes } of owners) {
         if (owner === sender || ownerType !== CoinOwnerType.Address) continue;
         for (const { coinType, amount } of changes) {
@@ -129,7 +133,7 @@ export function TransactionActionSummary({
                     className="text-label-md text-iota-primary-30 dark:text-iota-primary-80"
                     onClick={() => setShowAll(!showAll)}
                 >
-                    {showAll ? 'Show less' : `Show all ${actions.length} actions`}
+                    {showAll ? 'Show Less' : `Show all ${actions.length} actions`}
                 </ButtonUnstyled>
             )}
         </div>
@@ -238,15 +242,25 @@ function CoinAmount({
         balance: amount,
         coinType,
         format: CoinFormat.Full,
+        truncate: false,
     });
+    const coinPagePath = getCoinPagePath(coinType);
 
     return (
         <>
             <span className="flex items-center gap-x-xs">
-                <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                <LinkWithQuery to={coinPagePath} tabIndex={-1} aria-hidden="true">
+                    <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                </LinkWithQuery>
                 <span className={outgoing ? 'coin-change-negative' : 'coin-change-positive'}>
                     {outgoing ? '-' : '+'}
-                    {formattedAmount} {vested ? `vested ${symbol}` : symbol}
+                    {formattedAmount} {vested && 'vested '}
+                    <LinkWithQuery
+                        to={coinPagePath}
+                        className="text-iota-primary-30 dark:text-iota-primary-80"
+                    >
+                        {symbol}
+                    </LinkWithQuery>
                 </span>
             </span>
             <CoinFiatValue coinType={coinType} amount={amount} showApproxSymbol />

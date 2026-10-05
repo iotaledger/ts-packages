@@ -40,11 +40,7 @@ export function generateCoinObjectsTableColumns({
                 return (
                     <TableCellBase>
                         {owner?.kind === 'Address' ? (
-                            <AddressLink
-                                address={owner.address}
-                                copyText={owner.address}
-                                resolveIotaName={false}
-                            />
+                            <AddressLink address={owner.address} copyText={owner.address} />
                         ) : owner?.kind === 'Object' ? (
                             <ObjectLink objectId={owner.address} copyText={owner.address} />
                         ) : (

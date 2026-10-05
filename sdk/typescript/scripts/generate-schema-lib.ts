@@ -33,15 +33,21 @@ export async function generateSchema(targetFolder: string) {
     execSync(`pnpm run generate-schema -c ${filePath}`);
 }
 
-// creates the schema index file in the respective target folder
-export async function createSchemaIndexFile(targetFolder: string, minorVersion: string) {
+// creates the schema index file in the respective target folder, with a comment after the license header
+export async function createSchemaIndexFile(
+    targetFolder: string,
+    minorVersion: string,
+    headerComment: string,
+) {
     // create index.ts
     await writeFile(
         resolve(targetFolder, 'index.ts'),
         `
 // Copyright (c) Mysten Labs, Inc.
-// Modifications Copyright (c) 2024 IOTA Stiftung
+// Modifications Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
+
+${headerComment}
 
 import { initGraphQLTada } from 'gql.tada';
 
@@ -67,7 +73,9 @@ export async function addExportsToPackageJson(packageRoot: string, versions: str
     const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'));
 
     for (const version of versions) {
-        packageJson.exports[`./graphql/schemas/${version}`] = {
+        const exportName = `./graphql/schemas/${version}`;
+        delete packageJson.exports[exportName];
+        packageJson.exports[exportName] = {
             import: `./dist/esm/graphql/schemas/${version}/index.js`,
             require: `./dist/cjs/graphql/schemas/${version}/index.js`,
         };

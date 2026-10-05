@@ -4,20 +4,20 @@
 
 import { useMemo } from 'react';
 import { Badge, BadgeType, Divider, Header, KeyValueInfo, Panel } from '@iota/apps-ui-kit';
-import type { BalanceChangeSummary, RenderExplorerLink } from '../../types';
+import type { RenderExplorerLink } from '../../types';
 import { ExplorerLinkType } from '../../enums';
 import { formatAddress, CoinFormat } from '@iota/iota-sdk/utils';
 import { CoinItem } from '../coin';
 import { RecognizedBadge } from '@iota/apps-ui-icons';
-import { formatIotaName, getRecognizedUnRecognizedTokenChanges } from '../../utils';
-import { BalanceChange } from '../../interfaces';
-import { useGetDefaultIotaName } from '../../hooks';
+import { formatIotaName, getCoinRegistryEntry } from '../../utils';
+import { CoinAmountChange, CoinOwnerChanges } from '../../interfaces';
+import { useCoinRegistry, useGetDefaultIotaName } from '../../hooks';
 import { NamedAddressTooltip } from '../NamedAddressTooltip';
 import { NameAvatar, NameAvatarSize } from '../icon';
 
 interface BalanceChangesProps {
     renderExplorerLink: RenderExplorerLink;
-    changes?: BalanceChangeSummary;
+    changes?: CoinOwnerChanges[];
     chain?: string;
 }
 
@@ -30,17 +30,15 @@ export function BalanceChanges({
 
     return (
         <>
-            {Object.entries(changes).map(([owner, changes]) => {
-                return (
-                    <BalanceChangePanel
-                        key={owner}
-                        owner={owner}
-                        changes={changes}
-                        renderExplorerLink={ExplorerLink}
-                        chain={chain}
-                    />
-                );
-            })}
+            {changes.map(({ owner, changes }) => (
+                <BalanceChangePanel
+                    key={owner}
+                    owner={owner}
+                    changes={changes}
+                    renderExplorerLink={ExplorerLink}
+                    chain={chain}
+                />
+            ))}
         </>
     );
 }
@@ -48,7 +46,7 @@ export function BalanceChanges({
 interface BalanceChangePanelProps {
     renderExplorerLink: RenderExplorerLink;
     owner: string;
-    changes: BalanceChange[];
+    changes: CoinAmountChange[];
     chain?: string;
 }
 function BalanceChangePanel({
@@ -67,11 +65,10 @@ function BalanceChangePanel({
     const isMainnet = networkName === 'mainnet';
     const badgeType = isMainnet ? BadgeType.PrimarySolid : BadgeType.Neutral;
 
-    if (!changes) return null;
     return (
         <Panel hasBorder>
             <div className="flex flex-col gap-y-sm overflow-hidden rounded-xl">
-                <div className="flex items-center justify-between px-md">
+                <div className="flex items-center justify-between">
                     <Header title="Balance Changes" />
                     {chainName && <Badge type={badgeType} label={chainName} />}
                 </div>
@@ -102,16 +99,19 @@ function BalanceChangePanel({
     );
 }
 
-function BalanceChangeEntry({ change }: { change: BalanceChange }) {
-    const { amount, coinType, unRecognizedToken } = change;
+interface BalanceChangeEntryProps {
+    change: CoinAmountChange;
+    isTrusted: boolean;
+}
+
+function BalanceChangeEntry({ change, isTrusted }: BalanceChangeEntryProps) {
+    const { amount, coinType } = change;
     return (
         <CoinItem
             coinType={coinType}
-            balance={BigInt(amount)}
+            balance={amount}
             icon={
-                unRecognizedToken ? undefined : (
-                    <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
-                )
+                isTrusted ? <RecognizedBadge className="h-4 w-4 text-iota-primary-40" /> : undefined
             }
             format={CoinFormat.Full}
             hideMask
@@ -119,24 +119,25 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
     );
 }
 
-function BalanceChangeEntries({ changes }: { changes: BalanceChange[] }) {
-    const { recognizedTokenChanges, unRecognizedTokenChanges } = useMemo(
-        () => getRecognizedUnRecognizedTokenChanges(changes),
-        [changes],
+function BalanceChangeEntries({ changes }: { changes: CoinAmountChange[] }) {
+    const coinRegistry = useCoinRegistry();
+
+    const sortedChanges = useMemo(
+        () =>
+            changes
+                .map((change) => ({
+                    change,
+                    isTrusted: !!getCoinRegistryEntry(coinRegistry, change.coinType)?.trust,
+                }))
+                .sort((a, b) => Number(b.isTrusted) - Number(a.isTrusted)),
+        [changes, coinRegistry],
     );
 
     return (
         <>
-            {recognizedTokenChanges.map((change) => (
-                <BalanceChangeEntry change={change} key={change.coinType + change.amount} />
+            {sortedChanges.map(({ change, isTrusted }) => (
+                <BalanceChangeEntry key={change.coinType} change={change} isTrusted={isTrusted} />
             ))}
-            {unRecognizedTokenChanges.length > 0 && (
-                <>
-                    {unRecognizedTokenChanges.map((change, index) => (
-                        <BalanceChangeEntry change={change} key={change.coinType + index} />
-                    ))}
-                </>
-            )}
         </>
     );
 }
