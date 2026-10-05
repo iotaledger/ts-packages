@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useGoBackTo } from '_components/NavigationStackProvider';
 import { Form } from '../../shared/forms/Form';
 
 import {
@@ -18,7 +19,7 @@ import { z } from 'zod';
 import { useBackgroundClient } from '../../hooks';
 
 export function ImportPasskeyPage() {
-    const navigate = useNavigate();
+    const goBackTo = useGoBackTo();
     const [searchParams] = useSearchParams();
     const accountID = searchParams.get('accountID') || '';
     useBootstrapSourceFlow();
@@ -27,7 +28,7 @@ export function ImportPasskeyPage() {
         <PageTemplate
             title="Import Passkey Account"
             isTitleCentered
-            onBack={() => navigate('/accounts/import-existing')}
+            onBack={() => goBackTo('/accounts/import-existing')}
         >
             {accountID ? (
                 <NicknameSetContent accountID={accountID} />
