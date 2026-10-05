@@ -13,6 +13,7 @@ import {
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { LinkWithQuery } from './ui';
+import { getCoinPagePath } from '~/lib/utils';
 
 interface TableCoinDisplayProps {
     amount: string | bigint;
@@ -42,7 +43,7 @@ export function TableCoinDisplay({
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
-    const coinPagePath = `/coin/${encodeURI(coinType)}`;
+    const coinPagePath = getCoinPagePath(coinType);
 
     return (
         <div className="flex flex-row items-center gap-1.5">

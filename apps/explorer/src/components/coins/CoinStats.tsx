@@ -53,7 +53,8 @@ export function CoinStats({
                     tooltipPosition={TooltipPosition.Top}
                     value={
                         <ObjectLink
-                            objectId={`${address}?module=${module}`}
+                            objectId={address}
+                            queryStrings={{ module }}
                             label={truncatedCoinType}
                             showAddressAlias={false}
                             copyText={coinType}

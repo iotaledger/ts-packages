@@ -9,6 +9,7 @@ import { type CoinBalanceVerified, type SortField, type SortOrder } from './Owne
 import { CoinsPanel } from './OwnedCoinsPanel';
 import { ArrowUp, RecognizedBadge } from '@iota/apps-ui-icons';
 import { LinkWithQuery } from '~/components/ui';
+import { getCoinPagePath } from '~/lib/utils';
 
 type OwnedCoinViewProps = {
     coin: CoinBalanceVerified;
@@ -35,7 +36,7 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     truncate={false}
                     renderTitle={(title) => (
                         <LinkWithQuery
-                            to={`/coin/${encodeURI(coin.coinType)}`}
+                            to={getCoinPagePath(coin.coinType)}
                             className="text-iota-primary-30 dark:text-iota-primary-80"
                         >
                             {title}

@@ -28,6 +28,7 @@ import {
 } from '~/components/ui';
 import {
     extractName,
+    getCoinPagePath,
     getCoinTypeOfObject,
     onCopySuccess,
     parseObjectType,
@@ -146,7 +147,7 @@ function CoinCard({ coinType }: CoinCardProps): JSX.Element {
             tooltipPosition={TooltipPosition.Top}
             value={
                 <LinkWithQuery
-                    to={`/coin/${encodeURI(coinType)}`}
+                    to={getCoinPagePath(coinType)}
                     className="inline-flex items-center gap-x-xxs text-iota-primary-30 dark:text-iota-primary-80"
                 >
                     <CoinIcon coinType={coinType} size={ImageIconSize.Small} />

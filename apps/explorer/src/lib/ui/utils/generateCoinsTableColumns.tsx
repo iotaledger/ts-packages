@@ -19,7 +19,6 @@ import { getSameNameWarningTitle, SAME_NAME_WARNING_TEXT } from '~/lib/constants
 import { findMatchingRecognizedCoin } from '~/lib/utils';
 
 interface GenerateCoinsTableColumnsArgs {
-    includeColumns?: string[];
     recognizedCoins?: OnChainCoin[];
 }
 
@@ -104,11 +103,10 @@ function CoinWithImage({
 }
 
 export function generateCoinsTableColumns({
-    includeColumns,
     recognizedCoins,
 }: GenerateCoinsTableColumnsArgs = {}): ColumnDef<OnChainCoin>[] {
     const recognizedTypes = new Set(recognizedCoins?.map(({ coinType }) => coinType));
-    let columns: ColumnDef<OnChainCoin>[] = [
+    return [
         {
             header: 'Coin',
             id: 'name',
@@ -198,14 +196,6 @@ export function generateCoinsTableColumns({
             },
         },
     ];
-
-    if (includeColumns) {
-        columns = columns.filter((col) =>
-            includeColumns.includes(col.header?.toString() as string),
-        );
-    }
-
-    return columns;
 }
 
 function sortByString(value1: string, value2: string) {

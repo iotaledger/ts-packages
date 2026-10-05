@@ -26,7 +26,7 @@ import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
-import { toCoinType } from '~/lib/utils';
+import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
 
@@ -59,18 +59,23 @@ function CoinsPageResult(): JSX.Element {
         [pagination],
     );
 
-    const { data: recognizedCoins = [], isPending: isRecognizedCoinsPending } =
-        useGetRecognizedCoins();
+    const {
+        data: recognizedCoins = [],
+        isPending: isRecognizedCoinsPending,
+        isError: isRecognizedCoinsError,
+    } = useGetRecognizedCoins();
     const { data: coinsCount } = useGetCoinsCount();
 
     const filterCounts = useMemo(() => {
-        if (coinsCount === undefined || isRecognizedCoinsPending) return undefined;
+        if (coinsCount === undefined || isRecognizedCoinsPending || isRecognizedCoinsError) {
+            return undefined;
+        }
         return {
             All: coinsCount,
             Recognized: recognizedCoins.length,
             'Not Recognized': coinsCount - recognizedCoins.length,
         };
-    }, [coinsCount, isRecognizedCoinsPending, recognizedCoins.length]);
+    }, [coinsCount, isRecognizedCoinsPending, isRecognizedCoinsError, recognizedCoins.length]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
@@ -103,58 +108,59 @@ function CoinsPageResult(): JSX.Element {
     }, [data, filter, isInvalidSearch, pagination.currentPage, recognizedCoins, searchedCoinType]);
 
     const isRecognizedFilter = filter === 'Recognized';
+    const isTableError = isRecognizedCoinsError || (!isRecognizedFilter && isError);
     const isTableLoading =
         isRecognizedCoinsPending || (!isRecognizedFilter && (isPending || isFetching || !data));
 
     return (
         <PageLayout
             content={
-                isError ? (
+                <div className="flex w-full flex-col gap-xl">
+                    <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                        Coins
+                    </div>
                     <InfoBox
-                        title="Failed to load data"
-                        supportingText="Coins data could not be loaded"
-                        icon={<Warning />}
-                        type={InfoBoxType.Error}
+                        title="Anyone can create a coin"
+                        supportingText="Names, symbols and icons can be copied. Check the coin type to make sure it's the coin you expect."
+                        icon={<Info />}
+                        type={InfoBoxType.Default}
                         style={InfoBoxStyle.Elevated}
                     />
-                ) : (
-                    <div className="flex w-full flex-col gap-xl">
-                        <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                            Coins
-                        </div>
-                        <InfoBox
-                            title="Anyone can create a coin"
-                            supportingText="Names, symbols and icons can be copied. Check the coin type to make sure it's the coin you expect."
-                            icon={<Info />}
-                            type={InfoBoxType.Default}
-                            style={InfoBoxStyle.Elevated}
-                        />
-                        <Panel>
-                            <Title title="All Coins" />
+                    <Panel>
+                        <Title title="All Coins" />
 
-                            <div className="flex flex-col gap-md p-md">
-                                <TableSearch
-                                    onSearch={onSearchTermChange}
-                                    placeholder="Search by coin type…"
+                        <div className="flex flex-col gap-md p-md">
+                            <TableSearch
+                                onSearch={onSearchTermChange}
+                                placeholder="Search by coin type…"
+                            />
+                            <div className="flex">
+                                <CoinFilters
+                                    selectedFilter={filter}
+                                    onFilterChange={handleFilterChange}
+                                    counts={filterCounts}
                                 />
-                                <div className="flex">
-                                    <CoinFilters
-                                        selectedFilter={filter}
-                                        onFilterChange={handleFilterChange}
-                                        counts={filterCounts}
-                                    />
-                                </div>
                             </div>
-                            <div className="p-md">
-                                {isInvalidSearch && (
-                                    <InfoBox
-                                        title="No coins found"
-                                        supportingText="Try a different search term"
-                                        icon={<Warning />}
-                                        type={InfoBoxType.Warning}
-                                        style={InfoBoxStyle.Elevated}
-                                    />
-                                )}
+                        </div>
+                        <div className="p-md">
+                            {isInvalidSearch && (
+                                <InfoBox
+                                    title="No coins found"
+                                    supportingText="Try a different search term"
+                                    icon={<Warning />}
+                                    type={InfoBoxType.Warning}
+                                    style={InfoBoxStyle.Elevated}
+                                />
+                            )}
+                            {isTableError ? (
+                                <InfoBox
+                                    title="Failed to load data"
+                                    supportingText="Coins data could not be loaded"
+                                    icon={<Warning />}
+                                    type={InfoBoxType.Error}
+                                    style={InfoBoxStyle.Elevated}
+                                />
+                            ) : (
                                 <ErrorBoundary>
                                     {isTableLoading ? (
                                         <PlaceholderTable
@@ -170,10 +176,7 @@ function CoinsPageResult(): JSX.Element {
                                             areHeadersCentered={false}
                                             defaultSorting={[{ id: 'createdAt', desc: false }]}
                                             onRowClick={({ coinType }) =>
-                                                navigateWithQuery(
-                                                    `/coin/${encodeURI(coinType)}`,
-                                                    {},
-                                                )
+                                                navigateWithQuery(getCoinPagePath(coinType), {})
                                             }
                                             paginationOptions={
                                                 isRecognizedFilter ? undefined : pagination
@@ -199,10 +202,10 @@ function CoinsPageResult(): JSX.Element {
                                         />
                                     )}
                                 </ErrorBoundary>
-                            </div>
-                        </Panel>
-                    </div>
-                )
+                            )}
+                        </div>
+                    </Panel>
+                </div>
             }
         />
     );

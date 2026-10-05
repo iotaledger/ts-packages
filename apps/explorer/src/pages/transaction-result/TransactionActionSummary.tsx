@@ -24,7 +24,7 @@ import { CoinFormat, IOTA_TYPE_ARG, formatAddress } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { type ReactNode, useMemo, useState } from 'react';
 import { AddressLink, LinkWithQuery, ValidatorLink } from '~/components/ui';
-import { getSendRecipients } from '~/lib/utils';
+import { getCoinPagePath, getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
 
@@ -244,7 +244,7 @@ function CoinAmount({
         format: CoinFormat.Full,
         truncate: false,
     });
-    const coinPagePath = `/coin/${encodeURI(coinType)}`;
+    const coinPagePath = getCoinPagePath(coinType);
 
     return (
         <>

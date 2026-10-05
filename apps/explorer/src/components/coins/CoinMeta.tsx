@@ -5,13 +5,13 @@ import { RecognizedBadge } from '@iota/apps-ui-icons';
 import { Badge, BadgeType, Panel, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize, useCoinRegistryEntry } from '@iota/core';
 
-type CoinMetaProps = {
+interface CoinMetaProps {
     name: string;
     description?: string;
     iconUrl?: string | undefined | null;
     coinType: string;
     symbol?: string;
-};
+}
 
 export function CoinMeta({
     name,

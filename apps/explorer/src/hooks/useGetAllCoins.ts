@@ -365,6 +365,29 @@ export function useGetAllCoins(pageSize = PAGE_SIZE, coinType?: string | null) {
 }
 
 /**
+ * A single coin by its type, or null when no coin with that type exists.
+ */
+export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null, Error> {
+    const { iotaGraphQLClient } = useIotaGraphQLClientContext();
+    const client = useIotaClient();
+    const queryClient = useQueryClient();
+
+    return useQuery<OnChainCoin | null, Error>({
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['coin', coinType],
+        queryFn: async () => {
+            const coins = await fetchCoinByType(iotaGraphQLClient!, coinType);
+            const [coin] = await withPublishInfo(client, coins);
+            if (!coin) return null;
+            await cacheCreatorNames(iotaGraphQLClient!, queryClient, [coin]);
+            return coin;
+        },
+        enabled: !!iotaGraphQLClient,
+        staleTime: 5 * 60 * 1000,
+    });
+}
+
+/**
  * The coins in our coin registry, in registry order.
  */
 export function useGetRecognizedCoins(): UseQueryResult<OnChainCoin[], Error> {

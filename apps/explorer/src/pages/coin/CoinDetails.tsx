@@ -23,7 +23,7 @@ import {
     PlaceholderTable,
     TableCard,
 } from '~/components';
-import { useGetAllCoins, useGetCoinObjects, useGetRecognizedCoins } from '~/hooks';
+import { useGetCoin, useGetCoinObjects, useGetRecognizedCoins } from '~/hooks';
 import {
     getSameNameWarningTitle,
     SAME_NAME_WARNING_TEXT,
@@ -58,8 +58,7 @@ function CoinDetails(): JSX.Element {
 }
 
 function CoinDetailsContent({ coinType }: { coinType: string }): JSX.Element {
-    const { data, isPending, isError } = useGetAllCoins(1, coinType);
-    const coin = data?.pages[0]?.coins[0];
+    const { data: coin, isPending, isError } = useGetCoin(coinType);
     const { data: recognizedCoins = [] } = useGetRecognizedCoins();
     const matchingRecognizedCoin = coin ? findMatchingRecognizedCoin(coin, recognizedCoins) : null;
 
