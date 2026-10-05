@@ -15,6 +15,7 @@ import {
 import { ampli, getValidatorMoveEvent } from '~/lib';
 import { StakeColumn } from '~/components';
 import type { IotaEvent } from '@iota/iota-sdk/client';
+import { CoinFormat } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
@@ -193,7 +194,7 @@ export function generateValidatorsTableColumns({
                 const stakingPoolIotaBalance = getValue<string>();
                 return (
                     <TableCellBase>
-                        <StakeColumn stake={stakingPoolIotaBalance} />
+                        <StakeColumn stake={stakingPoolIotaBalance} format={CoinFormat.Rounded} />
                     </TableCellBase>
                 );
             },
@@ -280,7 +281,7 @@ export function generateValidatorsTableColumns({
                 return (
                     <TableCellBase>
                         {lastReward !== undefined ? (
-                            <StakeColumn stake={lastReward} />
+                            <StakeColumn stake={lastReward} format={CoinFormat.Rounded} />
                         ) : (
                             <TableCellText>--</TableCellText>
                         )}

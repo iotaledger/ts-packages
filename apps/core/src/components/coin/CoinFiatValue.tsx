@@ -3,7 +3,7 @@
 
 import { useIotaClientContext } from '@iota/dapp-kit';
 import { type Network } from '@iota/iota-sdk/client';
-import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IOTA_TYPE_ARG, formatAmount } from '@iota/iota-sdk/utils';
 import { useBalanceInUSD } from '../../hooks';
 import { formatBalanceToUSD } from '../../utils/formatBalanceToUSD';
 
@@ -12,6 +12,7 @@ export interface CoinFiatValueProps {
     coinType?: string;
     withParentheses?: boolean;
     showApproxSymbol?: boolean;
+    rounded?: boolean;
 }
 
 export function CoinFiatValue({
@@ -19,6 +20,7 @@ export function CoinFiatValue({
     coinType = IOTA_TYPE_ARG,
     withParentheses = true,
     showApproxSymbol = false,
+    rounded = false,
 }: CoinFiatValueProps): JSX.Element | null {
     const { network } = useIotaClientContext();
     const value = useBalanceInUSD(coinType, amount, network as Network);
@@ -27,7 +29,9 @@ export function CoinFiatValue({
         return null;
     }
 
-    const formattedValue = formatBalanceToUSD(Math.abs(value));
+    const formattedValue = rounded
+        ? `$${formatAmount(Math.abs(value))}`
+        : formatBalanceToUSD(Math.abs(value));
 
     if (showApproxSymbol) {
         return (

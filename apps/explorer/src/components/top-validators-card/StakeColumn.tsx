@@ -10,14 +10,16 @@ type StakeColumnProps = {
     stake: bigint | number | string;
     hideCoinSymbol?: boolean;
     inNano?: boolean;
+    format?: CoinFormat;
 };
 
 export function StakeColumn({
     stake,
     hideCoinSymbol,
     inNano = false,
+    format = CoinFormat.Full,
 }: StakeColumnProps): JSX.Element {
-    const [amount, symbol] = useFormatCoin({ balance: stake, format: CoinFormat.Full });
+    const [amount, symbol] = useFormatCoin({ balance: stake, format });
 
     const label = inNano ? formatBalance(stake, 0, CoinFormat.Full) : amount;
     const supportingLabel = inNano ? 'nano' : hideCoinSymbol ? undefined : symbol;
@@ -25,7 +27,13 @@ export function StakeColumn({
     return (
         <span className="flex flex-col whitespace-nowrap">
             <TableCellText supportingLabel={supportingLabel}>{label}</TableCellText>
-            {!inNano && <CoinFiatValue amount={stake} withParentheses={false} />}
+            {!inNano && (
+                <CoinFiatValue
+                    amount={stake}
+                    withParentheses={false}
+                    rounded={format === CoinFormat.Rounded}
+                />
+            )}
         </span>
     );
 }
