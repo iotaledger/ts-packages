@@ -87,7 +87,7 @@ export function AddressBalanceHero({ address }: AddressBalanceHeroProps): React.
                         <Copy className="text-iota-neutral-60 dark:text-iota-neutral-40" />
                     </ButtonUnstyled>
                 </div>
-                <CoinFiatValue amount={totalBalance} withParentheses={false} />
+                <CoinFiatValue amount={totalBalance} withParentheses={false} showApproxSymbol />
 
                 <div className="my-xs hidden w-full md:block">
                     <Divider />
@@ -132,7 +132,7 @@ function BalanceRow({ icon, label, value }: BalanceRowProps): JSX.Element {
                     {amount} {symbol}
                 </span>
                 <span className="[&>span]:!text-body-sm">
-                    <CoinFiatValue amount={value} withParentheses={false} />
+                    <CoinFiatValue amount={value} withParentheses={false} showApproxSymbol />
                 </span>
             </span>
         </div>

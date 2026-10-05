@@ -29,11 +29,6 @@ interface TransactionsForAddressProps {
     view: TransactionsForAddressView;
 }
 
-const PLACEHOLDER_COL_HEADINGS: Record<TransactionsForAddressView, string[]> = {
-    activity: ['Type', 'Sender', 'Txns', 'Balance Change', 'With', 'Gas Fee', 'Time', 'Function'],
-    'transaction-blocks': ['Type', 'Sender', 'Txns', 'Balance Change', 'Gas', 'Time', 'Function'],
-};
-
 export function TransactionsForAddress({
     address,
     view,
@@ -72,13 +67,18 @@ function TransactionsForAddressContent({
 
     const { data, isFetching, isError, pagination } = useCursorPagination(transactions);
 
+    const tableColumns =
+        view === 'activity'
+            ? generateActivityTableColumns(address)
+            : generateTransactionsTableColumns(address);
+
     if (isFetching) {
         return (
             <div className="flex flex-col gap-y-6">
                 <PlaceholderTable
                     rowCount={limit}
                     rowHeight="16px"
-                    colHeadings={PLACEHOLDER_COL_HEADINGS[view]}
+                    colHeadings={tableColumns.map((column) => String(column.header))}
                 />
                 <Placeholder width="w-full" height="h-5" />
             </div>
@@ -97,10 +97,6 @@ function TransactionsForAddressContent({
         );
     }
 
-    const tableColumns =
-        view === 'activity'
-            ? generateActivityTableColumns(address)
-            : generateTransactionsTableColumns(address);
     const hasTxns = (data?.data.length ?? 0) > 0;
 
     if (!hasTxns) {

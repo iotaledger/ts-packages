@@ -8,7 +8,7 @@ import { IOTA_DECIMALS, IOTA_TYPE_ARG, formatBalance, CoinFormat } from '@iota/i
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { useIotaGraphQLClientContext } from '../contexts';
 
 type FormattedCoin = [
@@ -21,7 +21,7 @@ const ELLIPSIS = '\u{2026}';
 const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
-export function useCoinMetadata(coinType?: string | null) {
+export function useCoinMetadata(coinType?: string | null, truncate = true) {
     const client = useIotaClient();
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
 
@@ -88,11 +88,11 @@ export function useCoinMetadata(coinType?: string | null) {
             return {
                 ...data,
                 symbol:
-                    data.symbol.length > SYMBOL_TRUNCATE_LENGTH
+                    truncate && data.symbol.length > SYMBOL_TRUNCATE_LENGTH
                         ? data.symbol.slice(0, SYMBOL_TRUNCATE_LENGTH) + ELLIPSIS
                         : data.symbol,
                 name:
-                    data.name.length > NAME_TRUNCATE_LENGTH
+                    truncate && data.name.length > NAME_TRUNCATE_LENGTH
                         ? data.name.slice(0, NAME_TRUNCATE_LENGTH) + ELLIPSIS
                         : data.name,
             };
@@ -119,6 +119,7 @@ interface FormatCoinOptions {
     format?: CoinFormat;
     showSign?: boolean;
     useGroupSeparator?: boolean;
+    truncate?: boolean;
 }
 // TODO #1: This handles undefined values to make it easier to integrate with
 // the reset of the app as it is today, but it really shouldn't in a perfect world.
@@ -128,12 +129,13 @@ export function useFormatCoin({
     format = CoinFormat.Rounded,
     showSign = false,
     useGroupSeparator = true,
+    truncate = true,
 }: FormatCoinOptions): FormattedCoin {
     const fallbackSymbol = useMemo(
         () => (coinType ? (getCoinSymbol(coinType) ?? '') : ''),
         [coinType],
     );
-    const queryResult = useCoinMetadata(coinType);
+    const queryResult = useCoinMetadata(coinType, truncate);
     const { isFetched, data } = queryResult;
 
     const formatted = useMemo(() => {

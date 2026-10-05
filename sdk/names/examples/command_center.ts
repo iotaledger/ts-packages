@@ -4,7 +4,7 @@
 import { getNetwork, IotaClient } from '@iota/iota-sdk/client';
 import { requestIotaFromFaucetV0 } from '@iota/iota-sdk/faucet';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction, TransactionObjectArgument } from '@iota/iota-sdk/transactions';
 import { NANOS_PER_IOTA } from '@iota/iota-sdk/utils';

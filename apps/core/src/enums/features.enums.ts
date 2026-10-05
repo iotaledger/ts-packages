@@ -10,6 +10,7 @@ export enum Feature {
     WalletAppsBannerConfig = 'wallet-apps-banner-config',
     WalletInterstitialConfig = 'wallet-interstitial-configuration',
     RecognizedPackages = 'recognized-packages',
+    CoinRegistry = 'coin-registry',
     WalletSentryTracing = 'wallet-sentry-tracing',
     PollingTxnTable = 'polling-txn-table',
     NetworkOutageOverride = 'network-outage-override',

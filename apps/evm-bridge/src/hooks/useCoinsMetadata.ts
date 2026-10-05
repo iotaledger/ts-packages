@@ -4,7 +4,7 @@
 import { IOTA_COIN_METADATA, useIotaGraphQLClientContext } from '@iota/core';
 import { useIotaClient } from '@iota/dapp-kit';
 import { CoinMetadata } from '@iota/iota-sdk/client';
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';

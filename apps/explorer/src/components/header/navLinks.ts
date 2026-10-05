@@ -6,6 +6,7 @@ export const NAV_LINKS = [
     { label: 'Transactions', to: '/recent?tab=transactions' },
     { label: 'Epochs', to: '/recent?tab=epochs' },
     { label: 'Checkpoints', to: '/recent?tab=checkpoints' },
+    { label: 'Coins', to: '/coins' },
     { label: 'Analytics', to: '/analytics' },
 ];
 
