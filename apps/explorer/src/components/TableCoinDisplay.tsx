@@ -12,6 +12,8 @@ import {
 } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
+import { LinkWithQuery } from './ui';
+import { getCoinPagePath } from '~/lib/utils';
 
 interface TableCoinDisplayProps {
     amount: string | bigint;
@@ -41,12 +43,21 @@ export function TableCoinDisplay({
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
+    const coinPagePath = getCoinPagePath(coinType);
 
     return (
         <div className="flex flex-row items-center gap-1.5">
-            <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+            <LinkWithQuery to={coinPagePath} tabIndex={-1} aria-hidden="true">
+                <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+            </LinkWithQuery>
             <span className={clsx(showSign ? changeColorClass : 'table-text-color')}>
-                {formatted} {symbol}
+                {formatted}{' '}
+                <LinkWithQuery
+                    to={coinPagePath}
+                    className="text-iota-primary-30 dark:text-iota-primary-80"
+                >
+                    {symbol}
+                </LinkWithQuery>
             </span>
             {showTrusted && <RecognizedBadge className="size-4 text-iota-primary-40" />}
 

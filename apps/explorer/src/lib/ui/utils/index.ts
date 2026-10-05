@@ -12,3 +12,5 @@ export * from './generateActivityTableColumns';
 export * from './objectField';
 export * from './generatePackageVersionsTableColumns';
 export * from './formatMoveType';
+export * from './generateCoinsTableColumns';
+export * from './generateCoinObjectsTableColumns';
