@@ -26,7 +26,7 @@ export const Default: Story = {
             control: 'text',
         },
         icon: {
-            control: 'none',
+            control: false,
         },
         hasBadge: {
             control: 'boolean',

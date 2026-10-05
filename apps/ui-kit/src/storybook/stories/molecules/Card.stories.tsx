@@ -35,7 +35,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const COMMON_ARG_TYPES = {
+const COMMON_ARG_TYPES: Story['argTypes'] = {
     imageType: {
         control: 'select',
         options: Object.values(ImageType),

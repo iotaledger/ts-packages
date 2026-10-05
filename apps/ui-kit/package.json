@@ -12,7 +12,7 @@
     ],
     "scripts": {
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build",
+        "build-storybook": "tsc -b tsconfig.storybook.json && storybook build",
         "build": "tsc -b tsconfig.lib.json && tsdown",
         "typecheck": "tsc -b",
         "dev": "pnpm run storybook"
