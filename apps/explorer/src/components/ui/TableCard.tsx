@@ -57,7 +57,7 @@ export interface TableCardProps<DataType extends RowData> {
 }
 
 function isInteractiveTarget(target: EventTarget): boolean {
-    return target instanceof Element && !!target.closest('a, button');
+    return target instanceof Element && !!target.closest('a, button, [role="button"]');
 }
 
 export function TableCard<DataType extends object>({

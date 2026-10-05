@@ -23,10 +23,14 @@ import {
     PlaceholderTable,
     TableCard,
 } from '~/components';
-import { useGetAllCoins, useGetCoinObjects } from '~/hooks';
-import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import { useGetAllCoins, useGetCoinObjects, useGetRecognizedCoins } from '~/hooks';
+import {
+    getSameNameWarningTitle,
+    SAME_NAME_WARNING_TEXT,
+    PAGE_SIZES_RANGE_20_60,
+} from '~/lib/constants';
 import { generateCoinObjectsTableColumns } from '~/lib/ui';
-import { toCoinType } from '~/lib/utils';
+import { findMatchingRecognizedCoin, toCoinType } from '~/lib/utils';
 
 const COIN_OBJECTS_COLUMN_HEADINGS = ['Object', 'Owner', 'Balance'];
 
@@ -56,6 +60,8 @@ function CoinDetails(): JSX.Element {
 function CoinDetailsContent({ coinType }: { coinType: string }): JSX.Element {
     const { data, isPending, isError } = useGetAllCoins(1, coinType);
     const coin = data?.pages[0]?.coins[0];
+    const { data: recognizedCoins = [] } = useGetRecognizedCoins();
+    const matchingRecognizedCoin = coin ? findMatchingRecognizedCoin(coin, recognizedCoins) : null;
 
     if (isPending) {
         return <PageLayout content={<LoadingIndicator />} />;
@@ -91,6 +97,15 @@ function CoinDetailsContent({ coinType }: { coinType: string }): JSX.Element {
                         coinType={coin.coinType}
                         symbol={coin.symbol}
                     />
+                    {matchingRecognizedCoin && (
+                        <InfoBox
+                            title={getSameNameWarningTitle(matchingRecognizedCoin.name)}
+                            supportingText={SAME_NAME_WARNING_TEXT}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )}
                     <CoinStats
                         createdAt={coin.createdAt}
                         coinType={coin.coinType}

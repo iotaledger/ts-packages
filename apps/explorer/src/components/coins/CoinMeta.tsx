@@ -37,21 +37,23 @@ export function CoinMeta({
                             />
                         </div>
                         <div className="flex min-w-0 flex-col gap-sm">
-                            <div className="flex flex-row items-center gap-x-sm gap-y-xs">
+                            <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
                                 <span className="text-headline-md text-iota-neutral-10 dark:text-iota-neutral-92">
                                     {name}
                                 </span>
-                                {isRecognized && (
-                                    <RecognizedBadge className="size-4 text-iota-primary-40" />
-                                )}
-                                {symbol && (
-                                    <Tooltip text="Coin Symbol" position={TooltipPosition.Top}>
-                                        <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                                            {symbol}
-                                        </span>
-                                    </Tooltip>
-                                )}
-                                <Badge type={BadgeType.Neutral} label="Coin" />
+                                <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
+                                    {isRecognized && (
+                                        <RecognizedBadge className="size-4 text-iota-primary-40" />
+                                    )}
+                                    {symbol && (
+                                        <Tooltip text="Coin Symbol" position={TooltipPosition.Top}>
+                                            <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                                                {symbol}
+                                            </span>
+                                        </Tooltip>
+                                    )}
+                                    <Badge type={BadgeType.Neutral} label="Coin" />
+                                </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-xs">
                                 {description && (

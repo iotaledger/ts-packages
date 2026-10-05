@@ -168,6 +168,7 @@ function CoinsPageResult(): JSX.Element {
                                             data={visibleCoins}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
+                                            defaultSorting={[{ id: 'createdAt', desc: true }]}
                                             onRowClick={({ coinType }) =>
                                                 navigateWithQuery(
                                                     `/coin/${encodeURI(coinType)}`,

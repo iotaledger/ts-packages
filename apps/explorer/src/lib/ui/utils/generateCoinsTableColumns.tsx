@@ -1,15 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    Badge,
-    BadgeSize,
-    BadgeType,
-    TableCellBase,
-    TableCellText,
-    Tooltip,
-    TooltipPosition,
-} from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     CoinFiatValue,
@@ -21,8 +13,10 @@ import {
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { AddressLink, CoinLink } from '~/components/ui';
 import { DateDisplay } from '~/components';
-import { Copy, RecognizedBadge } from '@iota/apps-ui-icons';
+import { Copy, RecognizedBadge, Warning } from '@iota/apps-ui-icons';
 import type { OnChainCoin } from '~/hooks';
+import { getSameNameWarningTitle, SAME_NAME_WARNING_TEXT } from '~/lib/constants';
+import { findMatchingRecognizedCoin } from '~/lib/utils';
 
 interface GenerateCoinsTableColumnsArgs {
     includeColumns?: string[];
@@ -38,12 +32,7 @@ function CoinWithImage({
 }) {
     const { coinType, name, symbol, iconUrl } = coin;
     const isRecognized = !!useCoinRegistryEntry(coinType);
-    const isPossibleImitation =
-        !isRecognized &&
-        recognizedCoins.some(
-            (recognized) =>
-                isSameLabel(recognized.name, name) || isSameLabel(recognized.symbol, symbol),
-        );
+    const matchingRecognizedCoin = findMatchingRecognizedCoin(coin, recognizedCoins);
     const truncatedCoinType = `${coinType.slice(0, 8)}…${coinType.slice(-20)}`;
     const copyToClipboard = useCopyToClipboard();
 
@@ -54,19 +43,19 @@ function CoinWithImage({
                     {name}
                 </span>
                 {isRecognized && <RecognizedBadge className="size-4 text-iota-primary-40" />}
-                <Tooltip text="Coin Symbol" position={TooltipPosition.Top}>
-                    <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                        {symbol}
-                    </span>
-                </Tooltip>
-                {isPossibleImitation && (
-                    <span title="Same name or symbol as a recognized coin, but a different coin type.">
-                        <Badge
-                            type={BadgeType.Warning}
-                            size={BadgeSize.Small}
-                            label="Possible imitation"
+                <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
+                    {symbol}
+                </span>
+                {matchingRecognizedCoin && (
+                    <Tooltip
+                        text={`${getSameNameWarningTitle(matchingRecognizedCoin.name)}. ${SAME_NAME_WARNING_TEXT}`}
+                        position={TooltipPosition.Top}
+                    >
+                        <Warning
+                            aria-label={getSameNameWarningTitle(matchingRecognizedCoin.name)}
+                            className="size-4 text-iota-warning-40 dark:text-iota-warning-60"
                         />
-                    </span>
+                    </Tooltip>
                 )}
             </div>
             <div className="flex items-center gap-1">
@@ -193,11 +182,12 @@ export function generateCoinsTableColumns({
             meta: {
                 tooltip: 'When this coin was published.',
             },
-            accessorKey: 'createdAt',
+            id: 'createdAt',
+            accessorFn: (coin) => coin.createdAt ?? undefined,
             enableSorting: true,
             sortUndefined: 'last',
             cell({ getValue }) {
-                const createdAt = getValue<OnChainCoin['createdAt']>();
+                const createdAt = getValue<number | undefined>();
                 return (
                     <TableCellBase>
                         <TableCellText>
@@ -220,8 +210,4 @@ export function generateCoinsTableColumns({
 
 function sortByString(value1: string, value2: string) {
     return value1.localeCompare(value2, undefined, { sensitivity: 'base' });
-}
-
-function isSameLabel(value1: string, value2: string) {
-    return value1.trim().toLowerCase() === value2.trim().toLowerCase();
 }

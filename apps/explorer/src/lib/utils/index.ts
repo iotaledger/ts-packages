@@ -18,3 +18,4 @@ export * from './onCopySuccess';
 export * from './getSendRecipients';
 export * from './getTransactionSponsor';
 export * from './toCoinType';
+export * from './findMatchingRecognizedCoin';
