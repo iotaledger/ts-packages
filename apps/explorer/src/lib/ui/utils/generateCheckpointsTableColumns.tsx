@@ -20,6 +20,7 @@ export function generateCheckpointsTableColumns(): ColumnDef<Checkpoint>[] {
                 return (
                     <TableCellBase>
                         <CheckpointLink
+                            data-row-link
                             digest={digest}
                             label={<TableCellText>{digest}</TableCellText>}
                             copyText={digest}
@@ -36,7 +37,7 @@ export function generateCheckpointsTableColumns(): ColumnDef<Checkpoint>[] {
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            <CheckpointSequenceLink sequence={sequenceNumber}>
+                            <CheckpointSequenceLink data-row-link sequence={sequenceNumber}>
                                 {sequenceNumber}
                             </CheckpointSequenceLink>
                         </TableCellText>

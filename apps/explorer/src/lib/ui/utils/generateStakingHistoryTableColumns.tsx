@@ -97,6 +97,7 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                 return (
                     <TableCellBase>
                         <TransactionLink
+                            data-row-link
                             digest={digest}
                             copyText={digest}
                             label={

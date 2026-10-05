@@ -91,6 +91,7 @@ function CoinWithImage({
 
     return (
         <CoinLink
+            data-row-link
             coin={coinType}
             label={
                 <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">

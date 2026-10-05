@@ -50,6 +50,7 @@ const UNCHANGED_SHARED_OBJECT_COLUMNS: ColumnDef<IotaObjectRef>[] = [
         cell: ({ row }) => (
             <TableCellBase>
                 <ObjectLink
+                    data-row-link
                     objectId={row.original.objectId}
                     copyText={row.original.objectId}
                     className="[&>div]:max-w-[200px] [&>div]:truncate"

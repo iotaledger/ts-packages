@@ -186,7 +186,7 @@ export function TableRow({
         <tr
             onClick={onClick}
             className={cx({
-                'cursor-pointer hover:bg-shader-neutral-light-8 dark:hover:bg-shader-neutral-dark-8':
+                'cursor-pointer [&:hover:not(:has(a:not([data-row-link]):hover,button:hover))]:bg-shader-neutral-light-8 dark:[&:hover:not(:has(a:not([data-row-link]):hover,button:hover))]:bg-shader-neutral-dark-8 [&_a:not([data-row-link])]:-mx-xxs [&_a:not([data-row-link])]:rounded [&_a:not([data-row-link])]:px-xxs [&_a:not([data-row-link])]:transition-colors [&_a:not([data-row-link]):hover]:bg-iota-primary-90/30 [&_a:not([data-row-link]):hover]:ring-1 [&_a:not([data-row-link]):hover]:ring-iota-primary-70/60 dark:[&_a:not([data-row-link]):hover]:bg-iota-primary-70/30':
                     onClick,
             })}
         >

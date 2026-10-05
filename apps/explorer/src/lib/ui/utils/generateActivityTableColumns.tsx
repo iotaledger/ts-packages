@@ -59,6 +59,7 @@ export function generateActivityTableColumns(
                 return (
                     <TableCellBase>
                         <TransactionLink
+                            data-row-link
                             digest={digest}
                             copyText={digest}
                             label={

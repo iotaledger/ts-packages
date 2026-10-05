@@ -44,6 +44,7 @@ export function generateObjectListColumns({
                 return (
                     <TableCellBase>
                         <ObjectLink
+                            data-row-link
                             objectId={objectId}
                             display="block"
                             label={<Asset object={object} />}
@@ -61,7 +62,7 @@ export function generateObjectListColumns({
                 const type = formatType(trimStdLibPrefix(parseObjectType(object)));
                 return (
                     <TableCellBase>
-                        <ObjectLink objectId={objectId} label={type}>
+                        <ObjectLink data-row-link objectId={objectId} label={type}>
                             <TableCellText>{type}</TableCellText>
                         </ObjectLink>
                     </TableCellBase>
@@ -78,6 +79,7 @@ export function generateObjectListColumns({
                 return (
                     <TableCellBase>
                         <ObjectLink
+                            data-row-link
                             objectId={objectId}
                             label={
                                 <TableCellText>

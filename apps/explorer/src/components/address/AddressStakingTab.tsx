@@ -311,6 +311,7 @@ function ValidatorCell({ address }: ValidatorCellProps): React.JSX.Element {
     return (
         <TableCellBase>
             <ValidatorLink
+                data-row-link
                 address={address}
                 showAddressAlias={false}
                 label={

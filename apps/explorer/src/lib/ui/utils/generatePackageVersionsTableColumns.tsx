@@ -37,6 +37,7 @@ export function generatePackageVersionsTableColumns(
                 return (
                     <TableCellBase>
                         <ObjectLink
+                            data-row-link
                             objectId={address}
                             label={<TableCellText>{formatAddress(address)}</TableCellText>}
                             copyText={address}

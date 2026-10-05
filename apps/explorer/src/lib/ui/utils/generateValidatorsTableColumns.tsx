@@ -115,6 +115,7 @@ function ValidatorWithImage({
 
     return (
         <ValidatorLink
+            data-row-link
             address={validator.iotaAddress}
             showAddressAlias={false}
             onClick={() =>

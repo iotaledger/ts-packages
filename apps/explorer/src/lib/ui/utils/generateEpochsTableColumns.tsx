@@ -21,7 +21,7 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                 const epoch = getValue<EpochMetrics['epoch']>();
                 return (
                     <TableCellBase>
-                        <EpochLink epoch={epoch}>
+                        <EpochLink data-row-link epoch={epoch}>
                             <TableCellText>{epoch}</TableCellText>
                         </EpochLink>
                     </TableCellBase>

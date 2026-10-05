@@ -86,6 +86,7 @@ export function generateTransactionsTableColumns(
                 return (
                     <TableCellBase>
                         <TransactionLink
+                            data-row-link
                             digest={digest}
                             copyText={digest}
                             label={
