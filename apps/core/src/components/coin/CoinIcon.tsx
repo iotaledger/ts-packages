@@ -4,13 +4,15 @@
 
 import { useCoinMetadata } from '../../hooks';
 import { ImageIcon, ImageIconSize } from '../icon';
-import { IotaLogoMark } from '@iota/apps-ui-icons';
+import { IotaLogoMark, PlaceholderReplace } from '@iota/apps-ui-icons';
 import { IOTA_TYPE_ARG, normalizeStructTag } from '@iota/iota-sdk/utils';
 import cx from 'clsx';
 
 const IOTA_LOGO_INSET: Partial<Record<ImageIconSize, string>> = {
     [ImageIconSize.Large]: 'size-5',
 };
+
+export const COIN_FALLBACK_ICON = <PlaceholderReplace className="size-1/2" />;
 
 function NonIotaCoin({ coinType }: { coinType: string }) {
     const { data: coinMeta } = useCoinMetadata(coinType);
@@ -20,7 +22,7 @@ function NonIotaCoin({ coinType }: { coinType: string }) {
                 key={coinMeta?.iconUrl}
                 src={coinMeta?.iconUrl}
                 label={coinMeta?.name || coinType}
-                fallback={coinMeta?.name || coinType}
+                fallback={COIN_FALLBACK_ICON}
                 size={ImageIconSize.Full}
                 fallbackSize={ImageIconSize.Small}
                 rounded

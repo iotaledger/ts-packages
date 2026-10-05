@@ -4,6 +4,7 @@
 import { TableCellBase, TableCellText, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
+    COIN_FALLBACK_ICON,
     CoinFiatValue,
     ImageIcon,
     ImageIconSize,
@@ -82,7 +83,7 @@ function CoinWithImage({
             <ImageIcon
                 src={iconUrl}
                 label={name}
-                fallback={symbol}
+                fallback={COIN_FALLBACK_ICON}
                 size={ImageIconSize.Medium}
                 rounded
             />
