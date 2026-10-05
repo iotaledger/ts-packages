@@ -13,7 +13,8 @@
     "scripts": {
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
-        "build": "tsc --project tsconfig.json && tsdown",
+        "build": "tsc -b tsconfig.lib.json && tsdown",
+        "typecheck": "tsc -b",
         "dev": "pnpm run storybook"
     },
     "exports": {

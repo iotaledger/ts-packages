@@ -22,6 +22,7 @@ export default defineConfig({
     outExtensions: ({ format }) =>
         format === 'es' ? { js: '.es.js', dts: '.d.ts' } : { js: '.js' },
     dts: true,
+    tsconfig: 'tsconfig.lib.json',
     css: { fileName: 'style.css', transformer: 'postcss' },
     sourcemap: true,
     minify: true,

@@ -24,6 +24,6 @@
         { "path": "../../sdk/typescript/" },
         { "path": "../../sdk/kiosk/" },
         { "path": "../../sdk/dapp-kit/" },
-        { "path": "../ui-kit" }
+        { "path": "../ui-kit/tsconfig.lib.json" }
     ]
 }
