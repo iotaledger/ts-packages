@@ -3,7 +3,13 @@
 
 import type { BcsType } from '@iota/bcs';
 import { BcsReader, toHex } from '@iota/bcs';
-import { bcs } from '@iota/iota-sdk/bcs';
+import { bcs, TypeTagSerializer } from '@iota/iota-sdk/bcs';
+import {
+    IOTA_FRAMEWORK_ADDRESS,
+    IOTA_TYPE_ARG,
+    normalizeIotaAddress,
+    normalizeStructTag,
+} from '@iota/iota-sdk/utils';
 
 import { ProtoConversionError } from '../errors.js';
 import type { BcsData } from '../proto/iota/grpc/v1/bcs_pb.js';
@@ -69,6 +75,63 @@ export function objectIdOf(object: IotaObject): string {
     return object.data.$kind === 'Package'
         ? object.data.Package.id
         : `0x${toHex(object.data.Struct.contents.slice(0, 32))}`;
+}
+
+export interface Coin {
+    /** The `T` of `Coin<T>`. */
+    coinType: string;
+    id: string;
+    balance: bigint;
+}
+
+const IOTA_COIN_TYPE = normalizeStructTag(IOTA_TYPE_ARG);
+const IOTA_FRAMEWORK = normalizeIotaAddress(IOTA_FRAMEWORK_ADDRESS);
+
+/** Like Rust's `Coin::try_from_object`: a gas coin, a `Coin<T>`, or a struct spelled `0x2::coin::Coin<T>`. */
+export function decodeCoin(object: Object$): Coin {
+    const { data } = decodeObject(object);
+
+    if (data.$kind !== 'Struct') {
+        throw new ProtoConversionError("invalid field 'coin': not a coin");
+    }
+
+    const { objectType, contents } = data.Struct;
+    let coinType: string | undefined;
+
+    switch (objectType.$kind) {
+        case 'GasCoin':
+            coinType = IOTA_COIN_TYPE;
+            break;
+        case 'Coin':
+            coinType = objectType.Coin;
+            break;
+        case 'Other':
+            const { address, module, name, typeParams } = objectType.Other;
+            if (
+                address === IOTA_FRAMEWORK &&
+                module === 'coin' &&
+                name === 'Coin' &&
+                typeParams.length === 1
+            ) {
+                coinType = TypeTagSerializer.tagToString(typeParams[0]);
+            }
+            break;
+    }
+
+    if (coinType === undefined) {
+        throw new ProtoConversionError("invalid field 'coin': not a coin");
+    }
+
+    // A `UID` followed by a `Balance`'s u64.
+    if (contents.length !== 40) {
+        throw new ProtoConversionError("invalid field 'coin': invalid content length");
+    }
+
+    return {
+        coinType,
+        id: `0x${toHex(contents.slice(0, 32))}`,
+        balance: BigInt(bcs.u64().parse(contents.slice(32))),
+    };
 }
 
 export function decodeEvent(event: ProtoEvent): Event {

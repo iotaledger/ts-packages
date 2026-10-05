@@ -8,6 +8,13 @@ export * from './read-masks.js';
 export * from './metadata.js';
 export * from './results.js';
 export type { CheckpointResponse, CheckpointStreamItem } from './reassembly/checkpoint.js';
+export type {
+    SignedTransaction,
+    SimulateTransactionInput,
+    TransactionBytes,
+    ViewArgument,
+    ViewFunctionCall,
+} from './requests.js';
 export * from './bcs/decode.js';
 
 // Decoded BCS types, as the decoders return them.
@@ -19,11 +26,18 @@ export type { ValidatorAggregatedSignature } from './bcs/signatures.js';
 
 // Proto messages the client methods return, so callers can name them.
 export type { Checkpoint } from './proto/iota/grpc/v1/checkpoint_pb.js';
+export type { DynamicField } from './proto/iota/grpc/v1/dynamic_field_pb.js';
 export type { Epoch } from './proto/iota/grpc/v1/epoch_pb.js';
 export type { Event } from './proto/iota/grpc/v1/event_pb.js';
 export type {
     GetHealthResponse,
     GetServiceInfoResponse,
 } from './proto/iota/grpc/v1/ledger_service_pb.js';
+export type { PackageVersion } from './proto/iota/grpc/v1/move_package_service_pb.js';
 export type { Object$ } from './proto/iota/grpc/v1/object_pb.js';
+export type { GetCoinInfoResponse } from './proto/iota/grpc/v1/state_service_pb.js';
+export type {
+    SimulatedTransaction,
+    ViewFunctionCallOutputs,
+} from './proto/iota/grpc/v1/transaction_execution_service_pb.js';
 export type { ExecutedTransaction } from './proto/iota/grpc/v1/transaction_pb.js';
