@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     Card,
     CardType,
@@ -16,16 +16,16 @@ import {
     Dialog,
 } from '@iota/apps-ui-kit';
 import {
-    useFormatCoin,
     getTransactionAction,
-    useTransactionSummary,
     TransactionIcon,
     checkIfIsTimelockedStaking,
     getTransactionAmountForTimelocked,
     formatDate,
     isMigrationTransaction,
-    BALANCE_MASK,
-    AmountWithFiat,
+    CoinAmountChange,
+    getCoinChangesForAddress,
+    getTransactionCoinBalances,
+    TransactionCoinAmounts,
 } from '@iota/core';
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { TransactionDetailsLayout } from '../dialogs/transaction/TransactionDetailsLayout';
@@ -40,66 +40,42 @@ interface TransactionTileProps {
 
 export function TransactionTile({ transaction, hideBalance }: TransactionTileProps): JSX.Element {
     const account = useCurrentAccount();
-    const address = account?.address;
+    const address = account?.address ?? '';
     const [open, setOpen] = useState(false);
-
-    const transactionSummary = useTransactionSummary({
-        transaction,
-        currentAddress: address,
-        recognizedPackagesList: [],
-    });
 
     const { isTimelockedStaking, isTimelockedUnstaking } = checkIfIsTimelockedStaking(
         transaction?.events,
     );
 
-    const balanceChanges = transactionSummary?.balanceChanges;
-    const txnFailed = transactionSummary?.status !== 'success';
-    const label = transactionSummary?.label;
+    const txnFailed = transaction.effects?.status.status !== 'success';
+    const label = getTransactionAction(transaction, address);
 
-    const [balance, coinType] = (() => {
+    const changes = useMemo((): CoinAmountChange[] => {
         if ((isTimelockedStaking || isTimelockedUnstaking) && transaction.events) {
-            const balance = getTransactionAmountForTimelocked(
+            const amount = getTransactionAmountForTimelocked(
                 transaction.events,
                 isTimelockedStaking,
                 isTimelockedUnstaking,
             );
-            return [balance, IOTA_TYPE_ARG];
-        } else if (isMigrationTransaction(transaction.transaction)) {
-            const balanceChange = balanceChanges?.[address || '']?.find((change) => {
-                return change.coinType === IOTA_TYPE_ARG;
-            });
-            const balance = balanceChange ? balanceChange.amount : 0;
-            return [balance, IOTA_TYPE_ARG];
-        } else {
-            // Use any non-iota coin type if found, otherwise simply use IOTA
-            const nonIotaCoinType = balanceChanges?.[address || '']
-                ?.map((change) => change.coinType)
-                .find((coinType) => coinType !== IOTA_TYPE_ARG);
-            const coinType = nonIotaCoinType ?? IOTA_TYPE_ARG;
-            const balanceChange = balanceChanges?.[address || '']?.find((change) => {
-                return change.coinType === coinType;
-            });
-            const balance = balanceChange ? balanceChange.amount : 0;
-            return [balance, coinType];
+            return [{ coinType: IOTA_TYPE_ARG, amount: BigInt(amount ?? 0) }];
         }
-    })();
-
-    const [formatAmount, symbol] = useFormatCoin({ balance, coinType });
+        const addressChanges = getCoinChangesForAddress(
+            getTransactionCoinBalances(transaction),
+            address,
+        );
+        if (isMigrationTransaction(transaction.transaction)) {
+            return addressChanges.filter(({ coinType }) => coinType === IOTA_TYPE_ARG);
+        }
+        return addressChanges;
+    }, [transaction, address, isTimelockedStaking, isTimelockedUnstaking]);
 
     function openDetailsDialog() {
         setOpen(true);
     }
 
     const transactionDate =
-        transactionSummary?.timestamp &&
-        formatDate(Number(transactionSummary.timestamp), [
-            'day',
-            'month',
-            'year',
-            'hour',
-            'minute',
-        ]);
+        transaction.timestampMs &&
+        formatDate(Number(transaction.timestampMs), ['day', 'month', 'year', 'hour', 'minute']);
 
     return (
         <>
@@ -111,10 +87,7 @@ export function TransactionTile({ transaction, hideBalance }: TransactionTilePro
                 aria-label={`View ${label ?? 'transaction'} details`}
             >
                 <CardImage type={ImageType.BgSolid} shape={ImageShape.SquareRounded}>
-                    <TransactionIcon
-                        variant={getTransactionAction(transaction, address)}
-                        txnFailed={txnFailed}
-                    />
+                    <TransactionIcon variant={label} txnFailed={txnFailed} />
                 </CardImage>
                 <CardBody
                     title={txnFailed ? `Failed - ${label ?? 'Unknown'}` : (label ?? 'Unknown')}
@@ -123,19 +96,10 @@ export function TransactionTile({ transaction, hideBalance }: TransactionTilePro
                 <CardAction
                     type={CardActionType.SupportingText}
                     title={
-                        txnFailed ? (
+                        txnFailed || changes.length === 0 ? (
                             '--'
-                        ) : hideBalance ? (
-                            `${BALANCE_MASK} ${symbol}`
                         ) : (
-                            <AmountWithFiat
-                                amount={balance ?? 0}
-                                formatted={formatAmount}
-                                symbol={symbol}
-                                coinType={coinType}
-                                direction="column"
-                                align="end"
-                            />
+                            <TransactionCoinAmounts changes={changes} hideBalance={hideBalance} />
                         )
                     }
                 />

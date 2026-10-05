@@ -53,10 +53,11 @@ export interface TableCardProps<DataType extends RowData> {
     renderExpandedRow?: (row: DataType) => ReactNode;
     getRowCanExpand?: (row: DataType) => boolean;
     getRowId?: (row: DataType) => string;
+    onRowClick?: (row: DataType) => void;
 }
 
 function isInteractiveTarget(target: EventTarget): boolean {
-    return target instanceof Element && !!target.closest('a, button');
+    return target instanceof Element && !!target.closest('a, button, [role="button"]');
 }
 
 export function TableCard<DataType extends object>({
@@ -76,6 +77,7 @@ export function TableCard<DataType extends object>({
     renderExpandedRow,
     getRowCanExpand,
     getRowId,
+    onRowClick,
 }: TableCardProps<DataType>): JSX.Element {
     const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
 
@@ -173,10 +175,13 @@ export function TableCard<DataType extends object>({
                             <Fragment key={row.id}>
                                 <TableRow
                                     onClick={
-                                        row.getCanExpand()
+                                        row.getCanExpand() || onRowClick
                                             ? (event) => {
-                                                  if (!isInteractiveTarget(event.target)) {
+                                                  if (isInteractiveTarget(event.target)) return;
+                                                  if (row.getCanExpand()) {
                                                       row.toggleExpanded();
+                                                  } else {
+                                                      onRowClick?.(row.original);
                                                   }
                                               }
                                             : undefined

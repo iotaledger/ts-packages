@@ -5,6 +5,7 @@
 import {
     getTotalGasUsed,
     getTransactionAction,
+    getTransactionCoinBalances,
     TransactionIcon,
     TransactionIconSize,
 } from '@iota/core';
@@ -13,21 +14,9 @@ import type { IotaTransactionBlockKind, IotaTransactionBlockResponse } from '@io
 import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
-import {
-    CoinFormat,
-    formatBalance,
-    formatDigest,
-    IOTA_TYPE_ARG,
-    NANOS_PER_IOTA,
-} from '@iota/iota-sdk/utils';
-import { DateDisplay } from '~/components';
-import {
-    BalanceChangeFiatValue,
-    getBalanceChangeColorClass,
-    getIotaBalanceChangeForAddress,
-    getLastMoveCall,
-    getTransactionTypeLabel,
-} from './generateTransactionsTableColumns';
+import { CoinFormat, formatBalance, formatDigest, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
+import { TableCoinChanges, DateDisplay } from '~/components';
+import { getLastMoveCall, getTransactionTypeLabel } from './generateTransactionsTableColumns';
 
 function getCounterpartyAddress(
     txn: IotaTransactionBlockResponse,
@@ -80,7 +69,10 @@ export function generateActivityTableColumns(
                                         size={TransactionIconSize.Small}
                                     />
                                     <div className="flex flex-col">
-                                        <span className="text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60">
+                                        <span
+                                            className="block max-w-[110px] truncate text-label-lg text-iota-neutral-40 dark:text-iota-neutral-60"
+                                            title={typeLabel}
+                                        >
                                             {typeLabel}
                                         </span>
                                         <span className="text-body-sm text-iota-primary-30 dark:text-iota-primary-80">
@@ -132,7 +124,7 @@ export function generateActivityTableColumns(
                         <AddressLink
                             address={sender}
                             copyText={sender}
-                            className="[&>div]:max-w-[200px] [&>div]:truncate"
+                            className="[&>div]:max-w-[160px] [&>div]:truncate"
                         />
                     </TableCellBase>
                 );
@@ -158,7 +150,7 @@ export function generateActivityTableColumns(
                         <AddressLink
                             address={counterparty}
                             copyText={counterparty}
-                            className="[&>div]:max-w-[200px] [&>div]:truncate"
+                            className="[&>div]:max-w-[160px] [&>div]:truncate"
                         />
                     </TableCellBase>
                 );
@@ -169,18 +161,12 @@ export function generateActivityTableColumns(
             accessorKey: 'balanceChanges',
             cell: ({ row }) => {
                 const txn = row.original;
-                const balanceChange = getIotaBalanceChangeForAddress(txn, address);
-                const otherCoinChangesCount =
-                    txn.balanceChanges?.filter(
-                        (change) =>
-                            change.owner &&
-                            typeof change.owner === 'object' &&
-                            'AddressOwner' in change.owner &&
-                            change.owner.AddressOwner === address &&
-                            change.coinType !== IOTA_TYPE_ARG,
-                    ).length ?? 0;
+                const perOwnerChanges = getTransactionCoinBalances(txn)?.owners;
+                const balanceChanges = perOwnerChanges?.find(
+                    ({ owner }) => owner === address,
+                )?.changes;
 
-                if (!balanceChange) {
+                if (!balanceChanges) {
                     return (
                         <TableCellBase>
                             <TableCellText>--</TableCellText>
@@ -188,31 +174,9 @@ export function generateActivityTableColumns(
                     );
                 }
 
-                const amount = balanceChange.amount;
-                const formatted = formatBalance(
-                    Math.abs(Number(amount)) / Number(NANOS_PER_IOTA),
-                    0,
-                    CoinFormat.Full,
-                );
-                const isPositive = Number(amount) >= 0;
-                const sign = isPositive ? '+' : '-';
-
                 return (
                     <TableCellBase>
-                        <div className="flex flex-col">
-                            <span
-                                className={`text-body-md ${getBalanceChangeColorClass(isPositive)}`}
-                            >
-                                {sign + formatted} IOTA
-                            </span>
-                            <BalanceChangeFiatValue amount={amount} />
-                            {otherCoinChangesCount > 0 && (
-                                <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                                    +{otherCoinChangesCount} other coin
-                                    {otherCoinChangesCount > 1 ? 's' : ''}
-                                </span>
-                            )}
-                        </div>
+                        <TableCoinChanges changes={balanceChanges} />
                     </TableCellBase>
                 );
             },
@@ -235,13 +199,14 @@ export function generateActivityTableColumns(
                         <div className="flex flex-row items-center gap-1">
                             {totalGasUsed ? (
                                 <Tooltip text={`${totalGasUsedFormatted} IOTA`}>
-                                    <span className="block max-w-[120px] truncate">
+                                    <span className="block max-w-[80px] truncate">
                                         {totalGasUsedFormatted}
                                     </span>
                                 </Tooltip>
                             ) : (
                                 <span>{totalGasUsedFormatted}</span>
                             )}
+
                             {totalGasUsed && (
                                 <span className="table-cell-supporting-label-color text-body-sm">
                                     IOTA

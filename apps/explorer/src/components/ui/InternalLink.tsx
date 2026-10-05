@@ -85,19 +85,21 @@ function createInternalLink<T extends string>(
                                 {iotaName ? (
                                     <NameAvatar address={id} size={NameAvatarSize.Xxs} />
                                 ) : null}
-                                <Link
-                                    className={clsx(
-                                        'min-w-0 text-iota-primary-30 dark:text-iota-primary-80',
-                                        className,
-                                    )}
-                                    variant="mono"
-                                    size={hasAlias ? 'sm' : undefined}
-                                    to={to}
-                                    {...props}
-                                >
-                                    {hasAlias ? label || address : iotaName || label || address}
-                                </Link>
-                                {copyButton}
+                                <span className="inline-flex min-w-0 items-center">
+                                    <Link
+                                        className={clsx(
+                                            'min-w-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
+                                            className,
+                                        )}
+                                        variant="mono"
+                                        size={hasAlias ? 'sm' : undefined}
+                                        to={to}
+                                        {...props}
+                                    >
+                                        {hasAlias ? label || address : iotaName || label || address}
+                                    </Link>
+                                    {copyButton}
+                                </span>
                             </span>
                         </NamedAddressTooltip>
                     )}
@@ -139,3 +141,4 @@ export const AddressLink = createInternalLink('address', 'address', (addressOrNa
 export const ObjectLink = createInternalLink('object', 'objectId', formatType);
 export const TransactionLink = createInternalLink('txblock', 'digest', formatDigest);
 export const ValidatorLink = createInternalLink('validator', 'address', formatAddress);
+export const CoinLink = createInternalLink('coin', 'coin');

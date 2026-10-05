@@ -4,5 +4,6 @@
 export * from './info';
 export * from './summary';
 
+export * from './TransactionCoinAmounts';
 export * from './TransactionReceipt';
 export * from './TransactionIcon';
