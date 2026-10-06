@@ -7,9 +7,13 @@ import { ValidatorLink } from '~/components/ui';
 
 interface ValidatorAddressHeaderProps {
     validator: IotaValidatorSummary;
+    typeLabel?: string;
 }
 
-export function ValidatorAddressHeader({ validator }: ValidatorAddressHeaderProps): JSX.Element {
+export function ValidatorAddressHeader({
+    validator,
+    typeLabel,
+}: ValidatorAddressHeaderProps): JSX.Element {
     return (
         <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
             <ValidatorLink
@@ -22,7 +26,9 @@ export function ValidatorAddressHeader({ validator }: ValidatorAddressHeaderProp
                 }
             />
             <Badge type={BadgeType.Neutral} label="Validator" size={BadgeSize.Small} />
-            <Badge type={BadgeType.Outlined} label="Address" size={BadgeSize.Small} />
+            {typeLabel && (
+                <Badge type={BadgeType.Outlined} label={typeLabel} size={BadgeSize.Small} />
+            )}
         </div>
     );
 }

@@ -1,7 +1,14 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import {
+    Badge,
+    BadgeSize,
+    BadgeType,
+    TableCellBase,
+    TableCellText,
+    ROW_LINK_PROPS,
+} from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
     type ApyByValidator,
@@ -13,11 +20,12 @@ import {
     useCopyToClipboard,
 } from '@iota/core';
 import { ampli, getValidatorMoveEvent } from '~/lib';
-import { StakeColumn } from '~/components';
+import { TableCoinDisplay } from '~/components';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
 import { ValidatorLink } from '~/components/ui';
 import { Copy } from '@iota/apps-ui-icons';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 interface GenerateValidatorsTableColumnsArgs {
     committeeMembers?: string[];
@@ -114,6 +122,7 @@ function ValidatorWithImage({
 
     return (
         <ValidatorLink
+            {...ROW_LINK_PROPS}
             address={validator.iotaAddress}
             showAddressAlias={false}
             onClick={() =>
@@ -193,7 +202,10 @@ export function generateValidatorsTableColumns({
                 const stakingPoolIotaBalance = getValue<string>();
                 return (
                     <TableCellBase>
-                        <StakeColumn stake={stakingPoolIotaBalance} />
+                        <TableCoinDisplay
+                            amount={stakingPoolIotaBalance}
+                            coinType={IOTA_TYPE_ARG}
+                        />
                     </TableCellBase>
                 );
             },
@@ -276,11 +288,11 @@ export function generateValidatorsTableColumns({
             enableSorting: true,
             sortUndefined: 'last',
             cell({ getValue }) {
-                const lastReward = getValue<number | undefined>();
+                const lastReward = getValue<string | undefined>();
                 return (
                     <TableCellBase>
                         {lastReward !== undefined ? (
-                            <StakeColumn stake={lastReward} />
+                            <TableCoinDisplay amount={lastReward} coinType={IOTA_TYPE_ARG} />
                         ) : (
                             <TableCellText>--</TableCellText>
                         )}
@@ -306,9 +318,9 @@ function getLastReward(
     validatorEvents: IotaEvent[],
     iotaAddress: string,
     currentEpoch?: string,
-): number | undefined {
+): string | undefined {
     const event = getValidatorMoveEvent(validatorEvents, iotaAddress, currentEpoch) as {
         pool_staking_reward?: string;
     };
-    return event?.pool_staking_reward ? Number(event.pool_staking_reward) : undefined;
+    return event?.pool_staking_reward ? event.pool_staking_reward : undefined;
 }

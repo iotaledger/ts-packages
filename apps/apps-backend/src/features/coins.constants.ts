@@ -1,39 +1,64 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-interface RecognizedCoinPackage {
-    type: string;
-    name?: string;
-}
+import { CoinTrust } from '@iota/core/enums/coins.enums';
+import { CoinRegistryEntry } from '@iota/core/interfaces/coins.interfaces';
+import { DEFAULT_COIN_REGISTRY } from '@iota/core/constants/coins.constants';
 
-export const RECOGNIZED_COIN_PACKAGES: RecognizedCoinPackage[] = [
-    // IOTA is already included
+/**
+ * Add a coin here to make it known to all apps.
+ *
+ * Its dollar value is set with `valuation`:
+ * - 'market': the price is fetched from CoinGecko, using the coin's CoinGecko id.
+ * - 'peg': the price is a fixed number (`rate`). Use it for stablecoins that are not on CoinGecko.
+ * - No `valuation`: the coin has no dollar value.
+ */
+export const COIN_REGISTRY: CoinRegistryEntry[] = [
+    ...DEFAULT_COIN_REGISTRY,
     {
-        type: '0x1ec64aa5356180866521292ebefb778a16e2852380ff6425784ebc62fc98463f::cyb::CYB',
+        coinType: '0x1ec64aa5356180866521292ebefb778a16e2852380ff6425784ebc62fc98463f::cyb::CYB',
         name: 'CYB',
+        trust: CoinTrust.Recognized,
     },
     {
-        type: '0x206501fb7068b78c2fe3c827a019a6490c9b2aa3dbcd80071b7813e7d56a05c7::spam::SPAM',
+        coinType: '0x206501fb7068b78c2fe3c827a019a6490c9b2aa3dbcd80071b7813e7d56a05c7::spam::SPAM',
         name: 'SPAM',
+        trust: CoinTrust.Recognized,
     },
     {
-        type: '0xcb9bb938865bdfbb3b9b841279eab1ba793ef8846de68d30fb45c32ef5b78ab4::spec_coin::SPEC_COIN',
+        coinType:
+            '0xcb9bb938865bdfbb3b9b841279eab1ba793ef8846de68d30fb45c32ef5b78ab4::spec_coin::SPEC_COIN',
         name: 'Speculation Coin',
+        trust: CoinTrust.Recognized,
     },
     {
-        type: '0x346778989a9f57480ec3fee15f2cd68409c73a62112d40a3efd13987997be68c::cert::CERT',
+        coinType: '0x346778989a9f57480ec3fee15f2cd68409c73a62112d40a3efd13987997be68c::cert::CERT',
         name: 'Staked IOTA',
+        trust: CoinTrust.Recognized,
+        valuation: { kind: 'market', priceId: 'staked-iota' },
     },
     {
-        type: '0xb63c04714082f9edb86b4b8fd07f89f0afebb9e6a96dd1a360a810e17691b674::tln_token::TLN_TOKEN',
+        coinType:
+            '0xb63c04714082f9edb86b4b8fd07f89f0afebb9e6a96dd1a360a810e17691b674::tln_token::TLN_TOKEN',
         name: 'TokenLabs',
+        trust: CoinTrust.Recognized,
     },
     {
-        type: '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
+        coinType: '0xd3b63e603a78786facf65ff22e79701f3e824881a12fa3268d62a75530fe904f::vusd::VUSD',
         name: 'Virtue USD',
+        trust: CoinTrust.Recognized,
+        valuation: { kind: 'market', priceId: 'virtue-usd' },
     },
     {
-        type: '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
+        coinType:
+            '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
         name: 'USDT0',
+        trust: CoinTrust.Recognized,
+        iconUrl: 'https://files.iota.org/media/tooling/logos/usdt0.svg',
+        valuation: { kind: 'market', priceId: 'usdt0' },
     },
 ];
+
+export const MARKET_PRICE_IDS: string[] = COIN_REGISTRY.flatMap((entry) =>
+    entry.valuation?.kind === 'market' ? [entry.valuation.priceId] : [],
+);

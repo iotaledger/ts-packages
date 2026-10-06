@@ -7,7 +7,9 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import { type CoinBalanceVerified, type SortField, type SortOrder } from './OwnedCoins';
 import { CoinsPanel } from './OwnedCoinsPanel';
-import { ArrowUp } from '@iota/apps-ui-icons';
+import { ArrowUp, RecognizedBadge } from '@iota/apps-ui-icons';
+import { LinkWithQuery } from '~/components/ui';
+import { getCoinPagePath } from '~/lib/utils';
 
 type OwnedCoinViewProps = {
     coin: CoinBalanceVerified;
@@ -21,20 +23,36 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
 
     return (
         <div data-testid="ownedcoinlabel" className="flex flex-col gap-y-xs py-xxs">
-            <button
-                type="button"
-                aria-expanded={areCoinDetailsOpen}
-                onClick={() => setAreCoinDetailsOpen((prev) => !prev)}
-                className={clsx(
-                    'flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
-                )}
+            <div
+                onClick={(event) => {
+                    if (event.target instanceof Element && event.target.closest('a')) return;
+                    setAreCoinDetailsOpen((prev) => !prev);
+                }}
+                className="flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors [&:hover:not(:has(a:hover))]:bg-iota-neutral-96 dark:[&:hover:not(:has(a:hover))]:bg-iota-neutral-12"
             >
-                <CoinItem coinType={coin.coinType} balance={BigInt(coin.totalBalance)} />
-
-                <div
-                    className={clsx(
-                        'flex shrink-0 items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60',
+                <CoinItem
+                    coinType={coin.coinType}
+                    balance={BigInt(coin.totalBalance)}
+                    truncate={false}
+                    renderTitle={(title) => (
+                        <LinkWithQuery
+                            to={getCoinPagePath(coin.coinType)}
+                            className="inline-block max-w-full truncate rounded align-top text-iota-primary-30 transition-colors hover:bg-iota-primary-90/30 hover:ring-1 hover:ring-inset hover:ring-iota-primary-70/60 dark:text-iota-primary-80 dark:hover:bg-iota-primary-70/30"
+                        >
+                            {title}
+                        </LinkWithQuery>
                     )}
+                    icon={
+                        coin.isRecognized && (
+                            <RecognizedBadge className="h-4 w-4 text-iota-primary-40" />
+                        )
+                    }
+                />
+
+                <button
+                    type="button"
+                    aria-expanded={areCoinDetailsOpen}
+                    className="flex shrink-0 cursor-pointer items-center gap-x-xs text-body-md text-iota-neutral-40 dark:text-iota-neutral-60"
                 >
                     <span className="sr-only">
                         {coin.coinObjectCount} Object{coin.coinObjectCount > 1 ? 's' : ''}
@@ -46,8 +64,8 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                         aria-hidden="true"
                         className={clsx('h-4 w-4 shrink-0', { 'rotate-180': !areCoinDetailsOpen })}
                     />
-                </div>
-            </button>
+                </button>
+            </div>
             {areCoinDetailsOpen && (
                 <div className="rounded-lg bg-iota-neutral-96 p-xxs sm:p-sm dark:bg-iota-neutral-10">
                     <CoinsPanel

@@ -4,8 +4,8 @@
 import { useIotaClientContext } from '@iota/dapp-kit';
 import { type Network } from '@iota/iota-sdk/client';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
-import { useBalanceInUSD } from '../../hooks';
-import { formatBalanceToUSD } from '../../utils/formatBalanceToUSD';
+import { useCoinFiatValue } from '../../hooks';
+import { formatFiat } from '../../utils/formatFiat';
 
 export interface CoinFiatValueProps {
     amount: bigint | string | number;
@@ -21,28 +21,18 @@ export function CoinFiatValue({
     showApproxSymbol = false,
 }: CoinFiatValueProps): JSX.Element | null {
     const { network } = useIotaClientContext();
-    const value = useBalanceInUSD(coinType, amount, network as Network);
+    const value = useCoinFiatValue(coinType, amount, network as Network);
 
-    if (value === null || value === undefined || value === 0) {
+    if (value === null || value === undefined) {
         return null;
     }
 
-    const formattedValue = formatBalanceToUSD(Math.abs(value));
-
-    if (showApproxSymbol) {
-        return (
-            <span className="flex flex-row items-baseline gap-1">
-                <span className="key-supporting-text-color text-body-sm">~</span>
-                <span className="key-supporting-text-color text-body-sm">
-                    {withParentheses ? `(${formattedValue})` : formattedValue}
-                </span>
-            </span>
-        );
-    }
+    const formattedValue = formatFiat(Math.abs(value));
+    const displayValue = showApproxSymbol ? `~${formattedValue}` : formattedValue;
 
     return (
         <span className="key-supporting-text-color text-body-sm">
-            {withParentheses ? `(${formattedValue})` : formattedValue}
+            {withParentheses ? `(${displayValue})` : displayValue}
         </span>
     );
 }

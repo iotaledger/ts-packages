@@ -1,20 +1,20 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import cn from 'clsx';
 
 export enum ImageIconSize {
-    Small = 'w-5 h-5',
-    Medium = 'w-8 h-8',
-    Large = 'w-10 h-10',
-    Full = 'w-full h-full',
+    Small = 'size-5',
+    Medium = 'size-8',
+    Large = 'size-10',
+    Full = 'size-full',
 }
 
 export interface ImageIconProps {
     src: string | null | undefined;
     label: string;
-    fallback: string;
+    fallback: ReactNode;
     alt?: string;
     rounded?: boolean;
     size?: ImageIconSize;
@@ -22,12 +22,12 @@ export interface ImageIconProps {
 }
 
 interface FallBackAvatarProps {
-    str: string;
+    content: ReactNode;
     rounded?: boolean;
     size?: ImageIconSize;
 }
 
-function FallBackAvatar({ str, rounded, size = ImageIconSize.Large }: FallBackAvatarProps) {
+function FallBackAvatar({ content, rounded, size = ImageIconSize.Large }: FallBackAvatarProps) {
     function generateTextSize(size: ImageIconSize) {
         switch (size) {
             case ImageIconSize.Small:
@@ -48,7 +48,7 @@ function FallBackAvatar({ str, rounded, size = ImageIconSize.Large }: FallBackAv
                 generateTextSize(size),
             )}
         >
-            {str?.slice(0, 2)}
+            {typeof content === 'string' ? content.slice(0, 2) : content}
         </div>
     );
 }
@@ -64,7 +64,7 @@ export function ImageIcon({
 }: ImageIconProps) {
     const [error, setError] = useState(false);
     return error || !src ? (
-        <FallBackAvatar rounded={rounded} str={fallback} size={fallbackSize || size} />
+        <FallBackAvatar rounded={rounded} content={fallback} size={fallbackSize || size} />
     ) : (
         <img
             src={src}

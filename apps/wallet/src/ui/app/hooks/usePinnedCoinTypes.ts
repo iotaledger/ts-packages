@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useRecognizedPackages } from '@iota/core';
+import { isRecognizedCoinType, useRecognizedPackages } from '@iota/core';
 import { useCoinsStore } from '_app/zustand/coins';
 import { get } from 'idb-keyval';
 import { useCallback, useEffect } from 'react';
@@ -21,7 +21,7 @@ export function usePinnedCoinTypes() {
 
             if (pinnedCoins) {
                 const filteredPinnedCoins = pinnedCoins.filter(
-                    (coinType) => !recognizedPackages.includes(coinType.split('::')[0]),
+                    (coinType) => !isRecognizedCoinType(coinType, recognizedPackages),
                 );
                 setPinnedCoinTypes(PINNED_COIN_TYPES, filteredPinnedCoins);
             }

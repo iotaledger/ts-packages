@@ -12,6 +12,7 @@ import {
 } from '~/hooks/useGetTransactionBlocks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateTransactionsTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 export function CheckpointTransactionBlocks({ id }: { id: string }): JSX.Element {
     const [limit, setLimit] = useState(DEFAULT_TRANSACTIONS_LIMIT);
@@ -39,6 +40,7 @@ export function CheckpointTransactionBlocks({ id }: { id: string }): JSX.Element
                     <TableCard
                         data={data.data}
                         columns={tableColumns}
+                        getRowHref={({ digest }) => getInternalPath('txblock', digest)}
                         paginationOptions={pagination}
                         pageSizeSelector={
                             <Select
