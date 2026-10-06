@@ -3,7 +3,7 @@
 
 import { useIotaGraphQLClientContext } from '@iota/core';
 import { useIotaClient } from '@iota/dapp-kit';
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
 
 export interface PackageVersion {

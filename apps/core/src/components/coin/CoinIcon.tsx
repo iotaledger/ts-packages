@@ -2,9 +2,9 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCoinMetadata } from '../../hooks';
+import { useCoinMetadata, useCoinRegistryEntry } from '../../hooks';
 import { ImageIcon, ImageIconSize } from '../icon';
-import { IotaLogoMark } from '@iota/apps-ui-icons';
+import { Coin, IotaLogoMark } from '@iota/apps-ui-icons';
 import { IOTA_TYPE_ARG, normalizeStructTag } from '@iota/iota-sdk/utils';
 import cx from 'clsx';
 
@@ -12,15 +12,19 @@ const IOTA_LOGO_INSET: Partial<Record<ImageIconSize, string>> = {
     [ImageIconSize.Large]: 'size-5',
 };
 
+export const COIN_FALLBACK_ICON = <Coin className="size-1/2" />;
+
 function NonIotaCoin({ coinType }: { coinType: string }) {
     const { data: coinMeta } = useCoinMetadata(coinType);
+    const registryEntry = useCoinRegistryEntry(coinType);
+    const iconUrl = coinMeta?.iconUrl || registryEntry?.iconUrl;
     return (
         <div className="flex size-full items-center justify-center bg-iota-neutral-96 dark:bg-iota-neutral-12">
             <ImageIcon
-                key={coinMeta?.iconUrl}
-                src={coinMeta?.iconUrl}
+                key={iconUrl}
+                src={iconUrl}
                 label={coinMeta?.name || coinType}
-                fallback={coinMeta?.name || coinType}
+                fallback={COIN_FALLBACK_ICON}
                 size={ImageIconSize.Full}
                 fallbackSize={ImageIconSize.Small}
                 rounded

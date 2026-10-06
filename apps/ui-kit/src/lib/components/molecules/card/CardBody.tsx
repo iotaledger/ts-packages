@@ -6,7 +6,7 @@ import { Tooltip } from '@/components/atoms/tooltip';
 import type { TooltipPosition } from '@/components/atoms/tooltip';
 
 export type CardBodyProps = {
-    title: string;
+    title: ReactNode;
     subtitle?: string | ReactNode;
     clickableAction?: React.ReactNode;
     icon?: React.ReactNode;

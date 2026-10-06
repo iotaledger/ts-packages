@@ -141,3 +141,4 @@ export const AddressLink = createInternalLink('address', 'address', (addressOrNa
 export const ObjectLink = createInternalLink('object', 'objectId', formatType);
 export const TransactionLink = createInternalLink('txblock', 'digest', formatDigest);
 export const ValidatorLink = createInternalLink('validator', 'address', formatAddress);
+export const CoinLink = createInternalLink('coin', 'coin');

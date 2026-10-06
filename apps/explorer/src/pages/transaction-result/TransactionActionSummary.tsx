@@ -33,8 +33,8 @@ import {
 } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { type ReactNode, useMemo, useState } from 'react';
-import { NameTag, ValidatorLink } from '~/components/ui';
-import { getSendRecipients } from '~/lib/utils';
+import { LinkWithQuery, NameTag, ValidatorLink } from '~/components/ui';
+import { getCoinPagePath, getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
 const SYSTEM_PACKAGE_ID = normalizeIotaAddress(IOTA_SYSTEM_ADDRESS);
@@ -329,14 +329,23 @@ function CoinAmount({
         format: CoinFormat.Full,
         truncate: false,
     });
+    const coinPagePath = getCoinPagePath(coinType);
 
     return (
         <>
             <span className="flex items-center gap-x-xs">
-                <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                <LinkWithQuery to={coinPagePath} tabIndex={-1} aria-hidden="true">
+                    <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
+                </LinkWithQuery>
                 <span className={outgoing ? 'coin-change-negative' : 'coin-change-positive'}>
                     {outgoing ? '-' : '+'}
-                    {formattedAmount} {vested ? `vested ${symbol}` : symbol}
+                    {formattedAmount} {vested && 'vested '}
+                    <LinkWithQuery
+                        to={coinPagePath}
+                        className="text-iota-primary-30 dark:text-iota-primary-80"
+                    >
+                        {symbol}
+                    </LinkWithQuery>
                 </span>
             </span>
             <CoinFiatValue coinType={coinType} amount={amount} showApproxSymbol />
