@@ -19,6 +19,7 @@ import { generateActivityTableColumns, generateTransactionsTableColumns } from '
 import { useState } from 'react';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib';
 import { useCursorPagination } from '@iota/core';
+import { getInternalPath } from '~/lib/utils';
 
 const PAGE_RANGE = PAGE_SIZES_RANGE_10_50;
 
@@ -113,6 +114,7 @@ function TransactionsForAddressContent({
         <TableCard
             data={data?.data ?? []}
             columns={tableColumns}
+            getRowHref={({ digest }) => getInternalPath('txblock', digest)}
             paginationOptions={pagination}
             pageSizeSelector={
                 <Select

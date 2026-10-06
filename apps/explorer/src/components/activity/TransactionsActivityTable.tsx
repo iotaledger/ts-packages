@@ -11,7 +11,7 @@ import {
     DEFAULT_TRANSACTIONS_LIMIT,
     useGetTransactionBlocks,
 } from '~/hooks/useGetTransactionBlocks';
-import { numberSuffix } from '~/lib/utils';
+import { numberSuffix, getInternalPath } from '~/lib/utils';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Select, SelectSize } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
@@ -91,6 +91,7 @@ export function TransactionsActivityTable({
                                 <TableCard
                                     data={data.data}
                                     columns={tableColumns}
+                                    getRowHref={({ digest }) => getInternalPath('txblock', digest)}
                                     totalLabel={
                                         count ? `${numberSuffix(Number(count))} Total` : '-'
                                     }

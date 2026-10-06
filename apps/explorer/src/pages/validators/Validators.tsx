@@ -37,6 +37,7 @@ import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/
 import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
+import { getInternalPath } from '~/lib/utils';
 
 function ValidatorPageResult(): JSX.Element {
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
@@ -419,6 +420,9 @@ function ValidatorPageResult(): JSX.Element {
                                                 ]}
                                                 data={filteredValidators}
                                                 columns={tableColumns}
+                                                getRowHref={({ iotaAddress }) =>
+                                                    getInternalPath('validator', iotaAddress)
+                                                }
                                                 areHeadersCentered={false}
                                             />
                                         )}

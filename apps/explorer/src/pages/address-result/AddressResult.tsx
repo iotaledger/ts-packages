@@ -64,6 +64,8 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
         </div>
     ) : undefined;
 
+    const typeLabel = leading ? 'Address' : undefined;
+
     return (
         <>
             {knownAddress?.isScam && (
@@ -81,9 +83,9 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                 title={
                     <div className="flex flex-col gap-xs">
                         {validator ? (
-                            <ValidatorAddressHeader validator={validator} />
+                            <ValidatorAddressHeader validator={validator} typeLabel={typeLabel} />
                         ) : name ? (
-                            <IotaNameAddressHeader name={name} />
+                            <IotaNameAddressHeader name={name} typeLabel={typeLabel} />
                         ) : knownAddress ? (
                             <div className="flex flex-row flex-wrap items-center gap-x-sm gap-y-xs">
                                 <span

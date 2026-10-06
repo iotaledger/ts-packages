@@ -36,6 +36,7 @@ export function AddressAlias({
         noTruncate,
         truncateUnknown,
     });
+    const showAlias = !hideAlias && !!addressAlias;
 
     const copyButton = onCopy && (
         <ButtonUnstyled onClick={onCopy} className="ms-xxs inline-flex align-middle text-body-md">
@@ -45,7 +46,7 @@ export function AddressAlias({
 
     return (
         <div className="flex flex-col gap-xxs">
-            {!hideAlias && addressAlias && (
+            {showAlias && (
                 <div className="flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
                     <AddressAliasIcon addressAlias={addressAlias} />
                     <span className="min-w-0 flex-1 truncate">
@@ -54,7 +55,7 @@ export function AddressAlias({
                 </div>
             )}
 
-            <div className={cx('break-all', { 'text-body-sm': !!addressAlias })}>
+            <div className={cx('break-all', { 'text-body-sm': showAlias })}>
                 {renderAddress ? (
                     renderAddress(addressToDisplay, copyButton, !!addressAlias)
                 ) : (
