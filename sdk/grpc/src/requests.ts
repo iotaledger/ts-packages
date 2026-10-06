@@ -107,16 +107,25 @@ export function protoTypeTag(typeTag: string): MessageInitShape<typeof TypeTagSc
     return fromTypeTag(parsed);
 }
 
+/** `path` names the argument in errors, such as `args[0]`. */
 export function protoInputArgument(
     argument: ViewArgument | Uint8Array,
+    path: string,
 ): MessageInitShape<typeof InputArgumentSchema> {
     return argument instanceof Uint8Array
         ? { input: { case: 'bcs', value: { data: argument } } }
-        : { input: { case: 'json', value: protoJsonValue(argument) } };
+        : { input: { case: 'json', value: protoJsonValue(argument, path) } };
 }
 
 /** Like Rust's `json_to_prost_stringify_numbers`: `Value` holds numbers as doubles, so they go as strings. */
-export function protoJsonValue(value: ViewArgument): MessageInitShape<typeof ValueSchema> {
+export function protoJsonValue(
+    value: ViewArgument,
+    path: string,
+): MessageInitShape<typeof ValueSchema> {
+    if (value === undefined) {
+        throw new TypeError(`${path} is undefined: use null for an empty value`);
+    }
+
     switch (typeof value) {
         case 'boolean':
             return { kind: { case: 'boolValue', value } };
@@ -136,11 +145,14 @@ export function protoJsonValue(value: ViewArgument): MessageInitShape<typeof Val
     }
 
     if (isArgumentList(value)) {
-        return { kind: { case: 'listValue', value: { values: value.map(protoJsonValue) } } };
+        const values = Array.from(value, (item, index) =>
+            protoJsonValue(item, `${path}[${index}]`),
+        );
+        return { kind: { case: 'listValue', value: { values } } };
     }
 
     const fields = Object.fromEntries(
-        Object.entries(value).map(([key, field]) => [key, protoJsonValue(field)]),
+        Object.entries(value).map(([key, field]) => [key, protoJsonValue(field, `${path}.${key}`)]),
     );
     return { kind: { case: 'structValue', value: { fields } } };
 }

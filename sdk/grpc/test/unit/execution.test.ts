@@ -788,6 +788,33 @@ describe('viewFunctionCalls', () => {
         expect(called).toBe(false);
     });
 
+    it.each([
+        ['an undefined struct field', [{ amount: undefined }], 'args[0].amount is undefined'],
+        [
+            'a hole in a list',
+            [Object.assign(new Array(3), { 0: 1, 2: 3 })],
+            'args[0][1] is undefined',
+        ],
+        [
+            'an undefined nested deeper',
+            [1, { a: [{ b: undefined }] }],
+            'args[1].a[0].b is undefined',
+        ],
+    ])('rejects %s, naming its path, without calling the node', async (_what, args, message) => {
+        let called = false;
+        const client = clientFor({
+            viewFunctionCalls() {
+                called = true;
+                return {};
+            },
+        });
+
+        await expect(
+            client.viewFunctionCalls([{ fqFunctionName: PRICE, args: args as never }]),
+        ).rejects.toThrow(new TypeError(`${message}: use null for an empty value`));
+        expect(called).toBe(false);
+    });
+
     it('rejects a different number of results than calls', async () => {
         const client = clientFor({
             viewFunctionCalls() {

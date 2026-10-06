@@ -765,7 +765,9 @@ export class IotaGrpcClient {
             viewFunctionCalls: calls.map(({ fqFunctionName, typeArgs = [], args = [] }) => ({
                 fqFunctionName,
                 typeArgs: typeArgs.map(protoTypeTag),
-                inputs: args.map(protoInputArgument),
+                inputs: args.map((argument, index) =>
+                    protoInputArgument(argument, `args[${index}]`),
+                ),
             })),
             readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.viewFunctionCalls),
         };
