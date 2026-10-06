@@ -291,5 +291,39 @@ Deno.
 | `devnet`   | `https://grpc.devnet.iota.cafe`  |
 | `localnet` | `http://localhost:50051`         |
 
-A local node serves gRPC only when started with
-`iota-localnet start --node-config-override fullnode:enable-grpc-api=true`.
+A local node serves gRPC only when its fullnode config turns the API on and gives it an address:
+
+```bash
+iota-localnet start --with-faucet \
+    --node-config-override fullnode:enable-grpc-api=true \
+    --node-config-override "fullnode:grpc-api-config={address: '0.0.0.0:50051'}"
+```
+
+## Testing
+
+To run unit tests
+
+```bash
+pnpm --filter @iota/grpc test
+```
+
+To run E2E tests against mainnet, testnet and devnet
+
+```bash
+pnpm --filter @iota/grpc test:e2e
+```
+
+To run E2E tests against a local network
+
+```bash
+# Starts a local network with a faucet and the gRPC API on
+pnpm --filter @iota/grpc prepare:e2e:localnet
+
+# In another terminal, once it is up
+pnpm --filter @iota/grpc test:e2e:localnet
+```
+
+`prepare:e2e:localnet` needs `iota-localnet` v1.32.1 or newer on your `PATH`: older versions fail with
+`unexpected argument '--disable-fullnode-pruning'`. Get it from the
+[IOTA releases](https://github.com/iotaledger/iota/releases), or build it from the `external/iota`
+submodule with `cargo install --path external/iota/crates/iota-localnet`.
