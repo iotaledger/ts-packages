@@ -16,6 +16,7 @@ import {
     AddressAlias,
     ImageIcon,
     ImageIconSize,
+    NoWrapTrailing,
     useAddressAliasLookup,
     useCopyToClipboard,
     useGetDefaultIotaName,
@@ -115,11 +116,10 @@ function AddressOrNameResult({ addressOrName }: { addressOrName: string }): JSX.
                                         {copyButton}
                                     </span>
                                     <span className="hidden sm:inline">
-                                        {addressToDisplay.slice(0, -4)}
-                                        <span className="whitespace-nowrap">
-                                            {addressToDisplay.slice(-4)}
-                                            {copyButton}
-                                        </span>
+                                        <NoWrapTrailing
+                                            text={addressToDisplay}
+                                            trailing={copyButton}
+                                        />
                                     </span>
                                 </>
                             )}

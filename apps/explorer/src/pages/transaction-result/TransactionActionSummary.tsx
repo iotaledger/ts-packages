@@ -33,7 +33,7 @@ import {
 } from '@iota/iota-sdk/utils';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { type ReactNode, useMemo, useState } from 'react';
-import { AddressLink, ObjectLink, ValidatorLink } from '~/components/ui';
+import { NameTag, ValidatorLink } from '~/components/ui';
 import { getSendRecipients } from '~/lib/utils';
 
 const MAX_VISIBLE_LINES = 3;
@@ -264,7 +264,7 @@ function ActionSummaryLine({ action }: { action: SummaryAction }): JSX.Element {
                     <span>Send</span>
                     <CoinAmount coinType={action.coinType} amount={action.amount} outgoing />
                     <span>to</span>
-                    <AddressLink address={action.recipient} copyText={action.recipient} />
+                    <NameTag id={action.recipient} copyable />
                 </SummaryLine>
             );
         case 'sendNfts':
@@ -273,16 +273,16 @@ function ActionSummaryLine({ action }: { action: SummaryAction }): JSX.Element {
                     <span>Send</span>
                     <NftCount count={action.count} />
                     <span>to</span>
-                    <AddressLink address={action.recipient} copyText={action.recipient} />
+                    <NameTag id={action.recipient} copyable />
                 </SummaryLine>
             );
         case 'moveCall':
             return (
                 <SummaryLine>
                     <span>Call</span>
-                    <span className="font-mono">{action.functionName}</span>
+                    <span className="font-medium">{action.functionName}</span>
                     <span>from</span>
-                    <ObjectLink objectId={action.packageId} copyText={action.packageId} />
+                    <NameTag id={action.packageId} isObject copyable />
                     {action.coinChanges.map(({ coinType, amount }) => (
                         <CoinAmount
                             key={coinType}

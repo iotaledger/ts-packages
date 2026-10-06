@@ -111,8 +111,11 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
 };
 
 const IOTA_NAMES_ALIASES: KnownAddresses = Object.fromEntries(
-    Object.values(iotaNamesPackages).flatMap(({ packageId }) =>
-        Object.values(packageId).map((address) => [address, { name: 'IOTA Names' }]),
+    Object.values(iotaNamesPackages).flatMap((config) =>
+        Object.entries(config)
+            .filter(([key]) => /packageId$/i.test(key))
+            .flatMap(([, versions]) => Object.values(versions as Record<string, string>))
+            .map((address) => [address, { name: 'IOTA Names' }]),
     ),
 );
 

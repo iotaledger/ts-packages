@@ -16,7 +16,7 @@ import { parseStructTag } from '@iota/iota-sdk/utils';
 import { TriangleDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { CollapsibleCard, SyntaxHighlighter } from '~/components';
-import { ObjectLink } from '~/components/ui';
+import { NameTag } from '~/components/ui';
 import { DateDisplay } from '~/components/DateDisplay';
 
 function EventRow({ event, index }: { event: IotaEvent; index: number }): JSX.Element {
@@ -33,8 +33,9 @@ function EventRow({ event, index }: { event: IotaEvent; index: number }): JSX.El
                 <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
                     emitted by
                 </span>
-                <ObjectLink
-                    objectId={event.packageId}
+                <NameTag
+                    id={event.packageId}
+                    isObject
                     queryStrings={{ module: event.transactionModule }}
                     label={event.transactionModule}
                 />
