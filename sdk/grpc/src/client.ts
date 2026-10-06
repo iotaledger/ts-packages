@@ -762,11 +762,11 @@ export class IotaGrpcClient {
         }
 
         const request = {
-            viewFunctionCalls: calls.map(({ fqFunctionName, typeArgs = [], args = [] }) => ({
+            viewFunctionCalls: calls.map(({ fqFunctionName, typeArgs = [], args = [] }, call) => ({
                 fqFunctionName,
                 typeArgs: typeArgs.map(protoTypeTag),
-                inputs: args.map((argument, index) =>
-                    protoInputArgument(argument, `args[${index}]`),
+                inputs: Array.from(args, (argument, index) =>
+                    protoInputArgument(argument, `calls[${call}].args[${index}]`),
                 ),
             })),
             readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.viewFunctionCalls),

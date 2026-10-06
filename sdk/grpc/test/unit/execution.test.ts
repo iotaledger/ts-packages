@@ -791,18 +791,18 @@ describe('viewFunctionCalls', () => {
         [
             'a number a double cannot hold exactly',
             2 ** 53,
-            'args[0] is 9007199254740992, not a safe integer: pass a bigint instead',
+            'calls[0].args[0] is 9007199254740992, not a safe integer: pass a bigint instead',
         ],
         [
             'a number that is not an integer',
             1.5,
-            'args[0] is 1.5, not an integer: Move has no fractional numbers',
+            'calls[0].args[0] is 1.5, not an integer: Move has no fractional numbers',
         ],
-        ['NaN', NaN, 'args[0] is NaN, not an integer: Move has no fractional numbers'],
+        ['NaN', NaN, 'calls[0].args[0] is NaN, not an integer: Move has no fractional numbers'],
         [
             'Infinity',
             Infinity,
-            'args[0] is Infinity, not an integer: Move has no fractional numbers',
+            'calls[0].args[0] is Infinity, not an integer: Move has no fractional numbers',
         ],
     ])(
         'rejects %s with a matching hint, without calling the node',
@@ -823,16 +823,25 @@ describe('viewFunctionCalls', () => {
     );
 
     it.each([
-        ['an undefined struct field', [{ amount: undefined }], 'args[0].amount is undefined'],
+        [
+            'an undefined struct field',
+            [{ amount: undefined }],
+            'calls[0].args[0].amount is undefined',
+        ],
         [
             'a hole in a list',
             [Object.assign(new Array(3), { 0: 1, 2: 3 })],
-            'args[0][1] is undefined',
+            'calls[0].args[0][1] is undefined',
         ],
         [
             'an undefined nested deeper',
             [1, { a: [{ b: undefined }] }],
-            'args[1].a[0].b is undefined',
+            'calls[0].args[1].a[0].b is undefined',
+        ],
+        [
+            'a hole in the argument list',
+            Object.assign(new Array(3), { 0: 1, 2: 3 }),
+            'calls[0].args[1] is undefined',
         ],
     ])('rejects %s, naming its path, without calling the node', async (_what, args, message) => {
         let called = false;
@@ -847,6 +856,19 @@ describe('viewFunctionCalls', () => {
             client.viewFunctionCalls([{ fqFunctionName: PRICE, args: args as never }]),
         ).rejects.toThrow(new TypeError(`${message}: use null for an empty value`));
         expect(called).toBe(false);
+    });
+
+    it('names the call an undefined argument belongs to', async () => {
+        const client = clientFor({ viewFunctionCalls: () => ({}) });
+
+        await expect(
+            client.viewFunctionCalls([
+                { fqFunctionName: PRICE, args: [1] },
+                { fqFunctionName: PRICE, args: [{ amount: undefined }] as never },
+            ]),
+        ).rejects.toThrow(
+            new TypeError('calls[1].args[0].amount is undefined: use null for an empty value'),
+        );
     });
 
     it('rejects a different number of results than calls', async () => {
