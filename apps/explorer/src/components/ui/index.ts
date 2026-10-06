@@ -5,7 +5,6 @@ export * from './collapsible';
 export * from './header';
 export * from './modal';
 
-export * from './AmountWithSymbol';
 export * from './ButtonOrLink';
 export * from './FilterList';
 export * from './InternalLink';

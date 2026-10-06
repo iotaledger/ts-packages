@@ -28,14 +28,7 @@ import {
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import {
-    AmountWithSymbol,
-    ErrorBoundary,
-    PageLayout,
-    PlaceholderTable,
-    TableCard,
-    TableSearch,
-} from '~/components';
+import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard, TableSearch } from '~/components';
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
@@ -261,10 +254,12 @@ function ValidatorPageResult(): JSX.Element {
             title: 'Committee Stake',
             value: (
                 <div className="flex flex-col gap-xxs">
-                    <AmountWithSymbol
-                        amount={formattedTotalStakedAmount}
-                        symbol={totalStakedSymbol}
-                    />
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">{formattedTotalStakedAmount}</span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {totalStakedSymbol}
+                        </span>
+                    </div>
                     <CoinFiatValue amount={totalStaked} withParentheses={false} />
                 </div>
             ),
@@ -297,10 +292,14 @@ function ValidatorPageResult(): JSX.Element {
             title: 'Last Epoch Rewards',
             value: lastEpochRewardOnAllValidators ? (
                 <div className="flex flex-col gap-xxs">
-                    <AmountWithSymbol
-                        amount={formattedlastEpochRewardOnAllValidatorsAmount}
-                        symbol={lastEpochRewardOnAllValidatorsSymbol}
-                    />
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">
+                            {formattedlastEpochRewardOnAllValidatorsAmount}
+                        </span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {lastEpochRewardOnAllValidatorsSymbol}
+                        </span>
+                    </div>
                     <CoinFiatValue
                         amount={lastEpochRewardOnAllValidators}
                         withParentheses={false}

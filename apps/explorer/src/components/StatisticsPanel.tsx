@@ -6,7 +6,6 @@ import { CoinFiatValue } from '@iota/core';
 import type { ComponentProps } from 'react';
 import { AreaGraph } from './AreaGraph';
 import { ErrorBoundary } from './error-boundary';
-import { AmountWithSymbol } from './ui';
 import { ParentSize } from '@visx/responsive';
 
 type StatisticsPanelStat = ComponentProps<typeof LabelText> & {
@@ -44,10 +43,14 @@ export function StatisticsPanel<T>({
                             text={
                                 fiatAmount !== undefined ? (
                                     <div className="flex min-w-0 flex-col gap-xxs">
-                                        <AmountWithSymbol
-                                            amount={stat.text}
-                                            symbol={stat.supportingLabel}
-                                        />
+                                        <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                            <span className="break-all">{stat.text}</span>
+                                            {stat.supportingLabel && (
+                                                <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                                    {stat.supportingLabel}
+                                                </span>
+                                            )}
+                                        </div>
                                         <CoinFiatValue
                                             amount={fiatAmount}
                                             withParentheses={false}

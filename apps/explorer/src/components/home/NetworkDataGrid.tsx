@@ -24,7 +24,7 @@ import {
 } from '@iota/core';
 import { type Network } from '@iota/iota-sdk/client';
 import { useGetNetworkMetrics } from '~/hooks';
-import { AmountWithSymbol, Link } from '~/components/ui';
+import { Link } from '~/components/ui';
 import { ArrowTopRight } from '@iota/apps-ui-icons';
 
 interface StatItem {
@@ -49,7 +49,14 @@ function formatSupply(value: string | undefined): string {
 function SupplyStatValue({ value }: { value: string | undefined }): React.JSX.Element {
     return (
         <div className="flex flex-col gap-xxs">
-            <AmountWithSymbol amount={formatSupply(value)} symbol={value && 'IOTA'} />
+            <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                <span>{formatSupply(value)}</span>
+                {value && (
+                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                        IOTA
+                    </span>
+                )}
+            </div>
             {value && <CoinFiatValue amount={value} withParentheses={false} />}
         </div>
     );

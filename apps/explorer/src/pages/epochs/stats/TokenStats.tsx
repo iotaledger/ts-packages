@@ -4,7 +4,6 @@
 import { LabelText, LabelTextSize } from '@iota/apps-ui-kit';
 import { CoinFiatValue, useFormatCoin } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
-import { AmountWithSymbol } from '~/components/ui';
 
 type LabelTextProps = Omit<
     React.ComponentProps<typeof LabelText>,
@@ -33,7 +32,12 @@ export function TokenStats({
         <LabelText
             text={
                 <div className="flex min-w-0 flex-col gap-xxs">
-                    <AmountWithSymbol amount={formattedAmount} symbol={symbol} />
+                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                        <span className="break-all">{formattedAmount}</span>
+                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                            {symbol}
+                        </span>
+                    </div>
                     {amount !== undefined && amount !== null && (
                         <CoinFiatValue amount={amount} withParentheses={false} />
                     )}

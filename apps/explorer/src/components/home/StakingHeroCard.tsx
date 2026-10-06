@@ -21,7 +21,6 @@ import {
     useMaxCommitteeSize,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
-import { AmountWithSymbol } from '~/components/ui';
 
 // Scale before the BigInt division so the percentage keeps two decimal places,
 // then divide the resulting Number by the divisor to get the final value.
@@ -80,11 +79,14 @@ export function StakingHeroCard(): JSX.Element {
                             text={
                                 formattedStaked ? (
                                     <div className="flex min-w-0 flex-col gap-xxs">
-                                        <AmountWithSymbol
-                                            amount={formattedStaked}
-                                            symbol={stakedSymbol}
-                                            className="text-title-sm"
-                                        />
+                                        <div className="flex min-w-0 flex-row flex-wrap items-baseline gap-xxs">
+                                            <span className="min-w-0 break-all text-title-sm">
+                                                {formattedStaked}
+                                            </span>
+                                            <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                                {stakedSymbol}
+                                            </span>
+                                        </div>
                                         <CoinFiatValue
                                             amount={totalStaked}
                                             withParentheses={false}

@@ -6,7 +6,6 @@ import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
 import { CoinFiatValue, getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
 import { CoinFormat } from '@iota/iota-sdk/utils';
-import { AmountWithSymbol } from '~/components/ui';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -80,10 +79,12 @@ export function ValidatorStats({
                         label="Total IOTA Staked"
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
-                                <AmountWithSymbol
-                                    amount={formattedTotalStakeAmount}
-                                    symbol={totalStakeSymbol}
-                                />
+                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                    <span className="break-all">{formattedTotalStakeAmount}</span>
+                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                        {totalStakeSymbol}
+                                    </span>
+                                </div>
                                 <CoinFiatValue amount={totalStake} withParentheses={false} />
                             </div>
                         }
@@ -94,10 +95,12 @@ export function ValidatorStats({
                         label="Reward Balance"
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
-                                <AmountWithSymbol
-                                    amount={formattedRewardsPoolBalance}
-                                    symbol={rewardsPoolBalanceSymbol}
-                                />
+                                <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                                    <span className="break-all">{formattedRewardsPoolBalance}</span>
+                                    <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                        {rewardsPoolBalanceSymbol}
+                                    </span>
+                                </div>
                                 <CoinFiatValue
                                     amount={rewardsPoolBalance}
                                     withParentheses={false}
