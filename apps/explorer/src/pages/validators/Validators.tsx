@@ -97,10 +97,10 @@ function ValidatorPageResult(): JSX.Element {
     const { data: participationMetrics } = useIotaClientQuery('getParticipationMetrics');
 
     const totalStaked = useMemo(() => {
-        if (!data) return 0;
+        if (!data) return 0n;
         const validators = data.committeeMembers;
 
-        return validators.reduce((acc, cur) => acc + Number(cur.stakingPoolIotaBalance), 0);
+        return validators.reduce((acc, cur) => acc + BigInt(cur.stakingPoolIotaBalance), 0n);
     }, [data]);
 
     const averageAPY = useMemo(() => {
@@ -144,7 +144,7 @@ function ValidatorPageResult(): JSX.Element {
         let ratio = null;
         if (totalSupplyData?.value && totalStaked) {
             const totalSupplyValue = Number(totalSupplyData.value);
-            ratio = Number(((totalStaked / totalSupplyValue) * 100).toFixed(2));
+            ratio = Number(((Number(totalStaked) / totalSupplyValue) * 100).toFixed(2));
         }
         return formatPercentageDisplay(ratio);
     })();
