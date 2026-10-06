@@ -2,5 +2,6 @@
     "entryPoints": ["src/ledger/*.ts", "src/webcrypto/*.ts"],
     "excludeInternal": true,
     "excludePrivate": true,
-    "intentionallyNotExported": []
+    "intentionallyNotExported": [],
+    "docsUrl": "https://docs.iota.org/developer/ts-sdk/signers/api"
 }
