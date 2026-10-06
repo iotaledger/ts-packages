@@ -58,6 +58,7 @@ export function AuditTrailSummaryView({
                             label="Records Size"
                             value={auditTrailRecordsSize}
                             tooltipPosition={TooltipPosition.Top}
+                            tooltipText="Number of records currently stored in this audit trail. Deleted records are not counted."
                         />
                     )}
                     {version && (
@@ -65,7 +66,7 @@ export function AuditTrailSummaryView({
                             label="Version"
                             value={version}
                             tooltipPosition={TooltipPosition.Top}
-                            tooltipText="Version of object in a progressive sequence."
+                            tooltipText="Audit trail package version this trail was created or last migrated with. The trail can only be changed while it matches the current package version."
                         />
                     )}
                     {storageRebate && <StorageRebateCard storageRebate={storageRebate} />}
@@ -82,7 +83,7 @@ export function AuditTrailSummaryView({
                             label="Sequence"
                             value={sequenceNumber}
                             tooltipPosition={TooltipPosition.Top}
-                            tooltipText="Version of state change in a progressive sequence."
+                            tooltipText="Sequence number the next added record will receive. It never decreases, so numbers of deleted records are not reused."
                         />
                     )}
                     {lastTransactionBlockDigest && (
