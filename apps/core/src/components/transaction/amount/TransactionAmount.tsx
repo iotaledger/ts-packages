@@ -35,9 +35,7 @@ export function TransactionAmount({
     return Number(amount) !== 0 ? (
         <Card type={CardType.Filled}>
             <CardImage type={ImageType.BgSolid}>
-                <div className="h-10 w-10 items-center justify-center rounded-full border border-shader-neutral-light-8 text-iota-neutral-10 dark:text-iota-neutral-92">
-                    <CoinIcon coinType={coinType} size={ImageIconSize.Full} rounded />
-                </div>
+                <CoinIcon coinType={coinType} size={ImageIconSize.Large} hasBorder />
             </CardImage>
             <CardBody
                 title={`${approximation ? '~' : ''}${formatAmount} ${symbol}`}

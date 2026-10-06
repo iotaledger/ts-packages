@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type ObjectOwner, type IotaObjectResponse } from '@iota/iota-sdk/client';
+import { normalizeIotaAddress, normalizeStructTag, parseStructTag } from '@iota/iota-sdk/utils';
 
 import { findIPFSvalue } from '@iota/core';
 
@@ -26,6 +27,35 @@ export function parseObjectType(data: IotaObjectResponse): string {
         return 'Move Package';
     }
     return data.data?.type ?? data?.data?.content?.type ?? 'unknown';
+}
+
+// Framework objects that belong to a single coin, which is their type parameter.
+const COIN_OBJECT_STRUCTS = new Set([
+    'coin::Coin',
+    'coin::CoinMetadata',
+    'coin::TreasuryCap',
+    'coin_manager::CoinManager',
+]);
+
+/**
+ * The coin type a `Coin<T>`, `CoinMetadata<T>`, `TreasuryCap<T>` or
+ * `CoinManager<T>` object belongs to, or null for any other object.
+ */
+export function getCoinTypeOfObject(objectType: string): string | null {
+    try {
+        const { address, module, name, typeParams } = parseStructTag(objectType);
+        const [coinType] = typeParams;
+        if (
+            address !== normalizeIotaAddress('0x2') ||
+            !COIN_OBJECT_STRUCTS.has(`${module}::${name}`) ||
+            !coinType
+        ) {
+            return null;
+        }
+        return normalizeStructTag(coinType);
+    } catch {
+        return null;
+    }
 }
 
 export function getOwnerStr(owner: ObjectOwner | string): string {

@@ -36,6 +36,7 @@ export function AddressAlias({
     const getAddressAlias = useAddressAliasLookup();
 
     const addressAlias = getAddressAlias(address);
+    const showAlias = !hideAlias && !!addressAlias;
 
     const addressToDisplay =
         noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
@@ -51,7 +52,7 @@ export function AddressAlias({
 
     return (
         <div className="flex flex-col gap-xxs">
-            {!hideAlias && addressAlias && (
+            {showAlias && (
                 <div className="flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
                     <div className="h-5 w-5 shrink-0">
                         {addressAlias.isScam ? (
@@ -81,7 +82,7 @@ export function AddressAlias({
                 </div>
             )}
 
-            <div className={cx('break-all', { 'text-body-sm': !!addressAlias })}>
+            <div className={cx('break-all', { 'text-body-sm': showAlias })}>
                 {renderAddress ? (
                     renderAddress(addressToDisplay, copyButton, !!addressAlias)
                 ) : (

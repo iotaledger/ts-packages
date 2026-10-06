@@ -10,7 +10,7 @@ import {
 } from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { StakeEventJson, UnstakeEventJson } from '@iota/core';
 import { DateDisplay } from '~/components';
@@ -52,6 +52,7 @@ export function generateStakingHistoryTableColumns(): ColumnDef<IotaEvent>[] {
                 return (
                     <TableCellBase>
                         <TransactionLink
+                            {...ROW_LINK_PROPS}
                             digest={digest}
                             copyText={digest}
                             label={
