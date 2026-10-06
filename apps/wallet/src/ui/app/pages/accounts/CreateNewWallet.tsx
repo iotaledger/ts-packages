@@ -3,7 +3,6 @@
 
 import { ampli } from '_src/shared/analytics/ampli';
 import { useNavigate } from 'react-router-dom';
-import { useGoBackTo } from '_components/NavigationStackProvider';
 import SecureYourWallet from '_assets/images/onboarding/secure-your-wallet.png';
 import SecureYourWalletDark from '_assets/images/onboarding/secure-your-wallet-darkmode.png';
 import { Card, CardType, CardBody, CardAction, CardActionType } from '@iota/apps-ui-kit';
@@ -20,7 +19,6 @@ import { isFirstAccount } from '../../helpers';
 export function CreateNewWallet() {
     const { theme } = useTheme();
     const navigate = useNavigate();
-    const goBackTo = useGoBackTo();
     const [, setAccountsFormValues] = useAccountsFormContext();
     const { sourceFlowRef } = useSourceFlow();
     const sourceFlow = sourceFlowRef.current;
@@ -80,11 +78,7 @@ export function CreateNewWallet() {
     };
 
     return (
-        <PageTemplate
-            title="Create a new wallet"
-            isTitleCentered
-            onBack={() => goBackTo('/accounts/add-account')}
-        >
+        <PageTemplate title="Create a new wallet" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col justify-center py-md--rs text-center">
                     <div className="flex flex-col items-center gap-y-4">

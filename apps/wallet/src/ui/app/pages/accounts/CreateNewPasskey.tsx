@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useNavigate } from 'react-router-dom';
-import { useGoBackTo } from '_components/NavigationStackProvider';
 
 import {
     AccountsFormType,
@@ -30,7 +29,6 @@ type ImportPasskeyFormValues = z.infer<typeof formSchema>;
 
 export function CreateNewPasskey() {
     const navigate = useNavigate();
-    const goBackTo = useGoBackTo();
     useBootstrapSourceFlow();
 
     const [authenticatorAttachment, setAuthenticatorAttachment] =
@@ -85,7 +83,7 @@ export function CreateNewPasskey() {
         <PageTemplate
             title="Create Passkey Account"
             isTitleCentered
-            onBack={() => goBackTo('/accounts/import-existing')}
+            onBack={() => navigate('/accounts/import-existing', { replace: true })}
         >
             <Form
                 className="flex h-full flex-col justify-between"

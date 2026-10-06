@@ -3,7 +3,6 @@
 
 import { ampli } from '_src/shared/analytics/ampli';
 import { useNavigate } from 'react-router-dom';
-import { useGoBackTo } from '_components/NavigationStackProvider';
 import ImportAWallet from '_assets/images/onboarding/import-a-wallet.png';
 import ImportAWalletDark from '_assets/images/onboarding/import-a-wallet-darkmode.png';
 import { Card, CardType, CardBody, CardAction, CardActionType } from '@iota/apps-ui-kit';
@@ -21,7 +20,6 @@ import { ACCOUNT_FORM_TYPE_TO_AMPLI } from '_src/shared/analytics';
 export function ImportExistingWallet() {
     const { theme } = useTheme();
     const navigate = useNavigate();
-    const goBackTo = useGoBackTo();
     const isPopupOrSidePanel = useAppSelector(
         (state) =>
             state.app.extensionViewType === ExtensionViewType.Popup ||
@@ -101,11 +99,7 @@ export function ImportExistingWallet() {
     const hasManyProfileOptions = profileOptions.length >= 3;
 
     return (
-        <PageTemplate
-            title="Import a wallet"
-            isTitleCentered
-            onBack={() => goBackTo('/accounts/add-account')}
-        >
+        <PageTemplate title="Import a wallet" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col justify-center gap-4 py-md--rs text-center">
                     <img
