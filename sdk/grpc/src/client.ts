@@ -639,9 +639,10 @@ export class IotaGrpcClient {
     }
 
     /**
-     * Executes signed transactions in order, one result per transaction. Each runs on its own, so
-     * a failure fails only its slot. Throws when the node answers with a different count or a
-     * different transaction at some position.
+     * Executes signed transactions, one result per transaction in request order. The node submits
+     * them concurrently, so a transaction cannot rely on another's effects in the same batch: send
+     * dependent ones in separate calls. A failure fails only its slot. Throws when the node answers
+     * with a different count or a different transaction at some position.
      */
     async executeTransactions(
         transactions: readonly SignedTransaction[],
@@ -693,8 +694,9 @@ export class IotaGrpcClient {
     }
 
     /**
-     * Simulates transactions in order, one result per transaction. Each runs on its own, so a
-     * failure fails only its slot. Throws when the node answers with a different count.
+     * Simulates transactions, one result per transaction in request order. Each is simulated on its
+     * own against current state, so none sees another's effects. A failure fails only its slot.
+     * Throws when the node answers with a different count.
      */
     async simulateTransactions(
         transactions: readonly SimulateTransactionInput[],
