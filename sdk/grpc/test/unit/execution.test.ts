@@ -187,6 +187,23 @@ describe('executeTransactions', () => {
         expect(called).toBe(false);
     });
 
+    it('rejects a TransactionData followed by extra bytes without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            executeTransactions() {
+                called = true;
+                return {};
+            },
+        });
+
+        await expect(
+            client.executeTransactions([
+                { transaction: new Uint8Array([...TRANSACTION, 0]), signatures: SIGNATURES },
+            ]),
+        ).rejects.toThrow(TypeError);
+        expect(called).toBe(false);
+    });
+
     it('rejects a signature that is not base64 without calling the node', async () => {
         let called = false;
         const client = clientFor({
@@ -434,6 +451,21 @@ describe('simulateTransactions', () => {
 
         await expect(
             client.simulateTransactions([{ transaction: NOT_A_TRANSACTION }]),
+        ).rejects.toThrow(TypeError);
+        expect(called).toBe(false);
+    });
+
+    it('rejects a TransactionData followed by extra bytes without calling the node', async () => {
+        let called = false;
+        const client = clientFor({
+            simulateTransactions() {
+                called = true;
+                return {};
+            },
+        });
+
+        await expect(
+            client.simulateTransactions([{ transaction: new Uint8Array([...TRANSACTION, 0]) }]),
         ).rejects.toThrow(TypeError);
         expect(called).toBe(false);
     });

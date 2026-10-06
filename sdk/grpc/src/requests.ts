@@ -2,17 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { MessageInitShape } from '@bufbuild/protobuf';
+import { create } from '@bufbuild/protobuf';
 import type { ValueSchema } from '@bufbuild/protobuf/wkt';
 import { NullValue } from '@bufbuild/protobuf/wkt';
 import { fromBase58, fromBase64 } from '@iota/bcs';
 import type { TypeTag } from '@iota/iota-sdk/bcs';
-import { bcs, TypeTagSerializer } from '@iota/iota-sdk/bcs';
+import { TypeTagSerializer } from '@iota/iota-sdk/bcs';
 import { TransactionDataBuilder } from '@iota/iota-sdk/transactions';
 
+import { decodeTransaction } from './bcs/decode.js';
 import { UserSignature } from './bcs/signatures.js';
 import { SignatureConversionError } from './errors.js';
 import type { InputArgumentSchema } from './proto/iota/grpc/v1/command_pb.js';
 import type { UserSignatureSchema } from './proto/iota/grpc/v1/signatures_pb.js';
+import { TransactionSchema } from './proto/iota/grpc/v1/transaction_pb.js';
 import type { TypeTagSchema } from './proto/iota/grpc/v1/types_pb.js';
 
 /** `TransactionData` BCS, as the bytes `Transaction.build` returns or the base64 `signTransaction` does. */
@@ -69,7 +72,7 @@ export function protoTransaction(transaction: TransactionBytes) {
     let data: Uint8Array;
     try {
         data = typeof transaction === 'string' ? fromBase64(transaction) : transaction;
-        bcs.TransactionData.parse(data);
+        decodeTransaction(create(TransactionSchema, { bcs: { data } }));
     } catch {
         throw new TypeError('invalid transaction: not BCS-encoded TransactionData');
     }
