@@ -353,6 +353,24 @@ jobs:
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter=@iota/kiosk test:e2e'
 
+      # ─── gRPC SDK ────────────────────────────────────────────────────────────
+
+      - name: Build gRPC SDK
+        id: build-grpc
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runGrpc == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm turbo --filter=@iota/grpc build
+
+      # The gRPC API is off unless the node config turns it on.
+      - name: Run gRPC SDK e2e tests
+        id: run-grpc
+        if: (!cancelled() && !failure()) && steps.build-grpc.outcome == 'success' && steps.conditions.outputs.runGrpc == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: |
+          pnpm dlx concurrently --kill-others --success command-1 \
+            "$E2E_RUN_LOCAL_NET_CMD --node-config-override fullnode:enable-grpc-api=true --node-config-override \"fullnode:grpc-api-config={address: '0.0.0.0:50051'}\"" \
+            'pnpm --filter=@iota/grpc test:e2e:localnet'
+
       # ─── Wallet ──────────────────────────────────────────────────────────────
 
       - name: Run Local net
@@ -517,24 +535,6 @@ jobs:
           NETWORK: localnet
         run: |
           VITE_IOTA_BIN="iota" pnpm --filter=@iota/iota-names-sdk test:e2e
-
-      # ─── gRPC SDK ────────────────────────────────────────────────────────────
-
-      - name: Build gRPC SDK
-        id: build-grpc
-        if: (!cancelled() && !failure()) && steps.conditions.outputs.runGrpc == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: pnpm turbo --filter=@iota/grpc build
-
-      # The gRPC API is off unless the node config turns it on.
-      - name: Run gRPC SDK e2e tests
-        id: run-grpc
-        if: (!cancelled() && !failure()) && steps.build-grpc.outcome == 'success' && steps.conditions.outputs.runGrpc == 'true'
-        continue-on-error: ${{ inputs.isNightly }}
-        run: |
-          pnpm dlx concurrently --kill-others --success command-1 \
-            "$E2E_RUN_LOCAL_NET_CMD --node-config-override fullnode:enable-grpc-api=true --node-config-override \"fullnode:grpc-api-config={address: '0.0.0.0:50051'}\"" \
-            'pnpm --filter=@iota/grpc test:e2e:localnet'
 
       # ─── Nightly failure report ───────────────────────────────────────────────
 
