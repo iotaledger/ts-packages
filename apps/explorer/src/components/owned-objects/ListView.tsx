@@ -6,6 +6,7 @@ import { Placeholder } from '@iota/apps-ui-kit';
 import { type IotaObjectResponse } from '@iota/iota-sdk/client';
 import { TableCard } from '~/components/ui';
 import { generateObjectListColumns } from '~/lib/ui/utils/generateObjectListColumns';
+import { getInternalPath } from '~/lib/utils';
 
 interface ListViewProps {
     data?: IotaObjectResponse[];
@@ -19,7 +20,14 @@ export function ListView({ data, loading, hideAssetColumn }: ListViewProps): JSX
     return (
         <div className="h-full w-full">
             {tableColumns && data && (
-                <TableCard data={data ?? []} columns={tableColumns} heightFull />
+                <TableCard
+                    data={data ?? []}
+                    columns={tableColumns}
+                    getRowHref={({ data: object }) =>
+                        object ? getInternalPath('object', object.objectId) : undefined
+                    }
+                    heightFull
+                />
             )}
             {loading && new Array(10).fill(0).map((_, index) => <Placeholder key={index} />)}
         </div>

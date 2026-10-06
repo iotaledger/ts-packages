@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type ReactNode } from 'react';
-import { TableCellBase, TableCellText, Title, TitleSize } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Title, TitleSize, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type {
     IotaObjectRef,
     IotaTransactionBlockResponse,
@@ -13,6 +13,7 @@ import { CollapsibleCard, ObjectLink, TransactionLink } from '~/components';
 import { TableCard } from '~/components/ui';
 import { NewDigestCell } from '~/lib/ui';
 import { CopyButton } from './CopyButton';
+import { getInternalPath } from '~/lib/utils';
 
 function EffectsSection({
     title,
@@ -50,6 +51,7 @@ const UNCHANGED_SHARED_OBJECT_COLUMNS: ColumnDef<IotaObjectRef>[] = [
         cell: ({ row }) => (
             <TableCellBase>
                 <ObjectLink
+                    {...ROW_LINK_PROPS}
                     objectId={row.original.objectId}
                     copyText={row.original.objectId}
                     className="[&>div]:max-w-[200px] [&>div]:truncate"
@@ -134,6 +136,7 @@ export function TransactionEffects({ transaction }: TransactionEffectsProps): JS
                         <TableCard
                             data={unchangedSharedObjects}
                             columns={UNCHANGED_SHARED_OBJECT_COLUMNS}
+                            getRowHref={({ objectId }) => getInternalPath('object', objectId)}
                         />
                     </EffectsSection>
                 )}

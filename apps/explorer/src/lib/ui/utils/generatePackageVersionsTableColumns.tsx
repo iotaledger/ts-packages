@@ -1,7 +1,14 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeSize, BadgeType, TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import {
+    Badge,
+    BadgeSize,
+    BadgeType,
+    TableCellBase,
+    TableCellText,
+    ROW_LINK_PROPS,
+} from '@iota/apps-ui-kit';
 import { formatAddress, formatDigest } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ObjectLink, TransactionLink } from '~/components/ui';
@@ -37,6 +44,7 @@ export function generatePackageVersionsTableColumns(
                 return (
                     <TableCellBase>
                         <ObjectLink
+                            {...ROW_LINK_PROPS}
                             objectId={address}
                             label={<TableCellText>{formatAddress(address)}</TableCellText>}
                             copyText={address}
