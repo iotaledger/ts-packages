@@ -4,7 +4,7 @@
 rm -rf generated-docs
 mkdir -p generated-docs
 
-packages="bcs dapp-kit graphql-transport isc-sdk kiosk ledgerjs-hw-app-iota names signers typescript wallet-standard"
+packages="bcs dapp-kit graphql-transport grpc isc-sdk kiosk ledgerjs-hw-app-iota names signers typescript wallet-standard"
 
 for package in $packages; do
     # Generate typedoc for the package from its own directory

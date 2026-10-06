@@ -68,6 +68,7 @@ jobs:
       isNamesDapp: ${{ needs.diff.outputs.isNamesDapp == 'true' }}
       isNamesDisplay: ${{ needs.diff.outputs.isNamesDisplay == 'true' }}
       isNamesSDK: ${{ needs.diff.outputs.isNamesSDK == 'true' }}
+      isGrpc: ${{ needs.diff.outputs.isGrpc == 'true' }}
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK: ${{ secrets.EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK }}
       EVM_BRIDGE_CONFIG_TESTS: ${{ secrets.EVM_BRIDGE_CONFIG_TESTS }}
