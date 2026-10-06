@@ -740,7 +740,7 @@ export class IotaGrpcClient {
         options?: ViewFunctionCallOptions,
     ): Promise<WithMetadata<ViewFunctionCallOutputs>> {
         if (call.fqFunctionName.length === 0) {
-            throw new EmptyRequestError();
+            throw new TypeError('fqFunctionName is empty');
         }
 
         const { body, metadata } = await this.viewFunctionCalls([call], options);

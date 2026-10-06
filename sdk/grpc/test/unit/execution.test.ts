@@ -923,7 +923,7 @@ describe('viewFunctionCall', () => {
         });
 
         await expect(client.viewFunctionCall({ fqFunctionName: '' })).rejects.toThrow(
-            EmptyRequestError,
+            new TypeError('fqFunctionName is empty'),
         );
         expect(called).toBe(false);
     });
