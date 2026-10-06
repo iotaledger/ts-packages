@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@iota/core": "workspace:*",
+        "@iota/iota-names-sdk": "workspace:*",
         "@iota/iota-sdk": "workspace:*",
         "@nestjs/cache-manager": "^3.0.1",
         "@nestjs/common": "^11.2.1",
