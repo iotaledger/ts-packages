@@ -5,7 +5,7 @@
 import { beforeAll, describe, expect, it, test } from 'vitest';
 
 import { IotaGraphQLClient } from '../../src/graphql';
-import { graphql } from '../../src/graphql/schemas/2025.2';
+import { graphql } from '../../src/graphql/schemas/latest';
 import { IotaClient } from '../../src/client/index.js';
 import { Transaction } from '../../src/transactions/index.js';
 import { setup, TestToolbox } from './utils/setup';

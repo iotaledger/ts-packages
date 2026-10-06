@@ -11,7 +11,7 @@ export function getAddressOwner(owner?: ObjectOwner | null): string | undefined 
 
 export interface SendRecipients {
     addresses: Set<string>;
-    sentObjectCount: number;
+    objectRecipients: string[];
 }
 
 export function getSendRecipients(
@@ -46,7 +46,7 @@ export function getSendRecipients(
         ].filter((address): address is string => !!address),
     );
 
-    return { addresses, sentObjectCount: sentObjectRecipients.length };
+    return { addresses, objectRecipients: sentObjectRecipients };
 }
 
 export function getSendRecipientAddress(

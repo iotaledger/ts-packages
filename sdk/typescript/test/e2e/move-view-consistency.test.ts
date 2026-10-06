@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { IotaMoveViewCallResults, MoveValue } from '../../src/client/types/generated';
 import { IotaGraphQLClient } from '../../src/graphql';
-import { graphql } from '../../src/graphql/schemas/2025.2';
+import { graphql } from '../../src/graphql/schemas/latest';
 import { IOTA_TYPE_ARG } from '../../src/utils';
 import { setup, TestToolbox } from './utils/setup';
 

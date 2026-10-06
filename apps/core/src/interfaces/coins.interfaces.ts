@@ -8,6 +8,7 @@ export interface CoinRegistryEntry {
     coinType: string;
     name?: string;
     trust: CoinTrust;
+    iconUrl?: string;
     valuation?: CoinValuation;
 }
 
