@@ -81,7 +81,7 @@ export function ReviewValuesFormView({
                     {Number(amount) !== 0 ? (
                         <Card type={CardType.Filled}>
                             <CardImage type={ImageType.BgSolid}>
-                                <CoinIcon coinType={coinType} rounded size={ImageIconSize.Small} />
+                                <CoinIcon coinType={coinType} size={ImageIconSize.Large} />
                             </CardImage>
                             <div className="flex w-full flex-col">
                                 <div className="flex flex-row items-center gap-x-xxs">

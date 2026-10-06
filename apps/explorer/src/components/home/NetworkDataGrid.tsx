@@ -16,8 +16,8 @@ import {
     NANOS_PER_IOTA,
 } from '@iota/iota-sdk/utils';
 import {
-    useBalanceInUSD,
-    formatBalanceToUSD,
+    useCoinFiatValue,
+    formatFiat,
     Feature,
     useFeatureEnabledByNetwork,
     CoinFiatValue,
@@ -68,8 +68,8 @@ export function NetworkDataGrid({
     });
     const { network } = useIotaClientContext();
     const isFiatEnabled = useFeatureEnabledByNetwork(Feature.FiatConversion, network as Network);
-    const iotaPrice = useBalanceInUSD(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
-    const marketCapUSD = useBalanceInUSD(
+    const iotaPrice = useCoinFiatValue(IOTA_TYPE_ARG, NANOS_PER_IOTA, network as Network);
+    const marketCapUSD = useCoinFiatValue(
         IOTA_TYPE_ARG,
         circulatingSupply?.value ?? 0,
         network as Network,
@@ -103,10 +103,9 @@ export function NetworkDataGrid({
         ? String(systemState.activeValidators.length)
         : FALLBACK;
 
-    const priceDisplay = isFiatEnabled && iotaPrice !== null ? formatBalanceToUSD(iotaPrice) : null;
+    const priceDisplay = isFiatEnabled && iotaPrice !== null ? formatFiat(iotaPrice) : null;
 
-    const marketCapDisplay =
-        isFiatEnabled && marketCapUSD ? formatBalanceToUSD(marketCapUSD) : null;
+    const marketCapDisplay = isFiatEnabled && marketCapUSD ? formatFiat(marketCapUSD) : null;
 
     const stats: StatItem[] = [
         {

@@ -7,6 +7,7 @@ import { Feature } from '@iota/core/enums/features.enums';
 import { Network } from '@iota/iota-sdk/client';
 import { Response } from 'express';
 import { KNOWN_ADDRESSES_ALIASES, RECOGNIZED_PACKAGES } from './features.constants';
+import { COIN_REGISTRY } from './coins.constants';
 import { LEGACY_FEATURE_FLAGS } from './legacy-features.constants';
 import { RECOGNIZED_DAPPS } from './dapps.constants';
 
@@ -47,6 +48,9 @@ export class FeaturesController {
             features: {
                 [Feature.RecognizedPackages]: {
                     defaultValue: RECOGNIZED_PACKAGES,
+                },
+                [Feature.CoinRegistry]: {
+                    defaultValue: COIN_REGISTRY,
                 },
                 [Feature.WalletSentryTracing]: {
                     defaultValue: 0.0025,
@@ -126,6 +130,9 @@ export class FeaturesController {
             features: {
                 [Feature.RecognizedPackages]: {
                     defaultValue: RECOGNIZED_PACKAGES,
+                },
+                [Feature.CoinRegistry]: {
+                    defaultValue: COIN_REGISTRY,
                 },
                 [Feature.WalletSentryTracing]: {
                     defaultValue: 0.0025,

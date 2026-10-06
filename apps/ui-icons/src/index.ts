@@ -21,6 +21,7 @@ export { default as CircleEmitter } from './CircleEmitter';
 export { default as Clock } from './Clock';
 export { default as Close } from './Close';
 export { default as CloseFilled } from './CloseFilled';
+export { default as Coin } from './Coin';
 export { default as Copy } from './Copy';
 export { default as Create } from './Create';
 export { default as DarkMode } from './DarkMode';

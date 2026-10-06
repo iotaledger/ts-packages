@@ -7,6 +7,7 @@ import { useCursorPagination } from '@iota/core';
 import { PlaceholderTable, TableCard } from '~/components/ui';
 import { useGetValidatorStakingEvents } from '~/hooks';
 import { generateStakingHistoryTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 const STAKING_HISTORY_PAGE_SIZE = 10;
 
@@ -58,6 +59,7 @@ export function ValidatorStakingHistory({
                     <TableCard
                         data={data.data}
                         columns={tableColumns}
+                        getRowHref={({ id }) => getInternalPath('txblock', id.txDigest)}
                         paginationOptions={pagination}
                     />
                 )}

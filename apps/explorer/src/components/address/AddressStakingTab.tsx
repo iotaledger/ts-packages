@@ -27,12 +27,14 @@ import {
     SegmentedButton,
     SegmentedButtonType,
     TableCellBase,
+    ROW_LINK_PROPS,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
-import { CoinFormat, formatAddress } from '@iota/iota-sdk/utils';
+import { CoinFormat, formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
-import { StakeColumn } from '../top-validators-card/StakeColumn';
 import { TableCard, ValidatorLink } from '../ui';
+import { TableCoinDisplay } from '../TableCoinDisplay';
+import { getInternalPath } from '~/lib/utils';
 
 const STAKED_TOOLTIP_TEXT = 'IOTA staked with validators. Cannot be used until unstaked.';
 const TIMELOCKED_STAKED_TOOLTIP_TEXT =
@@ -241,7 +243,7 @@ function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX
                         <span>{amount}</span>
                         <span className="text-label-md opacity-40">{symbol}</span>
                     </div>
-                    <CoinFiatValue amount={value} withParentheses={false} />
+                    <CoinFiatValue amount={value} withParentheses={false} showApproxSymbol />
                 </div>
             }
         />
@@ -266,9 +268,7 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <div className="w-40">
-                        <StakeColumn stake={getValue<bigint>()} />
-                    </div>
+                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
                 </TableCellBase>
             );
         },
@@ -279,9 +279,7 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <div className="w-40">
-                        <StakeColumn stake={getValue<bigint>()} />
-                    </div>
+                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
                 </TableCellBase>
             );
         },
@@ -289,7 +287,13 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
 ];
 
 function DelegationsTable({ rows }: DelegationsTableProps): React.JSX.Element {
-    return <TableCard data={rows} columns={DELEGATION_COLUMNS} />;
+    return (
+        <TableCard
+            data={rows}
+            columns={DELEGATION_COLUMNS}
+            getRowHref={({ validatorAddress }) => getInternalPath('validator', validatorAddress)}
+        />
+    );
 }
 
 interface ValidatorCellProps {
@@ -306,6 +310,7 @@ function ValidatorCell({ address }: ValidatorCellProps): React.JSX.Element {
     return (
         <TableCellBase>
             <ValidatorLink
+                {...ROW_LINK_PROPS}
                 address={address}
                 showAddressAlias={false}
                 label={

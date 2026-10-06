@@ -4,18 +4,18 @@
 
 import {
     formatDate,
-    getBalanceChangeSummary,
     getTransactionAction,
-    useFormatCoin,
-    useTransactionSummary,
     TransactionIcon,
     checkIfIsTimelockedStaking,
     getTransactionAmountForTimelocked,
-    useRecognizedPackages,
     isMigrationTransaction,
-    AmountWithFiat,
+    type CoinAmountChange,
+    getCoinChangesForAddress,
+    getTransactionCoinBalances,
+    TransactionCoinAmounts,
 } from '@iota/core';
 import type { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Card,
@@ -37,48 +37,23 @@ interface TransactionCardProps {
 
 export function TransactionCard({ txn, address }: TransactionCardProps) {
     const executionStatus = txn.effects?.status.status;
-    const recognizedPackagesList = useRecognizedPackages();
-
-    const summary = useTransactionSummary({
-        transaction: txn,
-        currentAddress: address,
-        recognizedPackagesList,
-    });
     const { isTimelockedStaking, isTimelockedUnstaking } = checkIfIsTimelockedStaking(txn.events);
 
-    // we only show IOTA Transfer amount or the first non-IOTA transfer amount
-    // Get the balance changes for the transaction and the amount
-    const balanceChanges = getBalanceChangeSummary(txn, recognizedPackagesList);
-
-    const [balance, coinType] = (() => {
+    const changes = useMemo((): CoinAmountChange[] => {
         if ((isTimelockedStaking || isTimelockedUnstaking) && txn.events) {
-            const balance = getTransactionAmountForTimelocked(
+            const amount = getTransactionAmountForTimelocked(
                 txn.events,
                 isTimelockedStaking,
                 isTimelockedUnstaking,
             );
-            return [balance, IOTA_TYPE_ARG];
-        } else if (isMigrationTransaction(txn.transaction)) {
-            const balanceChange = balanceChanges?.[address || '']?.find((change) => {
-                return change.coinType === IOTA_TYPE_ARG;
-            });
-            const balance = balanceChange ? balanceChange.amount : 0;
-            return [balance, IOTA_TYPE_ARG];
-        } else {
-            // Use any non-iota coin type if found, otherwise simply use IOTA
-            const nonIotaCoinType = balanceChanges?.[address]
-                ?.map((change) => change.coinType)
-                .find((coinType) => coinType !== IOTA_TYPE_ARG);
-            const coinType = nonIotaCoinType ?? IOTA_TYPE_ARG;
-            const balanceChange = balanceChanges?.[address]?.find((change) => {
-                return change.coinType === coinType;
-            });
-            const balance = balanceChange ? balanceChange.amount : 0;
-            return [balance, coinType];
+            return [{ coinType: IOTA_TYPE_ARG, amount: BigInt(amount ?? 0) }];
         }
-    })();
-
-    const [formatAmount, symbol] = useFormatCoin({ balance, coinType });
+        const addressChanges = getCoinChangesForAddress(getTransactionCoinBalances(txn), address);
+        if (isMigrationTransaction(txn.transaction)) {
+            return addressChanges.filter(({ coinType }) => coinType === IOTA_TYPE_ARG);
+        }
+        return addressChanges;
+    }, [txn, address, isTimelockedStaking, isTimelockedUnstaking]);
 
     const error = txn.effects?.status.error;
 
@@ -113,27 +88,16 @@ export function TransactionCard({ txn, address }: TransactionCardProps) {
                     />
                 </CardImage>
                 <CardBody
-                    title={
-                        error
-                            ? `Failed - ${summary?.label ?? 'Unknown'}`
-                            : (summary?.label ?? 'Unknown')
-                    }
+                    title={error ? `Failed - ${transactionAction}` : transactionAction}
                     subtitle={transactionDate}
                 />
                 <CardAction
                     type={CardActionType.SupportingText}
                     title={
-                        error ? (
+                        error || changes.length === 0 ? (
                             '--'
                         ) : (
-                            <AmountWithFiat
-                                amount={balance ?? 0}
-                                formatted={formatAmount}
-                                symbol={symbol}
-                                coinType={coinType}
-                                direction="column"
-                                align="end"
-                            />
+                            <TransactionCoinAmounts changes={changes} />
                         )
                     }
                 />

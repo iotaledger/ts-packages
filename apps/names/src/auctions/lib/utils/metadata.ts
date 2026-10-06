@@ -3,7 +3,7 @@
 
 import { getNameType } from '@iota/iota-names-sdk';
 import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { fromBase64 } from '@iota/iota-sdk/utils';
 
 import { queryKey } from '@/hooks';
