@@ -89,7 +89,8 @@ const IOTA_FRAMEWORK = normalizeIotaAddress(IOTA_FRAMEWORK_ADDRESS);
 
 /** Like Rust's `Coin::try_from_object`: a gas coin, a `Coin<T>`, or a struct spelled `0x2::coin::Coin<T>`. */
 export function decodeCoin(object: Object$): Coin {
-    const { data } = decodeObject(object);
+    const decoded = decodeObject(object);
+    const { data } = decoded;
 
     if (data.$kind !== 'Struct') {
         throw new ProtoConversionError("invalid field 'coin': not a coin");
@@ -129,7 +130,7 @@ export function decodeCoin(object: Object$): Coin {
 
     return {
         coinType,
-        id: `0x${toHex(contents.slice(0, 32))}`,
+        id: objectIdOf(decoded),
         balance: BigInt(bcs.u64().parse(contents.slice(32))),
     };
 }
