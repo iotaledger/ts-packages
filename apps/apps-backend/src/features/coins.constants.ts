@@ -54,6 +54,7 @@ export const COIN_REGISTRY: CoinRegistryEntry[] = [
             '0x25afeacdd3b0e757ae40aa4b9852261003e1dffeeb37d2c4f2904bb809807ac9::usdt0::USDT0',
         name: 'USDT0',
         trust: CoinTrust.Recognized,
+        iconUrl: 'https://files.iota.org/media/tooling/logos/usdt0.svg',
         valuation: { kind: 'market', priceId: 'usdt0' },
     },
 ];
