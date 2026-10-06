@@ -41,7 +41,7 @@ const SYSTEM_PACKAGE_ID = normalizeIotaAddress(IOTA_SYSTEM_ADDRESS);
 const FRAMEWORK_PACKAGE_IDS = [
     MOVE_STDLIB_ADDRESS,
     IOTA_FRAMEWORK_ADDRESS,
-    SYSTEM_PACKAGE_ID,
+    IOTA_SYSTEM_ADDRESS,
     STARDUST_PACKAGE_ID,
 ].map((address) => normalizeIotaAddress(address));
 
