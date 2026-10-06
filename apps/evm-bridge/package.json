@@ -6,7 +6,7 @@
         "metamaskVersion": "12.20.0"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --port 5173 --strictPort",
         "build": "tsc && vite build",
         "preview": "vite preview",
         "test:prepare:L1": "pnpm -w wallet build",
