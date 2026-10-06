@@ -6,6 +6,7 @@ import { useIotaClient } from '@iota/dapp-kit';
 import { CoinMetadata } from '@iota/iota-sdk/client';
 import { IOTA_DECIMALS, IOTA_TYPE_ARG, formatBalance, CoinFormat } from '@iota/iota-sdk/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
 import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
@@ -145,14 +146,16 @@ export function useFormatCoin({
 
         if (!isFetched) return '...';
 
-        const formattedBalance = formatBalance(balance, data?.decimals ?? 0, format, showSign, {
-            useGroupSeparator,
-        });
+        const decimals = data?.decimals ?? 0;
+        const amount = truncateToTwoDecimals
+            ? new BigNumber(balance.toString())
+                  .shiftedBy(-decimals)
+                  .decimalPlaces(2, BigNumber.ROUND_DOWN)
+                  .shiftedBy(decimals)
+                  .toFixed()
+            : balance;
 
-        if (!truncateToTwoDecimals) return formattedBalance;
-
-        const [integerPart, decimalPart] = formattedBalance.split('.');
-        return decimalPart ? `${integerPart}.${decimalPart.slice(0, 2)}` : formattedBalance;
+        return formatBalance(amount, decimals, format, showSign, { useGroupSeparator });
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [data?.decimals, isFetched, balance, format, useGroupSeparator, truncateToTwoDecimals]);
 
