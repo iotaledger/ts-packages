@@ -769,24 +769,58 @@ describe('viewFunctionCalls', () => {
         expect(called).toBe(false);
     });
 
-    it.each([
-        ['a number a double cannot hold exactly', { args: [2 ** 53] }],
-        ['a number that is not an integer', { args: [1.5] }],
-        ['a malformed type argument', { typeArgs: ['not a type'] }],
-    ])('rejects %s without calling the node', async (_what, call) => {
-        let called = false;
-        const client = clientFor({
-            viewFunctionCalls() {
-                called = true;
-                return {};
-            },
-        });
+    it.each([['a malformed type argument', { typeArgs: ['not a type'] }]])(
+        'rejects %s without calling the node',
+        async (_what, call) => {
+            let called = false;
+            const client = clientFor({
+                viewFunctionCalls() {
+                    called = true;
+                    return {};
+                },
+            });
 
-        await expect(
-            client.viewFunctionCalls([{ fqFunctionName: PRICE, ...call }]),
-        ).rejects.toThrow(TypeError);
-        expect(called).toBe(false);
-    });
+            await expect(
+                client.viewFunctionCalls([{ fqFunctionName: PRICE, ...call }]),
+            ).rejects.toThrow(TypeError);
+            expect(called).toBe(false);
+        },
+    );
+
+    it.each([
+        [
+            'a number a double cannot hold exactly',
+            2 ** 53,
+            'args[0] is 9007199254740992, not a safe integer: pass a bigint instead',
+        ],
+        [
+            'a number that is not an integer',
+            1.5,
+            'args[0] is 1.5, not an integer: Move has no fractional numbers',
+        ],
+        ['NaN', NaN, 'args[0] is NaN, not an integer: Move has no fractional numbers'],
+        [
+            'Infinity',
+            Infinity,
+            'args[0] is Infinity, not an integer: Move has no fractional numbers',
+        ],
+    ])(
+        'rejects %s with a matching hint, without calling the node',
+        async (_what, number, message) => {
+            let called = false;
+            const client = clientFor({
+                viewFunctionCalls() {
+                    called = true;
+                    return {};
+                },
+            });
+
+            await expect(
+                client.viewFunctionCalls([{ fqFunctionName: PRICE, args: [number] }]),
+            ).rejects.toThrow(new TypeError(message));
+            expect(called).toBe(false);
+        },
+    );
 
     it.each([
         ['an undefined struct field', [{ amount: undefined }], 'args[0].amount is undefined'],

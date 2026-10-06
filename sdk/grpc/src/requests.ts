@@ -134,8 +134,15 @@ export function protoJsonValue(
         case 'bigint':
             return { kind: { case: 'stringValue', value: value.toString() } };
         case 'number':
+            if (!Number.isInteger(value)) {
+                throw new TypeError(
+                    `${path} is ${value}, not an integer: Move has no fractional numbers`,
+                );
+            }
             if (!Number.isSafeInteger(value)) {
-                throw new TypeError(`${value} is not a safe integer: pass a bigint instead`);
+                throw new TypeError(
+                    `${path} is ${value}, not a safe integer: pass a bigint instead`,
+                );
             }
             return { kind: { case: 'stringValue', value: value.toString() } };
     }
