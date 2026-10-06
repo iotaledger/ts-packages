@@ -60,6 +60,23 @@ describe('Gas payment resolution', () => {
         expect(result.transaction?.data.gasData.payment.length).toBe(firstPage.data.length);
     });
 
+    it('only uses the first page when the transaction does not take from the gas coin', async () => {
+        const firstPage = await toolbox.getGasObjectsOwnedByAddress();
+        expect(firstPage.hasNextPage).toBe(true);
+
+        const tx = new Transaction();
+        tx.transferObjects([tx.object(firstPage.data[0].coinObjectId)], DEFAULT_RECIPIENT);
+
+        const result = await toolbox.client.signAndExecuteTransaction({
+            transaction: tx,
+            signer: toolbox.keypair,
+            options: { showEffects: true, showInput: true },
+        });
+
+        expect(result.effects?.status.status).toEqual('success');
+        expect(result.transaction?.data.gasData.payment.length).toBe(firstPage.data.length - 1);
+    });
+
     it('uses coins beyond the first page to pay for gas', async () => {
         const firstPage = await toolbox.getGasObjectsOwnedByAddress();
         expect(firstPage.hasNextPage).toBe(true);

@@ -170,23 +170,32 @@ async function canPayGas(
         return false;
     }
 
-    try {
-        const dryRunResult = await client.dryRunTransactionBlock({
-            transactionBlock: transactionData.build({
-                overrides: { gasData: { payment: toGasPayment(coins) } },
-            }),
-        });
-
-        return !dryRunResult.effects.status.error?.includes('InsufficientCoinBalance');
-    } catch (error) {
-        if (
-            error instanceof Error &&
-            /GasBalanceTooLow|lower than the needed amount/.test(error.message)
-        ) {
-            return false;
-        }
-        throw error;
+    // If no command takes from the gas coin, covering the budget is enough.
+    if (!usesGasCoin(transactionData)) {
+        return true;
     }
+
+    const dryRunResult = await client.dryRunTransactionBlock({
+        transactionBlock: transactionData.build({
+            overrides: { gasData: { payment: toGasPayment(coins) } },
+        }),
+    });
+    const error = dryRunResult.effects.status.error ?? '';
+
+    return (
+        !error.includes('InsufficientCoinBalance') && !error.includes('Insufficient coin balance')
+    );
+}
+
+function usesGasCoin(transactionData: TransactionDataBuilder) {
+    let usesGas = false;
+    transactionData.mapArguments((arg) => {
+        if (arg.$kind === 'GasCoin') {
+            usesGas = true;
+        }
+        return arg;
+    });
+    return usesGas;
 }
 
 function toGasPayment(coins: CoinStruct[]) {
