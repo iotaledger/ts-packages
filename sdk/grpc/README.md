@@ -322,8 +322,3 @@ pnpm --filter @iota/grpc prepare:e2e:localnet
 # In another terminal, once it is up
 pnpm --filter @iota/grpc test:e2e:localnet
 ```
-
-`prepare:e2e:localnet` needs `iota-localnet` v1.32.1 or newer on your `PATH`: older versions fail with
-`unexpected argument '--disable-fullnode-pruning'`. Get it from the
-[IOTA releases](https://github.com/iotaledger/iota/releases), or build it from the `external/iota`
-submodule with `cargo install --path external/iota/crates/iota-localnet`.
