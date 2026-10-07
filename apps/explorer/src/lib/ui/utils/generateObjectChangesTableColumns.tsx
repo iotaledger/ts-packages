@@ -80,7 +80,7 @@ function ObjectTypeCell({ objectType }: { objectType?: string }): JSX.Element {
 
     return (
         <TableCellBase>
-            <div className="flex items-center gap-xxs" title={objectType}>
+            <div className="flex items-center gap-xxs whitespace-nowrap" title={objectType}>
                 <Badge
                     type={BadgeType.PrimarySoft}
                     label={objectType ? getShortObjectType(objectType) : 'Package'}
