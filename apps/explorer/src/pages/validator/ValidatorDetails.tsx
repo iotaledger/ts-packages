@@ -94,7 +94,7 @@ function ValidatorDetails(): JSX.Element {
     const atRiskRemainingEpochs = getAtRiskRemainingEpochs(systemStateData, id);
 
     const [formattedNextEpochStake, nextEpochStakeSymbol] = useFormatCoin({
-        balance: Number(activeValidatorData?.nextEpochStake ?? 0),
+        balance: activeValidatorData?.nextEpochStake ?? 0,
         format: CoinFormat.Full,
     });
 

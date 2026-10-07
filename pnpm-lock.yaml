@@ -121,6 +121,9 @@ importers:
       '@iota/core':
         specifier: workspace:*
         version: link:../core
+      '@iota/iota-names-sdk':
+        specifier: workspace:*
+        version: link:../../sdk/names
       '@iota/iota-sdk':
         specifier: workspace:*
         version: link:../../sdk/typescript
