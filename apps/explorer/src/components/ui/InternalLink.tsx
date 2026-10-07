@@ -89,7 +89,7 @@ function createInternalLink<T extends string>(
                                 <span className="inline-flex min-w-0 items-center">
                                     <Link
                                         className={clsx(
-                                            'min-w-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
+                                            'shrink-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
                                             className,
                                         )}
                                         variant="mono"
