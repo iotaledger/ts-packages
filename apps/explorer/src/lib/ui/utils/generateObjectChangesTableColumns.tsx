@@ -170,7 +170,13 @@ export function generateObjectChangesTableColumns(
                                 />
                             )}
                             <div className="flex flex-col gap-xs">
-                                {name && <TableCellText>{name}</TableCellText>}
+                                {name && (
+                                    <TableCellText>
+                                        <span className="block max-w-[200px] truncate" title={name}>
+                                            {name}
+                                        </span>
+                                    </TableCellText>
+                                )}
                                 <ObjectLink
                                     objectId={row.original.objectId}
                                     copyText={row.original.objectId}
