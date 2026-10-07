@@ -1,8 +1,11 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import type { JsonValue } from '@bufbuild/protobuf';
+import type { Value } from '@bufbuild/protobuf/wkt';
 import type { BcsType } from '@iota/bcs';
 import { BcsReader, toHex } from '@iota/bcs';
+import type { TypeTag } from '@iota/iota-sdk/bcs';
 import { bcs, TypeTagSerializer } from '@iota/iota-sdk/bcs';
 import {
     IOTA_FRAMEWORK_ADDRESS,
@@ -17,19 +20,27 @@ import type {
     CheckpointContents as ProtoCheckpointContents,
     CheckpointSummary as ProtoCheckpointSummary,
 } from '../proto/iota/grpc/v1/checkpoint_pb.js';
+import type {
+    Argument as ProtoArgument,
+    CommandOutput as ProtoCommandOutput,
+} from '../proto/iota/grpc/v1/command_pb.js';
 import type { Event as ProtoEvent } from '../proto/iota/grpc/v1/event_pb.js';
 import type { Object$, Objects } from '../proto/iota/grpc/v1/object_pb.js';
 import type {
     UserSignature as ProtoUserSignature,
     ValidatorAggregatedSignature as ProtoValidatorAggregatedSignature,
 } from '../proto/iota/grpc/v1/signatures_pb.js';
-import type { ExecutionError as ProtoExecutionError } from '../proto/iota/grpc/v1/transaction_execution_service_pb.js';
+import type {
+    ExecutionError as ProtoExecutionError,
+    ViewFunctionCallOutputs,
+} from '../proto/iota/grpc/v1/transaction_execution_service_pb.js';
 import type {
     ExecutedTransaction,
     Transaction as ProtoTransaction,
     TransactionEffects as ProtoTransactionEffects,
     TransactionEvents as ProtoTransactionEvents,
 } from '../proto/iota/grpc/v1/transaction_pb.js';
+import type { TypeTag as ProtoTypeTag } from '../proto/iota/grpc/v1/types_pb.js';
 import type { CheckpointSummary } from './checkpoint.js';
 import { CheckpointContents, VersionedCheckpointSummary } from './checkpoint.js';
 import type { Event } from './event.js';
@@ -182,6 +193,133 @@ export function decodeUserSignature(signature: ProtoUserSignature): string {
 
 export function decodeExecutionError(error: ProtoExecutionError): ExecutionError {
     return decode(ExecutionError, error.bcsKind, 'bcs_kind');
+}
+
+export interface CommandOutput {
+    argument?: typeof bcs.Argument.$inferType;
+    typeTag?: TypeTag;
+    bcs?: Uint8Array;
+    json?: JsonValue;
+}
+
+export interface ViewOutputs {
+    returnValues?: CommandOutput[];
+    executionError?: { error?: ExecutionError; source?: string; commandIndex?: bigint };
+}
+
+/** Like the Rust FFI's `ViewFunctionCallOutputs::try_from`. */
+export function decodeViewOutputs(outputs: ViewFunctionCallOutputs): ViewOutputs {
+    const { executionResult } = outputs;
+
+    switch (executionResult.case) {
+        case 'returnValues':
+            return { returnValues: executionResult.value.outputs.map(decodeCommandOutput) };
+        case 'executionError': {
+            const error = executionResult.value;
+            return {
+                executionError: {
+                    error: error.bcsKind && decodeExecutionError(error),
+                    source: error.source,
+                    commandIndex: error.commandIndex,
+                },
+            };
+        }
+        default:
+            return {};
+    }
+}
+
+function decodeCommandOutput(output: ProtoCommandOutput): CommandOutput {
+    return {
+        argument: output.argument && decodeArgument(output.argument),
+        typeTag: output.typeTag && decodeTypeTag(output.typeTag),
+        bcs: output.bcs?.data,
+        json: output.json && decodeJsonValue(output.json),
+    };
+}
+
+function decodeArgument(argument: ProtoArgument): typeof bcs.Argument.$inferType {
+    const { kind } = argument;
+
+    switch (kind.case) {
+        case 'gasCoin':
+            return { $kind: 'GasCoin', GasCoin: true };
+        case 'input':
+            return {
+                $kind: 'Input',
+                Input: required(kind.value.index, 'argument.input.index') & 0xffff,
+            };
+        case 'result': {
+            const index = required(kind.value.index, 'argument.result.index') & 0xffff;
+            const nested = kind.value.nestedResultIndex;
+            return nested === undefined
+                ? { $kind: 'Result', Result: index }
+                : { $kind: 'NestedResult', NestedResult: [index, nested & 0xffff] };
+        }
+        case 'unknown':
+            throw new ProtoConversionError("invalid field 'argument.kind': unknown argument type");
+        default:
+            throw new ProtoConversionError("missing field 'argument.kind'");
+    }
+}
+
+function decodeTypeTag(tag: ProtoTypeTag): TypeTag {
+    const { typeTag } = tag;
+
+    switch (typeTag.case) {
+        case 'vectorTag':
+            return {
+                vector: decodeTypeTag(
+                    required(typeTag.value.innerType, 'type_tag.vector.inner_type'),
+                ),
+            };
+        case 'structTag':
+            return decodeStructTag(typeTag.value.structTag);
+        case undefined:
+            throw new ProtoConversionError("missing field 'type_tag'");
+        default:
+            return TypeTagSerializer.parseFromStr(typeTag.case.slice(0, -'Tag'.length));
+    }
+}
+
+function decodeStructTag(structTag: string): TypeTag {
+    let parsed: TypeTag;
+    try {
+        parsed = TypeTagSerializer.parseFromStr(structTag, true);
+    } catch (error) {
+        throw new ProtoConversionError(
+            `invalid field 'type_tag.struct_tag': ${(error as Error).message}`,
+        );
+    }
+
+    if (!('struct' in parsed)) {
+        throw new ProtoConversionError("invalid field 'type_tag.struct_tag': not a struct tag");
+    }
+
+    return parsed;
+}
+
+function decodeJsonValue(value: Value): JsonValue {
+    const { kind } = value;
+
+    switch (kind.case) {
+        case 'numberValue':
+            return Number.isFinite(kind.value) ? kind.value : null;
+        case 'stringValue':
+        case 'boolValue':
+            return kind.value;
+        case 'structValue':
+            return Object.fromEntries(
+                Object.entries(kind.value.fields).map(([key, field]) => [
+                    key,
+                    decodeJsonValue(field),
+                ]),
+            );
+        case 'listValue':
+            return kind.value.values.map(decodeJsonValue);
+        default:
+            return null;
+    }
 }
 
 export interface CheckpointTransaction {
