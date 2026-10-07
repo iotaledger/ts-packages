@@ -16,10 +16,9 @@ import {
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
 import { useSignAndExecuteTransaction } from '@iota/dapp-kit';
-import { getAmountFromGroupedTimelockObjects, useNewStakeTimelockedTransaction } from '@/hooks';
+import { useNewStakeTimelockedTransaction } from '@/hooks';
 import { prepareObjectsForTimelockedStakingTransaction } from '@/lib/utils';
 import { EnterAmountDialogLayout } from './EnterAmountDialogLayout';
-import { ampli } from '@/lib/utils/analytics';
 import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { Exclamation } from '@iota/apps-ui-icons';
 
@@ -77,15 +76,7 @@ export function EnterTimelockedAmountView({
         error: stakeTransactionError,
     } = useNewStakeTimelockedTransaction(selectedValidator, senderAddress, groupedTimelockObjects);
 
-    const stakedAmount = getAmountFromGroupedTimelockObjects(groupedTimelockObjects);
-
     const hasGroupedTimelockObjects = groupedTimelockObjects.length > 0;
-
-    const [stakedAmountFormattedPlain] = useFormatCoin({
-        balance: stakedAmount,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
 
     const [maxTokenFormatted, maxTokenFormattedSymbol] = useFormatCoin({
         balance: maxStakableTimelockedAmount,
@@ -155,10 +146,6 @@ export function EnterTimelockedAmountView({
                 onSuccess: (tx) => {
                     onSuccess?.(tx.digest);
                     toast.success('Stake transaction has been sent');
-                    ampli.timelockStake({
-                        stakedAmount: Number(stakedAmountFormattedPlain),
-                        validatorAddress: senderAddress,
-                    });
                     resetForm();
                 },
                 onError: () => {

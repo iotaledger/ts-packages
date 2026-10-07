@@ -10,7 +10,6 @@ import {
     createValidationSchema,
     MIN_NUMBER_IOTA_TO_STAKE,
     useNewStakeTransaction,
-    useGetValidatorsApy,
 } from '@iota/core';
 import { FormikProvider, useFormik } from 'formik';
 import { useCurrentAccount, useIotaClientQuery } from '@iota/dapp-kit';
@@ -20,7 +19,6 @@ import { DetailsView } from './views';
 import { TransactionDetailsLayout } from '../transaction/TransactionDetailsLayout';
 import { DialogLayout } from '../layout';
 import { StakeDialogView } from './enums/view.enums';
-import { ampli } from '@/lib/utils/analytics';
 
 const INITIAL_VALUES = {
     amount: '',
@@ -95,7 +93,6 @@ export function StakeDialog({
             name: validator.name,
         };
     });
-    const { data: rollingAverageApys } = useGetValidatorsApy();
 
     function handleBack(): void {
         setView(StakeDialogView.SelectValidator);
@@ -103,12 +100,6 @@ export function StakeDialog({
 
     function handleValidatorSelect(validator: string): void {
         setSelectedValidator?.(validator);
-        const validatorInfo = activeValidatorAddresses.find((v) => v.iotaAddress === validator);
-        ampli.selectedValidator({
-            validatorName: validatorInfo?.name,
-            validatorAddress: validator,
-            validatorAPY: rollingAverageApys?.[validator]?.apy || 0,
-        });
     }
 
     function setViewBasedOnStakingType() {

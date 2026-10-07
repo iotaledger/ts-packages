@@ -4,7 +4,6 @@
 import { SegmentedButton, SegmentedButtonType, ButtonSegment, Title } from '@iota/apps-ui-kit';
 import { useSortedCoinsByCategories } from '@iota/core';
 import { RecognizedBadge } from '@iota/apps-ui-icons';
-import { ampli } from '_src/shared/analytics/ampli';
 import { Loading } from '_src/ui/app/components';
 import { usePinnedCoinTypes } from '_hooks';
 import { useState } from 'react';
@@ -52,16 +51,10 @@ export function MyTokens({ coinBalances, isLoading, isFetched }: MyTokensProps) 
     const isFirstTimeLoading = isLoading && !isFetched;
 
     function handlePin(coinType: string) {
-        ampli.pinnedCoin({
-            coinType: coinType,
-        });
         pinCoinType(coinType);
     }
 
     function handleUnpin(coinType: string) {
-        ampli.unpinnedCoin({
-            coinType: coinType,
-        });
         unpinCoinType(coinType);
     }
 

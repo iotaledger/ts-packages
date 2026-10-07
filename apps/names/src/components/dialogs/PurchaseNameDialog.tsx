@@ -36,14 +36,12 @@ import {
     useBalance,
     useCalculatePrice,
     useCalculatePriceInFiat,
-    useCoinMetadata,
     useUpdateNameTransaction,
 } from '@/hooks';
 import { useIsMethodSupported } from '@/hooks/useIsMethodSupported';
 import { useNameRecord } from '@/hooks/useNameRecord';
 import { useNamesConfig } from '@/hooks/useNamesConfig';
-import { formatNanosToIota, getUserFriendlyErrorMessage, parseNanosToIota } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
+import { formatNanosToIota, getUserFriendlyErrorMessage } from '@/lib/utils';
 import { getTargetExpirationDate } from '@/lib/utils/names';
 
 import { CouponInputSelection } from '../CouponInputSelection';
@@ -70,7 +68,6 @@ export function PurchaseNameDialog({ name, open, setOpen, onCompleted }: Purchas
     const account = useCurrentAccount();
 
     const { data: coinBalance, error: coinBalanceError } = useBalance(account?.address ?? '');
-    const { data: coinMetadata } = useCoinMetadata(coinBalance?.coinType);
     const [isPublicName, setIsPublicName] = useState<boolean>(false);
     const [coupons, setCoupons] = useState<UserSetCoupon[]>([]);
     const [purchaseYears, setPurchaseYears] = useState<number>(1);
@@ -166,21 +163,6 @@ export function PurchaseNameDialog({ name, open, setOpen, onCompleted }: Purchas
 
             const expirationDate = new Date();
             expirationDate.setFullYear(expirationDate.getFullYear() + purchaseYears);
-            const expirationTime = expirationDate.getTime();
-
-            ampli.purchasedName({
-                name,
-                amount: parseNanosToIota(price ?? 0),
-                expirationTime,
-                purchaseYears: purchaseYears,
-                discountName: couponCodes.join(','),
-                discountPercentage: applyDiscount ? (price - (discountedPrice ?? 0)) / price : 0,
-                coinType: coinMetadata?.symbol,
-            });
-
-            if (isPublicName) {
-                ampli.setNameAsDisplayed({ name });
-            }
 
             toast.success(
                 `Successfully registered name ${normalizeIotaName(name, 'at', { truncateLongParts: true })}`,

@@ -34,7 +34,6 @@ import { ValidatorStakingData } from '@/components';
 import { DialogLayout, DialogLayoutFooter, DialogLayoutBody } from '../../layout';
 
 import { IotaSignAndExecuteTransactionOutput } from '@iota/wallet-standard';
-import { ampli } from '@/lib/utils/analytics';
 import { Field, type FieldProps, FormikProvider } from 'formik';
 
 interface UnstakeDialogProps {
@@ -65,8 +64,6 @@ export function UnstakeView({
         switchToFullUnstake,
         switchToPartialUnstake,
         unstakeAmounts,
-        unstakeAmountFormattedPlain,
-        rewardsFormattedPlain,
         activeUnstakeData,
         activeIsError,
         activeIsLoading: activeIsPending,
@@ -102,11 +99,6 @@ export function UnstakeView({
 
     const delegationId = extendedStake?.stakedIotaId;
 
-    const validatorName =
-        systemDataResult.data?.activeValidators.find(
-            (v) => v.iotaAddress === extendedStake.validatorAddress,
-        )?.name ?? '';
-
     async function handleUnstake(): Promise<void> {
         if (!activeUnstakeData) return;
 
@@ -118,13 +110,6 @@ export function UnstakeView({
                 onSuccess: (tx) => {
                     toast.success('Unstake transaction has been sent');
                     onSuccess(tx);
-
-                    ampli.unstakedIota({
-                        stakedAmount: Number(unstakeAmountFormattedPlain),
-                        validatorAddress: extendedStake.validatorAddress,
-                        rewards: Number(rewardsFormattedPlain),
-                        validatorName,
-                    });
                 },
             },
         ).catch((error) => {

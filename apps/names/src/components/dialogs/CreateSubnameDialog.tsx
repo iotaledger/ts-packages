@@ -36,7 +36,6 @@ import { NameRecordData, queryKey, useNameRecord, useRegistrationNfts } from '@/
 import { NameUpdate, useUpdateNameTransaction } from '@/hooks/useUpdateNameTransaction';
 import { RegistrationNft } from '@/lib/interfaces';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { getNameObject, isNameRecordExpired } from '@/lib/utils/names';
 
 import { ExpirationDate } from '../ExpirationDate';
@@ -130,7 +129,6 @@ export function CreateSubnameDialog({ name, setOpen }: CreateSubnameProps) {
     const [editIsAllowingRenew, setEditIsAllowingRenew] = useState<boolean>(false);
     const [editIsAllowSubnames, setEditIsAllowSubnames] = useState<boolean>(false);
     const [expirationDate, setExpirationDate] = useState<Date | null>(null);
-    const [isParentExpiration, setIsParentExpiration] = useState(true);
 
     const parentExpirationDate =
         nameRecord && nameRecord.nameRecord ? nameRecord.nameRecord.expirationDate : null;
@@ -172,14 +170,6 @@ export function CreateSubnameDialog({ name, setOpen }: CreateSubnameProps) {
                 queryKey: queryKey.ownedObjects(account?.address || ''),
             });
             if (fullSubnameName) {
-                ampli.createdSubname({
-                    name: fullSubnameName,
-                    subname: editSubname,
-                    parentName: name,
-                    expirationType: isParentExpiration ? 'parent' : 'custom',
-                    allowToRenewExpiration: editIsAllowingRenew,
-                    allowToCreateAdditionalSubnames: editIsAllowSubnames,
-                });
                 toast.success(
                     `Successfully created subname ${normalizeIotaName(fullSubnameName, 'at', { truncateLongParts: true })}`,
                 );
@@ -257,7 +247,6 @@ export function CreateSubnameDialog({ name, setOpen }: CreateSubnameProps) {
                                     parentExpirationDate={parentExpirationDate}
                                     currentExpirationDate={null}
                                     maxDate={parentExpirationDate}
-                                    onExpirationTypeChange={setIsParentExpiration}
                                 />
                             </div>
                             <div className="flex flex-col gap-y-md w-full">

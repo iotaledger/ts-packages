@@ -14,7 +14,6 @@ import { type IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 
 import { ExplorerLinkHelper } from '../ExplorerLinkHelper';
 import { ExplorerLink } from '../explorer-link';
-import { ampli } from '_src/shared/analytics/ampli';
 
 interface ReceiptCardProps {
     txn: IotaTransactionBlockResponse;
@@ -54,11 +53,6 @@ export function ReceiptCard({ txn, activeAddress }: ReceiptCardProps) {
                 <div className="self-center">
                     <OutlinedCopyButton
                         textToCopy={digest ?? ''}
-                        onCopySuccess={() => {
-                            ampli.copiedElement({
-                                type: 'digest',
-                            });
-                        }}
                         successMessage="Transaction digest copied to clipboard"
                     />
                 </div>

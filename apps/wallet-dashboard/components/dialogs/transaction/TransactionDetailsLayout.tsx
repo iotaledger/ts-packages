@@ -16,8 +16,6 @@ import {
 import { useCurrentAccount } from '@iota/dapp-kit';
 import { IotaTransactionBlockResponse } from '@iota/iota-sdk/client';
 import { DialogLayoutBody, DialogLayoutFooter } from '../layout';
-import { trackElementCopied } from '@/lib/utils';
-import { useCallback } from 'react';
 
 interface TransactionDetailsLayoutProps {
     onClose: () => void;
@@ -42,10 +40,6 @@ export function TransactionDetailsLayout({
         currentAddress: address,
         recognizedPackagesList,
     });
-
-    const onCopySuccess = useCallback(() => {
-        trackElementCopied('transaction-digest');
-    }, []);
 
     if (!txProp && isError) {
         return (
@@ -93,7 +87,6 @@ export function TransactionDetailsLayout({
                     <div className="self-center">
                         <OutlinedCopyButton
                             textToCopy={transaction.digest ?? ''}
-                            onCopySuccess={onCopySuccess}
                             successMessage="Transaction digest copied to clipboard"
                         />
                     </div>

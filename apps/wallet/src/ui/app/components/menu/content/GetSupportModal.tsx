@@ -14,7 +14,6 @@ import {
 } from '@iota/apps-ui-kit';
 import { ArrowTopRight, Discord, Info, Warning } from '@iota/apps-ui-icons';
 import { DISCORD_SUPPORT_LINK } from '@iota/core';
-import { ampli } from '_src/shared/analytics/ampli';
 
 interface GetSupportModalProps {
     isOpen: boolean;
@@ -23,7 +22,6 @@ interface GetSupportModalProps {
 
 export function GetSupportModal({ isOpen, onClose }: GetSupportModalProps) {
     function handleOpenDiscord() {
-        ampli.openedLink({ type: 'discord support' });
         window.open(DISCORD_SUPPORT_LINK, '_blank', 'noopener noreferrer');
         onClose();
     }

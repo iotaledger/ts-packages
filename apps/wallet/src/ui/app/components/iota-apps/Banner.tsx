@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { Feature } from '@iota/core';
 import { useFeature } from '@iota/apps-backend-client';
 
@@ -24,16 +23,7 @@ export function AppsPageBanner() {
     return (
         <div className="mb-3">
             {AppsBannerConfig.value?.bannerUrl && (
-                <ExternalLink
-                    href={AppsBannerConfig.value?.bannerUrl}
-                    onClick={() =>
-                        ampli.clickedAppsBannerCta({
-                            sourceFlow: 'Banner - Apps tab',
-                            bannerUrl: AppsBannerConfig.value?.bannerUrl,
-                        })
-                    }
-                    trackEvent={false}
-                >
+                <ExternalLink href={AppsBannerConfig.value?.bannerUrl}>
                     <img
                         className="w-full"
                         src={AppsBannerConfig.value?.imageUrl}

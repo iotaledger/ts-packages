@@ -16,9 +16,5 @@ export function ExplorerLink({
     const getExplorerLink = useExplorerLinkGetter();
     const href = getExplorerLink(getLinkProps) ?? '#';
 
-    return (
-        <ExternalLink href={href} type={getLinkProps.type} trackEvent={href !== '#'}>
-            {children}
-        </ExternalLink>
-    );
+    return <ExternalLink href={href}>{children}</ExternalLink>;
 }

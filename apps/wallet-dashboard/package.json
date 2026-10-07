@@ -7,8 +7,6 @@
         "build": "cross-env NODE_ENV=\"production\" next build",
         "start": "next start -p 3004",
         "test": "jest",
-        "ampli": "ampli",
-        "pull-amplitude": "ampli pull web && node prependLicense.mjs && oxfmt ampli.json lib/utils/analytics/ampli/index.ts",
         "prepare:e2e": "pnpm -w wallet build && pnpm -w wallet-dashboard build",
         "playwright": "playwright",
         "playwright:debug": "PWDEBUG=1 playwright"
@@ -17,7 +15,6 @@
         "node": ">= 24"
     },
     "dependencies": {
-        "@amplitude/analytics-browser": "^2.32.2",
         "@iota/apps-backend-client": "workspace:*",
         "@iota/apps-ui-icons": "workspace:*",
         "@iota/apps-ui-kit": "workspace:*",
@@ -37,8 +34,6 @@
         "zustand": "^4.4.1"
     },
     "devDependencies": {
-        "@amplitude/ampli": "^1.36.2",
-        "@amplitude/analytics-types": "^2.11.0",
         "@playwright/test": "^1.60.0",
         "@tanstack/react-query-devtools": "^5.58.0",
         "@types/jest": "^29.5.2",

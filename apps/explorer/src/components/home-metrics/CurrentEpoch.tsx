@@ -6,7 +6,6 @@ import { LabelText, LabelTextSize, Panel, Title } from '@iota/apps-ui-kit';
 import { LinkWithQuery, ProgressBar } from '~/components/ui';
 import { useFormattedDate } from '~/hooks/useFormattedDate';
 import { useGetNetworkMetrics } from '~/hooks';
-import { ampli } from '~/lib/utils';
 import { useEpochProgress } from '~/pages/epochs/utils';
 
 function useEpochDateSubtitle(start?: number, end?: number, progress?: number, label?: string) {
@@ -23,11 +22,7 @@ export function CurrentEpoch(): JSX.Element {
     const subtitle = useEpochDateSubtitle(start, end, progress, label);
 
     return (
-        <LinkWithQuery
-            className="flex w-full"
-            to={`/epoch/${epoch}`}
-            onClick={() => ampli.clickedCurrentEpochCard({ epoch: Number(epoch) })}
-        >
+        <LinkWithQuery className="flex w-full" to={`/epoch/${epoch}`}>
             <Panel>
                 <Title title={`Epoch ${epoch ?? '--'}`} subtitle={subtitle} />
                 <div className="flex flex-col gap-md p-md--rs">

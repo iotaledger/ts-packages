@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import {
     calculateStakeShare,
     useGetValidatorsApy,
@@ -172,11 +171,6 @@ export function SelectValidatorCard() {
                 fullWidth
                 data-testid="select-validator-cta"
                 onClick={() => {
-                    ampli.selectedValidator({
-                        validatorName: selectedValidator?.name,
-                        validatorAddress: selectedValidator?.address,
-                        validatorAPY: selectedValidator?.apy || 0,
-                    });
                     selectedValidator &&
                         navigate(
                             `/stake/new?address=${encodeURIComponent(selectedValidator?.address)}`,

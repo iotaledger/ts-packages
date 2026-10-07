@@ -6,7 +6,6 @@ export * from './AmountBox';
 export * from './Input';
 export * from './PageSizeSelector';
 export * from './PaginationOptions';
-export * from './Amplitude';
 
 export * from './account-balance/AccountBalance';
 export * from './coins';

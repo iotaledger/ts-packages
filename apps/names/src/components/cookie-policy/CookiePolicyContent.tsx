@@ -12,7 +12,7 @@ import {
 } from '@iota/apps-ui-kit';
 import { useEffect, useState } from 'react';
 
-import { getAmplitudeConsentStatus } from '@/lib/utils/analytics/amplitude';
+import { getCookieConsentStatus } from '@/lib/utils/cookieConsent';
 
 import { CookiePolicyContentProps, DescribedCookie } from './types';
 
@@ -27,7 +27,7 @@ export function CookiePolicyContent({
     );
 
     useEffect(() => {
-        const status = getAmplitudeConsentStatus();
+        const status = getCookieConsentStatus();
         setConsentStatus(status);
     }, []);
 

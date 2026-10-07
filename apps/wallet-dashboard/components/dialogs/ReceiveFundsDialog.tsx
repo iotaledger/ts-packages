@@ -17,7 +17,6 @@ import {
     useGetDefaultIotaName,
     useCopyToClipboard,
 } from '@iota/core';
-import { trackElementCopied } from '@/lib/utils';
 import { useCallback } from 'react';
 
 interface ReceiveFundsDialogProps {
@@ -32,10 +31,7 @@ export function ReceiveFundsDialog({
     setOpen,
 }: ReceiveFundsDialogProps): React.JSX.Element {
     const { data: iotaName } = useGetDefaultIotaName(address);
-    const copyToClipboard = useCopyToClipboard(
-        () => trackElementCopied('address'),
-        'Address copied',
-    );
+    const copyToClipboard = useCopyToClipboard(undefined, 'Address copied');
 
     const handleCopyAddress = useCallback(() => {
         copyToClipboard(address);

@@ -25,7 +25,6 @@ export function AccountItem({ icon, accountID, hideExplorerLink, hideCopy }: Acc
     const accountName = formatAccountName(account?.nickname, iotaName, account?.address);
     const copyAddress = useCopyToClipboard(account?.address || '', {
         copySuccessMessage: 'Address copied',
-        textType: 'address',
     });
     const explorerHref = useExplorerLink({
         type: ExplorerLinkType.Address,

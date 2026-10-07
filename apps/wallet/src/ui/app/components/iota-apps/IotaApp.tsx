@@ -4,7 +4,6 @@
 
 import { ImageIcon, ImageIconSize, DAppListItem, type DAppEntry } from '@iota/core';
 import { ExternalLink } from '_components';
-import { ampli } from '_src/shared/analytics/ampli';
 import { getDAppUrl } from '_src/shared/utils';
 import { useState } from 'react';
 import {
@@ -105,15 +104,7 @@ export function IotaApp({
     }
 
     return (
-        <ExternalLink
-            href={appUrl?.toString() ?? link}
-            title={name}
-            className="no-underline"
-            onClick={() => {
-                ampli.openedApplication({ applicationName: name });
-            }}
-            trackEvent={false}
-        >
+        <ExternalLink href={appUrl?.toString() ?? link} title={name} className="no-underline">
             {AppDetails}
         </ExternalLink>
     );

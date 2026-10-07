@@ -12,7 +12,7 @@ import {
     TableRow,
 } from '@iota/apps-ui-kit';
 import { CookiePolicyContentProps, DescribedCookie } from './types';
-import { getAmplitudeConsentStatus } from './helpers';
+import { getCookieConsentStatus } from './helpers';
 
 export function CookiePolicyContent({
     necessaryCookies,
@@ -25,7 +25,7 @@ export function CookiePolicyContent({
     );
 
     useEffect(() => {
-        const status = getAmplitudeConsentStatus();
+        const status = getCookieConsentStatus();
         setConsentStatus(status);
     }, []);
 

@@ -71,20 +71,6 @@ export function useUnstakeForm({
         isPartialUnstake,
     });
 
-    const { unstakeAmount, proportionalRewards } = unstakeAmounts;
-
-    // Plain formatted values (for analytics)
-    const [unstakeAmountFormattedPlain] = useFormatCoin({
-        balance: unstakeAmount,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
-    const [rewardsFormattedPlain] = useFormatCoin({
-        balance: proportionalRewards,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
-
     // Transaction queries
     const {
         data: unstakeData,
@@ -147,10 +133,6 @@ export function useUnstakeForm({
 
         // Breakdown (raw amounts for UnstakeBreakdown component and consumers)
         unstakeAmounts,
-
-        // Plain formatted (for analytics)
-        unstakeAmountFormattedPlain,
-        rewardsFormattedPlain,
 
         // Transaction state
         activeUnstakeData,

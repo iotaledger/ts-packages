@@ -3,23 +3,20 @@
 
 'use client';
 
+import { AMP_COOKIES_KEY } from '@iota/core';
 import { toast } from 'react-hot-toast';
 
 import { CookiePolicyContent } from '@/components/cookie-policy/CookiePolicyContent';
-import {
-    onAmplitudeConsentAccepted,
-    onAmplitudeConsentDeclined,
-} from '@/lib/utils/analytics/amplitude';
-import { AMP_COOKIES_KEY } from '@/lib/utils/analytics/constants';
+import { setCookieConsentAccepted, setCookieConsentDeclined } from '@/lib/utils/cookieConsent';
 
 export default function CookiePolicy() {
     async function handleConsentAccepted() {
-        await onAmplitudeConsentAccepted();
+        setCookieConsentAccepted();
         toast.success('Your cookie preferences have been saved.');
     }
 
     async function handleConsentDeclined() {
-        onAmplitudeConsentDeclined();
+        setCookieConsentDeclined();
         toast.success('Your cookie preferences have been saved.');
     }
     return (
@@ -29,27 +26,8 @@ export default function CookiePolicy() {
                 necessaryCookies={[
                     {
                         name: AMP_COOKIES_KEY,
-                        purpose:
-                            "Stores the user's Amplitude cookies consent state for the current domain",
+                        purpose: "Stores the user's cookies consent state for the current domain",
                         provider: 'IOTA',
-                        expiration: '1 year',
-                    },
-                ]}
-                additionalCookies={[
-                    {
-                        name: 'AMP_*',
-                        purpose:
-                            'Stores anonymous session and device identifiers used by Amplitude to track user interactions and analytics data across your visits.',
-                        provider: 'Amplitude',
-                        category: 'Analytics',
-                        expiration: '1 year',
-                    },
-                    {
-                        name: 'AMP_MKTG_*',
-                        purpose:
-                            'Stores marketing attribution data including UTM parameters, referrer information, and click IDs to track campaign effectiveness.',
-                        provider: 'Amplitude',
-                        category: 'Analytics',
                         expiration: '1 year',
                     },
                 ]}

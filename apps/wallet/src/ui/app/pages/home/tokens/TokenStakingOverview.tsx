@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import {
     formatDelegatedStake,
     useFormatCoin,
@@ -26,8 +25,6 @@ import { useNavigate } from 'react-router-dom';
 import { Stake } from '@iota/apps-ui-icons';
 import { useShouldOpenInNewTab } from '_src/ui/app/hooks';
 import { openInNewTab } from '_src/shared/utils';
-
-const SOURCE_FLOW = 'Home page';
 
 export function TokenStakingOverview({
     accountAddress,
@@ -53,11 +50,6 @@ export function TokenStakingOverview({
     });
 
     function handleOnClick() {
-        ampli.clickedStakeIota({
-            isCurrentlyStaking: totalDelegatedStake > 0,
-            sourceFlow: SOURCE_FLOW,
-        });
-
         if (shouldOpenNewTab) {
             openInNewTab('/stake');
         } else {

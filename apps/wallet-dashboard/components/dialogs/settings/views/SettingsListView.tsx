@@ -60,7 +60,6 @@ export function SettingsListView({ handleClose, setView }: SettingsListViewProps
                                 <ExternalLink
                                     key={href}
                                     href={href}
-                                    type="legal"
                                     className="text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
                                 >
                                     {title}

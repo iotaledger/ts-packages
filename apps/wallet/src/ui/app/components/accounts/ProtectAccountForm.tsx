@@ -117,7 +117,6 @@ export function ProtectAccountForm({
                                 <ExternalLink
                                     href={ToS_LINK}
                                     className="text-label-lg text-iota-primary-30 dark:text-iota-primary-80"
-                                    type="legal"
                                 >
                                     Terms of Services
                                 </ExternalLink>

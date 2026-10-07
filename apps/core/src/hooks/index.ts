@@ -19,7 +19,6 @@ export * from './useGetCoins';
 export * from './useBalance';
 export * from './useMultiGetObjects';
 export * from './useProductAnalyticsConfig';
-export * from './useCookieConsentBanner';
 export * from './useGetKioskContents';
 export * from './useZodForm';
 export * from './useElementDimensions';

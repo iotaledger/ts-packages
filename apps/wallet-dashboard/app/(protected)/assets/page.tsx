@@ -22,7 +22,6 @@ import { Warning } from '@iota/apps-ui-icons';
 
 import { AssetTileLink, Loading } from '@/components';
 import { AssetDialog } from '@/components/dialogs/assets';
-import { ampli } from '@/lib/utils/analytics';
 
 const ASSET_CATEGORIES: { label: string; value: AssetCategory }[] = [
     {
@@ -64,11 +63,6 @@ export default function AssetsDashboardPage(): React.JSX.Element {
 
     function onAssetClick(asset: IotaObjectData) {
         setSelectedAsset(asset);
-        if (selectedAssetCategory === AssetCategory.Visual) {
-            ampli.clickedCollectibleCard({
-                collectibleType: asset.type!,
-            });
-        }
     }
 
     return (

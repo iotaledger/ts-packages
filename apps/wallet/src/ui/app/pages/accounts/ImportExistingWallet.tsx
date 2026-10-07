@@ -1,21 +1,18 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { useNavigate } from 'react-router-dom';
 import ImportAWallet from '_assets/images/onboarding/import-a-wallet.png';
 import ImportAWalletDark from '_assets/images/onboarding/import-a-wallet-darkmode.png';
 import { Card, CardType, CardBody, CardAction, CardActionType } from '@iota/apps-ui-kit';
-import { AccountsFormType, PageTemplate, useSourceFlow } from '_components';
-import { useAppSelector, useAccounts } from '_hooks';
+import { AccountsFormType, PageTemplate } from '_components';
+import { useAppSelector } from '_hooks';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { ImportPass, Key, Passkey, Firefly } from '@iota/apps-ui-icons';
 import { openInNewTab } from '_src/shared/utils';
 import { type ActionCardItem, OnboardingCardIcon } from './AddAccountPage';
 import { Theme, useTheme } from '@iota/core';
 import clsx from 'clsx';
-import { isFirstAccount } from '../../helpers';
-import { ACCOUNT_FORM_TYPE_TO_AMPLI } from '_src/shared/analytics';
 
 export function ImportExistingWallet() {
     const { theme } = useTheme();
@@ -25,10 +22,6 @@ export function ImportExistingWallet() {
             state.app.extensionViewType === ExtensionViewType.Popup ||
             state.app.extensionViewType === ExtensionViewType.SidePanel,
     );
-    const { sourceFlowRef } = useSourceFlow();
-    const sourceFlow = sourceFlowRef.current;
-    const { data: accounts } = useAccounts();
-
     const profileOptions = [
         {
             title: 'Mnemonic',
@@ -61,17 +54,6 @@ export function ImportExistingWallet() {
     const handleCardAction = async (
         actionType: (typeof profileOptions | typeof legacyOptions)[number]['actionType'],
     ) => {
-        const ampliData = ACCOUNT_FORM_TYPE_TO_AMPLI[actionType];
-
-        if (ampliData) {
-            ampli.clickedCreateNewAccount({
-                accountType: ampliData.accountType,
-                accountOrigin: ampliData.accountOrigin,
-                isFirstAccount: isFirstAccount(accounts),
-                sourceFlow,
-            });
-        }
-
         switch (actionType) {
             case AccountsFormType.ImportMnemonic:
                 navigate('/accounts/import-passphrase');
@@ -82,7 +64,7 @@ export function ImportExistingWallet() {
             case AccountsFormType.ImportPasskey:
                 const url = '/accounts/import-passkey';
                 if (isPopupOrSidePanel) {
-                    openInNewTab(`${url}?sourceFlow=${sourceFlow}`);
+                    openInNewTab(url);
                     window.close();
                 } else {
                     navigate(url);
