@@ -12,6 +12,7 @@ import {
     StorageHistoryChart,
     SupplyHistoryChart,
     TokenEmissionChart,
+    TopPackagesCard,
     TotalStakeHistoryChart,
     TransactionsCardGraph,
 } from '~/components';
@@ -56,6 +57,8 @@ export function Analytics(): JSX.Element {
                             <StorageHistoryChart />
                         </div>
                     </div>
+
+                    <TopPackagesCard />
                 </div>
             }
         />

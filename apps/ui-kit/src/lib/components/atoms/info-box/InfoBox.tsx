@@ -59,7 +59,7 @@ export function InfoBox({
                     {icon}
                 </span>
             )}
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-1 [overflow-wrap:anywhere]">
                 {title && <span className="infobox-text-title text-title-sm">{title}</span>}
                 {supportingText && (
                     <span className="infobox-supporting-text text-body-sm">{supportingText}</span>

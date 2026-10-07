@@ -18,6 +18,10 @@ interface SearchProps {
     autoFocus?: boolean;
 }
 
+function getResultUrl(result: Suggestion): string {
+    return `/${result.type}/${encodeURIComponent(result.id)}`;
+}
+
 export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element {
     const [query, setQuery] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
@@ -32,14 +36,11 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
     const inputRef = useRef<HTMLInputElement>(null);
     const recentPillsRef = useRef<HTMLButtonElement | null>(null);
 
-    const handleClickResult = useCallback(
+    const handleSelectResult = useCallback(
         (result: Suggestion) => {
-            if (result) {
-                addRecentSearch(query);
-                navigate(`/${result.type}/${encodeURIComponent(result.id)}`, {});
-                setQuery('');
-                onSelectResult?.();
-            }
+            addRecentSearch(query);
+            setQuery('');
+            onSelectResult?.();
         },
         // oxlint-disable-next-line react-hooks/exhaustive-deps
         [addRecentSearch, onSelectResult, query],
@@ -48,9 +49,9 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
     const handleInputKeyDown = useCallback(
         (event: KeyboardEvent<HTMLInputElement>) => {
             if (!results?.length) {
-                if (event.key === 'Tab' || event.key === 'ArrowDown') {
+                if (recentPillsRef.current && (event.key === 'Tab' || event.key === 'ArrowDown')) {
                     event.preventDefault();
-                    recentPillsRef?.current?.focus();
+                    recentPillsRef.current.focus();
                 }
                 return;
             }
@@ -64,11 +65,14 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
             } else if (event.key === 'Enter') {
                 event.preventDefault();
                 const result = results[Math.min(activeIndex, results.length - 1)];
-                if (result) handleClickResult(result);
+                if (result) {
+                    navigate(getResultUrl(result), {});
+                    handleSelectResult(result);
+                }
             }
         },
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-        [results, activeIndex, handleClickResult, debouncedQuery],
+        [results, activeIndex, handleSelectResult, debouncedQuery],
     );
 
     useEffect(() => {
@@ -112,12 +116,12 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
             ) : hasResults ? (
                 <div className="flex w-full flex-col gap-xs">
                     {results.map((result, index) => {
-                        const url = `/${result.type}/${encodeURIComponent(result.id)}`;
+                        const url = getResultUrl(result);
                         return (
                             <LinkWithQuery
                                 key={url}
                                 to={url}
-                                onClick={() => handleClickResult(result)}
+                                onClick={() => handleSelectResult(result)}
                                 onMouseEnter={() => setActiveIndex(index)}
                                 className={cx(
                                     'state-layer relative flex w-full items-center justify-between gap-md rounded-2xl px-lg py-md text-start',
