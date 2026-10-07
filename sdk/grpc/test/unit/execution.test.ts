@@ -854,7 +854,7 @@ describe('viewFunctionCalls', () => {
 
         await expect(
             client.viewFunctionCalls([{ fqFunctionName: PRICE, args: args as never }]),
-        ).rejects.toThrow(new TypeError(`${message}: use null for an empty value`));
+        ).rejects.toThrow(new TypeError(`${message}: use [] for an empty Option`));
         expect(called).toBe(false);
     });
 
@@ -867,7 +867,7 @@ describe('viewFunctionCalls', () => {
                 { fqFunctionName: PRICE, args: [{ amount: undefined }] as never },
             ]),
         ).rejects.toThrow(
-            new TypeError('calls[1].args[0].amount is undefined: use null for an empty value'),
+            new TypeError('calls[1].args[0].amount is undefined: use [] for an empty Option'),
         );
     });
 

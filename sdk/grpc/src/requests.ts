@@ -35,7 +35,8 @@ export type SimulateTransactionInput = {
 
 /**
  * A call argument as JSON, for the node to encode against the parameter's Move type. Numbers go
- * over the wire as strings, so pass a `bigint` for an integer a `number` cannot hold exactly.
+ * over the wire as strings, so pass a `bigint` for an integer a `number` cannot hold exactly. An
+ * `Option<T>` goes as `[]` or `[value]`.
  */
 export type ViewArgument =
     | null
@@ -123,7 +124,7 @@ export function protoJsonValue(
     path: string,
 ): MessageInitShape<typeof ValueSchema> {
     if (value === undefined) {
-        throw new TypeError(`${path} is undefined: use null for an empty value`);
+        throw new TypeError(`${path} is undefined: use [] for an empty Option`);
     }
 
     switch (typeof value) {
