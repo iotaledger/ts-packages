@@ -205,6 +205,7 @@ export function generateValidatorsTableColumns({
                         <TableCoinDisplay
                             amount={stakingPoolIotaBalance}
                             coinType={IOTA_TYPE_ARG}
+                            truncateDecimals
                         />
                     </TableCellBase>
                 );
@@ -292,7 +293,11 @@ export function generateValidatorsTableColumns({
                 return (
                     <TableCellBase>
                         {lastReward !== undefined ? (
-                            <TableCoinDisplay amount={lastReward} coinType={IOTA_TYPE_ARG} />
+                            <TableCoinDisplay
+                                amount={lastReward}
+                                coinType={IOTA_TYPE_ARG}
+                                truncateDecimals
+                            />
                         ) : (
                             <TableCellText>--</TableCellText>
                         )}

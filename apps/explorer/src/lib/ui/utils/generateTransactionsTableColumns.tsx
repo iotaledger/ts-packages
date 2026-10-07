@@ -21,7 +21,7 @@ import type {
 import { TableCellBase, TableCellText, Tooltip, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
-import { CoinFormat, formatBalance, formatDigest, NANOS_PER_IOTA } from '@iota/iota-sdk/utils';
+import { CoinFormat, formatBalance, formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 
 const READABLE_TX_KIND_LABELS: Record<
     Exclude<IotaTransactionKind, 'ProgrammableTransaction'>,
@@ -182,11 +182,7 @@ export function generateTransactionsTableColumns(
                 const effects = getValue<IotaTransactionBlockResponse['effects']>();
                 const totalGasUsed = effects ? getTotalGasUsed(effects)?.toString() : undefined;
                 const totalGasUsedFormatted = totalGasUsed
-                    ? formatBalance(
-                          Number(totalGasUsed) / Number(NANOS_PER_IOTA),
-                          0,
-                          CoinFormat.Full,
-                      )
+                    ? formatBalance(totalGasUsed, IOTA_DECIMALS, CoinFormat.Full)
                     : '--';
                 return (
                     <TableCellBase>

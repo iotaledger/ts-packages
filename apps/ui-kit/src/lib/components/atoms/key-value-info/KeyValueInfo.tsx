@@ -119,12 +119,12 @@ export function KeyValueInfo({
             )}
         >
             <div
-                className={cx('flex shrink-0 flex-row items-center gap-x-0.5', {
+                className={cx('flex max-w-full shrink-0 flex-row items-center gap-x-0.5', {
                     'w-1/4': !fullwidth && !isReceiptLayout,
                 })}
             >
                 {keyIcon}
-                <span className="key-value-key-text-color break-normal text-body-md">
+                <span className="key-value-key-text-color min-w-0 break-words text-body-md">
                     {keyText}
                 </span>
                 {tooltipText && (

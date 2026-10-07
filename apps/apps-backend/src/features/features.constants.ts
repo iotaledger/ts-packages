@@ -1,6 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { packages as iotaNamesPackages } from '@iota/iota-names-sdk';
 import { Network } from '@iota/iota-sdk/client';
 import { normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { CoinTrust } from '@iota/core/enums/coins.enums';
@@ -90,6 +91,8 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
     '0x7d307e5537bf0ebd7417f0aa2b09562e5be2a3b1bc0df39ecba8df606c6002b9': {
         name: 'Staketab x Iotascan',
     },
+    '0x346778989a9f57480ec3fee15f2cd68409c73a62112d40a3efd13987997be68c': { name: 'Swirl' },
+    '0xd282b91f8e6dc8ca5b381d22754d5423e9049851a0f6777240c3be2b3b2bb7a7': { name: 'Swirl' },
     '0x5b45067591bd332447ec0ff190594060bf461c5619cf3ed933bd13b91d2b6bf3': {
         name: 'TWIN Gas Station',
         logo: `${KNOWN_LOGOS_BASE_URL}/twin.png`,
@@ -107,8 +110,17 @@ export const ADDRESSES_ALIASES: KnownAddresses = {
     },
 };
 
+const IOTA_NAMES_ALIASES: KnownAddresses = Object.fromEntries(
+    Object.values(iotaNamesPackages).flatMap((config) =>
+        Object.entries(config)
+            .filter(([key]) => /packageId$/i.test(key))
+            .flatMap(([, versions]) => Object.values(versions as Record<string, string>))
+            .map((address) => [address, { name: 'IOTA Names' }]),
+    ),
+);
+
 export const KNOWN_ADDRESSES_ALIASES: KnownAddresses = Object.fromEntries(
-    Object.entries(ADDRESSES_ALIASES).map(([address, alias]) => [
+    Object.entries({ ...ADDRESSES_ALIASES, ...IOTA_NAMES_ALIASES }).map(([address, alias]) => [
         normalizeIotaAddress(address),
         alias,
     ]),

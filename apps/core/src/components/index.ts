@@ -20,6 +20,7 @@ export * from './ClipboardPasteSafetyWrapper';
 export * from './VirtualList';
 export * from './NamedAddressTooltip';
 export * from './NoData';
+export * from './NoWrapTrailing';
 export * from './Banner';
 export * from './address-alias';
 export * from './named-address';
