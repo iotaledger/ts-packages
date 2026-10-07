@@ -118,6 +118,13 @@ const ExecutionFailureStatus = bcs.enum('ExecutionFailureStatus', {
     }),
     CoinTypeGlobalPause: bcs.struct('CoinTypeGlobalPause', { coinType: bcs.string() }),
     ExecutionCancelledDueToRandomnessUnavailable: null,
+    ExecutionCancelledDueToSharedObjectCongestionV2: bcs.struct(
+        'ExecutionCancelledDueToSharedObjectCongestionV2',
+        {
+            congestedObjects: bcs.vector(Address),
+            suggestedGasPrice: bcs.u64(),
+        },
+    ),
 });
 
 const ExecutionStatus = bcs.enum('ExecutionStatus', {
