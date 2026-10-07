@@ -49,8 +49,9 @@ export class TransportError extends IotaGrpcError {
     constructor(
         readonly code: Code,
         readonly detail: string,
+        options?: ErrorOptions,
     ) {
-        super(`grpc error: ${detail}`);
+        super(`grpc error: ${detail}`, options);
     }
 }
 
@@ -148,5 +149,5 @@ export function toIotaGrpcError(error: unknown): IotaGrpcError {
     }
 
     const connectError = ConnectError.from(error);
-    return new TransportError(connectError.code, connectError.rawMessage);
+    return new TransportError(connectError.code, connectError.rawMessage, { cause: connectError });
 }

@@ -130,6 +130,12 @@ describe('toIotaGrpcError', () => {
         expect(error).toMatchObject({ code: Code.Unavailable, detail: 'node is stale' });
     });
 
+    it('keeps the ConnectError as the cause', () => {
+        const connectError = new ConnectError('node is stale', Code.Unavailable);
+
+        expect(toIotaGrpcError(connectError).cause).toBe(connectError);
+    });
+
     it('maps an aborted call to Canceled', () => {
         const error = toIotaGrpcError(new DOMException('This operation was aborted', 'AbortError'));
 
