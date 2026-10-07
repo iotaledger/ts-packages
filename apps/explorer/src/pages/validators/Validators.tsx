@@ -37,6 +37,7 @@ import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/
 import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
+import { getInternalPath } from '~/lib/utils';
 
 function ValidatorPageResult(): JSX.Element {
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
@@ -96,10 +97,10 @@ function ValidatorPageResult(): JSX.Element {
     const { data: participationMetrics } = useIotaClientQuery('getParticipationMetrics');
 
     const totalStaked = useMemo(() => {
-        if (!data) return 0;
+        if (!data) return 0n;
         const validators = data.committeeMembers;
 
-        return validators.reduce((acc, cur) => acc + Number(cur.stakingPoolIotaBalance), 0);
+        return validators.reduce((acc, cur) => acc + BigInt(cur.stakingPoolIotaBalance), 0n);
     }, [data]);
 
     const averageAPY = useMemo(() => {
@@ -143,7 +144,7 @@ function ValidatorPageResult(): JSX.Element {
         let ratio = null;
         if (totalSupplyData?.value && totalStaked) {
             const totalSupplyValue = Number(totalSupplyData.value);
-            ratio = Number(((totalStaked / totalSupplyValue) * 100).toFixed(2));
+            ratio = Number(((Number(totalStaked) / totalSupplyValue) * 100).toFixed(2));
         }
         return formatPercentageDisplay(ratio);
     })();
@@ -419,6 +420,9 @@ function ValidatorPageResult(): JSX.Element {
                                                 ]}
                                                 data={filteredValidators}
                                                 columns={tableColumns}
+                                                getRowHref={({ iotaAddress }) =>
+                                                    getInternalPath('validator', iotaAddress)
+                                                }
                                                 areHeadersCentered={false}
                                             />
                                         )}

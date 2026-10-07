@@ -8,6 +8,7 @@ import type { ButtonProps } from '@/components/atoms';
 import { Button, ButtonSize, ButtonType, Checkbox } from '@/components/atoms';
 import { TableCellBase, TableHeaderCell } from '@/components/molecules';
 import { ArrowLeft, DoubleArrowLeft, ArrowRight, DoubleArrowRight } from '@iota/apps-ui-icons';
+import { INTERACTIVE_ELEMENT_SELECTOR } from '@/lib/constants';
 
 export interface TablePaginationOptions {
     /**
@@ -174,19 +175,36 @@ export function TableHeader({ children }: PropsWithChildren): JSX.Element {
     return <thead>{children}</thead>;
 }
 
+function isRowClickIgnored(event: React.MouseEvent<HTMLTableRowElement>): boolean {
+    const interactiveElement =
+        event.target instanceof Element && event.target.closest(INTERACTIVE_ELEMENT_SELECTOR);
+    if (interactiveElement && event.currentTarget.contains(interactiveElement)) return true;
+    return !!window.getSelection()?.toString();
+}
+
 export function TableRow({
     children,
     leading,
     onClick,
+    onAuxClick,
 }: PropsWithChildren<{
     leading?: React.ReactNode;
     onClick?: React.MouseEventHandler<HTMLTableRowElement>;
+    onAuxClick?: React.MouseEventHandler<HTMLTableRowElement>;
 }>): JSX.Element {
+    function withRowClickGuard(handler?: React.MouseEventHandler<HTMLTableRowElement>) {
+        if (!handler) return undefined;
+        return (event: React.MouseEvent<HTMLTableRowElement>) => {
+            if (!isRowClickIgnored(event)) handler(event);
+        };
+    }
+
     return (
         <tr
-            onClick={onClick}
+            onClick={withRowClickGuard(onClick)}
+            onAuxClick={withRowClickGuard(onAuxClick)}
             className={cx({
-                'cursor-pointer hover:bg-shader-neutral-light-8 dark:hover:bg-shader-neutral-dark-8':
+                'cursor-pointer row-hover:bg-shader-neutral-light-8 dark:row-hover:bg-shader-neutral-dark-8 inner-link:-mx-xxs inner-link:rounded inner-link:px-xxs inner-link:transition-colors inner-link-hover:bg-iota-primary-90/30 inner-link-hover:ring-1 inner-link-hover:ring-iota-primary-70/60 dark:inner-link-hover:bg-iota-primary-70/30':
                     onClick,
             })}
         >

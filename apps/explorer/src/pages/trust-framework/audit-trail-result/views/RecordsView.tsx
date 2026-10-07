@@ -113,7 +113,7 @@ export function formatDataPreview(data: Data): string {
     return typeof dataValue === 'string' ? dataValue : `0x${toHex(data.toBytes())}`;
 }
 
-function toSyntaxHighlightedData(data: string): { code: string; language: 'json' | 'text' } {
+export function toSyntaxHighlightedData(data: string): { code: string; language: 'json' | 'text' } {
     try {
         return { code: JSON.stringify(JSON.parse(data), null, 2), language: 'json' };
     } catch {
@@ -151,7 +151,7 @@ function DataPreviewCell({ record }: { record: Record }) {
         <TableCellBase>
             <TableCellText>
                 <span className="flex flex-col items-start gap-xxs">
-                    <span className="whitespace-pre-wrap break-all" title={dataTitle}>
+                    <span className="whitespace-nowrap" title={dataTitle}>
                         {`${dataString.slice(0, PREVIEW_LENGTH)}...`}
                     </span>
                     <ButtonUnstyled
@@ -224,17 +224,17 @@ function RecordDetailsDialog({
                             />
                         </div>
                         <div className="flex flex-col">
-                            <div className="relative rounded-md border border-iota-neutral-92 dark:border-iota-neutral-12">
-                                <div className="max-h-[50vh] overflow-auto">
-                                    <SyntaxHighlighter code={code} language={language} />
-                                </div>
-                                <div className="absolute right-[0.875rem] top-xs mr-xs">
+                            <div className="max-h-[50vh] overflow-auto rounded-md border border-iota-neutral-92 dark:border-iota-neutral-12">
+                                <SyntaxHighlighter code={code} language={language} />
+                            </div>
+                            <div className="mt-1 flex items-center justify-between gap-xs">
+                                <span className="text-body-sm text-gray-500 dark:text-gray-400">
+                                    {dataLabel}
+                                </span>
+                                <div className="shrink-0">
                                     <OutlinedCopyButton textToCopy={data} />
                                 </div>
                             </div>
-                            <span className="mt-1 text-body-sm text-gray-500 dark:text-gray-400">
-                                {dataLabel}
-                            </span>
                         </div>
                     </div>
                 </DialogBody>

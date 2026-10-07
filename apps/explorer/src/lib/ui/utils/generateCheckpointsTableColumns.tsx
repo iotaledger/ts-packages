@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { Checkpoint } from '@iota/iota-sdk/client';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CheckpointSequenceLink, CheckpointLink, DateDisplay } from '~/components';
@@ -20,6 +20,7 @@ export function generateCheckpointsTableColumns(): ColumnDef<Checkpoint>[] {
                 return (
                     <TableCellBase>
                         <CheckpointLink
+                            {...ROW_LINK_PROPS}
                             digest={digest}
                             label={<TableCellText>{digest}</TableCellText>}
                             copyText={digest}
@@ -36,7 +37,7 @@ export function generateCheckpointsTableColumns(): ColumnDef<Checkpoint>[] {
                 return (
                     <TableCellBase>
                         <TableCellText>
-                            <CheckpointSequenceLink sequence={sequenceNumber}>
+                            <CheckpointSequenceLink {...ROW_LINK_PROPS} sequence={sequenceNumber}>
                                 {sequenceNumber}
                             </CheckpointSequenceLink>
                         </TableCellText>

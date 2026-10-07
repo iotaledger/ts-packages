@@ -10,7 +10,9 @@ import { FilterList, RawJsonContent, RawJsonToggle } from '~/components/ui';
 import { InputsTable } from './InputsTable';
 import { CommandsList } from './CommandsList';
 
-const PTB_VIEWS = ['Combined', 'Inputs + Commands'] as const;
+const VIEWS = { combined: 'Combined', inputsAndCommands: 'Inputs + Commands' };
+
+const PTB_VIEWS = [VIEWS.combined, VIEWS.inputsAndCommands] as const;
 type PtbView = (typeof PTB_VIEWS)[number];
 
 function HoverHint({ children }: { children: string }): JSX.Element {
@@ -31,8 +33,10 @@ export function ProgrammableTransactionCard({
     inputs,
     transactions,
 }: ProgrammableTransactionCardProps): JSX.Element | null {
-    const [view, setView] = useLocalStorage<PtbView>('ptb-view-mode', 'Combined');
+    const [storedView, setView] = useLocalStorage<PtbView>('ptb-view-mode', VIEWS.combined);
     const [showRaw, setShowRaw] = useState(false);
+    const hasInputs = inputs.length > 0;
+    const view = hasInputs ? storedView : VIEWS.combined;
 
     if (!transactions?.length) {
         return null;
@@ -46,12 +50,14 @@ export function ProgrammableTransactionCard({
                     subtitle={`${inputs.length} Inputs | ${transactions.length} Commands`}
                 />
                 <div className="flex flex-wrap items-center gap-xs px-md--rs [&_button]:whitespace-nowrap">
-                    <FilterList
-                        options={PTB_VIEWS}
-                        selected={view}
-                        onSelected={(next) => setView(next)}
-                        disabled={showRaw}
-                    />
+                    {hasInputs && (
+                        <FilterList
+                            options={PTB_VIEWS}
+                            selected={view}
+                            onSelected={(next) => setView(next)}
+                            disabled={showRaw}
+                        />
+                    )}
                     <RawJsonToggle
                         name="ptb-raw-json-toggle"
                         isActive={showRaw}
@@ -63,7 +69,7 @@ export function ProgrammableTransactionCard({
                 <RawJsonContent rawData={{ inputs, transactions }} />
             ) : (
                 <div className="flex flex-col gap-lg pb-lg pt-xs">
-                    {view === 'Inputs + Commands' && (
+                    {view === VIEWS.inputsAndCommands && (
                         <div className="flex flex-col gap-xs">
                             <Title title="Inputs" />
                             <div className="px-md--rs">
@@ -75,17 +81,19 @@ export function ProgrammableTransactionCard({
                         </div>
                     )}
                     <div className="flex flex-col gap-xs">
-                        {view === 'Inputs + Commands' && <Title title="Commands" />}
+                        {view === VIEWS.inputsAndCommands && <Title title="Commands" />}
                         <div className="px-md--rs">
-                            <HoverHint>
-                                {view === 'Combined'
-                                    ? 'Hover an argument to see its input and highlight every place it appears'
-                                    : 'Hover an input to highlight every place it appears'}
-                            </HoverHint>
+                            {hasInputs && (
+                                <HoverHint>
+                                    {view === VIEWS.combined
+                                        ? 'Hover an argument to see its input and highlight every place it appears'
+                                        : 'Hover an input to highlight every place it appears'}
+                                </HoverHint>
+                            )}
                             <CommandsList
                                 transactions={transactions}
                                 inputs={inputs}
-                                inputDisplay={view === 'Combined' ? 'value' : 'reference'}
+                                inputDisplay={view === VIEWS.combined ? 'value' : 'reference'}
                             />
                         </div>
                     </div>
