@@ -146,6 +146,12 @@ const ExecutionFailureStatus = bcs.enum('ExecutionFailureStatus', {
         valueSize: bcs.u64(),
         maxScaledSize: bcs.u64(),
     }),
+    AuthenticatorFunctionNotFound: bcs.struct('AuthenticatorFunctionNotFound', {
+        objectId: Address,
+    }),
+    AccountNotSharedObject: bcs.struct('AccountNotSharedObject', {
+        objectId: Address,
+    }),
 });
 
 const ExecutionStatus = bcs.enum('ExecutionStatus', {

@@ -95,6 +95,14 @@
             "errorBcs": "2a00000000000000000000000000000000"
         },
         {
+            "name": "AuthenticatorFunctionNotFound",
+            "errorBcs": "2b0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
+            "name": "AccountNotSharedObject",
+            "errorBcs": "2c0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        {
             "name": "CommandArgumentError/InvalidArgumentArity",
             "errorBcs": "1300000c"
         }
