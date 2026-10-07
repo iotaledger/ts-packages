@@ -14,7 +14,16 @@ import {
     NamedAddressTooltip,
     toast,
 } from '@iota/core';
-import { Button, ButtonType, Header, KeyValueInfo } from '@iota/apps-ui-kit';
+import { useState } from 'react';
+import {
+    Button,
+    ButtonType,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    Header,
+    KeyValueInfo,
+} from '@iota/apps-ui-kit';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { DialogLayoutBody, DialogLayoutFooter } from '../../layout';
 import { IotaObjectData } from '@iota/iota-sdk/client';
@@ -56,6 +65,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
     const { mutateAsync: signAndExecuteTransaction, isPending: isTransactionPending } =
         useSignAndExecuteTransaction();
     const queryClient = useQueryClient();
+    const [isBurnConfirmationOpen, setIsBurnConfirmationOpen] = useState(false);
 
     const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/', {
         type: 'ts-sdk-documentation',
@@ -69,6 +79,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
     );
 
     const handleBurnAsset = async () => {
+        setIsBurnConfirmationOpen(false);
         if (!account || !objectId || !nftBurnFunction) return;
         const tx = new Transaction();
 
@@ -248,7 +259,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                                         ) : undefined
                                     }
                                     iconAfterText
-                                    onClick={handleBurnAsset}
+                                    onClick={() => setIsBurnConfirmationOpen(true)}
                                 />
                             )}
                             <Button
@@ -261,6 +272,30 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                     )}
                 </div>
             </DialogLayoutFooter>
+            <Dialog open={isBurnConfirmationOpen} onOpenChange={setIsBurnConfirmationOpen}>
+                <DialogContent>
+                    <Header title="Are you sure you want to permanently burn this NFT?" />
+                    <DialogBody>
+                        <div className="flex flex-col gap-lg">
+                            <div className="text-body-md">This action cannot be undone.</div>
+                            <div className="flex gap-xs">
+                                <Button
+                                    type={ButtonType.Secondary}
+                                    text="Cancel"
+                                    onClick={() => setIsBurnConfirmationOpen(false)}
+                                    fullWidth
+                                />
+                                <Button
+                                    type={ButtonType.Destructive}
+                                    text="Burn NFT"
+                                    onClick={handleBurnAsset}
+                                    fullWidth
+                                />
+                            </div>
+                        </div>
+                    </DialogBody>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

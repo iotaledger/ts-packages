@@ -19,7 +19,7 @@ import {
 } from '_components';
 import { useNFTBasicData, useNftDetails, Collapsible, toast } from '@iota/core';
 import { formatAddress } from '@iota/iota-sdk/utils';
-import { clsx as cx } from 'clsx';
+import cl from 'clsx';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, ButtonType, KeyValueInfo } from '@iota/apps-ui-kit';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -124,7 +124,7 @@ export function NFTDetailsPage() {
     return (
         <PageTemplate title="Visual Asset" isTitleCentered>
             <div
-                className={cx('flex h-full flex-1 flex-col flex-nowrap gap-5', {
+                className={cl('flex h-full flex-1 flex-col flex-nowrap gap-5', {
                     'items-center': isPending,
                 })}
             >
@@ -304,7 +304,7 @@ export function NFTDetailsPage() {
                                                 </div>
                                             )}
                                             <div
-                                                className={cx(
+                                                className={cl(
                                                     nftBurnFunction ? 'col-span-2' : 'col-span-3',
                                                 )}
                                             >
