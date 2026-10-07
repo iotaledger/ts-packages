@@ -28,7 +28,7 @@ import { formatAddress } from '@iota/iota-sdk/utils';
 import { DialogLayoutBody, DialogLayoutFooter } from '../../layout';
 import { IotaObjectData } from '@iota/iota-sdk/client';
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { useCurrentAccount, useSignAndExecuteTransaction } from '@iota/dapp-kit';
+import { useCurrentAccount, useIotaClient, useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { useExternalLink } from '@/hooks';
 import { Transaction } from '@iota/iota-sdk/transactions';
 import { Loader } from '@iota/apps-ui-icons';
@@ -62,8 +62,21 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
     } = useNftDetails(objectId, senderAddress);
     const { data: iotaName } = useGetDefaultIotaName(ownerAddress);
     const { fileExtensionType, filePath } = useNFTBasicData(objectData);
+    const iotaClient = useIotaClient();
     const { mutateAsync: signAndExecuteTransaction, isPending: isTransactionPending } =
-        useSignAndExecuteTransaction();
+        useSignAndExecuteTransaction({
+            execute: async ({ bytes, signature }) => {
+                const result = await iotaClient.executeTransactionBlock({
+                    transactionBlock: bytes,
+                    signature,
+                    options: { showRawEffects: true, showEffects: true },
+                });
+                if (result.effects?.status.status !== 'success') {
+                    throw new Error(result.effects?.status.error ?? 'Transaction failed');
+                }
+                return result;
+            },
+        });
     const queryClient = useQueryClient();
     const [isBurnConfirmationOpen, setIsBurnConfirmationOpen] = useState(false);
 
@@ -91,12 +104,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
         });
 
         await signAndExecuteTransaction(
-            {
-                transaction: tx,
-                options: {
-                    showEffects: true,
-                },
-            },
+            { transaction: tx },
             {
                 onSuccess: () => {
                     toast.success('Asset burnt successfully');
