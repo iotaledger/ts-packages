@@ -1,17 +1,18 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { MessageInitShape } from '@bufbuild/protobuf';
+import type { DescMessage, MessageInitShape, MessageShape } from '@bufbuild/protobuf';
+import { clone, create, isMessage } from '@bufbuild/protobuf';
 import type { CallOptions, Client, Transport } from '@connectrpc/connect';
 import { createClient } from '@connectrpc/connect';
-import { fromBase58, fromHex } from '@iota/bcs';
+import { fromBase58, fromHex, toHex } from '@iota/bcs';
 import { isValidIotaObjectId, normalizeIotaObjectId } from '@iota/iota-sdk/utils';
 
 import { EmptyRequestError, ProtoConversionError, toIotaGrpcError } from './errors.js';
 import type { ResponseMetadata } from './metadata.js';
 import { parseResponseMetadata } from './metadata.js';
 import type { Epoch } from './proto/iota/grpc/v1/epoch_pb.js';
-import type { EventFilterSchema, TransactionFilterSchema } from './proto/iota/grpc/v1/filter_pb.js';
+import { EventFilterSchema, TransactionFilterSchema } from './proto/iota/grpc/v1/filter_pb.js';
 import type {
     GetHealthResponse,
     GetServiceInfoResponse,
@@ -19,6 +20,7 @@ import type {
 import { LedgerService } from './proto/iota/grpc/v1/ledger_service_pb.js';
 import type { Object$ } from './proto/iota/grpc/v1/object_pb.js';
 import type { ExecutedTransaction } from './proto/iota/grpc/v1/transaction_pb.js';
+import { AddressSchema, ObjectIdSchema } from './proto/iota/grpc/v1/types_pb.js';
 import type {
     CheckpointResponseField,
     ObjectField,
@@ -301,8 +303,11 @@ export class IotaGrpcClient {
         const request = {
             checkpointId,
             readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getCheckpoint),
-            transactionsFilter: options?.transactionsFilter,
-            eventsFilter: options?.eventsFilter,
+            transactionsFilter: normalizeCheckpointFilter(
+                TransactionFilterSchema,
+                options?.transactionsFilter,
+            ),
+            eventsFilter: normalizeCheckpointFilter(EventFilterSchema, options?.eventsFilter),
             maxMessageSizeBytes: this.maxMessageSizeBytes,
         };
 
@@ -345,8 +350,11 @@ export class IotaGrpcClient {
             filterCheckpoints: options?.filterCheckpoints,
             progressIntervalMs: options?.progressIntervalMs,
             readMask: toReadMask(options?.readMask, DEFAULT_READ_MASKS.getCheckpoint),
-            transactionsFilter: options?.transactionsFilter,
-            eventsFilter: options?.eventsFilter,
+            transactionsFilter: normalizeCheckpointFilter(
+                TransactionFilterSchema,
+                options?.transactionsFilter,
+            ),
+            eventsFilter: normalizeCheckpointFilter(EventFilterSchema, options?.eventsFilter),
             maxMessageSizeBytes: this.maxMessageSizeBytes,
         };
 
@@ -429,6 +437,46 @@ function objectIdBytes(objectId: string): Uint8Array {
         throw new TypeError(`invalid object ID: ${objectId}`);
     }
     return fromHex(normalized);
+}
+
+/** Left-pads every address and object ID to 32 bytes. */
+function normalizeCheckpointFilter<Desc extends DescMessage>(
+    schema: Desc,
+    filter: MessageInitShape<Desc> | undefined,
+): MessageShape<Desc> | undefined {
+    if (filter === undefined) {
+        return undefined;
+    }
+
+    const normalized = clone(schema, create(schema, filter));
+    padIdentifiers(normalized);
+
+    return normalized;
+}
+
+function padIdentifiers(value: unknown): void {
+    if (typeof value !== 'object' || value === null || value instanceof Uint8Array) {
+        return;
+    }
+
+    if (isMessage(value, AddressSchema)) {
+        value.address = padTo32(value.address, 'address');
+    } else if (isMessage(value, ObjectIdSchema)) {
+        value.objectId = padTo32(value.objectId, 'object ID');
+    }
+
+    Object.values(value).forEach(padIdentifiers);
+}
+
+function padTo32(bytes: Uint8Array, what: string): Uint8Array {
+    if (bytes.length > 32) {
+        throw new TypeError(`invalid ${what} in filter: 0x${toHex(bytes)}`);
+    }
+
+    const padded = new Uint8Array(32);
+    padded.set(bytes, 32 - bytes.length);
+
+    return padded;
 }
 
 function digestBytes(digest: string): Uint8Array {

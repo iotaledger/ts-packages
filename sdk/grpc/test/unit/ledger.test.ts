@@ -1,9 +1,10 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { create } from '@bufbuild/protobuf';
 import type { HandlerContext, ServiceImpl, Transport } from '@connectrpc/connect';
 import { Code, ConnectError, createRouterTransport } from '@connectrpc/connect';
-import { toBase58 } from '@iota/bcs';
+import { fromHex, toBase58 } from '@iota/bcs';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -26,6 +27,7 @@ import {
     UnexpectedResultCountError,
     UnexpectedTransactionError,
 } from '../../src/index.js';
+import { EventFilterSchema } from '../../src/proto/iota/grpc/v1/filter_pb.js';
 import type {
     GetCheckpointRequest,
     GetEpochRequest,
@@ -759,6 +761,127 @@ describe('getCheckpoint', () => {
 
         expect(error).toBeInstanceOf(TransportError);
         expect(error).toMatchObject({ code: Code.Unavailable });
+    });
+});
+
+describe('checkpoint filters', () => {
+    it('pads every address and object ID to 32 bytes, however deeply nested', async () => {
+        const requests: StreamCheckpointsRequest[] = [];
+        const client = clientFor({
+            async *streamCheckpoints(request) {
+                requests.push(request);
+                yield* checkpoint(10n);
+            },
+        });
+
+        await drain(
+            client.streamCheckpoints({
+                transactionsFilter: {
+                    filter: {
+                        case: 'any',
+                        value: {
+                            filters: [
+                                {
+                                    filter: {
+                                        case: 'sender',
+                                        value: { address: { address: fromHex('0x0') } },
+                                    },
+                                },
+                                {
+                                    filter: {
+                                        case: 'negation',
+                                        value: {
+                                            filter: {
+                                                filter: {
+                                                    case: 'affectedObject',
+                                                    value: {
+                                                        objectRef: {
+                                                            objectId: { objectId: fromHex('0x5') },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                                {
+                                    filter: {
+                                        case: 'command',
+                                        value: {
+                                            filter: {
+                                                case: 'moveCall',
+                                                value: { packageId: { objectId: fromHex('0x2') } },
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                },
+                eventsFilter: {
+                    filter: {
+                        case: 'movePackageAndModule',
+                        value: { packageId: { objectId: fromHex('0x3') }, module: 'coin' },
+                    },
+                },
+            }).items,
+        );
+
+        const [request] = requests;
+        const filters =
+            request.transactionsFilter?.filter.case === 'any'
+                ? request.transactionsFilter.filter.value.filters
+                : [];
+        expect(filters[0].filter).toMatchObject({
+            case: 'sender',
+            value: { address: { address: bytes32(0) } },
+        });
+        expect(filters[1].filter).toMatchObject({
+            case: 'negation',
+            value: {
+                filter: {
+                    filter: { value: { objectRef: { objectId: { objectId: bytes32(5) } } } },
+                },
+            },
+        });
+        expect(filters[2].filter).toMatchObject({
+            value: { filter: { value: { packageId: { objectId: bytes32(2) } } } },
+        });
+        expect(request.eventsFilter?.filter).toMatchObject({
+            value: { packageId: { objectId: bytes32(3) }, module: 'coin' },
+        });
+    });
+
+    it('leaves the caller filter untouched', async () => {
+        const client = clientFor({
+            async *getCheckpoint() {
+                yield* checkpoint(7n);
+            },
+        });
+        const eventsFilter = create(EventFilterSchema, {
+            filter: { case: 'sender', value: { address: { address: fromHex('0x1') } } },
+        });
+
+        await client.getCheckpoint(undefined, { eventsFilter });
+
+        expect(eventsFilter.filter.value).toMatchObject({ address: { address: fromHex('0x1') } });
+    });
+
+    it('rejects an address longer than 32 bytes', async () => {
+        const client = clientFor({
+            async *getCheckpoint() {
+                yield* checkpoint(7n);
+            },
+        });
+
+        await expect(
+            client.getCheckpoint(undefined, {
+                eventsFilter: {
+                    filter: { case: 'sender', value: { address: { address: new Uint8Array(33) } } },
+                },
+            }),
+        ).rejects.toThrow(TypeError);
     });
 });
 
