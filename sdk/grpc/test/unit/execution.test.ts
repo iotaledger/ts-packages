@@ -644,7 +644,6 @@ describe('viewFunctionCalls', () => {
                     18_446_744_073_709_551_615n,
                     'text',
                     true,
-                    null,
                     [1, 2],
                     { amount: 3 },
                     new Uint8Array([7, 8]),
@@ -662,7 +661,6 @@ describe('viewFunctionCalls', () => {
             },
             { input: { case: 'json', value: { kind: { case: 'stringValue', value: 'text' } } } },
             { input: { case: 'json', value: { kind: { case: 'boolValue', value: true } } } },
-            { input: { case: 'json', value: { kind: { case: 'nullValue', value: 0 } } } },
             {
                 input: {
                     case: 'json',
@@ -843,6 +841,8 @@ describe('viewFunctionCalls', () => {
             Object.assign(new Array(3), { 0: 1, 2: 3 }),
             'calls[0].args[1] is undefined',
         ],
+        ['a null argument', [null], 'calls[0].args[0] is null'],
+        ['a null struct field', [{ amount: null }], 'calls[0].args[0].amount is null'],
     ])('rejects %s, naming its path, without calling the node', async (_what, args, message) => {
         let called = false;
         const client = clientFor({

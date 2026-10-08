@@ -122,7 +122,9 @@ export function protoJsonValue(
     path: string,
 ): MessageInitShape<typeof ValueSchema> {
     if (value === undefined || value === null) {
-        throw new TypeError(`${path} is undefined: use [] for an empty Option`);
+        throw new TypeError(
+            `${path} is ${value === null ? 'null' : 'undefined'}: use [] for an empty Option`,
+        );
     }
 
     switch (typeof value) {
