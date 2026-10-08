@@ -4,7 +4,6 @@
 import type { MessageInitShape } from '@bufbuild/protobuf';
 import { create } from '@bufbuild/protobuf';
 import type { ValueSchema } from '@bufbuild/protobuf/wkt';
-import { NullValue } from '@bufbuild/protobuf/wkt';
 import { fromBase58, fromBase64 } from '@iota/bcs';
 import type { TypeTag } from '@iota/iota-sdk/bcs';
 import { TypeTagSerializer } from '@iota/iota-sdk/bcs';
@@ -39,7 +38,6 @@ export type SimulateTransactionInput = {
  * `Option<T>` goes as `[]` or `[value]`.
  */
 export type ViewArgument =
-    | null
     | boolean
     | number
     | bigint
@@ -123,7 +121,7 @@ export function protoJsonValue(
     value: ViewArgument,
     path: string,
 ): MessageInitShape<typeof ValueSchema> {
-    if (value === undefined) {
+    if (value === undefined || value === null) {
         throw new TypeError(`${path} is undefined: use [] for an empty Option`);
     }
 
@@ -146,10 +144,6 @@ export function protoJsonValue(
                 );
             }
             return { kind: { case: 'stringValue', value: value.toString() } };
-    }
-
-    if (value === null) {
-        return { kind: { case: 'nullValue', value: NullValue.NULL_VALUE } };
     }
 
     if (isArgumentList(value)) {
