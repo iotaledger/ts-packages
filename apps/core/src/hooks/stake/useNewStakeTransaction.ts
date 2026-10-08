@@ -4,6 +4,7 @@
 import { useIotaClient } from '@iota/dapp-kit';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { buildStakeTransaction, getGasSummary } from '../../utils';
 import { getUserFriendlyDryRunExecutionError } from '../../utils/formatUIErrors';
 import { Transaction } from '@iota/iota-sdk/transactions';
@@ -13,9 +14,10 @@ import { useTransactionLimits } from '../useTransactionLimits';
 export function useNewStakeTransaction(validator: string, amount: bigint, senderAddress: string) {
     const client = useIotaClient();
     const { data: limits } = useTransactionLimits();
-    const { data: coins, dataUpdatedAt: coinsUpdatedAt } = useGetAllCoins(
-        IOTA_TYPE_ARG,
-        senderAddress,
+    const { data: coins } = useGetAllCoins(IOTA_TYPE_ARG, senderAddress);
+    const coinsSignature = useMemo(
+        () => coins?.map(({ coinObjectId, version }) => `${coinObjectId}:${version}`),
+        [coins],
     );
     return useQuery({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
@@ -24,8 +26,7 @@ export function useNewStakeTransaction(validator: string, amount: bigint, sender
             validator,
             amount.toString(),
             senderAddress,
-            coins?.length,
-            coinsUpdatedAt,
+            coinsSignature,
             limits,
         ],
         queryFn: async () => {
