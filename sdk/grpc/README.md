@@ -13,7 +13,7 @@ It runs on Node, Bun and Deno. Browsers are not supported yet: see [Limitations]
 ## Install
 
 ```bash
-npm install --save @iota/grpc
+npm install --save @iota/grpc @iota/iota-sdk
 ```
 
 ## Setup
