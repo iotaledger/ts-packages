@@ -4,7 +4,7 @@
 
 import { bcs } from '@iota/iota-sdk/bcs';
 import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
-import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
+import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
 import { fromBase64, toBase64 } from '@iota/iota-sdk/utils';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils';

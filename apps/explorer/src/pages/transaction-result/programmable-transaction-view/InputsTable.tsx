@@ -22,7 +22,12 @@ import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatDigest } from '@iota/iota-sdk/utils';
 import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
-import { REGEX_NUMBER, decodeVectorU8Value, pureValueHex, truncateMiddle } from './utils';
+import {
+    REGEX_NUMERIC_MOVE_TYPE,
+    decodeVectorU8Value,
+    pureValueHex,
+    truncateMiddle,
+} from './utils';
 import { PtbIndexCell, usePtbHighlight } from './PtbHighlight';
 
 interface InputsTableProps {
@@ -164,7 +169,7 @@ function DecodedPureValue({
         );
     }
 
-    if (REGEX_NUMBER.test(stringValue)) {
+    if (input.valueType && REGEX_NUMERIC_MOVE_TYPE.test(input.valueType)) {
         return (
             <span className="text-iota-neutral-10 dark:text-iota-neutral-92">
                 {BigInt(stringValue).toLocaleString()}

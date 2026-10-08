@@ -9,6 +9,7 @@ import { TableCard } from '~/components/ui';
 import { useLocalTablePagination } from '~/hooks';
 import { PAGE_SIZES_RANGE_10_50 } from '~/lib/constants';
 import { generateBalanceChangesTableColumns, type BalanceChangeTableRow } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 interface BalanceChangesProps {
     changes: BalanceChangeSummary;
@@ -39,6 +40,7 @@ export function BalanceChanges({ changes }: BalanceChangesProps): JSX.Element | 
                 <TableCard
                     data={pageData}
                     columns={columns}
+                    getRowHref={({ ownerAddress }) => getInternalPath('address', ownerAddress)}
                     paginationOptions={paginationOptions}
                     totalLabel={supportingLabel}
                     pageSizeSelector={

@@ -23,26 +23,16 @@ export function CoinFiatValue({
     const { network } = useIotaClientContext();
     const value = useCoinFiatValue(coinType, amount, network as Network);
 
-    if (value === null || value === undefined || value === 0) {
+    if (value === null || value === undefined) {
         return null;
     }
 
     const formattedValue = formatFiat(Math.abs(value));
-
-    if (showApproxSymbol) {
-        return (
-            <span className="flex flex-row items-baseline gap-1">
-                <span className="key-supporting-text-color text-body-sm">~</span>
-                <span className="key-supporting-text-color text-body-sm">
-                    {withParentheses ? `(${formattedValue})` : formattedValue}
-                </span>
-            </span>
-        );
-    }
+    const displayValue = showApproxSymbol ? `~${formattedValue}` : formattedValue;
 
     return (
         <span className="key-supporting-text-color text-body-sm">
-            {withParentheses ? `(${formattedValue})` : formattedValue}
+            {withParentheses ? `(${displayValue})` : displayValue}
         </span>
     );
 }

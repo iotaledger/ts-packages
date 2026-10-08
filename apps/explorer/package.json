@@ -2,7 +2,7 @@
     "name": "iota-explorer",
     "private": true,
     "scripts": {
-        "dev": "vite --port 3000",
+        "dev": "vite --port 3000 --strictPort",
         "test": "pnpm test:unit",
         "test:unit": "vitest run",
         "typecheck": "tsc -b",

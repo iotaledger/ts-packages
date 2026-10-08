@@ -17,3 +17,7 @@ export * from './getSupplyChangeAfterEpochEnd';
 export * from './onCopySuccess';
 export * from './getSendRecipients';
 export * from './getTransactionSponsor';
+export * from './toCoinType';
+export * from './getCoinPagePath';
+export * from './getInternalPath';
+export * from './findMatchingRecognizedCoin';

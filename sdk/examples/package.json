@@ -10,6 +10,7 @@
     "exports": {
         "./custom-signer.js": "./dist/esm/custom-signer.js",
         "./get-balance.js": "./dist/esm/get-balance.js",
+        "./grpc-checkpoint-follower.js": "./dist/esm/grpc-checkpoint-follower.js",
         "./transfer-iota.js": "./dist/esm/transfer-iota.js",
         "./tx-with-graphql.js": "./dist/esm/tx-with-graphql.js"
     },
@@ -25,6 +26,7 @@
     },
     "dependencies": {
         "@iota/graphql-transport": "workspace:*",
+        "@iota/grpc": "workspace:*",
         "@iota/iota-sdk": "workspace:*",
         "@noble/curves": "^1.4.2"
     },

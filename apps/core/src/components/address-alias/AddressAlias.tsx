@@ -1,14 +1,12 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Copy, IotaLogoMark, Warning } from '@iota/apps-ui-icons';
+import { Copy } from '@iota/apps-ui-icons';
 import cx from 'clsx';
 import { ButtonUnstyled } from '@iota/apps-ui-kit';
-import { useAddressAliasLookup } from '../../hooks';
-import { trimOrFormatAddress } from '@iota/iota-sdk/utils';
-import { ImageIcon, ImageIconSize } from '../icon';
-
-const COPY_BUTTON_GLUE_LENGTH = 4;
+import { NoWrapTrailing } from '../NoWrapTrailing';
+import { AddressAliasIcon } from './AddressAliasIcon';
+import { useAddressAlias } from './useAddressAlias';
 
 interface AddressAliasProps {
     address: string;
@@ -26,19 +24,19 @@ interface AddressAliasProps {
 
 export function AddressAlias({
     address,
-    noTruncate = false,
-    truncateUnknown = false,
+    noTruncate,
+    truncateUnknown,
     onCopy,
     renderAddress,
     renderAlias,
     hideAlias = false,
 }: AddressAliasProps): React.JSX.Element {
-    const getAddressAlias = useAddressAliasLookup();
-
-    const addressAlias = getAddressAlias(address);
-
-    const addressToDisplay =
-        noTruncate || !truncateUnknown ? address : trimOrFormatAddress(address);
+    const { addressAlias, addressToDisplay } = useAddressAlias({
+        address,
+        noTruncate,
+        truncateUnknown,
+    });
+    const showAlias = !hideAlias && !!addressAlias;
 
     const copyButton = onCopy && (
         <ButtonUnstyled onClick={onCopy} className="ms-xxs inline-flex align-middle text-body-md">
@@ -46,52 +44,22 @@ export function AddressAlias({
         </ButtonUnstyled>
     );
 
-    const addressHead = addressToDisplay.slice(0, -COPY_BUTTON_GLUE_LENGTH);
-    const addressTail = addressToDisplay.slice(-COPY_BUTTON_GLUE_LENGTH);
-
     return (
         <div className="flex flex-col gap-xxs">
-            {!hideAlias && addressAlias && (
+            {showAlias && (
                 <div className="flex min-w-0 items-center gap-xs text-iota-neutral-40 dark:text-iota-neutral-60">
-                    <div className="h-5 w-5 shrink-0">
-                        {addressAlias.isScam ? (
-                            <div
-                                className={cx(
-                                    'flex items-center justify-center rounded-full',
-                                    ImageIconSize.Small,
-                                )}
-                            >
-                                <Warning className="dark:text-iota-warning-60 text-iota-warning-40" />
-                            </div>
-                        ) : addressAlias.imageUrl ? (
-                            <ImageIcon
-                                src={addressAlias.imageUrl}
-                                label={addressAlias.alias}
-                                fallback={addressAlias.alias}
-                                size={ImageIconSize.Small}
-                                rounded
-                            />
-                        ) : (
-                            <IotaLogoMark className="h-full w-full" />
-                        )}
-                    </div>
+                    <AddressAliasIcon addressAlias={addressAlias} />
                     <span className="min-w-0 flex-1 truncate">
                         {renderAlias?.(addressAlias.alias) ?? addressAlias.alias}
                     </span>
                 </div>
             )}
 
-            <div className={cx('break-all', { 'text-body-sm': !!addressAlias })}>
+            <div className={cx('break-all', { 'text-body-sm': showAlias })}>
                 {renderAddress ? (
                     renderAddress(addressToDisplay, copyButton, !!addressAlias)
                 ) : (
-                    <>
-                        {addressHead}
-                        <span className="whitespace-nowrap">
-                            {addressTail}
-                            {copyButton}
-                        </span>
-                    </>
+                    <NoWrapTrailing text={addressToDisplay} trailing={copyButton} />
                 )}
             </div>
         </div>

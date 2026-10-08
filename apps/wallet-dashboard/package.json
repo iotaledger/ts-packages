@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "cross-env NODE_ENV=\"development\" next dev",
+        "dev": "cross-env NODE_ENV=\"development\" next dev -p 3004",
         "build": "cross-env NODE_ENV=\"production\" next build",
-        "start": "next start",
+        "start": "next start -p 3004",
         "test": "jest",
         "ampli": "ampli",
         "pull-amplitude": "ampli pull web && node prependLicense.mjs && oxfmt ampli.json lib/utils/analytics/ampli/index.ts",

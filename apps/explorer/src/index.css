@@ -186,4 +186,12 @@ body,
                 'type type type type';
         }
     }
+
+    .coin-change-positive {
+        @apply text-iota-tertiary-30 dark:text-iota-tertiary-80;
+    }
+
+    .coin-change-negative {
+        @apply text-iota-error-30 dark:text-iota-error-80;
+    }
 }

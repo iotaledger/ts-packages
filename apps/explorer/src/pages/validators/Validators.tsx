@@ -28,15 +28,16 @@ import {
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard } from '~/components';
+import { ErrorBoundary, PageLayout, PlaceholderTable, TableCard, TableSearch } from '~/components';
 import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEnhancedRpcClient } from '~/hooks';
 import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
-import { ValidatorFilters, ValidatorSearch, ValidatorStatusLegend } from '~/components/validator';
+import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
+import { getInternalPath } from '~/lib/utils';
 
 function ValidatorPageResult(): JSX.Element {
     const { data, isPending, isSuccess, isError } = useIotaClientQuery('getLatestIotaSystemState');
@@ -96,10 +97,10 @@ function ValidatorPageResult(): JSX.Element {
     const { data: participationMetrics } = useIotaClientQuery('getParticipationMetrics');
 
     const totalStaked = useMemo(() => {
-        if (!data) return 0;
+        if (!data) return 0n;
         const validators = data.committeeMembers;
 
-        return validators.reduce((acc, cur) => acc + Number(cur.stakingPoolIotaBalance), 0);
+        return validators.reduce((acc, cur) => acc + BigInt(cur.stakingPoolIotaBalance), 0n);
     }, [data]);
 
     const averageAPY = useMemo(() => {
@@ -143,7 +144,7 @@ function ValidatorPageResult(): JSX.Element {
         let ratio = null;
         if (totalSupplyData?.value && totalStaked) {
             const totalSupplyValue = Number(totalSupplyData.value);
-            ratio = Number(((totalStaked / totalSupplyValue) * 100).toFixed(2));
+            ratio = Number(((Number(totalStaked) / totalSupplyValue) * 100).toFixed(2));
         }
         return formatPercentageDisplay(ratio);
     })();
@@ -380,7 +381,7 @@ function ValidatorPageResult(): JSX.Element {
                             <Title title="All Validators" />
 
                             <div className="flex flex-col gap-md p-md">
-                                <ValidatorSearch onSearch={onSearchTermChange} />
+                                <TableSearch onSearch={onSearchTermChange} />
                                 <div className="flex">
                                     <ValidatorFilters
                                         selectedStatus={currentValidatorStatus}
@@ -419,6 +420,9 @@ function ValidatorPageResult(): JSX.Element {
                                                 ]}
                                                 data={filteredValidators}
                                                 columns={tableColumns}
+                                                getRowHref={({ iotaAddress }) =>
+                                                    getInternalPath('validator', iotaAddress)
+                                                }
                                                 areHeadersCentered={false}
                                             />
                                         )}

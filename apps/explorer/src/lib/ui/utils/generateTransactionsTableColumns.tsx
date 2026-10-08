@@ -3,64 +3,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    formatFiat,
     getTotalGasUsed,
     getTransactionAction,
-    useCoinFiatValue,
     TransactionIcon,
     TransactionIconSize,
     ACTION_LABELS,
+    getTransactionCoinBalances,
 } from '@iota/core';
-import { useIotaClientContext } from '@iota/dapp-kit';
+import { TableCoinChanges, DateDisplay } from '~/components';
 import type {
-    BalanceChange,
     IotaTransactionBlockKind,
     IotaTransactionBlockResponse,
     IotaTransactionKind,
     MoveCallIotaTransaction,
-    Network,
 } from '@iota/iota-sdk/client';
 
-import { TableCellBase, TableCellText, Tooltip } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, Tooltip, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AddressLink, ObjectLink, TransactionLink } from '../../../components/ui';
-import {
-    CoinFormat,
-    formatBalance,
-    formatDigest,
-    IOTA_TYPE_ARG,
-    NANOS_PER_IOTA,
-} from '@iota/iota-sdk/utils';
-import { DateDisplay } from '~/components';
+import { CoinFormat, formatBalance, formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 
-/**
- * Fiat value of a signed IOTA balance change, shown below the amount (not in parentheses) for
- * both gains and losses alike. Hides amounts under half a cent to avoid a meaningless "$0.00".
- */
-export function BalanceChangeFiatValue({
-    amount,
-}: {
-    amount: bigint | string | number;
-}): JSX.Element | null {
-    const { network } = useIotaClientContext();
-    const value = useCoinFiatValue(IOTA_TYPE_ARG, amount, network as Network);
-
-    if (value === null || value === undefined || Math.abs(value) < 0.005) {
-        return null;
-    }
-
-    return (
-        <span className="text-body-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-            {formatFiat(Math.abs(value))}
-        </span>
-    );
-}
-
-/**
- * Humanized labels for non-programmable (system) transaction kinds, shown instead of the
- * generic "Transaction" label used by `ACTION_LABELS` from `@iota/core`.
- */
-const SYSTEM_TRANSACTION_KIND_LABELS: Record<
+const READABLE_TX_KIND_LABELS: Record<
     Exclude<IotaTransactionKind, 'ProgrammableTransaction'>,
     string
 > = {
@@ -82,7 +45,7 @@ export function getTransactionTypeLabel(
     }
     const kind = txn.transaction?.data.transaction.kind;
     if (kind && kind !== 'ProgrammableTransaction') {
-        return SYSTEM_TRANSACTION_KIND_LABELS[kind];
+        return READABLE_TX_KIND_LABELS[kind];
     }
     return ACTION_LABELS[action];
 }
@@ -106,36 +69,6 @@ export function getLastMoveCall(
     return moveCalls.at(-1);
 }
 
-/**
- * Text color classes for a signed balance/amount: positive (received) vs. negative (sent).
- */
-export function getBalanceChangeColorClass(isPositive: boolean): string {
-    return isPositive
-        ? 'text-iota-tertiary-40 dark:text-iota-tertiary-90'
-        : 'text-iota-error-30 dark:text-iota-error-80';
-}
-
-/**
- * Find the IOTA balance change for a given address in a transaction, if any.
- */
-export function getIotaBalanceChangeForAddress(
-    txn: IotaTransactionBlockResponse,
-    address: string,
-): BalanceChange | undefined {
-    const balanceChanges = txn.balanceChanges;
-    return balanceChanges?.find(
-        (change) =>
-            change.owner &&
-            typeof change.owner === 'object' &&
-            'AddressOwner' in change.owner &&
-            change.owner.AddressOwner === address &&
-            change.coinType === IOTA_TYPE_ARG,
-    );
-}
-
-/**
- * Generate table columns renderers for the transactions data.
- */
 export function generateTransactionsTableColumns(
     address?: string,
 ): ColumnDef<IotaTransactionBlockResponse>[] {
@@ -153,6 +86,7 @@ export function generateTransactionsTableColumns(
                 return (
                     <TableCellBase>
                         <TransactionLink
+                            {...ROW_LINK_PROPS}
                             digest={digest}
                             copyText={digest}
                             label={
@@ -217,32 +151,23 @@ export function generateTransactionsTableColumns(
             header: 'Balance Change',
             accessorKey: 'balanceChanges',
             cell: ({ row }) => {
-                const balanceChange = getIotaBalanceChangeForAddress(row.original, address);
-                if (!balanceChange) {
+                const txn = row.original;
+                const perOwnerChanges = getTransactionCoinBalances(txn)?.owners;
+                const balanceChanges = perOwnerChanges?.find(
+                    ({ owner }) => owner === address,
+                )?.changes;
+
+                if (!balanceChanges) {
                     return (
                         <TableCellBase>
                             <TableCellText>--</TableCellText>
                         </TableCellBase>
                     );
                 }
-                const amount = balanceChange.amount;
-                const formatted = formatBalance(
-                    Math.abs(Number(amount)) / Number(NANOS_PER_IOTA),
-                    0,
-                    CoinFormat.Full,
-                );
-                const isPositive = Number(amount) >= 0;
-                const sign = isPositive ? '+' : '-';
+
                 return (
                     <TableCellBase>
-                        <div className="flex flex-col">
-                            <TableCellText supportingLabel="IOTA">
-                                <span className={getBalanceChangeColorClass(isPositive)}>
-                                    {sign + formatted}
-                                </span>
-                            </TableCellText>
-                            <BalanceChangeFiatValue amount={amount} />
-                        </div>
+                        <TableCoinChanges changes={balanceChanges} />
                     </TableCellBase>
                 );
             },
@@ -257,11 +182,7 @@ export function generateTransactionsTableColumns(
                 const effects = getValue<IotaTransactionBlockResponse['effects']>();
                 const totalGasUsed = effects ? getTotalGasUsed(effects)?.toString() : undefined;
                 const totalGasUsedFormatted = totalGasUsed
-                    ? formatBalance(
-                          Number(totalGasUsed) / Number(NANOS_PER_IOTA),
-                          0,
-                          CoinFormat.Full,
-                      )
+                    ? formatBalance(totalGasUsed, IOTA_DECIMALS, CoinFormat.Full)
                     : '--';
                 return (
                     <TableCellBase>

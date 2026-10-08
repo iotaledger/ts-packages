@@ -18,6 +18,7 @@ import clsx from 'clsx';
 import React, { type ReactNode } from 'react';
 
 import { Link, type LinkProps } from '~/components/ui';
+import { getInternalPath, type InternalRoute } from '~/lib/utils';
 
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
@@ -31,7 +32,7 @@ interface BaseInternalLinkProps extends LinkProps {
 }
 
 function createInternalLink<T extends string>(
-    base: string,
+    base: InternalRoute,
     propName: T,
     formatter: (id: string) => string = (id) => id,
 ): (props: BaseInternalLinkProps & Record<T, string>) => JSX.Element {
@@ -52,7 +53,7 @@ function createInternalLink<T extends string>(
         const queryString = new URLSearchParams(queryStrings).toString();
         const queryStringPrefix = queryString ? `?${queryString}` : '';
 
-        const to = `/${base}/${encodeURI(id)}${queryStringPrefix}`;
+        const to = `${getInternalPath(base, id)}${queryStringPrefix}`;
 
         const isResolveIotaName = base === 'address' && isValidIotaAddress(id);
         const { data: iotaName } = useGetDefaultIotaName(isResolveIotaName ? id : null);
@@ -85,19 +86,21 @@ function createInternalLink<T extends string>(
                                 {iotaName ? (
                                     <NameAvatar address={id} size={NameAvatarSize.Xxs} />
                                 ) : null}
-                                <Link
-                                    className={clsx(
-                                        'min-w-0 text-iota-primary-30 dark:text-iota-primary-80',
-                                        className,
-                                    )}
-                                    variant="mono"
-                                    size={hasAlias ? 'sm' : undefined}
-                                    to={to}
-                                    {...props}
-                                >
-                                    {hasAlias ? label || address : iotaName || label || address}
-                                </Link>
-                                {copyButton}
+                                <span className="inline-flex min-w-0 items-center">
+                                    <Link
+                                        className={clsx(
+                                            'shrink-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
+                                            className,
+                                        )}
+                                        variant="mono"
+                                        size={hasAlias ? 'sm' : undefined}
+                                        to={to}
+                                        {...props}
+                                    >
+                                        {hasAlias ? label || address : iotaName || label || address}
+                                    </Link>
+                                    {copyButton}
+                                </span>
                             </span>
                         </NamedAddressTooltip>
                     )}
@@ -139,3 +142,4 @@ export const AddressLink = createInternalLink('address', 'address', (addressOrNa
 export const ObjectLink = createInternalLink('object', 'objectId', formatType);
 export const TransactionLink = createInternalLink('txblock', 'digest', formatDigest);
 export const ValidatorLink = createInternalLink('validator', 'address', formatAddress);
+export const CoinLink = createInternalLink('coin', 'coin');
