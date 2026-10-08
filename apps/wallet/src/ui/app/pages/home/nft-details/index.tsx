@@ -9,7 +9,6 @@ import { formatAddress } from '@iota/iota-sdk/utils';
 import cl from 'clsx';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, ButtonType, KeyValueInfo } from '@iota/apps-ui-kit';
-import { ampli } from '_src/shared/analytics/ampli';
 import { openInNewTab } from '_src/shared/utils';
 
 export function NFTDetailsPage() {
@@ -36,13 +35,11 @@ export function NFTDetailsPage() {
 
     function handleMoreAboutKiosk() {
         const url = 'https://docs.iota.org/developer/ts-sdk/kiosk/';
-        ampli.openedLink({ type: 'ts-sdk documentation' });
         window.open(url, '_blank', 'noopener noreferrer');
     }
 
     function handleMarketplace() {
         const url = 'https://docs.iota.org/developer/iota-101/nft/marketplace';
-        ampli.openedLink({ type: 'ts-sdk documentation' });
         window.open(url, '_blank', 'noopener noreferrer');
     }
 

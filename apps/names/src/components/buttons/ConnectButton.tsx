@@ -5,17 +5,10 @@
 
 import { ConnectButton as DappConnectButton } from '@iota/dapp-kit';
 
-import { ampli } from '@/lib/utils/analytics/ampli';
-
 export function ConnectButton() {
     return (
         <div className="amp-obfuscation" data-amp-mask>
-            <DappConnectButton
-                connectText="Connect"
-                onConnected={(args) => {
-                    ampli.connectedWallet({ wallet: args.wallet.name });
-                }}
-            />
+            <DappConnectButton connectText="Connect" />
         </div>
     );
 }

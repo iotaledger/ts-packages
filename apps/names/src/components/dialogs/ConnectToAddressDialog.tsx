@@ -37,7 +37,6 @@ import { NameRecordData, queryKey, useNameRecord, useRegistrationNfts } from '@/
 import { useGetPublicName } from '@/hooks/useGetPublicName';
 import { NameUpdate, useUpdateNameTransaction } from '@/hooks/useUpdateNameTransaction';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { copyToClipboard } from '@/lib/utils/copyToClipboard';
 import { getNameObject, isNameRecordExpired } from '@/lib/utils/names';
 
@@ -143,23 +142,6 @@ export function ConnectToAddressDialog({ name, setOpen }: ConnectToAddressDialog
             queryClient.invalidateQueries({
                 queryKey: ['iota-name', 'default-name', account?.address],
             });
-
-            const hasAddressUpdate = updates.some((update) => update.type === 'set-target-address');
-            const hasSetPublicUpdate = updates.some((update) => update.type === 'set-public');
-
-            if (hasAddressUpdate || hasSetPublicUpdate) {
-                const addressType = isTargetingCurrentAddress
-                    ? 'current'
-                    : editTargetAddress
-                      ? 'external'
-                      : 'empty';
-
-                ampli.connectedAddress({
-                    name: cleanName,
-                    addressType: addressType,
-                    setNameAsDisplayed: hasSetPublicUpdate,
-                });
-            }
 
             if (editTargetAddress.length === 0) {
                 toast.success(`Successfully disconnected ${cleanName}`);

@@ -2,14 +2,13 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getUrlWithDeviceId } from '_src/shared/analytics/amplitude';
 import { getNetwork, Network } from '@iota/iota-sdk/client';
 
 function getExplorerUrl(path: string, network: Network, customExplorer: string) {
     const networkConfig = getNetwork(network);
     const explorer = network === Network.Custom ? customExplorer : networkConfig?.explorer;
 
-    const url = getUrlWithDeviceId(new URL(path, explorer));
+    const url = new URL(path, explorer);
     if (explorer) {
         url.searchParams.append('network', network);
     }

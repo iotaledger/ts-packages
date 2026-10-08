@@ -49,15 +49,10 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
     const { data: iotaName } = useGetDefaultIotaName(ownerAddress);
     const { fileExtensionType, filePath } = useNFTBasicData(objectData);
 
-    const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/', {
-        type: 'ts-sdk-documentation',
-    });
+    const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/');
 
     const handleMarketplace = useExternalLink(
         'https://docs.iota.org/developer/iota-101/nft/marketplace',
-        {
-            type: 'marketplace',
-        },
     );
 
     return (

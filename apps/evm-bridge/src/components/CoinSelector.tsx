@@ -7,8 +7,6 @@ import { BridgeFormInputName } from '../lib/enums';
 import { useFormContext } from 'react-hook-form';
 import { DepositFormData } from '../lib/schema/bridgeForm.schema';
 import { useSortedCoins } from '../hooks/useSortedCoins';
-import { ampli, BridgeDirection } from '../shared/analytics';
-import { useCoinsMetadata } from '../hooks/useCoinsMetadata';
 
 export function CoinSelector() {
     const { watch, setValue } = useFormContext<DepositFormData>();
@@ -16,7 +14,6 @@ export function CoinSelector() {
 
     const { sortedCoinsL1, sortedCoinsL2 } = useSortedCoins();
     const sortedCoins = isFromLayer1 ? sortedCoinsL1 : sortedCoinsL2;
-    const { metadata } = useCoinsMetadata(sortedCoins);
     const sortedCoinsCoinTypes = sortedCoins.map((coin) => coin.coinType);
 
     useEffect(() => {
@@ -39,7 +36,6 @@ export function CoinSelector() {
             activeCoinType={selectedCoinType}
             coins={sortedCoins}
             onClick={(coinType: string) => {
-                const coinMetadata = metadata[coinType];
                 setValue(BridgeFormInputName.DepositAmount, '', {
                     shouldValidate: true,
                     shouldTouch: true,
@@ -47,11 +43,6 @@ export function CoinSelector() {
                 setValue(BridgeFormInputName.CoinType, coinType, {
                     shouldValidate: true,
                     shouldTouch: true,
-                });
-                ampli.selectedCoin({
-                    bridgeDirection: isFromLayer1 ? BridgeDirection.L1ToL2 : BridgeDirection.L2ToL1,
-                    coinSymbol: coinMetadata?.symbol || 'unknown',
-                    coinType: coinType,
                 });
             }}
         />

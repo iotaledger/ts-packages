@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Overlay } from '_components';
-import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
 import { useSigner, useActiveAccount, useUnlockedGuard, usePinnedCoinTypes } from '_hooks';
 import {
@@ -124,11 +123,6 @@ export function TransferCoinPage() {
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: ['get-coins'] });
             queryClient.invalidateQueries({ queryKey: ['coin-balance'] });
-
-            ampli.sentCoins({
-                coinType: selectedCoinType!,
-                amount: Number(formik.values.amount),
-            });
 
             const receiptUrl = `/receipt?txdigest=${encodeURIComponent(
                 response.digest,

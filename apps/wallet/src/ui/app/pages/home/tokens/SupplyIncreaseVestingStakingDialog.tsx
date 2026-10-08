@@ -5,7 +5,6 @@ import { ArrowTopRight } from '@iota/apps-ui-icons';
 import { Button, Dialog, DialogContent, DialogBody, Header } from '@iota/apps-ui-kit';
 import { Banner, BannerSize, Theme, useTheme } from '@iota/core';
 import { WALLET_DASHBOARD_URL } from '_src/shared/constants';
-import { ampli } from '_src/shared/analytics/ampli';
 
 interface SupplyIncreaseVestingStakingDialogProps {
     open: boolean;
@@ -24,9 +23,6 @@ export function SupplyIncreaseVestingStakingDialog({
             : 'https://files.iota.org/media/tooling/wallet-dashboard-staking-light.mp4';
 
     function navigateToDashboard() {
-        ampli.openedApplication({
-            applicationName: 'IOTA Wallet Dashboard',
-        });
         window.open(WALLET_DASHBOARD_URL, '_blank', 'noopener noreferrer');
     }
 

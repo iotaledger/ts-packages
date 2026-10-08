@@ -6,7 +6,6 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ampli } from '@/lib/utils/analytics';
 
 export interface ExternalLinkProps {
     href: string;
@@ -14,29 +13,14 @@ export interface ExternalLinkProps {
     children: ReactNode;
     title?: string;
     onClick?(): void;
-    type?: string; // e.g. 'documentation' | 'application' | 'address' | 'digest' | ...
-    trackEvent?: boolean;
 }
 
 /**
- * External link component with analytics tracking.
+ * External link component.
  * For programmatic external link opening (e.g., window.open), use the useExternalLink hook instead.
  */
-export function ExternalLink({
-    href,
-    className,
-    children,
-    title,
-    onClick,
-    type,
-    trackEvent = true,
-}: ExternalLinkProps) {
+export function ExternalLink({ href, className, children, title, onClick }: ExternalLinkProps) {
     const handleClick = () => {
-        if (trackEvent && type) {
-            ampli.openedLink({
-                type,
-            });
-        }
         onClick?.();
     };
 

@@ -8,25 +8,22 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 import { FOOTER_LEGAL_LINKS } from '@/lib/constants';
-import {
-    getAmplitudeConsentStatus,
-    onAmplitudeConsentAccepted,
-} from '@/lib/utils/analytics/amplitude';
+import { getCookieConsentStatus, setCookieConsentAccepted } from '@/lib/utils/cookieConsent';
 
 const TEXT = 'By using this website, you agree with our ';
 
 export function CookieDisclaimer() {
-    const [amplitudeConsentStatus, setAmplitudeConsentStatus] = useState<
-        'pending' | 'accepted' | 'declined' | null
-    >(null);
+    const [consentStatus, setConsentStatus] = useState<'pending' | 'accepted' | 'declined' | null>(
+        null,
+    );
 
     useEffect(() => {
-        setAmplitudeConsentStatus(getAmplitudeConsentStatus());
+        setConsentStatus(getCookieConsentStatus());
     }, []);
 
     return (
         <>
-            {amplitudeConsentStatus === 'pending' && (
+            {consentStatus === 'pending' && (
                 <div
                     className="fixed z-50 bg-names-neutral-6 max-w-none w-full flex flex-col !py-6 !px-8 max-md:space-y-4 max-md:px-0 bottom-0 right-0 rounded-none shadow-2xl md:flex-row md:space-x-4 md:py-4 md:px-6 md:bottom-6 md:right-6 md:rounded-md md:max-w-lg border border-transparent"
                     style={{
@@ -54,8 +51,8 @@ export function CookieDisclaimer() {
                     </div>
                     <div
                         onClick={() => {
-                            onAmplitudeConsentAccepted();
-                            setAmplitudeConsentStatus('accepted');
+                            setCookieConsentAccepted();
+                            setConsentStatus('accepted');
                         }}
                         className="absolute right-2 top-2 inline-flex cursor-pointer items-center justify-center rounded-full p-xs !mt-0 text-iota-neutral-100 outline-none hover:text-iota-neutral-92"
                     >

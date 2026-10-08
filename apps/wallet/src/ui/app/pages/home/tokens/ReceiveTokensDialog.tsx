@@ -32,7 +32,6 @@ export function ReceiveTokensDialog({ address, open, setOpen }: ReceiveTokensDia
 
     const onCopy = useCopyToClipboard(address, {
         copySuccessMessage: 'Address copied',
-        textType: 'address',
     });
 
     const isLedger = isLedgerAccountSerializedUI(activeAccount as LedgerAccountSerializedUI);

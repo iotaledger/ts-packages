@@ -65,7 +65,6 @@ import { Calendar, StarHex, Warning } from '@iota/apps-ui-icons';
 import { useEffect, useState } from 'react';
 import { StakedTimelockObject } from '@/components';
 import { IotaSignAndExecuteTransactionOutput } from '@iota/wallet-standard';
-import { ampli } from '@/lib/utils/analytics';
 import BigNumber from 'bignumber.js';
 
 export default function VestingDashboardPage(): JSX.Element {
@@ -221,7 +220,6 @@ export default function VestingDashboardPage(): JSX.Element {
                 onSuccess: (tx) => {
                     setCollectTxDigest(tx.digest);
                     setShowCollectTransaction(true);
-                    ampli.timelockCollect();
                     toast.success('Collect transaction has been sent');
 
                     if (isMaxTransactionSizeError) {

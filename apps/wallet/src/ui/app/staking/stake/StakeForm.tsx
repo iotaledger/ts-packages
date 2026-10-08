@@ -15,12 +15,10 @@ import {
     useIsValidatorCommitteeMember,
     NO_BALANCE_GENERIC_MESSAGE,
     getGasBudgetErrorMessage,
-    useGetValidatorsApy,
     AmountWithFiat,
     CoinFiatValue,
 } from '@iota/core';
 import * as Sentry from '@sentry/react';
-import { ampli } from '_src/shared/analytics/ampli';
 import {
     Field,
     type FieldProps,
@@ -31,7 +29,6 @@ import {
 } from 'formik';
 import { memo, useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
-import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
     Button,
     ButtonPill,
@@ -74,12 +71,6 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
     const decimals = metadata?.decimals ?? 0;
     const coinSymbol = metadata?.symbol ?? '';
 
-    const { data: rollingAverageApys } = useGetValidatorsApy();
-    const validatorApy = rollingAverageApys?.[validatorAddress]?.apy ?? 0;
-    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
-    const validatorName =
-        systemState?.activeValidators.find((v) => v.iotaAddress === validatorAddress)?.name ?? '';
-
     const minimumStake = parseAmount(MIN_NUMBER_IOTA_TO_STAKE.toString(), decimals);
 
     const { data: minAmountTransactionData } = useNewStakeTransaction(
@@ -109,11 +100,6 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
     const { values, isValid, isSubmitting, setFieldValue, submitForm } = formik;
     const { amount } = values;
     const amountWithoutDecimals = parseAmount(amount, decimals);
-    const [stakedAmountFormattedPlain] = useFormatCoin({
-        balance: amountWithoutDecimals,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
 
     const { mutateAsync: stakeTokenMutateAsync, isPending: isStakeTokenTransactionPending } =
         useMutation({
@@ -155,12 +141,6 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
         try {
             await stakeTokenMutateAsync(undefined, {
                 onSuccess(data) {
-                    ampli.stakedIota({
-                        stakedAmount: Number(stakedAmountFormattedPlain),
-                        validatorAddress: validatorAddress || '',
-                        validatorAPY: validatorApy,
-                        validatorName,
-                    });
                     formikHelpers.resetForm();
                     onSuccess(data.tx);
                 },

@@ -33,7 +33,6 @@ import {
     ImageType,
     Toggle,
 } from '@iota/apps-ui-kit';
-import { ampli } from '_src/shared/analytics/ampli';
 import { useTheme, getCustomNetwork, FAQ_LINK, ToS_LINK } from '@iota/core';
 import { useSidePanel } from '_src/ui/app/hooks/useSidePanel';
 import { useSidePanelMutation } from '_src/ui/app/hooks/useSidePanelMutation';
@@ -94,12 +93,6 @@ export function MenuList() {
     ) {
         const isSidePanelVisible = event.target.checked;
 
-        if (!isSidePanelVisible) {
-            // Track before the mutation: SidePanel.close() destroys this window, so we must flush before it runs
-            ampli.changedSidePanel({ enabled: false });
-            await ampli.flush();
-        }
-
         try {
             await sidePanelMutation.mutateAsync(isSidePanelVisible);
         } catch {
@@ -108,9 +101,6 @@ export function MenuList() {
         }
 
         if (isSidePanelVisible) {
-            // Track after the mutation: the popup is still alive, so it's safe to flush before closing
-            ampli.changedSidePanel({ enabled: true });
-            await ampli.flush();
             window.close();
         }
     }
@@ -120,7 +110,6 @@ export function MenuList() {
     }
 
     function onFAQClick() {
-        ampli.openedLink({ type: 'faqs documentation' });
         window.open(FAQ_LINK, '_blank', 'noopener noreferrer');
     }
 

@@ -7,7 +7,7 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { useGetStardustMigratableObjects, useGroupedStardustObjects } from '@/hooks';
-import { getStardustObjectsTotals, trackElementCopied } from '@/lib/utils';
+import { getStardustObjectsTotals } from '@/lib/utils';
 import {
     Address,
     Button,
@@ -182,7 +182,6 @@ function MigrationDashboardPage(): JSX.Element {
 
     const onCopySuccess = useCallback(() => {
         toast('Address copied');
-        trackElementCopied('stardust-address');
     }, []);
 
     return (

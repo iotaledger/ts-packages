@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
 import { useActiveAccount, useSigner, useActiveAddress } from '_hooks';
 import {
@@ -113,8 +112,6 @@ export function TransferNFTForm({ objectId, objectType }: TransferNFTFormProps) 
             queryClient.invalidateQueries({ queryKey: ['object', objectId] });
             queryClient.invalidateQueries({ queryKey: ['get-kiosk-contents'] });
             queryClient.invalidateQueries({ queryKey: ['get-owned-objects'] });
-
-            ampli.sentCollectible({ collectibleType: objectType || undefined });
 
             return navigate(
                 `/receipt?${new URLSearchParams({

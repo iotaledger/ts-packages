@@ -5,7 +5,6 @@
 import rootReducer from '_src/ui/app/redux/rootReducer';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { amplitudeMiddleware } from './amplitudeMiddleware';
 import { thunkExtras } from './thunkExtras';
 
 const store = configureStore({
@@ -15,7 +14,7 @@ const store = configureStore({
             thunk: {
                 extraArgument: thunkExtras,
             },
-        }).concat(amplitudeMiddleware),
+        }),
 });
 
 export default store;

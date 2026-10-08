@@ -4,7 +4,6 @@
 
 import { useAppDispatch, useAppSelector } from '_hooks';
 import { changeActiveNetwork } from '_redux/slices/app';
-import { ampli } from '_src/shared/analytics/ampli';
 import { isValidUrl } from '_src/shared/utils';
 import { Checkmark, Globe, Link, Send, TriangleDown } from '@iota/apps-ui-icons';
 import {
@@ -163,7 +162,6 @@ export function CustomRPCInput() {
                     store: true,
                 }),
             ).unwrap();
-            ampli.switchedNetwork({ toNetwork: rpcInput });
         } catch (e) {
             toast.error((e as Error).message);
         }

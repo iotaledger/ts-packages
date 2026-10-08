@@ -12,7 +12,6 @@ import {
 } from '_hooks';
 import { type TransactionApprovalRequest } from '_src/shared/messaging/messages/payloads/transactions/approvalRequest';
 import { respondToTransactionRequest } from '_redux/slices/transaction-requests';
-import { ampli } from '_src/shared/analytics/ampli';
 import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMainLayoutTitle';
 import {
     useTransactionSummary,
@@ -33,12 +32,6 @@ import { LedgerSigner } from '../../../ledgerSigner';
 export interface TransactionRequestProps {
     txRequest: TransactionApprovalRequest;
 }
-
-// Some applications require *a lot* of transactions to interact with, and this
-// eats up our analytics event quota. As a short-term solution so we don't have
-// to stop tracking this event entirely, we'll just manually exclude application
-// origins with this list
-const APP_ORIGINS_TO_EXCLUDE_FROM_ANALYTICS: string[] = [];
 
 export function TransactionRequest({ txRequest }: TransactionRequestProps) {
     const addressForTransaction = txRequest.tx.account;
@@ -99,13 +92,6 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                             signer,
                         }),
                     );
-                    if (!APP_ORIGINS_TO_EXCLUDE_FROM_ANALYTICS.includes(txRequest.origin)) {
-                        ampli.respondedToTransactionRequest({
-                            applicationUrl: txRequest.origin,
-                            approvedTransaction: approved,
-                            receivedFailureWarning: false,
-                        });
-                    }
                 }}
                 address={addressForTransaction}
                 approveDisabled={isDryRunLoading}
@@ -178,11 +164,6 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                             signer,
                         }),
                     );
-                    ampli.respondedToTransactionRequest({
-                        applicationUrl: txRequest.origin,
-                        approvedTransaction: isConfirmed,
-                        receivedFailureWarning: true,
-                    });
                     setConfirmationVisible(false);
                 }}
             />

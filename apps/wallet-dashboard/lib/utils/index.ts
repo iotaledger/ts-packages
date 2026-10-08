@@ -8,4 +8,3 @@ export * from './timelock';
 export * from './migration';
 export * from './apps-backend';
 export * from './isSizeExceededError';
-export * from './trackElementCopied';

@@ -42,7 +42,6 @@ import {
     parseIotaToNanos,
     parseNanosToIota,
 } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { formatExpirationDate } from '@/lib/utils/format/formatExpirationDate';
 
 interface AuctionBidDialogDialogProps {
@@ -61,7 +60,6 @@ export function AuctionBidDialog({ name, closeDialog, onCompleted }: AuctionBidD
     const { data: auctionMetadata } = useGetAuctionMetadata(name);
     const minBidNanos =
         auctionMetadata?.minBidNanos || (nameRecord ? BigInt(nameRecord.price) : null);
-    const auctionStatus = getUserAuctionStatus(auctionMetadata ?? null, account?.address || '');
 
     const [bidAmountValue, setBidAmountValue] = useState<string | undefined>();
 
@@ -119,32 +117,6 @@ export function AuctionBidDialog({ name, closeDialog, onCompleted }: AuctionBidD
             });
             queryClient.invalidateQueries({ queryKey: queryKey.auctionList() });
             queryClient.invalidateQueries({ queryKey: queryKey.auctionMetadata(name) });
-
-            if (!auctionMetadata) {
-                ampli.placedAuctionBid({
-                    name: name,
-                    wasUserTopBidder: false,
-                    isUserFirstBidOnAuction: true,
-                    auctionCurrentBidAmount: 0,
-                    userBidAmount: parseNanosToIota(bidNanos ?? 0),
-                });
-            } else if (auctionStatus === 'top_bidder') {
-                ampli.placedAuctionBid({
-                    name: name,
-                    wasUserTopBidder: true,
-                    isUserFirstBidOnAuction: false,
-                    auctionCurrentBidAmount: parseNanosToIota(auctionMetadata.currentBidNanos),
-                    userBidAmount: parseNanosToIota(bidNanos ?? 0),
-                });
-            } else {
-                ampli.placedAuctionBid({
-                    name: name,
-                    wasUserTopBidder: false,
-                    isUserFirstBidOnAuction: false,
-                    auctionCurrentBidAmount: parseNanosToIota(auctionMetadata.currentBidNanos),
-                    userBidAmount: parseNanosToIota(bidNanos ?? 0),
-                });
-            }
 
             toast.success(
                 `Successfully placed bid of ${formatNanosToIota(bidNanos ?? 0, {

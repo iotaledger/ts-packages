@@ -24,8 +24,6 @@ import { CoinSelector } from '../CoinSelector';
 import { IOTA_DECIMALS, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useCoinMetadata } from '@iota/core';
 import { useAvailableBalance } from '../../hooks/useAvailableBalance';
-import { ampli, BridgeDirection } from '../../shared/analytics';
-
 interface DepositFormProps {
     deposit: () => void;
     isGasEstimationLoading: boolean;
@@ -106,18 +104,11 @@ export function DepositForm({
         setValue(BridgeFormInputName.DepositAmount, formattedAvailableBalance, {
             shouldValidate: true,
         });
-        ampli.clickedMaxAmount({
-            bridgeDirection: isFromLayer1 ? BridgeDirection.L1ToL2 : BridgeDirection.L2ToL1,
-            coinType: selectedCoinType,
-        });
     }
 
     function handleToggleBridgeDirection() {
         const updatedDirection = !isFromLayer1;
         setValue(BridgeFormInputName.IsFromLayer1, updatedDirection);
-        ampli.toggledBridgeDirection({
-            bridgeDirection: updatedDirection ? BridgeDirection.L1ToL2 : BridgeDirection.L2ToL1,
-        });
     }
 
     const isMaxButtonDisabled =
@@ -258,11 +249,7 @@ const DestinationInput = forwardRef<HTMLInputElement, InputProps>(function Desti
         setValue(BridgeFormInputName.IsDepositAddressManualInput, updatedManualInputMode, {
             shouldValidate: true,
         });
-        ampli.toggledAddressInput({
-            bridgeDirection: isFromLayer1 ? BridgeDirection.L1ToL2 : BridgeDirection.L2ToL1,
-            inputMode: updatedManualInputMode ? 'manual' : 'auto',
-        });
-    }, [isManualInput, isFromLayer1, setValue]);
+    }, [isManualInput, setValue]);
 
     const isLayer1WalletConnected = !!layer1Account?.address;
     const isLayer2WalletConnected = layer2Account.isConnected;

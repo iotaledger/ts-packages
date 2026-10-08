@@ -39,7 +39,6 @@ export function ExplorerLink({
                 className,
             )}
             title={title}
-            type={eventType}
         >
             <>
                 {children} {showIcon && <ArrowTopRight className={st.explorerIcon} />}

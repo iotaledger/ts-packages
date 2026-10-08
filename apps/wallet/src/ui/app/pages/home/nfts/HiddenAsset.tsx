@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ErrorBoundary, MovedAssetNotification } from '_components';
-import { ampli } from '_src/shared/analytics/ampli';
 import { type IotaObjectData } from '@iota/iota-sdk/client';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -42,7 +41,7 @@ export function HiddenAsset(item: HiddenAssetProps) {
     const { showAsset, hideAsset } = useHiddenAssets();
     const kioskClient = useKioskClient();
     const navigate = useNavigate();
-    const { objectId, type } = item.data!;
+    const { objectId } = item.data!;
     const { data: nftMeta } = useGetNFTDisplay(objectId);
 
     const nftName = nftMeta?.name || formatAddress(objectId);
@@ -57,17 +56,10 @@ export function HiddenAsset(item: HiddenAssetProps) {
                       objectId,
                   }).toString()}`,
         );
-        ampli.clickedCollectibleCard({
-            collectibleType: type!,
-        });
     }
 
     function handleShowAsset() {
         showAsset(objectId);
-
-        ampli.clickedShowAsset({
-            collectibleType: type!,
-        });
 
         toast(
             (t) => (
@@ -76,9 +68,6 @@ export function HiddenAsset(item: HiddenAssetProps) {
                     destination="Visual Assets"
                     onUndo={() => {
                         hideAsset(objectId);
-                        ampli.clickedHideAsset({
-                            collectibleType: type!,
-                        });
                     }}
                 />
             ),

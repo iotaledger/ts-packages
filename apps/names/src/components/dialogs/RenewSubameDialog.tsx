@@ -30,7 +30,6 @@ import { useNamesConfig } from '@/hooks/useNamesConfig';
 import { NameUpdate, useUpdateNameTransaction } from '@/hooks/useUpdateNameTransaction';
 import { RegistrationNft } from '@/lib/interfaces';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { formatExpirationDate } from '@/lib/utils/format/formatExpirationDate';
 import {
     getNameObject,
@@ -160,14 +159,6 @@ export function RenewSubnameDialog({ setOpen, name, onRenew }: RenewDialogProps)
             });
             queryClient.invalidateQueries({
                 queryKey: queryKey.ownedObjects(account?.address || ''),
-            });
-
-            const expirationTime = expirationDate ? expirationDate.getTime() : Date.now();
-
-            ampli.renewedSubname({
-                name,
-                expirationType: isParentExpiration ? 'parent' : 'custom',
-                expirationTime,
             });
             toast.success('Subname renewed successfully');
         },

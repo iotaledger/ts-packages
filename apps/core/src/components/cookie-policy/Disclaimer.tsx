@@ -6,7 +6,7 @@
 import { Close } from '@iota/apps-ui-icons';
 import React, { useEffect, useState } from 'react';
 
-import { getAmplitudeConsentStatus } from './helpers';
+import { getCookieConsentStatus } from './helpers';
 
 interface DisclaimerProps {
     onClose: () => void;
@@ -15,21 +15,21 @@ interface DisclaimerProps {
 
 export function Disclaimer({ onClose, children }: DisclaimerProps) {
     // Internal status to hide component on close
-    const [amplitudeConsentStatus, setAmplitudeConsentStatus] = useState<
-        'pending' | 'accepted' | 'declined' | null
-    >(null);
+    const [consentStatus, setConsentStatus] = useState<'pending' | 'accepted' | 'declined' | null>(
+        null,
+    );
 
     useEffect(() => {
-        setAmplitudeConsentStatus(getAmplitudeConsentStatus());
+        setConsentStatus(getCookieConsentStatus());
     }, []);
 
     return (
         <>
-            {amplitudeConsentStatus === 'pending' && (
+            {consentStatus === 'pending' && (
                 <div className=" fixed bottom-0 dark:border-iota-neutral-12 dark:bg-iota-neutral-20 border-iota-neutral-80 bg-iota-neutral-100 right-0 z-[99999] w-full max-w-none flex flex-col py-6 px-8 rounded-none max-md:px-0 md:flex-row md:py-4 md:px-6 md:pr-10 md:bottom-6 md:right-6 md:rounded-md md:max-w-[32rem] border">
                     <div
                         onClick={() => {
-                            setAmplitudeConsentStatus('accepted');
+                            setConsentStatus('accepted');
                             onClose();
                         }}
                         className="absolute right-2 top-2 inline-flex cursor-pointer items-center justify-center rounded-full p-xs !mt-0 text-iota-neutral-10 dark:text-iota-neutral-92 outline-none hover:opacity-70"

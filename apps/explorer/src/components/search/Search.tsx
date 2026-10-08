@@ -12,7 +12,6 @@ import { formatAddress, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useDebouncedValue } from '~/hooks/useDebouncedValue';
 import { useRecentSearches } from '~/hooks/useRecentSearches';
 import { useSearch } from '~/hooks/useSearch';
-import { ampli } from '~/lib/utils';
 
 interface SearchProps {
     onSelectResult?: () => void;
@@ -39,10 +38,6 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
 
     const handleSelectResult = useCallback(
         (result: Suggestion) => {
-            ampli.clickedSearchResult({
-                searchQuery: result.id,
-                searchCategory: result.type,
-            });
             addRecentSearch(query);
             setQuery('');
             onSelectResult?.();
@@ -82,7 +77,6 @@ export function Search({ onSelectResult, autoFocus }: SearchProps): JSX.Element 
 
     useEffect(() => {
         if (debouncedQuery) {
-            ampli.completedSearch({ searchQuery: debouncedQuery });
             setActiveIndex(0);
         }
     }, [debouncedQuery]);

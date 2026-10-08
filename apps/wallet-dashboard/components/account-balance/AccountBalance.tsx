@@ -21,7 +21,6 @@ import {
 import { getNetwork } from '@iota/iota-sdk/client';
 import { ReceiveFundsDialog, SendTokenDialog } from '../dialogs';
 import { useCallback, useState } from 'react';
-import { trackElementCopied } from '@/lib/utils';
 import { useBalanceVisibility } from '@/store/balanceVisibility';
 import { ArrowBottomLeft, Send, VisibilityOff, VisibilityOn } from '@iota/apps-ui-icons';
 import { formatAddress } from '@iota/iota-sdk/utils';
@@ -50,7 +49,6 @@ export function AccountBalance() {
 
     const onCopySuccess = useCallback(() => {
         toast('Address copied');
-        trackElementCopied('address');
     }, []);
 
     const sendTokenCoin = coinBalance?.totalBalance === '0' ? coinBalances?.[0] : coinBalance;

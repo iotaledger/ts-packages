@@ -23,7 +23,6 @@ import { isSeedSerializedUiAccount } from '_src/background/accounts/seedAccount'
 import { isLedgerAccountSerializedUI } from '_src/background/accounts/ledgerAccount';
 import { toast } from '@iota/core';
 import { isPasskeyAccountSerializedUI } from '_src/background/accounts/passkeyAccount';
-import { trackAutoLockUpdated } from '_src/shared/analytics/helpers';
 
 const ALLOWED_ACCOUNT_TYPES: AccountsFormType[] = [
     AccountsFormType.NewMnemonic,
@@ -72,16 +71,12 @@ export function ProtectAccountPage() {
     }, [hasPasswordAccounts, createMutation.isSuccess, createMutation.isPending]);
 
     const createAccountCallback = useCallback(
-        async (password: string, autoLockToTrack?: ProtectAccountFormValues['autoLock']) => {
+        async (password: string) => {
             try {
                 const createdAccounts = await createMutation.mutateAsync({
                     type: accountsFormType,
                     password,
                 });
-                if (autoLockToTrack) {
-                    trackAutoLockUpdated(autoLockToTrack);
-                }
-
                 if (
                     accountsFormType === AccountsFormType.NewMnemonic &&
                     isMnemonicSerializedUiAccount(createdAccounts[0])
@@ -147,7 +142,7 @@ export function ProtectAccountPage() {
                 await autoLockMutation.mutateAsync({ minutes });
             }
 
-            await createAccountCallback(password.input, hasAutoLock ? autoLock : undefined);
+            await createAccountCallback(password.input);
         } catch (e) {
             toast.error((e as Error)?.message || 'Something went wrong');
         }

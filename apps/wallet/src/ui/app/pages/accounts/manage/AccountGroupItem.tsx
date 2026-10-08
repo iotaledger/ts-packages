@@ -16,7 +16,6 @@ import { RemoveDialog } from './RemoveDialog';
 import { Portal } from '_app/shared/Portal';
 import { formatAccountName } from '_src/ui/app/helpers';
 import { isLegacyAccount } from '_src/background/accounts/isLegacyAccount';
-import { ampli, ACCOUNT_TYPE_TO_AMPLI_ACCOUNT_TYPE } from '_src/shared/analytics';
 
 interface AccountGroupItemProps {
     account: SerializedUIAccount;
@@ -49,16 +48,12 @@ export function AccountGroupItem({
     });
 
     async function handleCopySuccess() {
-        ampli.copiedElement({
-            type: 'address',
-        });
         toast('Address copied');
     }
 
     function handleOpen() {
         const newWindow = window.open(explorerHref!, '_blank', 'noopener,noreferrer');
         if (newWindow) newWindow.opener = null;
-        ampli.openedLink({ type: 'address' });
     }
 
     function handleRename() {
@@ -66,12 +61,6 @@ export function AccountGroupItem({
     }
 
     function handleExportKeys() {
-        const accountType = account?.type;
-        if (accountType) {
-            ampli.exportedAccountKeys({
-                accountType: ACCOUNT_TYPE_TO_AMPLI_ACCOUNT_TYPE[accountType],
-            });
-        }
         navigate(`/accounts/export/${account!.id}`);
     }
 

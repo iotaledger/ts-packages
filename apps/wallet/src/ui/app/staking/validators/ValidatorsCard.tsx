@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import {
     formatDelegatedStake,
     useGetDelegatedStake,
@@ -30,8 +29,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-
-const SOURCE_FLOW = 'Validator card';
 
 export function ValidatorsCard() {
     const accountAddress = useActiveAddress();
@@ -83,10 +80,6 @@ export function ValidatorsCard() {
     const [totalDelegatedRewardsFormatted] = useFormatCoin({ balance: totalDelegatedRewards });
 
     const handleNewStake = () => {
-        ampli.clickedStakeIota({
-            isCurrentlyStaking: true,
-            sourceFlow: SOURCE_FLOW,
-        });
         navigate('new');
     };
 

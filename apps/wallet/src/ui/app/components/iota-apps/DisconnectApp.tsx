@@ -5,7 +5,6 @@
 import { Overlay, DAppInfoCard, WalletListSelect } from '_components';
 import { useAppSelector, useBackgroundClient } from '_hooks';
 import { permissionsSelectors } from '_redux/slices/permissions';
-import { ampli } from '_src/shared/analytics/ampli';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
@@ -53,19 +52,6 @@ export function DisconnectApp({
 
             await backgroundClient.disconnectApp(origin, accountsToDisconnect);
             await backgroundClient.sendGetPermissionRequests();
-
-            // If connected only one account - accountsToDisconnect array is empty
-            const isPartialDisconnect =
-                connectedAccounts.length > 1 &&
-                accountsToDisconnect.length < connectedAccounts.length;
-
-            ampli.disconnectedApplication({
-                sourceFlow: 'Application page',
-                disconnectedAccounts: accountsToDisconnect.length || 1,
-                applicationName: permission.name,
-                applicationUrl: origin,
-                partial: isPartialDisconnect,
-            });
         },
         onSuccess: () => {
             toast.success('Disconnected successfully');
