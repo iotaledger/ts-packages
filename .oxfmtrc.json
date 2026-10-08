@@ -74,6 +74,21 @@
                     "config": "apps/ui-kit/tailwind.config.ts"
                 }
             }
+        },
+        {
+            "files": [
+                "sdk/grpc/**"
+            ],
+            "options": {
+                "sortImports": {
+                    "groups": [
+                        "builtin",
+                        { "newlinesBetween": false },
+                        "external",
+                        ["internal", "subpath", "parent", "sibling", "index", "unknown"]
+                    ]
+                }
+            }
         }
     ]
 }

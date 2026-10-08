@@ -5,9 +5,9 @@ import { describe, expectTypeOf, it } from 'vitest';
 
 import {
     CheckpointResponseField,
-    EpochField,
     epochAttribute,
     epochFeatureFlag,
+    EpochField,
     ObjectField,
     TransactionField,
 } from '../../src/read-masks.js';
