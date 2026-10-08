@@ -49,6 +49,7 @@ export * from './useGetAllStardustSharedObjects';
 export * from './useGetStardustSharedBasicObjects';
 export * from './useGetStardustSharedNftObjects';
 export * from './useMaxTransactionSizeBytes';
+export * from './useTransactionLimits';
 export * from './useSendCoinTransaction';
 export * from './useGetClockTimestamp';
 export * from './useAssetGasBudgetEstimation';

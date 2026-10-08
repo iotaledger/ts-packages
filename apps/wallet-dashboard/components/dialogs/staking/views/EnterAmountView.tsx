@@ -11,14 +11,16 @@ import {
     useValidatorInfo,
     AmountWithFiat,
     CoinFiatValue,
+    STAKE_AMOUNT_REDUCTION_STEP,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
 import { useSignAndExecuteTransaction } from '@iota/dapp-kit';
 import { EnterAmountDialogLayout } from './EnterAmountDialogLayout';
+import { isSizeExceededError } from '@/lib/utils';
 import { ampli } from '@/lib/utils/analytics';
 import { ButtonPill, InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Exclamation } from '@iota/apps-ui-icons';
 
 export interface FormValues {
@@ -57,8 +59,12 @@ export function EnterAmountView({
     });
     const validatorApy = apy ?? 0;
 
+    const [possibleAmount, setPossibleAmount] = useState<bigint | null>(null);
+    const [isSearchingProtocolMaxAmount, setSearchingProtocolMaxAmount] = useState(false);
+    const stakeAmount = possibleAmount ?? amount;
+
     const [stakedAmountFormattedPlain] = useFormatCoin({
-        balance: amount,
+        balance: stakeAmount,
         format: CoinFormat.Full,
         useGroupSeparator: false,
     });
@@ -68,7 +74,7 @@ export function EnterAmountView({
         isLoading: isTransactionLoading,
         isError,
         error: stakeTransactionError,
-    } = useNewStakeTransaction(selectedValidator, amount, senderAddress);
+    } = useNewStakeTransaction(selectedValidator, stakeAmount, senderAddress);
     const gasSummary = newStakeData?.gasSummary;
 
     const [availableBalanceFormatted, availableBalanceFormattedSymbol] = useFormatCoin({
@@ -129,13 +135,32 @@ export function EnterAmountView({
         );
     }
 
+    const [possibleAmountFormatted, possibleAmountSymbol] = useFormatCoin({
+        balance: possibleAmount,
+        format: CoinFormat.Full,
+    });
+
+    const isSizeExceeded = isError && !!isSizeExceededError(stakeTransactionError);
+
+    useEffect(() => {
+        setPossibleAmount(amount || null);
+        setSearchingProtocolMaxAmount(false);
+    }, [amount]);
+
+    useEffect(() => {
+        if (isSizeExceeded && stakeAmount > STAKE_AMOUNT_REDUCTION_STEP) {
+            setSearchingProtocolMaxAmount(true);
+            setPossibleAmount(stakeAmount - STAKE_AMOUNT_REDUCTION_STEP);
+        }
+    }, [isSizeExceeded, stakeAmount]);
+
     const errorMessage = useMemo(() => {
-        if (isError) {
+        if (isError && !isSizeExceeded) {
             return getGasBudgetErrorMessage(stakeTransactionError) ?? NO_BALANCE_GENERIC_MESSAGE;
         } else {
             return undefined;
         }
-    }, [stakeTransactionError, isError]);
+    }, [stakeTransactionError, isError, isSizeExceeded]);
 
     return (
         <EnterAmountDialogLayout
@@ -145,7 +170,19 @@ export function EnterAmountView({
             caption={caption}
             supportingValue={<AmountWithFiat amount={amount} coinType={IOTA_TYPE_ARG} />}
             renderInfo={
-                isUnsafeAmount ? (
+                isSearchingProtocolMaxAmount ? (
+                    <InfoBox
+                        title="Partial staking"
+                        type={InfoBoxType.Error}
+                        supportingText={`The current amount is not valid due to the large number of objects. ${
+                            isTransactionLoading
+                                ? 'Determining a valid amount...'
+                                : `Valid amount: ${possibleAmountFormatted} ${possibleAmountSymbol}`
+                        }`}
+                        style={InfoBoxStyle.Elevated}
+                        icon={<Exclamation />}
+                    />
+                ) : isUnsafeAmount ? (
                     <InfoBox
                         type={InfoBoxType.Warning}
                         supportingText={

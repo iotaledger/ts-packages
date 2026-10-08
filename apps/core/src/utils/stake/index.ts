@@ -5,6 +5,8 @@ export * from './createUnstakeTransaction';
 export * from './createPartialUnstakeTransaction';
 export * from './formatDelegatedStake';
 export * from './createStakeTransaction';
+export * from './selectCoinsForAmount';
+export * from './buildStakeTransaction';
 export * from './createTimelockedUnstakeTransaction';
 export * from './createTimelockedStakeTransaction';
 export * from './createValidationSchema';
