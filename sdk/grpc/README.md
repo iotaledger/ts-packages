@@ -13,7 +13,7 @@ It runs on Node, Bun and Deno. Browsers are not supported yet: see [Limitations]
 ## Install
 
 ```bash
-npm install --save @iota/grpc @iota/iota-sdk
+npm install --save @iota/grpc
 ```
 
 ## Setup
@@ -136,7 +136,13 @@ console.log(body.metadata?.symbol, body.metadata?.decimals);
 
 ## Simulating and executing transactions
 
-Build and sign transactions with `@iota/iota-sdk` as usual, then pass the bytes and signatures:
+To build and sign transactions you need to use `@iota/iota-sdk`:
+
+```bash
+npm install --save @iota/iota-sdk 
+```
+
+then pass the bytes and signatures:
 
 ```ts
 import { getRpcUrl, IotaClient } from '@iota/iota-sdk/client';
