@@ -26,7 +26,10 @@
         "build": "build-package",
         "codegen": "buf generate",
         "test": "vitest run unit --typecheck --typecheck.tsconfig ./test/tsconfig.json",
-        "test:e2e": "vitest run e2e --typecheck --typecheck.tsconfig ./test/tsconfig.json"
+        "test:e2e": "vitest run e2e --typecheck --typecheck.tsconfig ./test/tsconfig.json",
+        "prepare:e2e:localnet": "iota-localnet start --with-faucet --force-regenesis --disable-fullnode-pruning --node-config-override fullnode:enable-grpc-api=true --node-config-override \"fullnode:grpc-api-config={address: '0.0.0.0:50051'}\"",
+        "test:e2e:localnet": "wait-on http://127.0.0.1:9123 tcp:127.0.0.1:50051 -l --timeout 180000 && vitest run localnet --testTimeout 60000 --hookTimeout 180000 --typecheck --typecheck.tsconfig ./test/tsconfig.json",
+        "size": "size-limit"
     },
     "repository": "https://github.com/iotaledger/ts-packages",
     "bugs": {
@@ -38,8 +41,11 @@
         "@bufbuild/protoc-gen-es": "^2.15.0",
         "@iota/build-scripts": "workspace:*",
         "@noble/hashes": "^1.4.0",
+        "@size-limit/preset-small-lib": "^11.1.4",
+        "size-limit": "^11.1.4",
         "typescript": "^5.5.3",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.0",
+        "wait-on": "^8.0.1"
     },
     "dependencies": {
         "@bufbuild/protobuf": "^2.15.0",
@@ -47,5 +53,21 @@
         "@connectrpc/connect-node": "^2.2.0",
         "@iota/bcs": "workspace:*",
         "@iota/iota-sdk": "workspace:*"
-    }
+    },
+    "size-limit": [
+        {
+            "path": "dist/esm/index.js",
+            "limit": "55 kB",
+            "ignore": [
+                "@connectrpc/connect-node"
+            ]
+        },
+        {
+            "path": "dist/cjs/index.js",
+            "limit": "170 kB",
+            "ignore": [
+                "@connectrpc/connect-node"
+            ]
+        }
+    ]
 }
