@@ -930,9 +930,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.20(postcss@8.5.26)
-      memfs:
-        specifier: ^4.11.1
-        version: 4.56.10
       postcss:
         specifier: '>=8.5.23'
         version: 8.5.26
