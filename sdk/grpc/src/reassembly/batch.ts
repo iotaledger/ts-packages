@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Message } from '@bufbuild/protobuf';
-import { toBase58, toHex } from '@iota/bcs';
+import { fromBase58, fromHex, toBase58, toHex } from '@iota/bcs';
+import { TransactionDataBuilder } from '@iota/iota-sdk/transactions';
 
+import { decodeObject, decodeTransaction, objectIdOf } from '../bcs/decode.js';
 import {
     EmptyResponseFieldError,
     ServerError,
@@ -85,7 +87,7 @@ export function checkObjectIdentity(results: ItemResult<Object$>[], requested: U
             continue;
         }
 
-        const actual = result.value.reference?.objectId?.objectId;
+        const actual = answeredObjectId(result.value);
 
         if (actual === undefined) {
             continue;
@@ -98,10 +100,6 @@ export function checkObjectIdentity(results: ItemResult<Object$>[], requested: U
     }
 }
 
-function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
-    return a.length === b.length && a.every((byte, i) => byte === b[i]);
-}
-
 export function checkTransactionIdentity(
     results: ItemResult<ExecutedTransaction>[],
     requested: Uint8Array[],
@@ -111,7 +109,7 @@ export function checkTransactionIdentity(
             continue;
         }
 
-        const actual = result.value.transaction?.digest?.digest;
+        const actual = answeredTransactionDigest(result.value);
 
         if (actual === undefined) {
             continue;
@@ -122,4 +120,35 @@ export function checkTransactionIdentity(
             throw new UnexpectedTransactionError(position, toBase58(expected), toBase58(actual));
         }
     }
+}
+
+/** From the reference, or from the BCS when the read mask left the reference out. */
+function answeredObjectId(object: Object$): Uint8Array | undefined {
+    const id = object.reference?.objectId?.objectId;
+    if (id !== undefined) {
+        return id;
+    }
+    if (object.bcs !== undefined) {
+        return fromHex(objectIdOf(decodeObject(object)));
+    }
+    return undefined;
+}
+
+/** From the response, or computed from the BCS when the read mask left the digest out. */
+function answeredTransactionDigest(executed: ExecutedTransaction): Uint8Array | undefined {
+    const { transaction } = executed;
+    const digest = transaction?.digest?.digest;
+    if (digest !== undefined) {
+        return digest;
+    }
+    if (transaction?.bcs !== undefined) {
+        // Rejects bytes that are not a TransactionData before hashing them, as Rust does.
+        decodeTransaction(transaction);
+        return fromBase58(TransactionDataBuilder.getDigestFromBytes(transaction.bcs.data));
+    }
+    return undefined;
+}
+
+function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
+    return a.length === b.length && a.every((byte, i) => byte === b[i]);
 }
