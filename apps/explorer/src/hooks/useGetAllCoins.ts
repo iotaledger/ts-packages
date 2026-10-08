@@ -62,15 +62,6 @@ interface CoinMetadataObjectsQueryResult {
     } | null;
 }
 
-interface CoinObjectAddressesQueryResult {
-    data?: {
-        objects: {
-            pageInfo: { hasNextPage: boolean; endCursor?: string | null };
-            nodes: { address: string }[];
-        } | null;
-    } | null;
-}
-
 type CoinSource = 'metadata' | 'manager';
 
 interface CoinsPageParam {
@@ -106,20 +97,6 @@ const COIN_METADATA_OBJECTS_QUERY = graphql(`
                         supply
                     }
                 }
-            }
-        }
-    }
-`);
-
-const COIN_OBJECT_ADDRESSES_QUERY = graphql(`
-    query getCoinObjectAddresses($type: String!, $first: Int!, $after: String) {
-        objects(filter: { type: $type }, first: $first, after: $after) {
-            pageInfo {
-                hasNextPage
-                endCursor
-            }
-            nodes {
-                address
             }
         }
     }
@@ -408,45 +385,6 @@ export function useGetRecognizedCoins(): UseQueryResult<OnChainCoin[], Error> {
             return coinsWithPublishInfo;
         },
         enabled: !!iotaGraphQLClient && coinTypes.length > 0,
-        staleTime: 5 * 60 * 1000,
-    });
-}
-
-// GraphQL has no total count for objects, so every page is walked fetching
-// only addresses.
-async function countCoinObjects(graphQLClient: GraphQLClient, source: CoinSource) {
-    let count = 0;
-    let after: string | null = null;
-    do {
-        const response: CoinObjectAddressesQueryResult = await graphQLClient.query({
-            query: COIN_OBJECT_ADDRESSES_QUERY,
-            variables: { type: COIN_OBJECT_TYPES[source], first: PAGE_SIZE, after },
-        });
-        const result = response.data?.objects;
-        if (!result) break;
-        count += result.nodes.length;
-        after = result.pageInfo.hasNextPage ? (result.pageInfo.endCursor ?? null) : null;
-    } while (after);
-    return count;
-}
-
-/**
- * How many coins exist on chain, standalone `CoinMetadata` and `CoinManager` ones together.
- */
-export function useGetCoinsCount(): UseQueryResult<number, Error> {
-    const { iotaGraphQLClient } = useIotaGraphQLClientContext();
-
-    return useQuery<number, Error>({
-        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['coins-count'],
-        queryFn: async () => {
-            const [metadataCount, managerCount] = await Promise.all([
-                countCoinObjects(iotaGraphQLClient!, 'metadata'),
-                countCoinObjects(iotaGraphQLClient!, 'manager'),
-            ]);
-            return metadataCount + managerCount;
-        },
-        enabled: !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });
 }
