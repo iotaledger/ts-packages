@@ -5,7 +5,7 @@ import { bcs } from '@iota/iota-sdk/bcs';
 
 import { versioned } from './versioned.js';
 
-const MoveObjectType = bcs.enum('MoveObjectType', {
+export const MoveObjectType = bcs.enum('MoveObjectType', {
     Other: bcs.StructTag,
     GasCoin: null,
     StakedIota: null,

@@ -43,6 +43,9 @@ describe('IotaGrpcClient', () => {
         const client = new IotaGrpcTestClient({ network: 'devnet' });
 
         expect(client.ledger).toBe(client.ledger);
+        expect(client.state).toBe(client.state);
+        expect(client.movePackage).toBe(client.movePackage);
+        expect(client.execution).toBe(client.execution);
     });
 
     it('takes a url instead of a network', () => {
