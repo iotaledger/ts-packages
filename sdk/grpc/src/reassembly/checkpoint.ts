@@ -24,6 +24,8 @@ export type CheckpointStreamItem =
       }
     | { kind: 'progress'; latestScannedSequenceNumber: bigint };
 
+export type CheckpointResponse = Extract<CheckpointStreamItem, { kind: 'checkpoint' }>;
+
 export async function* reassembleCheckpoints(
     frames: AsyncIterable<CheckpointData>,
 ): AsyncGenerator<CheckpointStreamItem> {

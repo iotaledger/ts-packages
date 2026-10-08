@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { Code, ConnectError } from '@connectrpc/connect';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -23,6 +24,7 @@ import {
     UnexpectedTransactionError,
     UnknownPayloadError,
     UnknownVariantError,
+    toIotaGrpcError,
 } from '../../src/errors.js';
 
 // Every message below is copied from the #[error("...")] attributes in
@@ -37,7 +39,7 @@ const MESSAGES: Array<[string, IotaGrpcError]> = [
         'stream ended unexpectedly: server indicated more results with has_next=true',
         new UnexpectedEndOfStreamError(),
     ],
-    ['grpc error: unavailable', new TransportError('unavailable')],
+    ['grpc error: unavailable', new TransportError(Code.Unavailable, 'unavailable')],
     ['protocol error: expected 10 results, got 7', new UnexpectedResultCountError(10, 7)],
     [
         'protocol error: requested object 0xaa at position 2, but got 0xbb',
@@ -107,5 +109,44 @@ describe('error data', () => {
 
     it('keeps the server code', () => {
         expect(new ServerError(5, 'not found').code).toBe(5);
+    });
+
+    it('keeps the transport code', () => {
+        expect(new TransportError(Code.Unavailable, 'unavailable').code).toBe(Code.Unavailable);
+    });
+});
+
+describe('toIotaGrpcError', () => {
+    it('returns errors of its own unchanged', () => {
+        const error = new UnexpectedEndOfStreamError();
+
+        expect(toIotaGrpcError(error)).toBe(error);
+    });
+
+    it('maps a ConnectError to a TransportError with its code and raw message', () => {
+        const error = toIotaGrpcError(new ConnectError('node is stale', Code.Unavailable));
+
+        expect(error).toBeInstanceOf(TransportError);
+        expect(error).toMatchObject({ code: Code.Unavailable, detail: 'node is stale' });
+    });
+
+    it('keeps the ConnectError as the cause', () => {
+        const connectError = new ConnectError('node is stale', Code.Unavailable);
+
+        expect(toIotaGrpcError(connectError).cause).toBe(connectError);
+    });
+
+    it('maps an aborted call to Canceled', () => {
+        const error = toIotaGrpcError(new DOMException('This operation was aborted', 'AbortError'));
+
+        expect(error).toMatchObject({ code: Code.Canceled });
+    });
+
+    it('maps anything else to Unknown', () => {
+        expect(toIotaGrpcError(new TypeError('fetch failed'))).toMatchObject({
+            code: Code.Unknown,
+            detail: 'fetch failed',
+        });
+        expect(toIotaGrpcError('boom')).toMatchObject({ code: Code.Unknown });
     });
 });
