@@ -2,6 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { fromBase64 } from '@iota/bcs';
 import { parse } from 'valibot';
 
 import type { BcsType } from '../bcs/index.js';
@@ -127,6 +128,7 @@ async function setGasPayment(
     let paymentCoins: CoinStruct[] = [];
     let cursor: string | null | undefined = null;
     let hasNextPage = true;
+    let seenCoins = 0;
 
     while (hasNextPage) {
         const page = await client.getCoins({
@@ -137,11 +139,11 @@ async function setGasPayment(
         cursor = page.nextCursor;
         hasNextPage = page.hasNextPage;
 
-        paymentCoins = [
-            ...paymentCoins,
-            // Filter out coins that are also used as input:
-            ...page.data.filter((coin) => !inputObjectIds.has(coin.coinObjectId)),
-        ]
+        // Filter out coins that are also used as input:
+        const availableCoins = page.data.filter((coin) => !inputObjectIds.has(coin.coinObjectId));
+        seenCoins += availableCoins.length;
+
+        paymentCoins = [...paymentCoins, ...availableCoins]
             .sort((a, b) => {
                 const diff = BigInt(b.balance) - BigInt(a.balance);
                 return diff > 0n ? 1 : diff < 0n ? -1 : 0;
@@ -157,6 +159,16 @@ async function setGasPayment(
         throw new Error('No valid gas coins found for the transaction.');
     }
 
+    if (
+        !hasNextPage &&
+        seenCoins > MAX_GAS_OBJECTS &&
+        !(await canPayGas(transactionData, paymentCoins, client))
+    ) {
+        throw new Error(
+            `Not enough balance in ${MAX_GAS_OBJECTS} gas coins. Merge your coins or add funds.`,
+        );
+    }
+
     transactionData.gasData.payment = toGasPayment(paymentCoins);
 }
 
@@ -165,14 +177,16 @@ async function canPayGas(
     coins: CoinStruct[],
     client: IotaClient,
 ) {
-    const totalBalance = coins.reduce((total, coin) => total + BigInt(coin.balance), 0n);
-    if (totalBalance < BigInt(transactionData.gasData.budget ?? 0)) {
+    const balance = coins.reduce((total, coin) => total + BigInt(coin.balance), 0n);
+    const budget = BigInt(transactionData.gasData.budget ?? 0);
+    if (balance < budget) {
         return false;
     }
 
-    // If no command takes from the gas coin, covering the budget is enough.
-    if (!usesGasCoin(transactionData)) {
-        return true;
+    const gasCoinSplitAmount = getGasCoinSplitAmount(transactionData);
+    if (gasCoinSplitAmount !== null) {
+        // The budget is reserved inside the gas coin, so only `balance - budget` can be split from it.
+        return balance - budget >= gasCoinSplitAmount;
     }
 
     const dryRunResult = await client.dryRunTransactionBlock({
@@ -187,15 +201,38 @@ async function canPayGas(
     );
 }
 
-function usesGasCoin(transactionData: TransactionDataBuilder) {
-    let usesGas = false;
-    transactionData.mapArguments((arg) => {
-        if (arg.$kind === 'GasCoin') {
-            usesGas = true;
+function getGasCoinSplitAmount(transactionData: TransactionDataBuilder): bigint | null {
+    let isStaticallyKnown = true;
+    transactionData.mapArguments((arg, command) => {
+        if (arg.$kind !== 'GasCoin') {
+            return arg;
+        }
+        const isSplitSource = command.$kind === 'SplitCoins' && arg === command.SplitCoins.coin;
+        const isTransferred =
+            command.$kind === 'TransferObjects' && command.TransferObjects.objects.includes(arg);
+        if (!isSplitSource && !isTransferred) {
+            isStaticallyKnown = false;
         }
         return arg;
     });
-    return usesGas;
+    if (!isStaticallyKnown) {
+        return null;
+    }
+
+    let total = 0n;
+    for (const command of transactionData.commands) {
+        if (command.$kind !== 'SplitCoins' || command.SplitCoins.coin.$kind !== 'GasCoin') {
+            continue;
+        }
+        for (const amount of command.SplitCoins.amounts) {
+            const input = amount.$kind === 'Input' ? transactionData.inputs[amount.Input] : null;
+            if (input?.$kind !== 'Pure') {
+                return null;
+            }
+            total += BigInt(bcs.u64().parse(fromBase64(input.Pure.bytes)));
+        }
+    }
+    return total;
 }
 
 function toGasPayment(coins: CoinStruct[]) {
