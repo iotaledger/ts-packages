@@ -23,7 +23,7 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
+import { useGetAllCoins, useGetRecognizedCoins } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
@@ -62,18 +62,6 @@ function CoinsPageResult(): JSX.Element {
         isPending: isRecognizedCoinsPending,
         isError: isRecognizedCoinsError,
     } = useGetRecognizedCoins();
-    const { data: coinsCount } = useGetCoinsCount();
-
-    const filterCounts = useMemo(() => {
-        if (coinsCount === undefined || isRecognizedCoinsPending || isRecognizedCoinsError) {
-            return undefined;
-        }
-        return {
-            All: coinsCount,
-            Recognized: recognizedCoins.length,
-            'Not Recognized': coinsCount - recognizedCoins.length,
-        };
-    }, [coinsCount, isRecognizedCoinsPending, isRecognizedCoinsError, recognizedCoins.length]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
@@ -136,7 +124,6 @@ function CoinsPageResult(): JSX.Element {
                                 <CoinFilters
                                     selectedFilter={filter}
                                     onFilterChange={handleFilterChange}
-                                    counts={filterCounts}
                                 />
                             </div>
                         </div>

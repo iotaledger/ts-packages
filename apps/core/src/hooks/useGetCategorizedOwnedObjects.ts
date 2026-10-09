@@ -10,7 +10,7 @@ import { getNameRegistrationType, getSubnameRegistrationType } from '@iota/iota-
 import type { IotaObjectResponse } from '@iota/iota-sdk/client';
 import type { KioskItem } from '@iota/kiosk';
 
-const FETCH_CHUNK_SIZE = 1000;
+const RPC_PAGE_SIZE = 50;
 
 export enum OwnedObjectCategory {
     Nft = 'nft',
@@ -31,7 +31,6 @@ interface VirtualPagination {
 
 interface CategoryData<T> {
     data: T[];
-    totalItems: number;
     isFetching: boolean;
     isError: boolean;
     pagination: VirtualPagination;
@@ -43,68 +42,68 @@ interface CategorizedOwnedObjectsResult {
     kiosk: CategoryData<KioskItem>;
     other: CategoryData<IotaObjectResponse>;
     availableCategories: OwnedObjectCategory[];
+    activeCategory?: OwnedObjectCategory;
     isPending: boolean;
     isAnyError: boolean;
 }
 
-function useVirtualPagination<T>(
+interface PageSource {
+    hasNextPage: boolean;
+    isFetching: boolean;
+    isError: boolean;
+    fetchNextPage: () => unknown;
+}
+
+function useLazyPagination<T>(
     items: T[],
     pageSize: number,
-    resetKey?: string,
-): CategoryData<T> & { setPage: (page: number) => void } {
-    const [currentPage, setCurrentPage] = useState(0);
+    pagination: PageSource,
+    isActive: boolean,
+    resetKey: string,
+): CategoryData<T> {
+    const [pageState, setPageState] = useState({ resetKey, page: 0 });
+    const currentPage = pageState.resetKey === resetKey ? pageState.page : 0;
+
+    const start = currentPage * pageSize;
+    const needsMore = pagination.hasNextPage && items.length <= start + pageSize;
+    const isFilling = isActive && needsMore;
+
     useEffect(() => {
-        setCurrentPage(0);
-    }, [pageSize, resetKey]);
+        if (isFilling && !pagination.isFetching) {
+            pagination.fetchNextPage();
+        }
+        // oxlint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFilling, pagination.isFetching, pagination.fetchNextPage]);
 
-    const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+    const data = useMemo(() => items.slice(start, start + pageSize), [items, start, pageSize]);
+    const hasNext = items.length > start + pageSize;
 
-    const safePage = Math.min(currentPage, totalPages - 1);
-
-    const pageData = useMemo(() => {
-        const start = safePage * pageSize;
-        return items.slice(start, start + pageSize);
-    }, [items, safePage, pageSize]);
-
-    const pagination: VirtualPagination = useMemo(
+    const virtualPagination: VirtualPagination = useMemo(
         () => ({
-            currentPage: safePage,
-            hasFirst: safePage > 0,
-            hasPrev: safePage > 0,
-            hasNext: safePage < totalPages - 1,
-            onFirst: () => setCurrentPage(0),
-            onPrev: () => setCurrentPage((p) => Math.max(0, p - 1)),
-            onNext: () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1)),
+            currentPage,
+            hasFirst: currentPage > 0,
+            hasPrev: currentPage > 0,
+            hasNext,
+            onFirst: () => setPageState({ resetKey, page: 0 }),
+            onPrev: () => setPageState({ resetKey, page: Math.max(0, currentPage - 1) }),
+            onNext: () => setPageState({ resetKey, page: currentPage + 1 }),
         }),
-        [safePage, totalPages],
+        [currentPage, hasNext, resetKey],
     );
 
     return {
-        data: pageData,
-        totalItems: items.length,
-        isFetching: false,
-        isError: false,
-        pagination,
-        setPage: setCurrentPage,
+        data,
+        isFetching: isFilling,
+        isError: pagination.isError,
+        pagination: virtualPagination,
     };
 }
 
 export function useGetCategorizedOwnedObjects(
     address: string,
     pageSize: number = 50,
+    selectedCategory?: OwnedObjectCategory,
 ): CategorizedOwnedObjectsResult {
-    const ownedObjectsQuery = useGetOwnedObjects(
-        address,
-        { MatchNone: [{ StructType: '0x2::coin::Coin' }] },
-        FETCH_CHUNK_SIZE,
-    );
-
-    const {
-        data: kioskData,
-        isFetching: kioskFetching,
-        isError: kioskError,
-    } = useGetKioskContents(address);
-
     const { iotaNamesClient } = useIotaNamesClient();
 
     const nameTypes = useMemo(() => {
@@ -118,99 +117,143 @@ export function useGetCategorizedOwnedObjects(
         }
     }, [iotaNamesClient]);
 
-    const allFetchedObjects = useMemo(() => {
-        if (!ownedObjectsQuery.data?.pages) return [];
-        return ownedObjectsQuery.data.pages.flatMap((page) => page.data ?? []);
-    }, [ownedObjectsQuery.data?.pages]);
+    const objectsQuery = useGetOwnedObjects(
+        address,
+        {
+            MatchNone: [
+                { StructType: '0x2::coin::Coin' },
+                ...nameTypes.map((StructType) => ({ StructType })),
+            ],
+        },
+        RPC_PAGE_SIZE,
+    );
 
-    const { nftItems, nameItems, otherItems } = useMemo(() => {
+    const namesQuery = useGetOwnedObjects(
+        nameTypes.length ? address : null,
+        { MatchAny: nameTypes.map((StructType) => ({ StructType })) },
+        RPC_PAGE_SIZE,
+    );
+
+    const {
+        data: kioskData,
+        isFetching: kioskFetching,
+        isError: kioskError,
+    } = useGetKioskContents(address);
+
+    const { nftItems, otherItems } = useMemo(() => {
         const nft: IotaObjectResponse[] = [];
-        const name: IotaObjectResponse[] = [];
         const other: IotaObjectResponse[] = [];
-
-        for (const obj of allFetchedObjects) {
-            const objType = obj.data?.type;
-            const isIotaName = !!objType && nameTypes.some((t) => objType.includes(t));
-
-            if (isIotaName) {
-                name.push(obj);
-                continue;
-            }
-
-            if (hasDisplayData(obj)) {
-                nft.push(obj);
-                continue;
-            }
-
-            other.push(obj);
+        for (const obj of objectsQuery.data?.pages.flatMap((page) => page.data) ?? []) {
+            (hasDisplayData(obj) ? nft : other).push(obj);
         }
+        return { nftItems: nft, otherItems: other };
+    }, [objectsQuery.data?.pages]);
 
-        return { nftItems: nft, nameItems: name, otherItems: other };
-    }, [allFetchedObjects, nameTypes]);
+    const nameItems = useMemo(
+        () => namesQuery.data?.pages.flatMap((page) => page.data) ?? [],
+        [namesQuery.data?.pages],
+    );
 
     const kioskItems = useMemo(() => kioskData?.list ?? [], [kioskData?.list]);
 
-    const nftPagination = useVirtualPagination(nftItems, pageSize, OwnedObjectCategory.Nft);
-    const namePagination = useVirtualPagination(nameItems, pageSize, OwnedObjectCategory.Name);
-    const otherPagination = useVirtualPagination(otherItems, pageSize, OwnedObjectCategory.Other);
-    const kioskPagination = useVirtualPagination(kioskItems, pageSize, OwnedObjectCategory.Kiosk);
+    const objectsSource: PageSource = {
+        hasNextPage: objectsQuery.hasNextPage,
+        isFetching: objectsQuery.isFetching,
+        isError: objectsQuery.isError,
+        fetchNextPage: objectsQuery.fetchNextPage,
+    };
+    const namesSource: PageSource = {
+        hasNextPage: namesQuery.hasNextPage,
+        isFetching: namesQuery.isFetching,
+        isError: namesQuery.isError,
+        fetchNextPage: namesQuery.fetchNextPage,
+    };
+    const kioskSource: PageSource = {
+        hasNextPage: false,
+        isFetching: kioskFetching,
+        isError: kioskError,
+        fetchNextPage: () => {},
+    };
 
-    useEffect(() => {
-        if (
-            ownedObjectsQuery.hasNextPage &&
-            !ownedObjectsQuery.isFetchingNextPage &&
-            !ownedObjectsQuery.isLoading
-        ) {
-            ownedObjectsQuery.fetchNextPage();
-        }
-        // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        ownedObjectsQuery.hasNextPage,
-        ownedObjectsQuery.isFetchingNextPage,
-        ownedObjectsQuery.isLoading,
-        ownedObjectsQuery.fetchNextPage,
-    ]);
-
+    // NFT and Other share one unfiltered stream, so either may still appear in pages not yet fetched.
     const availableCategories = useMemo(() => {
         const category: OwnedObjectCategory[] = [];
-        if (nftItems.length > 0) category.push(OwnedObjectCategory.Nft);
+        if (nftItems.length > 0 || objectsQuery.hasNextPage) category.push(OwnedObjectCategory.Nft);
         if (nameItems.length > 0) category.push(OwnedObjectCategory.Name);
         if (kioskItems.length > 0) category.push(OwnedObjectCategory.Kiosk);
-        if (otherItems.length > 0) category.push(OwnedObjectCategory.Other);
+        if (otherItems.length > 0 || objectsQuery.hasNextPage)
+            category.push(OwnedObjectCategory.Other);
         return category;
-    }, [nftItems.length, nameItems.length, kioskItems.length, otherItems.length]);
+    }, [
+        nftItems.length,
+        nameItems.length,
+        kioskItems.length,
+        otherItems.length,
+        objectsQuery.hasNextPage,
+    ]);
 
-    const ownedObjectsFetched =
-        !ownedObjectsQuery.isLoading &&
-        !ownedObjectsQuery.isFetchingNextPage &&
-        !ownedObjectsQuery.hasNextPage;
-    const isPending = !ownedObjectsFetched || kioskFetching;
+    const isPending = objectsQuery.isLoading || namesQuery.isLoading || kioskFetching;
 
-    const isError = ownedObjectsQuery.isError;
+    const categoryItems = {
+        [OwnedObjectCategory.Nft]: {
+            count: nftItems.length,
+            hasNextPage: objectsQuery.hasNextPage,
+        },
+        [OwnedObjectCategory.Name]: {
+            count: nameItems.length,
+            hasNextPage: namesQuery.hasNextPage,
+        },
+        [OwnedObjectCategory.Kiosk]: { count: kioskItems.length, hasNextPage: false },
+        [OwnedObjectCategory.Other]: {
+            count: otherItems.length,
+            hasNextPage: objectsQuery.hasNextPage,
+        },
+    };
+
+    const defaultCategory =
+        availableCategories.find((category) => {
+            const { count, hasNextPage } = categoryItems[category];
+            return count > 0 && (count > pageSize || !hasNextPage);
+        }) ?? availableCategories[0];
+    const activeCategory = isPending
+        ? undefined
+        : selectedCategory && availableCategories.includes(selectedCategory)
+          ? selectedCategory
+          : defaultCategory;
+
+    const resetKey = `${address}-${pageSize}`;
+
+    const nft = useLazyPagination(
+        nftItems,
+        pageSize,
+        objectsSource,
+        activeCategory === OwnedObjectCategory.Nft,
+        resetKey,
+    );
+    const name = useLazyPagination(
+        nameItems,
+        pageSize,
+        namesSource,
+        activeCategory === OwnedObjectCategory.Name,
+        resetKey,
+    );
+    const kiosk = useLazyPagination(kioskItems, pageSize, kioskSource, false, resetKey);
+    const other = useLazyPagination(
+        otherItems,
+        pageSize,
+        objectsSource,
+        activeCategory === OwnedObjectCategory.Other,
+        resetKey,
+    );
 
     return {
-        nft: {
-            ...nftPagination,
-            isFetching: !ownedObjectsFetched,
-            isError,
-        },
-        name: {
-            ...namePagination,
-            isFetching: !ownedObjectsFetched,
-            isError,
-        },
-        kiosk: {
-            ...kioskPagination,
-            isFetching: kioskFetching,
-            isError: kioskError,
-        },
-        other: {
-            ...otherPagination,
-            isFetching: !ownedObjectsFetched,
-            isError,
-        },
+        nft,
+        name,
+        kiosk,
+        other,
         availableCategories: isPending ? [] : availableCategories,
+        activeCategory,
         isPending,
-        isAnyError: isError || kioskError,
+        isAnyError: objectsQuery.isError || namesQuery.isError || kioskError,
     };
 }
