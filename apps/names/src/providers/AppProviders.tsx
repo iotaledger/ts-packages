@@ -13,7 +13,7 @@ import { CookieDisclaimer } from '@/components/disclaimer/CookieDisclaimer';
 import { Toaster } from '@/components/Toaster';
 import { CONFIG } from '@/config';
 import { IotaNamesClientProvider, IotaNamesIndexerClientProvider } from '@/contexts';
-import { KioskClientProvider } from '@/contexts/KioskClientContext';
+import { KioskClientProvider } from '@iota/core';
 import { captureException } from '@/instrumentation';
 import { APP_STATIC_THEME } from '@/lib/constants/theme.constants';
 import { ampli } from '@/lib/utils/analytics/ampli';
