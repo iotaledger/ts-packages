@@ -20,12 +20,17 @@ function getRootDepth({ pathname, search }: { pathname: string; search: string }
     return null;
 }
 
+function getHistoryIndex(): number {
+    return window.history.state?.idx ?? 0;
+}
+
 export function NavigationStackProvider({ children }: { children: ReactNode }) {
     const location = useLocation();
     const navigationType = useNavigationType();
-    const [depth, setDepth] = useState(() => getRootDepth(location) ?? 2);
+    const initialRootDepth = getRootDepth(location);
+    const [depth, setDepth] = useState(() => initialRootDepth ?? Math.min(2, getHistoryIndex()));
     const lastLocationKey = useRef(location.key);
-    const isDepthUnknown = useRef(getRootDepth(location) === null);
+    const minPopDepth = useRef(initialRootDepth === null ? 2 : 1);
 
     useEffect(() => {
         if (lastLocationKey.current === location.key) return;
@@ -33,13 +38,16 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
 
         const rootDepth = getRootDepth(location);
         if (rootDepth !== null) {
-            isDepthUnknown.current = false;
+            minPopDepth.current = 1;
             setDepth(rootDepth);
-        } else if (navigationType === 'PUSH') {
-            setDepth((prev) => prev + 1);
+            return;
+        }
+
+        const maxDepth = getHistoryIndex();
+        if (navigationType === 'PUSH') {
+            setDepth((prev) => Math.min(maxDepth, prev + 1));
         } else if (navigationType === 'POP') {
-            const minDepth = isDepthUnknown.current ? 2 : 1;
-            setDepth((prev) => Math.max(minDepth, prev - 1));
+            setDepth((prev) => Math.min(maxDepth, Math.max(minPopDepth.current, prev - 1)));
         }
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [location.key, navigationType]);
