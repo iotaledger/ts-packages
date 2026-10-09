@@ -264,9 +264,7 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     keyIcon={
                         <ArrowTopRight className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
                     }
-                    value={<AddressLink address={sender} />}
-                    copyText={sender}
-                    onCopySuccess={onCopySuccess}
+                    value={<AddressLink address={sender} copyText={sender} />}
                     fullwidth={!isMediumOrAbove}
                 />
             )}
@@ -275,9 +273,7 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     layout="receipt"
                     keyText="Sponsor"
                     tooltipText="The account that paid the gas for this transaction on behalf of the sender."
-                    value={<AddressLink address={sponsor} />}
-                    copyText={sponsor}
-                    onCopySuccess={onCopySuccess}
+                    value={<AddressLink address={sponsor} copyText={sponsor} />}
                     fullwidth={!isMediumOrAbove}
                 />
             )}
@@ -288,9 +284,7 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     keyIcon={
                         <ArrowBottomLeft className="h-4 w-4 shrink-0 text-iota-neutral-40 dark:text-iota-neutral-60" />
                     }
-                    value={<AddressLink address={recipient} />}
-                    copyText={recipient}
-                    onCopySuccess={onCopySuccess}
+                    value={<AddressLink address={recipient} copyText={recipient} />}
                     fullwidth={!isMediumOrAbove}
                 />
             )}

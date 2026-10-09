@@ -186,7 +186,7 @@ export function TransactionActionSummary({
     const visibleActions = showAll ? actions : actions.slice(0, MAX_VISIBLE_LINES);
 
     return (
-        <div className="flex flex-col items-center gap-y-xs">
+        <div className="flex max-w-full flex-col items-center gap-y-xs">
             {visibleActions.map((action, index) => (
                 <ActionSummaryLine key={index} action={action} />
             ))}
@@ -304,7 +304,7 @@ function ActionSummaryLine({ action }: { action: SummaryAction }): JSX.Element {
 
 function SummaryLine({ children }: { children: ReactNode }): JSX.Element {
     return (
-        <div className="flex flex-wrap items-center justify-center gap-x-xs gap-y-xxs text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92">
+        <div className="flex max-w-full flex-wrap items-center justify-center gap-x-xs gap-y-xxs text-body-lg text-iota-neutral-10 dark:text-iota-neutral-92 [&>*]:min-w-0">
             {children}
         </div>
     );
