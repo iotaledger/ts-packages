@@ -35,21 +35,27 @@ import {
 import { bcs } from '@iota/iota-sdk/bcs';
 import { program } from 'commander';
 import { KIOSK_LISTING, KioskClient, KioskTransaction } from '@iota/kiosk';
-import { IotaClient, getFullnodeUrl, Network } from '@iota/iota-sdk/client';
+import { IotaClient, getFullnodeUrl, Network, getGraphQLUrl } from '@iota/iota-sdk/client';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction } from '@iota/iota-sdk/transactions';
+import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 
 /**
  * List of known types for shorthand search in the `search` command.
  */
 const KNOWN_TYPES = {};
 
+const network = Network.Testnet;
+
 /** JsonRpcProvider for the Testnet */
-const client = new IotaClient({ url: getFullnodeUrl(Network.Testnet) });
+const client = new IotaClient({ url: getFullnodeUrl(network) });
+
+const graphQlClient = new IotaGraphQLClient({ url: getGraphQLUrl(network) });
 
 const kioskClient = new KioskClient({
     client,
-    network: Network.Testnet,
+    graphQlClient,
+    network,
 });
 
 /**

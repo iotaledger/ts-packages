@@ -3,7 +3,7 @@
 
 import { useContext } from 'react';
 
-import { KioskClientContext } from '@/contexts/KioskClientContext';
+import { KioskClientContext } from '@iota/core';
 
 export function useKioskClient() {
     const kioskClient = useContext(KioskClientContext);
