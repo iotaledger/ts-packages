@@ -15,6 +15,7 @@ for package in $packages; do
         --readme none \
         --entryFileName index \
         --out "../../generated-docs/${package}" \
-        --tsconfig tsconfig.json || exit
+        --tsconfig tsconfig.json \
+        --skipErrorChecking || exit
     cd - || exit
 done

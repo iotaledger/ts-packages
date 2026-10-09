@@ -31,7 +31,7 @@ interface PackageVersionsQueryResult {
     data?: {
         packageVersions: {
             pageInfo: { hasNextPage: boolean; endCursor?: string | null };
-            nodes: { address: string; version: string | number }[];
+            nodes: { address: string; version: unknown }[];
         } | null;
     } | null;
 }

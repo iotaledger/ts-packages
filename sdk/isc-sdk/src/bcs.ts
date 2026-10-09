@@ -1,7 +1,7 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { bcs } from '@iota/iota-sdk/bcs';
+import { bcs } from '@iota/bcs';
 
 export const IotagoObjectRef = bcs.struct('IotagoObjectRef', {
     objectID: bcs.fixedArray(32, bcs.u8()),

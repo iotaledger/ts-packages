@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import '@fontsource-variable/inter';
+import '@fontsource-variable/inter/index.css';
 import { ErrorBoundary } from '_components';
 import { setAppViewType } from '_redux/slices/app';
 import { getAppViewType, ExtensionViewType } from '_src/ui/app/redux/slices/app/appType';

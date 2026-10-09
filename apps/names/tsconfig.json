@@ -5,13 +5,15 @@
         "allowJs": true,
         "skipLibCheck": true,
         "strict": true,
+        "noUncheckedSideEffectImports": false,
+        "types": ["mdx", "node"],
         "noEmit": true,
         "esModuleInterop": true,
         "module": "esnext",
         "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "jsx": "preserve",
+        "jsx": "react-jsx",
         "incremental": true,
         "plugins": [
             {
@@ -26,6 +28,12 @@
             "@iota/core/api/*": ["./../core/src/api/*"]
         }
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        ".next/types/**/*.ts",
+        ".next/dev/types/**/*.ts"
+    ],
     "exclude": ["node_modules", "vitest.config.ts"]
 }

@@ -54,7 +54,7 @@
         "@iota/build-scripts": "workspace:*",
         "@size-limit/preset-small-lib": "^11.1.4",
         "size-limit": "^11.1.4",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0"
     },
     "dependencies": {

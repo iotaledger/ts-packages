@@ -2,8 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import 'tsconfig-paths/register';
-
 import { requestIotaFromFaucet as requestIotaFromFaucetSdk } from '@iota/iota-sdk/faucet';
 import { Ed25519Keypair } from '@iota/iota-sdk/keypairs/ed25519';
 import * as bip39 from '@scure/bip39';

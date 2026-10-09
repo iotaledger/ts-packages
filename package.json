@@ -117,12 +117,11 @@
 		"lint-staged": "^15.2.5",
 		"oxfmt": "^0.68.0",
 		"oxlint": "^1.83.0",
-		"ts-node": "^10.9.2",
 		"tsx": "^4.8.1",
 		"turbo": "^2.9.6",
 		"typedoc": "^0.28.17",
 		"typedoc-plugin-markdown": "^4.10.0",
-		"typescript": "^5.5.3"
+		"typescript": "^7.0.2"
 	},
 	"dependencies": {
 		"copy-text-to-clipboard": "^3.2.0"

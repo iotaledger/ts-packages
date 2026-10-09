@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import '@fontsource-variable/inter';
+import '@fontsource-variable/inter/index.css';
 import { AppsBackendClientProvider } from '@iota/apps-backend-client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
