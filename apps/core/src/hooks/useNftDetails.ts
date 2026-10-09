@@ -6,6 +6,7 @@ import {
     useNFTBasicData,
     useGetKioskContents,
     useIsAssetTransferable,
+    useGetNFTBurnFunction,
 } from './';
 import { formatAddress } from '@iota/iota-sdk/utils';
 
@@ -24,6 +25,8 @@ export function useNftDetails(nftId: string, accountAddress: string | null) {
 
     const { data: isAssetTransferable, isLoading: isCheckingAssetTransferability } =
         useIsAssetTransferable(objectData);
+
+    const { data: nftBurnFunction } = useGetNFTBurnFunction(objectData, accountAddress);
 
     const { nftFields } = useNFTBasicData(objectData);
 
@@ -70,5 +73,6 @@ export function useNftDetails(nftId: string, accountAddress: string | null) {
         kioskItem,
         nftDisplayData,
         isPendingNftDisplay,
+        nftBurnFunction,
     };
 }
