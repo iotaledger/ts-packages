@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { NAVBAR_ITEM_PATHS } from './navigation';
 
@@ -13,26 +13,41 @@ export const TAB_BAR_PATHS = new Set<string>(
 
 const NavigationDepthContext = createContext<number>(0);
 
+function getRootDepth({ pathname, search }: { pathname: string; search: string }): number | null {
+    if (new URLSearchParams(search).has('menu')) return null;
+    if (pathname === HOME_PATH || pathname.startsWith(HOME_PATH + '/')) return 0;
+    if (TAB_BAR_PATHS.has(pathname)) return 1;
+    return null;
+}
+
+function getHistoryIndex(): number {
+    return window.history.state?.idx ?? 0;
+}
+
 export function NavigationStackProvider({ children }: { children: ReactNode }) {
-    const [depth, setDepth] = useState(0);
     const location = useLocation();
     const navigationType = useNavigationType();
+    const initialRootDepth = getRootDepth(location);
+    const [depth, setDepth] = useState(() => initialRootDepth ?? Math.min(2, getHistoryIndex()));
+    const lastLocationKey = useRef(location.key);
+    const minPopDepth = useRef(initialRootDepth === null ? 2 : 1);
 
     useEffect(() => {
-        const hasMenuParam = new URLSearchParams(location.search).has('menu');
-        const isHome =
-            !hasMenuParam &&
-            (location.pathname === HOME_PATH || location.pathname.startsWith(HOME_PATH + '/'));
-        const isTabBar = !hasMenuParam && TAB_BAR_PATHS.has(location.pathname);
+        if (lastLocationKey.current === location.key) return;
+        lastLocationKey.current = location.key;
 
-        if (isHome) {
-            setDepth(0);
-        } else if (isTabBar) {
-            setDepth(1);
-        } else if (navigationType === 'PUSH') {
-            setDepth((prev) => prev + 1);
+        const rootDepth = getRootDepth(location);
+        if (rootDepth !== null) {
+            minPopDepth.current = 1;
+            setDepth(rootDepth);
+            return;
+        }
+
+        const maxDepth = getHistoryIndex();
+        if (navigationType === 'PUSH') {
+            setDepth((prev) => Math.min(maxDepth, prev + 1));
         } else if (navigationType === 'POP') {
-            setDepth((prev) => Math.max(0, prev - 1));
+            setDepth((prev) => Math.min(maxDepth, Math.max(minPopDepth.current, prev - 1)));
         }
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [location.key, navigationType]);

@@ -80,11 +80,7 @@ export function CreateNewPasskey() {
     ];
 
     return (
-        <PageTemplate
-            title="Create Passkey Account"
-            isTitleCentered
-            onBack={() => navigate('/accounts/import-existing')}
-        >
+        <PageTemplate title="Create Passkey Account" isTitleCentered>
             <Form
                 className="flex h-full flex-col justify-between"
                 form={form}

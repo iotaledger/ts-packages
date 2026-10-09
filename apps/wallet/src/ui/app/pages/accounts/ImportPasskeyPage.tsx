@@ -18,17 +18,12 @@ import { z } from 'zod';
 import { useBackgroundClient } from '../../hooks';
 
 export function ImportPasskeyPage() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const accountID = searchParams.get('accountID') || '';
     useBootstrapSourceFlow();
 
     return (
-        <PageTemplate
-            title="Import Passkey Account"
-            isTitleCentered
-            onBack={() => navigate('/accounts/import-existing')}
-        >
+        <PageTemplate title="Import Passkey Account" isTitleCentered>
             {accountID ? (
                 <NicknameSetContent accountID={accountID} />
             ) : (

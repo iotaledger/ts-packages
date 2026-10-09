@@ -24,8 +24,10 @@ export function PageTemplate({ title, children, isTitleCentered, onBack }: PageT
             onBack();
         } else if (TAB_BAR_PATHS.has(location.pathname)) {
             navigate(HOME_PATH, { replace: true });
-        } else {
+        } else if (window.history.state?.idx > 0) {
             navigate(-1);
+        } else {
+            navigate(HOME_PATH, { replace: true });
         }
     }, [onBack, navigate, location.pathname]);
 
