@@ -9,6 +9,7 @@
 	"updateInternalDependencies": "minor",
 	"privatePackages": false,
 	"provenance": true,
+	"prettier": false,
 	"ignore": [
 		"iota-wallet",
 		"iota-explorer",
