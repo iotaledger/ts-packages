@@ -10,6 +10,7 @@ Runnable examples demonstrating common operations with the IOTA TypeScript SDK.
 | `get-balance.ts`                 | Fetch an account's IOTA balance and coin objects from devnet           |
 | `transfer-iota.ts`               | Build and execute a transaction to transfer IOTA tokens on devnet      |
 | `tx-with-graphql.ts`             | Execute a transaction and query details via GraphQL transport          |
+| `grpc-checkpoint-follower.ts`    | Follow a network's checkpoints over gRPC, resuming if the stream drops |
 | `move-authenticator.ts`          | Publish, create and send with an on-chain account (Move Authenticator) |
 | `move-authenticator-existing.ts` | Send with an on-chain account (Move Authenticator)                     |
 

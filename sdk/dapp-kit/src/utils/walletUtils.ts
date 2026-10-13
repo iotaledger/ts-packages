@@ -13,7 +13,7 @@ import { getWallets, isWalletWithRequiredFeatureSet } from '@iota/wallet-standar
 export function getRegisteredWallets<AdditionalFeatures extends Wallet['features']>(
     preferredWallets: string[],
     walletFilter?: (wallet: WalletWithRequiredFeatures) => boolean,
-) {
+): WalletWithFeatures<MinimallyRequiredFeatures & AdditionalFeatures>[] {
     const walletsApi = getWallets();
     const wallets = walletsApi.get();
 

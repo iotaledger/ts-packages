@@ -39,10 +39,11 @@
         "@iota/build-scripts": "workspace:*",
         "@types/node": "^24.0.0",
         "dotenv": "^16.4.5",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0"
     },
     "dependencies": {
+        "@iota/bcs": "workspace:*",
         "@iota/iota-sdk": "workspace:*",
         "@iota/ledgerjs-hw-app-iota": "workspace:*",
         "@noble/curves": "^1.4.2",

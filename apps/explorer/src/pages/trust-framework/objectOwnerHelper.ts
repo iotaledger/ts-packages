@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ObjectOwner } from '@iota/iota-sdk/src/client';
+import type { ObjectOwner } from '@iota/iota-sdk/client';
 /**
  * A single type helper that handles both object and primitive types in the union.
  */
