@@ -28,7 +28,11 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
     const location = useLocation();
     const navigationType = useNavigationType();
     const initialRootDepth = getRootDepth(location);
-    const [depth, setDepth] = useState(() => initialRootDepth ?? Math.min(2, getHistoryIndex()));
+    const anchor = useRef({
+        idx: getHistoryIndex(),
+        depth: initialRootDepth ?? Math.min(2, getHistoryIndex()),
+    });
+    const [depth, setDepth] = useState(anchor.current.depth);
     const lastLocationKey = useRef(location.key);
     const minPopDepth = useRef(initialRootDepth === null ? 2 : 1);
 
@@ -39,15 +43,15 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
         const rootDepth = getRootDepth(location);
         if (rootDepth !== null) {
             minPopDepth.current = 1;
+            anchor.current = { idx: getHistoryIndex(), depth: rootDepth };
             setDepth(rootDepth);
             return;
         }
 
-        const maxDepth = getHistoryIndex();
-        if (navigationType === 'PUSH') {
-            setDepth((prev) => Math.min(maxDepth, prev + 1));
-        } else if (navigationType === 'POP') {
-            setDepth((prev) => Math.min(maxDepth, Math.max(minPopDepth.current, prev - 1)));
+        if (navigationType === 'PUSH' || navigationType === 'POP') {
+            const idx = getHistoryIndex();
+            const relative = anchor.current.depth + (idx - anchor.current.idx);
+            setDepth(Math.max(Math.min(minPopDepth.current, idx), relative));
         }
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [location.key, navigationType]);
