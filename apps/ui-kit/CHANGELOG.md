@@ -1,5 +1,19 @@
 # @iota/apps-ui-kit
 
+## 0.13.0
+### Minor Changes
+
+- 94c9333: Clickable `TableRow`s ignore clicks coming from interactive elements inside them (links, buttons, inputs, `role="button"`…) or that end a text selection, and accept an `onAuxClick` handler. While one of those elements is hovered the row is not highlighted and the hovered link is highlighted instead. Links spread with `ROW_LINK_PROPS`, which go where the row goes, keep the row hover and are not highlighted. Adds `INTERACTIVE_ELEMENT_SELECTOR`, `ROW_LINK_ATTRIBUTE`, `ROW_LINK_PROPS` and the `row-hover`, `inner-link` and `inner-link-hover` Tailwind variants.
+
+### Patch Changes
+
+- b1718f3: add overflow wrap to infobox
+- a24230f: align Cardaction supporting text
+- fe39bd9: Improve tooltip positioning when there's not enough space
+- 9fe2669: Allow `CardBody` to receive a React node as `title`, not only a string.
+- Updated dependencies [fecdf36]
+  - @iota/apps-ui-icons@0.7.6
+
 ## 0.12.0
 
 ### Minor Changes

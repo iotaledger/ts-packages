@@ -1,5 +1,10 @@
 # @iota/apps-ui-icons
 
+## 0.7.6
+### Patch Changes
+
+- fecdf36: add coin icon
+
 ## 0.7.5
 
 ### Patch Changes
