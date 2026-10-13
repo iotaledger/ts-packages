@@ -1,14 +1,14 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { AMP_COOKIES_KEY } from './constants';
+import { COOKIE_CONSENT_KEY } from './constants';
 
 export function setCookieAccepted(): void {
-    document.cookie = `${AMP_COOKIES_KEY}=true; max-age=31536000; path=/; SameSite=Strict`;
+    document.cookie = `${COOKIE_CONSENT_KEY}=true; max-age=31536000; path=/; SameSite=Strict`;
 }
 
 export function setCookieDeclined(): void {
-    document.cookie = `${AMP_COOKIES_KEY}=false; path=/; SameSite=Strict`;
+    document.cookie = `${COOKIE_CONSENT_KEY}=false; max-age=31536000; path=/; SameSite=Strict`;
 }
 
 /**
@@ -30,7 +30,7 @@ export function handleConsentDeclined(): void {
  */
 export function getCookieConsentStatus() {
     if (typeof document === 'undefined') return 'pending';
-    if (document.cookie.includes(`${AMP_COOKIES_KEY}=true`)) return 'accepted';
-    if (document.cookie.includes(`${AMP_COOKIES_KEY}=false`)) return 'declined';
+    if (document.cookie.includes(`${COOKIE_CONSENT_KEY}=true`)) return 'accepted';
+    if (document.cookie.includes(`${COOKIE_CONSENT_KEY}=false`)) return 'declined';
     return 'pending';
 }

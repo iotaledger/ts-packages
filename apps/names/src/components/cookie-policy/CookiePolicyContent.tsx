@@ -10,9 +10,8 @@ import {
     TableHeaderCell,
     TableRow,
 } from '@iota/apps-ui-kit';
+import { getCookieConsentStatus } from '@iota/core';
 import { useEffect, useState } from 'react';
-
-import { getCookieConsentStatus } from '@/lib/utils/cookieConsent';
 
 import { CookiePolicyContentProps, DescribedCookie } from './types';
 

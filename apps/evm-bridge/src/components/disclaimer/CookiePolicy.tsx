@@ -3,7 +3,7 @@
 
 import {
     CookiePolicyContent,
-    AMP_COOKIES_KEY,
+    COOKIE_CONSENT_KEY,
     handleConsentAccepted,
     handleConsentDeclined,
 } from '@iota/core';
@@ -11,13 +11,13 @@ import {
 export function CookiePolicy(): React.JSX.Element {
     return (
         <CookiePolicyContent
-            consentKey={AMP_COOKIES_KEY}
+            consentKey={COOKIE_CONSENT_KEY}
             necessaryCookies={[
                 {
-                    name: AMP_COOKIES_KEY,
+                    name: COOKIE_CONSENT_KEY,
                     purpose: "Stores the user's cookies consent state for the current domain",
                     provider: 'IOTA',
-                    category: 'Analytics',
+                    category: 'Necessary',
                     expiration: '1 year',
                 },
             ]}

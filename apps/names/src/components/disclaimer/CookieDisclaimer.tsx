@@ -4,11 +4,11 @@
 'use client';
 
 import { Close } from '@iota/apps-ui-icons';
+import { getCookieConsentStatus, setCookieAccepted } from '@iota/core';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 import { FOOTER_LEGAL_LINKS } from '@/lib/constants';
-import { getCookieConsentStatus, setCookieConsentAccepted } from '@/lib/utils/cookieConsent';
 
 const TEXT = 'By using this website, you agree with our ';
 
@@ -51,7 +51,7 @@ export function CookieDisclaimer() {
                     </div>
                     <div
                         onClick={() => {
-                            setCookieConsentAccepted();
+                            setCookieAccepted();
                             setConsentStatus('accepted');
                         }}
                         className="absolute right-2 top-2 inline-flex cursor-pointer items-center justify-center rounded-full p-xs !mt-0 text-iota-neutral-100 outline-none hover:text-iota-neutral-92"

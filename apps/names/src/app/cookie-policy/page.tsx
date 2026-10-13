@@ -3,29 +3,28 @@
 
 'use client';
 
-import { AMP_COOKIES_KEY } from '@iota/core';
+import { COOKIE_CONSENT_KEY, setCookieAccepted, setCookieDeclined } from '@iota/core';
 import { toast } from 'react-hot-toast';
 
 import { CookiePolicyContent } from '@/components/cookie-policy/CookiePolicyContent';
-import { setCookieConsentAccepted, setCookieConsentDeclined } from '@/lib/utils/cookieConsent';
 
 export default function CookiePolicy() {
     async function handleConsentAccepted() {
-        setCookieConsentAccepted();
+        setCookieAccepted();
         toast.success('Your cookie preferences have been saved.');
     }
 
     async function handleConsentDeclined() {
-        setCookieConsentDeclined();
+        setCookieDeclined();
         toast.success('Your cookie preferences have been saved.');
     }
     return (
         <section className="cookie-policy-page">
             <CookiePolicyContent
-                consentKey={AMP_COOKIES_KEY}
+                consentKey={COOKIE_CONSENT_KEY}
                 necessaryCookies={[
                     {
-                        name: AMP_COOKIES_KEY,
+                        name: COOKIE_CONSENT_KEY,
                         purpose: "Stores the user's cookies consent state for the current domain",
                         provider: 'IOTA',
                         expiration: '1 year',
