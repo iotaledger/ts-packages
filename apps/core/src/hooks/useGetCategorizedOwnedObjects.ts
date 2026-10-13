@@ -69,11 +69,11 @@ function useLazyPagination<T>(
     const isFilling = isActive && needsMore;
 
     useEffect(() => {
-        if (isFilling && !pagination.isFetching) {
+        if (isFilling && !pagination.isFetching && !pagination.isError) {
             pagination.fetchNextPage();
         }
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [isFilling, pagination.isFetching, pagination.fetchNextPage]);
+    }, [isFilling, pagination.isFetching, pagination.isError, pagination.fetchNextPage]);
 
     const data = useMemo(() => items.slice(start, start + pageSize), [items, start, pageSize]);
     const hasNext = items.length > start + pageSize;
