@@ -9,7 +9,7 @@ import {
     IotaObjectData,
 } from '@iota/iota-sdk/client';
 import { Transaction } from '@iota/iota-sdk/transactions';
-import { parseStructTag } from '@iota/iota-sdk/utils';
+import { normalizeStructTag, parseStructTag } from '@iota/iota-sdk/utils';
 import { useQuery, skipToken } from '@tanstack/react-query';
 import { getBurnFunctionCandidates } from '../utils/getBurnFunctionCandidates';
 
@@ -93,17 +93,24 @@ export function useGetNFTBurnFunction(
                       return null;
                   }
 
+                  const typeArguments = objectStruct.typeParams.map((typeParam) =>
+                      typeof typeParam === 'string' ? typeParam : normalizeStructTag(typeParam),
+                  );
+
                   for (const fnName of possibleBurnFunctions) {
-                      const target = `${objectStruct.address}::${objectStruct.module}::${fnName}`;
+                      const burnFunction = {
+                          target: `${objectStruct.address}::${objectStruct.module}::${fnName}`,
+                          typeArguments,
+                      };
 
                       const isBurnSuccess = await getIsTxBurnSuccess(
                           client,
                           currentAddress,
-                          target,
+                          burnFunction,
                           obj.objectId,
                       );
 
-                      if (isBurnSuccess) return target;
+                      if (isBurnSuccess) return burnFunction;
                   }
 
                   return null;
@@ -115,14 +122,14 @@ export function useGetNFTBurnFunction(
 async function getIsTxBurnSuccess(
     client: IotaClient,
     currentAddress: string,
-    target: string,
+    burnFunction: { target: string; typeArguments: string[] },
     objectId: string,
 ): Promise<boolean> {
     try {
         const tx = new Transaction();
 
         tx.moveCall({
-            target,
+            ...burnFunction,
             arguments: [tx.object(objectId)],
         });
 

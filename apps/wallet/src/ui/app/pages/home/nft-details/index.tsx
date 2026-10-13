@@ -26,6 +26,7 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { openInNewTab } from '_src/shared/utils';
 import { useState } from 'react';
 import { ConfirmationModal } from '_src/ui/app/shared/ConfirmationModal';
+import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Transaction } from '@iota/iota-sdk/transactions/Transaction';
 
@@ -70,7 +71,7 @@ export function NFTDetailsPage() {
                 tx.setSender(activeAccount.address);
 
                 tx.moveCall({
-                    target: nftBurnFunction,
+                    ...nftBurnFunction,
                     arguments: [tx.object(nftId)],
                 });
 
@@ -93,7 +94,7 @@ export function NFTDetailsPage() {
                     toast.error('Failed to burn asset');
                 }
             } catch (error) {
-                toast.error('Failed to burn asset');
+                toast.error(getSignerOperationErrorMessage(error));
                 // eslint-disable-next-line no-console
                 console.error('Failed to burn asset:', error);
             }

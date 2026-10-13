@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { IotaMoveNormalizedModule } from '@iota/iota-sdk/client';
-import { parseStructTag } from '@iota/iota-sdk/utils';
+import { normalizeIotaAddress, parseStructTag } from '@iota/iota-sdk/utils';
 import { getMoveFunctionParams } from './getMoveFunctionParams';
 
 const BURN_FUNCTION_KEYWORDS = ['burn', 'destroy', 'delete'];
@@ -31,7 +31,7 @@ export function getBurnFunctionCandidates(
             if (typeof param === 'object' && param !== null && 'Struct' in param) {
                 const struct = param.Struct;
 
-                const isSamePackage = struct.address === objStruct.address;
+                const isSamePackage = normalizeIotaAddress(struct.address) === objStruct.address;
                 const isSameModule = struct.module === objStruct.module;
                 const isSameStruct = struct.name === objStruct.name;
 

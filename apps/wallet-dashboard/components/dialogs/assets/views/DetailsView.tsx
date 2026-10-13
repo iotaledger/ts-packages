@@ -99,7 +99,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
         tx.setSender(account.address);
 
         tx.moveCall({
-            target: nftBurnFunction,
+            ...nftBurnFunction,
             arguments: [tx.object(objectId)],
         });
 
