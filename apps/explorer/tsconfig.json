@@ -10,12 +10,11 @@
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "module": "esnext",
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "baseUrl": ".",
         "paths": {
             "~/*": ["./src/*"]
         }
@@ -25,6 +24,6 @@
         { "path": "../../sdk/typescript/" },
         { "path": "../../sdk/kiosk/" },
         { "path": "../../sdk/dapp-kit/" },
-        { "path": "../ui-kit" }
+        { "path": "../ui-kit/tsconfig.lib.json" }
     ]
 }

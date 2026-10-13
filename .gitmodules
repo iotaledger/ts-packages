@@ -8,3 +8,7 @@
 	url = https://github.com/iotaledger/iota
 	branch = develop
 	shallow = true
+[submodule "external/iota-rust-sdk"]
+	path = external/iota-rust-sdk
+	url = https://github.com/iotaledger/iota-rust-sdk
+	branch = develop

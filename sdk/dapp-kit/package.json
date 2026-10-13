@@ -61,7 +61,7 @@
         "dotenv": "^16.4.5",
         "react": "^18.3.1",
         "size-limit": "^11.1.4",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0"
     },
     "dependencies": {

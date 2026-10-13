@@ -67,9 +67,7 @@ export const Default: Story = {
             },
         },
         onValueChange: {
-            control: {
-                type: 'none',
-            },
+            control: false,
         },
     },
     render: (props) => <InputStory {...props} />,

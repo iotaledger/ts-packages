@@ -25,7 +25,8 @@
         "@iota/bcs": "workspace:*",
         "@iota/dapp-kit": "workspace:*",
         "@iota/iota-sdk": "workspace:*",
-        "@noble/hashes": "^1.4.0"
+        "@noble/hashes": "^1.4.0",
+        "zod": "^3.25.76"
     },
     "devDependencies": {
         "@iota/build-scripts": "workspace:*",
@@ -33,8 +34,7 @@
         "dotenv": "^16.4.5",
         "ethers": "^6.13.5",
         "tsx": "^4.8.1",
-        "typescript": "^5.5.3",
-        "vitest": "^4.1.0",
-        "zod": "^3.25.76"
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.0"
     }
 }
