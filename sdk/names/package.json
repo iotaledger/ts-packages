@@ -33,18 +33,20 @@
         "node": ">=24"
     },
     "peerDependencies": {
+        "@iota/bcs": "workspace:^",
         "@iota/iota-sdk": "workspace:^"
     },
     "dependencies": {
         "@noble/hashes": "^1.4.0"
     },
     "devDependencies": {
+        "@iota/bcs": "workspace:^",
         "@iota/build-scripts": "workspace:^",
         "@iota/graphql-transport": "workspace:^",
         "@iota/iota-sdk": "workspace:^",
         "@types/tmp": "^0.2.6",
         "tsx": "^4.8.1",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vite": "^8.0.1",
         "vitest": "^4.1.0"
     },

@@ -21,13 +21,16 @@ import {
     flexRender,
     getCoreRowModel,
     getExpandedRowModel,
+    type Row,
     getSortedRowModel,
     type SortingState,
     useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
-import { Fragment, type ReactNode, useState } from 'react';
+import { Fragment, type MouseEvent, type ReactNode, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Link } from './Link';
+import { useNavigateWithQuery } from './LinkWithQuery';
 
 declare module '@tanstack/react-table' {
     interface ColumnMeta<TData extends RowData, TValue> {
@@ -53,11 +56,7 @@ export interface TableCardProps<DataType extends RowData> {
     renderExpandedRow?: (row: DataType) => ReactNode;
     getRowCanExpand?: (row: DataType) => boolean;
     getRowId?: (row: DataType) => string;
-    onRowClick?: (row: DataType) => void;
-}
-
-function isInteractiveTarget(target: EventTarget): boolean {
-    return target instanceof Element && !!target.closest('a, button, [role="button"]');
+    getRowHref?: (row: DataType) => string | undefined;
 }
 
 export function TableCard<DataType extends object>({
@@ -77,8 +76,10 @@ export function TableCard<DataType extends object>({
     renderExpandedRow,
     getRowCanExpand,
     getRowId,
-    onRowClick,
+    getRowHref,
 }: TableCardProps<DataType>): JSX.Element {
+    const navigateWithQuery = useNavigateWithQuery();
+    const { search } = useLocation();
     const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
 
     const table = useReactTable({
@@ -99,6 +100,27 @@ export function TableCard<DataType extends object>({
             sorting,
         },
     });
+
+    function openRow(href: string, event: MouseEvent) {
+        const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.button === 1;
+        if (opensNewTab) {
+            window.open(`${href}${search}`, '_blank', 'noopener,noreferrer');
+        } else {
+            navigateWithQuery(href, {});
+        }
+    }
+
+    function getRowHandlers(row: Row<DataType>) {
+        if (row.getCanExpand()) return { onClick: () => row.toggleExpanded() };
+        const href = getRowHref?.(row.original);
+        if (!href) return {};
+        return {
+            onClick: (event: MouseEvent) => openRow(href, event),
+            onAuxClick: (event: MouseEvent) => {
+                if (event.button === 1) openRow(href, event);
+            },
+        };
+    }
 
     function getColumnSortOrder(columnId: string, sortEnabled?: boolean) {
         const sortState = sorting.find((sort) => sort.id === columnId);
@@ -173,20 +195,7 @@ export function TableCard<DataType extends object>({
                         .rows.slice(0, rowLimit)
                         .map((row) => (
                             <Fragment key={row.id}>
-                                <TableRow
-                                    onClick={
-                                        row.getCanExpand() || onRowClick
-                                            ? (event) => {
-                                                  if (isInteractiveTarget(event.target)) return;
-                                                  if (row.getCanExpand()) {
-                                                      row.toggleExpanded();
-                                                  } else {
-                                                      onRowClick?.(row.original);
-                                                  }
-                                              }
-                                            : undefined
-                                    }
-                                >
+                                <TableRow {...getRowHandlers(row)}>
                                     {row.getVisibleCells().map((cell) => (
                                         <Fragment key={cell.id}>
                                             {flexRender(

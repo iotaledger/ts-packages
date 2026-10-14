@@ -3,7 +3,7 @@
     "author": "IOTA Foundation <info@iota.org>",
     "description": "IOTA Kiosk library",
     "repository": "https://github.com/iotaledger/ts-packages",
-    "version": "0.8.5",
+    "version": "0.8.6",
     "license": "Apache-2.0",
     "type": "commonjs",
     "main": "./dist/cjs/index.js",
@@ -31,6 +31,7 @@
         "prepare:e2e": "cargo build --bin iota-localnet --profile dev && cross-env RUST_LOG=warn,iota=error,anemo_tower=warn,consensus=off cargo run --bin iota-localnet start --with-faucet --force-regenesis"
     },
     "dependencies": {
+        "@iota/bcs": "workspace:*",
         "@iota/iota-sdk": "workspace:*",
         "dotenv": "^16.4.5"
     },
@@ -38,7 +39,7 @@
         "@iota/build-scripts": "workspace:*",
         "cross-env": "^7.0.3",
         "tmp": "^0.2.3",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0",
         "wait-on": "^8.0.1"
     }

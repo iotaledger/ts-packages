@@ -24,6 +24,7 @@ import {
     Title,
 } from '@iota/apps-ui-kit';
 import { generateTransactionsTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 type TransactionBlocksForAddressProps = {
     address: string;
@@ -146,6 +147,7 @@ export function TransactionBlocksForAddress({
                                 <TableCard
                                     data={data.pages[currentPage].data}
                                     columns={tableColumns}
+                                    getRowHref={({ digest }) => getInternalPath('txblock', digest)}
                                 />
                             ) : (
                                 <div className="flex justify-center py-md text-body-md text-iota-neutral-40">

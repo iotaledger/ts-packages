@@ -30,7 +30,7 @@ export function ObjectVersionContents({
     return (
         <div className="flex w-0 min-w-full flex-col gap-xs py-sm">
             <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">
-                {label} (v{Number(version).toLocaleString()})
+                {label} (v{version})
             </span>
             {isPending ? (
                 <LoadingIndicator />

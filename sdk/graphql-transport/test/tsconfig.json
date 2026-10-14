@@ -4,7 +4,7 @@
     "compilerOptions": {
         "rootDir": "../..",
         "noEmit": true,
-        "moduleResolution": "Node",
+        "moduleResolution": "bundler",
         "emitDeclarationOnly": false,
         "resolveJsonModule": true
     }

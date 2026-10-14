@@ -65,7 +65,9 @@
 			"browserslist@<4.28.7": "4.28.7",
 			"fast-uri": ">=4.1.4",
 			"find-my-way@<9.7.0": ">=9.7.0",
-			"sharp@<0.35.4": ">=0.35.4",
+			"sharp@<0.35.5": ">=0.35.5",
+			"proxy-addr@<2.0.8": "^2.0.8",
+			"source-map-js@<1.2.2": "^1.2.2",
 			"postcss@<8.5.23": ">=8.5.23",
 			"socket.io-parser@<4.2.7": "4.2.7",
 			"picomatch@<2.3.2": "^2.3.2",
@@ -115,12 +117,11 @@
 		"lint-staged": "^15.2.5",
 		"oxfmt": "^0.68.0",
 		"oxlint": "^1.83.0",
-		"ts-node": "^10.9.2",
 		"tsx": "^4.8.1",
 		"turbo": "^2.9.6",
 		"typedoc": "^0.28.17",
 		"typedoc-plugin-markdown": "^4.10.0",
-		"typescript": "^5.5.3"
+		"typescript": "^7.0.2"
 	},
 	"dependencies": {
 		"copy-text-to-clipboard": "^3.2.0"

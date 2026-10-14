@@ -15,27 +15,54 @@ import { useBreakpoint } from '~/hooks';
 import { getSendRecipientAddress, getTransactionSponsor, onCopySuccess } from '~/lib/utils';
 import { CopyButton } from './CopyButton';
 
-function getDigestIntegrity(
-    rawTransaction: string | undefined,
-    digest: string,
-): boolean | undefined {
-    if (!rawTransaction) {
-        return undefined;
-    }
+const SENDER_SIGNED_DATA_PREFIX = [1, 0, 0, 0];
 
-    try {
-        const [{ intentMessage }] = bcs.SenderSignedData.parse(fromBase64(rawTransaction));
-        const transactionDataBytes = bcs.TransactionData.serialize(intentMessage.value).toBytes();
-        const derivedDigest = TransactionDataBuilder.getDigestFromBytes(transactionDataBytes);
-        return derivedDigest === digest;
-    } catch {
-        return undefined;
-    }
+function getTransactionDataBytes(
+    rawTransaction: string,
+    txSignatures: string[],
+): Uint8Array | undefined {
+    const senderSignedData = fromBase64(rawTransaction);
+    const signatures = bcs
+        .vector(bcs.byteVector())
+        .serialize(txSignatures.map((signature) => fromBase64(signature)))
+        .toBytes();
+    const transactionDataEnd = senderSignedData.length - signatures.length;
+    const hasPrefix = SENDER_SIGNED_DATA_PREFIX.every((byte, i) => senderSignedData[i] === byte);
+    const hasSignatures = signatures.every(
+        (byte, i) => senderSignedData[transactionDataEnd + i] === byte,
+    );
+    return hasPrefix && hasSignatures
+        ? senderSignedData.slice(SENDER_SIGNED_DATA_PREFIX.length, transactionDataEnd)
+        : undefined;
 }
 
-function getExpiration(rawTransaction?: string): string | undefined {
+function getDigestIntegrity(
+    rawTransaction: string | undefined,
+    txSignatures: string[] | undefined,
+    digest: string,
+): boolean | undefined {
+    if (!rawTransaction || !txSignatures) {
+        return undefined;
+    }
+
+    const transactionDataBytes = getTransactionDataBytes(rawTransaction, txSignatures);
+    return transactionDataBytes
+        ? TransactionDataBuilder.getDigestFromBytes(transactionDataBytes) === digest
+        : undefined;
+}
+
+function getExpiration(
+    rawTransaction: string | undefined,
+    isProgrammableTransaction: boolean,
+): string | undefined {
     if (!rawTransaction) {
         return undefined;
+    }
+
+    // System transactions are always created without expiration, and their kinds cannot be decoded
+    // with the SDK BCS schema.
+    if (!isProgrammableTransaction) {
+        return 'No Expiration';
     }
 
     try {
@@ -100,12 +127,21 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
             ? getSendRecipientAddress(transaction, sender)
             : undefined;
     const digestMatches = useMemo(
-        () => getDigestIntegrity(transaction.rawTransaction, transaction.digest),
-        [transaction.rawTransaction, transaction.digest],
+        () =>
+            getDigestIntegrity(
+                transaction.rawTransaction,
+                transaction.transaction?.txSignatures,
+                transaction.digest,
+            ),
+        [transaction.rawTransaction, transaction.transaction?.txSignatures, transaction.digest],
     );
     const expiration = useMemo(
-        () => getExpiration(transaction.rawTransaction),
-        [transaction.rawTransaction],
+        () =>
+            getExpiration(
+                transaction.rawTransaction,
+                transactionKindName === 'ProgrammableTransaction',
+            ),
+        [transaction.rawTransaction, transactionKindName],
     );
     const lamportVersion = useMemo(
         () => getLamportVersion(transaction.effects ?? undefined),
@@ -203,7 +239,7 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     layout="receipt"
                     keyText="Lamport Version"
                     tooltipText="The highest object version written by this transaction, used to order causally dependent transactions."
-                    value={lamportVersion}
+                    value={`v${lamportVersion}`}
                     fullwidth={!isMediumOrAbove}
                 />
             )}

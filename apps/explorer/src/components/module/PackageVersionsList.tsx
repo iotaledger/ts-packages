@@ -6,6 +6,7 @@ import { Info } from '@iota/apps-ui-icons';
 import { usePackageVersions } from '~/hooks';
 import { TableCard } from '~/components/ui';
 import { generatePackageVersionsTableColumns } from '~/lib/ui';
+import { getInternalPath } from '~/lib/utils';
 
 interface PackageVersionsListProps {
     packageId: string;
@@ -40,7 +41,11 @@ export function PackageVersionsList({ packageId }: PackageVersionsListProps): JS
                     style={InfoBoxStyle.Elevated}
                 />
             )}
-            <TableCard data={versions} columns={generatePackageVersionsTableColumns(packageId)} />
+            <TableCard
+                data={versions}
+                columns={generatePackageVersionsTableColumns(packageId)}
+                getRowHref={({ address }) => getInternalPath('object', address)}
+            />
         </div>
     );
 }

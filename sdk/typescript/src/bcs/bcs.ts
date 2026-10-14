@@ -207,11 +207,174 @@ export const ProgrammableTransaction = bcs.struct('ProgrammableTransaction', {
     commands: bcs.vector(Command),
 });
 
+const MoveObjectType = bcs.enum('MoveObjectType', {
+    Other: bcs.lazy(() => StructTag),
+    GasCoin: null,
+    StakedIota: null,
+    Coin: InnerTypeTag,
+});
+
+const MoveStruct = bcs.struct('MoveStruct', {
+    objectType: MoveObjectType,
+    version: bcs.u64(),
+    contents: bcs.byteVector(),
+});
+
+const MovePackage = bcs.struct('MovePackage', {
+    id: Address,
+    version: bcs.u64(),
+    modules: bcs.map(bcs.string(), bcs.byteVector()),
+    typeOriginTable: bcs.vector(
+        bcs.struct('TypeOrigin', {
+            moduleName: bcs.string(),
+            datatypeName: bcs.string(),
+            package: Address,
+        }),
+    ),
+    linkageTable: bcs.map(
+        Address,
+        bcs.struct('UpgradeInfo', { upgradedId: Address, upgradedVersion: bcs.u64() }),
+    ),
+});
+
+const ObjectData = bcs.enum('ObjectData', {
+    Struct: MoveStruct,
+    Package: MovePackage,
+});
+
+const Event = bcs.struct('Event', {
+    packageId: Address,
+    module: bcs.string(),
+    sender: Address,
+    structTag: bcs.lazy(() => StructTag),
+    contents: bcs.byteVector(),
+});
+
+const GenesisTransaction = bcs.struct('GenesisTransaction', {
+    objects: bcs.vector(
+        bcs.enum('GenesisObject', {
+            RawObject: bcs.struct('RawObject', { data: ObjectData, owner: Owner }),
+        }),
+    ),
+    events: bcs.vector(Event),
+});
+
+const ConsensusCommitPrologueV1 = bcs.struct('ConsensusCommitPrologueV1', {
+    epoch: bcs.u64(),
+    round: bcs.u64(),
+    subDagIndex: bcs.option(bcs.u64()),
+    commitTimestampMs: bcs.u64(),
+    consensusCommitDigest: ObjectDigest,
+    consensusDeterminedVersionAssignments: bcs.enum('ConsensusDeterminedVersionAssignments', {
+        CanceledTransactions: bcs.vector(
+            bcs.struct('CanceledTransaction', {
+                digest: ObjectDigest,
+                versionAssignments: bcs.vector(
+                    bcs.struct('VersionAssignment', { objectId: Address, version: bcs.u64() }),
+                ),
+            }),
+        ),
+    }),
+});
+
+const SystemPackage = bcs.struct('SystemPackage', {
+    version: bcs.u64(),
+    modules: bcs.vector(bcs.byteVector()),
+    dependencies: bcs.vector(Address),
+});
+
+const ChangeEpoch = bcs.struct('ChangeEpoch', {
+    epoch: bcs.u64(),
+    protocolVersion: bcs.u64(),
+    storageCharge: bcs.u64(),
+    computationCharge: bcs.u64(),
+    storageRebate: bcs.u64(),
+    nonRefundableStorageFee: bcs.u64(),
+    epochStartTimestampMs: bcs.u64(),
+    systemPackages: bcs.vector(SystemPackage),
+});
+
+const ChangeEpochV2 = bcs.struct('ChangeEpochV2', {
+    epoch: bcs.u64(),
+    protocolVersion: bcs.u64(),
+    storageCharge: bcs.u64(),
+    computationCharge: bcs.u64(),
+    computationChargeBurned: bcs.u64(),
+    storageRebate: bcs.u64(),
+    nonRefundableStorageFee: bcs.u64(),
+    epochStartTimestampMs: bcs.u64(),
+    systemPackages: bcs.vector(SystemPackage),
+});
+
+const ChangeEpochV3 = bcs.struct('ChangeEpochV3', {
+    epoch: bcs.u64(),
+    protocolVersion: bcs.u64(),
+    storageCharge: bcs.u64(),
+    computationCharge: bcs.u64(),
+    computationChargeBurned: bcs.u64(),
+    storageRebate: bcs.u64(),
+    nonRefundableStorageFee: bcs.u64(),
+    epochStartTimestampMs: bcs.u64(),
+    systemPackages: bcs.vector(SystemPackage),
+    eligibleActiveValidators: bcs.vector(bcs.u64()),
+});
+
+const ChangeEpochV4 = bcs.struct('ChangeEpochV4', {
+    epoch: bcs.u64(),
+    protocolVersion: bcs.u64(),
+    storageCharge: bcs.u64(),
+    computationCharge: bcs.u64(),
+    computationChargeBurned: bcs.u64(),
+    storageRebate: bcs.u64(),
+    nonRefundableStorageFee: bcs.u64(),
+    epochStartTimestampMs: bcs.u64(),
+    systemPackages: bcs.vector(SystemPackage),
+    eligibleActiveValidators: bcs.vector(bcs.u64()),
+    scores: bcs.vector(bcs.u64()),
+    adjustRewardsByScore: bcs.bool(),
+});
+
+const EndOfEpochTransactionKind = bcs.enum('EndOfEpochTransactionKind', {
+    ChangeEpoch,
+    ChangeEpochV2,
+    ChangeEpochV3,
+    ChangeEpochV4,
+    TransactionDenyRulesCreate: null,
+});
+
+const RandomnessStateUpdate = bcs.struct('RandomnessStateUpdate', {
+    epoch: bcs.u64(),
+    randomnessRound: bcs.u64(),
+    randomBytes: bcs.byteVector(),
+    randomnessObjInitialSharedVersion: bcs.u64(),
+});
+
+const TransactionDenyRulesUpdate = bcs.struct('TransactionDenyRulesUpdate', {
+    epoch: bcs.u64(),
+    round: bcs.u64(),
+    addedAddresses: bcs.vector(Address),
+    removedAddresses: bcs.vector(Address),
+    addedObjects: bcs.vector(Address),
+    removedObjects: bcs.vector(Address),
+    addedPackages: bcs.vector(Address),
+    removedPackages: bcs.vector(Address),
+    packagePublishDisabled: bcs.bool(),
+    packageUpgradeDisabled: bcs.bool(),
+    sharedObjectDisabled: bcs.bool(),
+    userTransactionDisabled: bcs.bool(),
+    receivingObjectsDisabled: bcs.bool(),
+    moveAuthenticatorDisabled: bcs.bool(),
+    denyRulesObjInitialSharedVersion: bcs.u64(),
+});
+
 export const TransactionKind = bcs.enum('TransactionKind', {
     ProgrammableTransaction: ProgrammableTransaction,
-    ChangeEpoch: null,
-    Genesis: null,
-    ConsensusCommitPrologue: null,
+    Genesis: GenesisTransaction,
+    ConsensusCommitPrologueV1,
+    AuthenticatorStateUpdateV1Deprecated: null,
+    EndOfEpoch: bcs.vector(EndOfEpochTransactionKind),
+    RandomnessStateUpdate,
+    TransactionDenyRulesUpdate,
 });
 
 export const TransactionExpiration = bcs.enum('TransactionExpiration', {

@@ -23,7 +23,12 @@ import {
 } from '@iota/core';
 import { formatType, isValidIotaAddress } from '@iota/iota-sdk/utils';
 import { useParams } from 'react-router-dom';
-import { AddressBalanceHero, AddressPageContent, PageLayout } from '~/components';
+import {
+    AddressBalanceHero,
+    AddressPageContent,
+    IotaNameAddressHeader,
+    PageLayout,
+} from '~/components';
 import { ObjectLink, PageHeader } from '~/components/ui';
 import { useAbstractAccountData } from '~/hooks';
 import { getHistoryUnavailableMessage } from '~/lib/constants';
@@ -168,6 +173,12 @@ export function AbstractAccountResultPage(): JSX.Element {
                         }
                         title={
                             <div className="flex flex-col gap-xs">
+                                {nameAvatarImageUrl && defaultName && (
+                                    <IotaNameAddressHeader
+                                        name={defaultName}
+                                        typeLabel="Abstract Account"
+                                    />
+                                )}
                                 <AddressAlias
                                     address={validAccountId ?? accountId}
                                     onCopy={() => copyToClipboard(validAccountId ?? accountId)}
@@ -175,7 +186,7 @@ export function AbstractAccountResultPage(): JSX.Element {
                             </div>
                         }
                         isLoadingSubtitle={isLoadingName}
-                        subtitle={defaultName}
+                        subtitle={nameAvatarImageUrl ? null : defaultName}
                         showCopyButton={false}
                         contentWidthClassName="md:w-1/2"
                         afterWidthClassName="md:w-1/2"

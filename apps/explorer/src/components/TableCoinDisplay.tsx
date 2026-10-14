@@ -21,6 +21,7 @@ interface TableCoinDisplayProps {
     showSign?: boolean;
     showTrustedBadge?: boolean;
     truncate?: boolean;
+    truncateDecimals?: boolean;
 }
 export function TableCoinDisplay({
     amount,
@@ -28,6 +29,7 @@ export function TableCoinDisplay({
     showSign = false,
     showTrustedBadge = false,
     truncate,
+    truncateDecimals,
 }: TableCoinDisplayProps) {
     const isPositive = BigInt(amount) > BigInt(0);
 
@@ -40,6 +42,7 @@ export function TableCoinDisplay({
         showSign,
         format: CoinFormat.Full,
         truncate,
+        truncateDecimals,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';

@@ -28,7 +28,7 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     if (event.target instanceof Element && event.target.closest('a')) return;
                     setAreCoinDetailsOpen((prev) => !prev);
                 }}
-                className="flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12"
+                className="flex w-full cursor-pointer flex-row items-center gap-x-md rounded-lg transition-colors [&:hover:not(:has(a:hover))]:bg-iota-neutral-96 dark:[&:hover:not(:has(a:hover))]:bg-iota-neutral-12"
             >
                 <CoinItem
                     coinType={coin.coinType}
@@ -37,7 +37,7 @@ export function OwnedCoinView({ coin, id, sortField, sortOrder }: OwnedCoinViewP
                     renderTitle={(title) => (
                         <LinkWithQuery
                             to={getCoinPagePath(coin.coinType)}
-                            className="text-iota-primary-30 dark:text-iota-primary-80"
+                            className="inline-block max-w-full truncate rounded align-top text-iota-primary-30 transition-colors hover:bg-iota-primary-90/30 hover:ring-1 hover:ring-inset hover:ring-iota-primary-70/60 dark:text-iota-primary-80 dark:hover:bg-iota-primary-70/30"
                         >
                             {title}
                         </LinkWithQuery>

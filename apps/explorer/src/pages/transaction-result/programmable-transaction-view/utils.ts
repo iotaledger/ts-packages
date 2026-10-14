@@ -11,6 +11,7 @@ import { isValidIotaAddress, toHex } from '@iota/iota-sdk/utils';
 import { EVM_ADDRESS_LENGTH } from '~/lib/constants/evm.constants';
 
 export const REGEX_NUMBER = /^\d+$/;
+export const REGEX_NUMERIC_MOVE_TYPE = /^u(8|16|32|64|128|256)$/;
 
 export function truncateMiddle(value: string, max = 40): string {
     if (value.length <= max) {
@@ -108,7 +109,7 @@ export function decodeVectorU8Value(value: unknown): DecodedVectorU8Value {
         if (parsedVector) {
             const hex = toHex(new Uint8Array(parsedVector));
             if (hex.length == EVM_ADDRESS_LENGTH || isValidIotaAddress(hex)) {
-                parsedAddress = hex;
+                parsedAddress = `0x${hex}`;
             }
         }
     } catch (_) {

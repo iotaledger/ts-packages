@@ -21,7 +21,6 @@ import {
     TableCard,
     TableSearch,
 } from '~/components';
-import { useNavigateWithQuery } from '~/components/ui';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
@@ -34,7 +33,6 @@ function CoinsPageResult(): JSX.Element {
     const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const navigateWithQuery = useNavigateWithQuery();
     const searchedCoinType = useMemo(() => toCoinType(searchTerm.trim()), [searchTerm]);
 
     const { data, pagination, isError, isPending, isFetching } = useCursorPagination(
@@ -175,9 +173,7 @@ function CoinsPageResult(): JSX.Element {
                                             columns={tableColumns}
                                             areHeadersCentered={false}
                                             defaultSorting={[{ id: 'createdAt', desc: false }]}
-                                            onRowClick={({ coinType }) =>
-                                                navigateWithQuery(getCoinPagePath(coinType), {})
-                                            }
+                                            getRowHref={({ coinType }) => getCoinPagePath(coinType)}
                                             paginationOptions={
                                                 isRecognizedFilter ? undefined : pagination
                                             }

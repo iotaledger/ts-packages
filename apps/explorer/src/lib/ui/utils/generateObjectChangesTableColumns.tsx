@@ -214,7 +214,9 @@ export function generateObjectChangesTableColumns(
             id: 'version',
             cell: ({ row }) => (
                 <TableCellBase>
-                    <TableCellText>{row.original.version ?? '-'}</TableCellText>
+                    <TableCellText>
+                        {row.original.version ? `v${row.original.version}` : '-'}
+                    </TableCellText>
                 </TableCellBase>
             ),
         },

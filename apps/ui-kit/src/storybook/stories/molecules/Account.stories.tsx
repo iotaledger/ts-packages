@@ -47,10 +47,10 @@ export const Default: Story = {
         },
         onOptionsClick: {
             action: 'onOptionsClick',
-            control: 'none',
+            control: false,
         },
         avatarContent: {
-            control: 'none',
+            control: false,
         },
         badgeText: {
             control: 'text',

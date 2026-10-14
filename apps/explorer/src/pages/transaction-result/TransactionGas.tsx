@@ -45,7 +45,7 @@ function GasStatValue({
     burnedSymbol,
 }: GasStatValueProps): JSX.Element {
     return (
-        <div className="flex flex-col gap-xxxs">
+        <div className="flex flex-col gap-xxxs break-normal">
             <span>
                 {formattedAmount} {symbol}
             </span>

@@ -16,13 +16,13 @@ import {
     generateVariableSpacing,
 } from './constants';
 import { THEMED_CUSTOM_COLORS } from './constants/customColors.constants';
-import { firefoxPlugin, namesVariant } from './plugins';
+import { firefoxPlugin, namesVariant, tableRowVariants } from './plugins';
 import { NAMES_GRADIENTS } from './constants/gradients.constants';
 
 export const BASE_CONFIG: Config = {
     content: ['./src/**/*.{html,js,jsx,ts,tsx}'],
     darkMode: 'selector',
-    plugins: [firefoxPlugin, namesVariant],
+    plugins: [firefoxPlugin, namesVariant, tableRowVariants],
     theme: {
         extend: {
             fontSize: {

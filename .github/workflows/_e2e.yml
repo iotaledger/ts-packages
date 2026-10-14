@@ -59,6 +59,10 @@ on:
         description: Names SDK
         type: boolean
         default: false
+      isGrpc:
+        description: gRPC SDK
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       isNightly:
@@ -103,6 +107,9 @@ on:
       isNamesSDK:
         type: boolean
         required: true
+      isGrpc:
+        type: boolean
+        required: true
     secrets:
       EVM_BRIDGE_PREVIEW_DEFAULT_NETWORK:
         required: true
@@ -124,7 +131,7 @@ env:
 jobs:
   localnet:
     name: Localnet
-    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay || inputs.isNamesSDK
+    if: inputs.isNightly || inputs.isRpc || inputs.isExplorer || inputs.isAppsBackend || inputs.isTypescriptSDK || inputs.isWallet || inputs.isGraphQlTransport || inputs.isWalletDashboard || inputs.isEvmBridge || inputs.isIscSDK || inputs.isNamesDapp || inputs.isNamesDisplay || inputs.isNamesSDK || inputs.isGrpc
     runs-on: self-hosted-x64
     services:
       postgres:
@@ -175,6 +182,7 @@ jobs:
           echo "runNamesDapp=${{ inputs.isNightly || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
           echo "runNamesDisplay=${{ inputs.isNightly || inputs.isNamesDisplay }}" >> $GITHUB_OUTPUT
           echo "runNamesSDK=${{ inputs.isNightly || inputs.isNamesSDK || inputs.isNamesDapp }}" >> $GITHUB_OUTPUT
+          echo "runGrpc=${{ inputs.isNightly || inputs.isGrpc }}" >> $GITHUB_OUTPUT
 
       - name: Download IOTA Binary
         env:
@@ -344,6 +352,24 @@ jobs:
         if: (!cancelled() && !failure()) && steps.build-kiosk.outcome == 'success' && steps.conditions.outputs.runKiosk == 'true'
         continue-on-error: ${{ inputs.isNightly }}
         run: pnpm dlx concurrently --kill-others --success command-1 "$E2E_RUN_LOCAL_NET_CMD" 'pnpm --filter=@iota/kiosk test:e2e'
+
+      # ─── gRPC SDK ────────────────────────────────────────────────────────────
+
+      - name: Build gRPC SDK
+        id: build-grpc
+        if: (!cancelled() && !failure()) && steps.conditions.outputs.runGrpc == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: pnpm turbo --filter=@iota/grpc build
+
+      # The gRPC API is off unless the node config turns it on.
+      - name: Run gRPC SDK e2e tests
+        id: run-grpc
+        if: (!cancelled() && !failure()) && steps.build-grpc.outcome == 'success' && steps.conditions.outputs.runGrpc == 'true'
+        continue-on-error: ${{ inputs.isNightly }}
+        run: |
+          pnpm dlx concurrently --kill-others --success command-1 \
+            "$E2E_RUN_LOCAL_NET_CMD --node-config-override fullnode:enable-grpc-api=true --node-config-override \"fullnode:grpc-api-config={address: '0.0.0.0:50051'}\"" \
+            'pnpm --filter=@iota/grpc test:e2e:localnet'
 
       # ─── Wallet ──────────────────────────────────────────────────────────────
 
@@ -527,6 +553,7 @@ jobs:
           [[ "${{ steps.run-names-dapp.outcome }}"    == 'failure' ]] && failed+=('Names Dapp')
           [[ "${{ steps.run-names-display.outcome }}" == 'failure' ]] && failed+=('Names Display')
           [[ "${{ steps.run-names-sdk.outcome }}"      == 'failure' ]] && failed+=('Names SDK')
+          [[ "${{ steps.run-grpc.outcome }}"           == 'failure' ]] && failed+=('gRPC SDK')
 
           if [[ ${#failed[@]} -gt 0 ]]; then
             echo "Failed test groups: ${failed[*]}"

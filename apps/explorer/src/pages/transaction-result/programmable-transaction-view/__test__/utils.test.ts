@@ -72,7 +72,7 @@ describe('utils.ts', () => {
         it('decodes address-shaped bytes as hex', () => {
             const bytes = new Array(32).fill(0x80);
             expect(decodeVectorU8Value(bytes.join(','))).toEqual({
-                value: '8080808080808080808080808080808080808080808080808080808080808080',
+                value: '0x8080808080808080808080808080808080808080808080808080808080808080',
                 kind: 'address',
             });
         });

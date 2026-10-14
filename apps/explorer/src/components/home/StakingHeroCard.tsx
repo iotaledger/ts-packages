@@ -97,7 +97,7 @@ export function StakingHeroCard(): JSX.Element {
                                 )
                             }
                             tooltipPosition={TooltipPosition.Top}
-                            tooltipText="The total amount of IOTA currently staked with validators."
+                            tooltipText="The total amount of IOTA currently staked with validators in the consensus committee."
                         />
                         {stakingRatioPct !== null && (
                             <span className="text-label-sm text-iota-neutral-40 dark:text-iota-neutral-60">

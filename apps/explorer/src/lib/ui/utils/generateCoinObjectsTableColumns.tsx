@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { TableCellBase, TableCellText } from '@iota/apps-ui-kit';
+import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import { CoinFiatValue } from '@iota/core';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
@@ -27,7 +27,7 @@ export function generateCoinObjectsTableColumns({
                 const objectId = getValue<CoinObject['objectId']>();
                 return (
                     <TableCellBase>
-                        <ObjectLink objectId={objectId} copyText={objectId} />
+                        <ObjectLink {...ROW_LINK_PROPS} objectId={objectId} copyText={objectId} />
                     </TableCellBase>
                 );
             },

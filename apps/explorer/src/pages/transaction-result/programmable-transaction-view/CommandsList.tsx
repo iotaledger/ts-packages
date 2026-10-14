@@ -185,7 +185,7 @@ function CommandBody({
 
 function UsedBy({ commandIndexes }: { commandIndexes: number[] }): JSX.Element {
     return (
-        <span className={clsx('inline-flex items-center text-body-sm', MUTED_TEXT)}>
+        <span className={clsx('inline-flex flex-wrap items-center text-body-sm', MUTED_TEXT)}>
             <span className="mr-xs">used by</span>
             {commandIndexes.map((commandIndex, i) => (
                 <span key={commandIndex} className="inline-flex items-center">

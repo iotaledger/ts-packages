@@ -18,6 +18,7 @@ import clsx from 'clsx';
 import React, { type ReactNode } from 'react';
 
 import { Link, type LinkProps } from '~/components/ui';
+import { getInternalPath, type InternalRoute } from '~/lib/utils';
 
 interface BaseInternalLinkProps extends LinkProps {
     showAddressAlias?: boolean;
@@ -31,7 +32,7 @@ interface BaseInternalLinkProps extends LinkProps {
 }
 
 function createInternalLink<T extends string>(
-    base: string,
+    base: InternalRoute,
     propName: T,
     formatter: (id: string) => string = (id) => id,
 ): (props: BaseInternalLinkProps & Record<T, string>) => JSX.Element {
@@ -52,7 +53,7 @@ function createInternalLink<T extends string>(
         const queryString = new URLSearchParams(queryStrings).toString();
         const queryStringPrefix = queryString ? `?${queryString}` : '';
 
-        const to = `/${base}/${encodeURI(id)}${queryStringPrefix}`;
+        const to = `${getInternalPath(base, id)}${queryStringPrefix}`;
 
         const isResolveIotaName = base === 'address' && isValidIotaAddress(id);
         const { data: iotaName } = useGetDefaultIotaName(isResolveIotaName ? id : null);
@@ -88,7 +89,7 @@ function createInternalLink<T extends string>(
                                 <span className="inline-flex min-w-0 items-center">
                                     <Link
                                         className={clsx(
-                                            'min-w-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
+                                            'shrink-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
                                             className,
                                         )}
                                         variant="mono"

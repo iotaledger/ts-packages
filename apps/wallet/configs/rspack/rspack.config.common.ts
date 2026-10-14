@@ -85,7 +85,7 @@ function loadTsConfig(tsConfigFilePath: string) {
 async function generateAliasFromTs() {
     const tsConfigJSON = await loadTsConfig(TS_CONFIG_FILE);
     const {
-        compilerOptions: { paths, baseUrl = './' },
+        compilerOptions: { paths },
     } = tsConfigJSON;
     const alias: Record<string, string> = {};
     if (paths) {
@@ -94,7 +94,7 @@ async function generateAliasFromTs() {
             const adjAlias = anAlias.replace(/\/\*$/gi, '');
             const adjPath = (
                 aliasPath.startsWith('./') || aliasPath.startsWith('../')
-                    ? resolve(TS_CONFIGS_ROOT, baseUrl, aliasPath)
+                    ? resolve(TS_CONFIGS_ROOT, aliasPath)
                     : aliasPath
             ).replace(/\/\*$/, '');
             alias[adjAlias] = adjPath;

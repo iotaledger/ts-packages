@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { PlaceholderTable, TableCard } from '~/components/ui';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { generateEpochsTableColumns } from '~/lib/ui';
-import { numberSuffix } from '~/lib/utils';
+import { numberSuffix, getInternalPath } from '~/lib/utils';
 
 const DEFAULT_EPOCHS_LIMIT = 20;
 
@@ -70,6 +70,7 @@ export function EpochsActivityTable({
                 <TableCard
                     data={data.data}
                     columns={tableColumns}
+                    getRowHref={({ epoch }) => getInternalPath('epoch', epoch)}
                     totalLabel={count ? `${numberSuffix(Number(count))} Total` : '-'}
                     viewAll={disablePagination ? '/recent?tab=epochs' : undefined}
                     paginationOptions={!disablePagination ? pagination : undefined}

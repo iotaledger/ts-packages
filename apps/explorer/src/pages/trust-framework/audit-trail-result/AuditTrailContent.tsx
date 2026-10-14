@@ -121,7 +121,7 @@ export function AuditTrailContent({ objectId }: AuditTrailContentProps) {
 
                     <PagePanel
                         title="Lock Lifecycle"
-                        tooltip="View the lock lifecycle governing transfer, update, and delete operations on this audit trail."
+                        tooltip="View the locks governing record writes, trail deletion, and record deletion on this audit trail."
                     >
                         <LockLifecycleView
                             locks={toAuditTrailLocks(auditTrailObject.lockingConfig)}

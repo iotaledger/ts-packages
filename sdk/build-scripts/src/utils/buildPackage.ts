@@ -32,11 +32,24 @@ const ignorePatterns = [/\.test.ts$/, /\.graphql$/];
 
 export async function buildPackage(buildOptions?: BuildOptions) {
     const allFiles = await findAllFiles(path.join(process.cwd(), 'src'));
+    const declarationFiles = allFiles.filter((file) => file.endsWith('.d.ts'));
+    const sourceFiles = allFiles.filter((file) => !file.endsWith('.d.ts'));
     const packageJson = await readPackageJson();
     await clean();
-    await buildCJS(allFiles, packageJson, buildOptions);
-    await buildESM(allFiles, packageJson, buildOptions);
+    await buildCJS(sourceFiles, packageJson, buildOptions);
+    await copyDeclarationFiles(declarationFiles, 'dist/cjs');
+    await buildESM(sourceFiles, packageJson, buildOptions);
+    await copyDeclarationFiles(declarationFiles, 'dist/esm');
     await buildImportDirectories(packageJson);
+}
+
+async function copyDeclarationFiles(files: string[], outdir: string) {
+    const srcDir = path.join(process.cwd(), 'src');
+    for (const file of files) {
+        const target = path.join(process.cwd(), outdir, path.relative(srcDir, file));
+        await fs.mkdir(path.dirname(target), { recursive: true });
+        await fs.copyFile(file, target);
+    }
 }
 
 async function findAllFiles(dir: string, files: string[] = []) {
@@ -132,7 +145,7 @@ async function buildESM(
 }
 
 async function buildTypes(config: string) {
-    const tsc = require.resolve('typescript/bin/tsc');
+    const tsc = path.join(path.dirname(require.resolve('typescript/package.json')), 'bin/tsc');
     execSync(`node ${tsc} --build ${config}`, {
         stdio: 'inherit',
         cwd: process.cwd(),

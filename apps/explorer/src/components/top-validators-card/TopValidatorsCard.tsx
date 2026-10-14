@@ -18,6 +18,7 @@ import { ErrorBoundary } from '../error-boundary/ErrorBoundary';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import { useGetValidatorsApy, useGetValidatorsEvents, useMaxCommitteeSize } from '@iota/core';
+import { getInternalPath } from '~/lib/utils';
 
 const NUMBER_OF_VALIDATORS = 5;
 
@@ -116,6 +117,9 @@ export function TopValidatorsCard({ limit, showIcon }: TopValidatorsCardProps): 
                                 defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
                                 data={activeValidators}
                                 columns={tableColumns}
+                                getRowHref={({ iotaAddress }) =>
+                                    getInternalPath('validator', iotaAddress)
+                                }
                                 rowLimit={rowCount}
                             />
                         </ErrorBoundary>

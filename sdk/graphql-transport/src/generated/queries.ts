@@ -783,10 +783,10 @@ export type Coin = IMoveObject & IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -1033,10 +1033,10 @@ export type CoinMetadata = IMoveObject & IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -1238,13 +1238,12 @@ export type DryRunReturn = {
  * runtime, and can have arbitrary user-assigned names. There are two sub-types
  * of dynamic fields:
  *
- * 1) Dynamic Fields can store any value that has the `store` ability, however
- * an object stored in this kind of field will be considered wrapped and
- * will not be accessible directly via its ID by external tools (explorers,
- * wallets, etc) accessing storage.
- * 2) Dynamic Object Fields values must be IOTA objects (have the `key` and
- * `store` abilities, and id: UID as the first field), but will still be
- * directly accessible off-chain via their object ID after being attached.
+ * 1) Dynamic Fields can store any value that has the `store` ability, however an object stored in
+ * this kind of field will be considered wrapped and will not be accessible directly via its ID
+ * by external tools (explorers, wallets, etc) accessing storage.
+ * 2) Dynamic Object Fields values must be IOTA objects (have the `key` and `store` abilities, and
+ * id: UID as the first field), but will still be directly accessible off-chain via their object
+ * ID after being attached.
  */
 export type DynamicField = {
   __typename?: 'DynamicField';
@@ -1517,8 +1516,7 @@ export type Event = {
   /**
    * Representation of a Move value in JSON, where:
    *
-   * - Addresses, IDs, and UIDs are represented in canonical form, as JSON
-   * strings.
+   * - Addresses, IDs, and UIDs are represented in canonical form, as JSON strings.
    * - Bools are represented by JSON boolean literals.
    * - u8, u16, and u32 are represented as JSON numbers.
    * - u64, u128, and u256 are represented as JSON strings.
@@ -1612,8 +1610,8 @@ export type EventFilter = {
  *
  * It could be one of the following:
  * - A successful payload from the subscription stream.
- * - A notice that the subscription has been lagged behind the network with the
- * number of lost payloads.
+ * - A notice that the subscription has been lagged behind the network with the number of lost
+ * payloads.
  */
 export type EventSubscriptionPayload = Event | Lagged;
 
@@ -2570,10 +2568,10 @@ export type MoveObject = IMoveObject & IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -2884,10 +2882,10 @@ export type MovePackage = IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -3175,8 +3173,7 @@ export type MoveValue = {
   /**
    * Representation of a Move value in JSON, where:
    *
-   * - Addresses, IDs, and UIDs are represented in canonical form, as JSON
-   * strings.
+   * - Addresses, IDs, and UIDs are represented in canonical form, as JSON strings.
    * - Bools are represented by JSON boolean literals.
    * - u8, u16, and u32 are represented as JSON numbers.
    * - u64, u128, and u256 are represented as JSON strings.
@@ -3233,10 +3230,8 @@ export type Mutation = {
   /**
    * Execute a transaction, committing its effects on chain.
    *
-   * - `txBytes` is a `Transaction` struct that has been BCS-encoded and then
-   * Base64-encoded.
-   * - `signatures` are a list of `flag || signature || pubkey` bytes,
-   * Base64-encoded.
+   * - `txBytes` is a `Transaction` struct that has been BCS-encoded and then Base64-encoded.
+   * - `signatures` are a list of `flag || signature || pubkey` bytes, Base64-encoded.
    *
    * Waits until the transaction has reached finality on chain to return its
    * transaction digest, or returns the error that prevented finality if
@@ -3392,10 +3387,10 @@ export type NameRegistration = IMoveObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -3630,10 +3625,10 @@ export type Object = IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -3850,8 +3845,7 @@ export type ObjectEdge = {
  *
  * - Type matches the `type` filter,
  * - AND, whose owner matches the `owner` filter,
- * - AND, whose ID is in `objectIds` OR whose ID and version is in
- * `objectKeys`.
+ * - AND, whose ID is in `objectIds` OR whose ID and version is in `objectKeys`.
  */
 export type ObjectFilter = {
   /** Filter for live objects by their IDs. */
@@ -5011,8 +5005,7 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
    *
    * Or 0, if this value is negative, where:
    *
-   * - `initial_stake_rate` is the stake rate at the epoch this stake was
-   * activated at.
+   * - `initial_stake_rate` is the stake rate at the epoch this stake was activated at.
    * - `current_stake_rate` is the stake rate in the current epoch.
    *
    * This value is only available if the stake is active.
@@ -5080,10 +5073,10 @@ export type StakedIota = IMoveObject & IObject & IOwner & {
   /**
    * The current status of the object as read from the off-chain store. The
    * possible states are:
-   * - NOT_INDEXED: The object is loaded from serialized data, such as the
-   * contents of a genesis or system package upgrade transaction.
-   * - INDEXED: The object is retrieved from the off-chain index and
-   * represents the most recent or historical state of the object.
+   * - NOT_INDEXED: The object is loaded from serialized data, such as the contents of a genesis
+   * or system package upgrade transaction.
+   * - INDEXED: The object is retrieved from the off-chain index and represents the most recent
+   * or historical state of the object.
    */
   status: ObjectKind;
   /**
@@ -5601,8 +5594,8 @@ export enum TransactionBlockKindInput {
  *
  * It could be one of the following:
  * - A successful payload from the subscription stream.
- * - A notice that the subscription has been lagged behind the network with the
- * number of lost payloads.
+ * - A notice that the subscription has been lagged behind the network with the number of lost
+ * payloads.
  */
 export type TransactionBlockSubscriptionPayload = Lagged | TransactionBlock;
 

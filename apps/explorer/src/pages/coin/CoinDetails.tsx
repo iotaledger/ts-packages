@@ -30,7 +30,7 @@ import {
     PAGE_SIZES_RANGE_20_60,
 } from '~/lib/constants';
 import { generateCoinObjectsTableColumns } from '~/lib/ui';
-import { findMatchingRecognizedCoin, toCoinType } from '~/lib/utils';
+import { findMatchingRecognizedCoin, toCoinType, getInternalPath } from '~/lib/utils';
 
 const COIN_OBJECTS_COLUMN_HEADINGS = ['Object', 'Owner', 'Balance'];
 
@@ -168,6 +168,7 @@ function CoinObjectsTable({ coinType, decimals, symbol }: CoinObjectsTableProps)
                             <TableCard
                                 data={data.coinObjects}
                                 columns={columns}
+                                getRowHref={({ objectId }) => getInternalPath('object', objectId)}
                                 areHeadersCentered={false}
                                 paginationOptions={pagination}
                                 pageSizeSelector={

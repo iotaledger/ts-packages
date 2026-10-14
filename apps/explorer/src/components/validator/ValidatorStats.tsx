@@ -21,10 +21,10 @@ export function ValidatorStats({
     apy,
     isEarningCurrentEpoch,
 }: StatsCardProps): JSX.Element {
-    const totalStake = Number(validatorData.stakingPoolIotaBalance);
+    const totalStake = validatorData.stakingPoolIotaBalance;
 
     const effectiveCommissionRate = getValidatorEffectiveCommission(validatorData);
-    const rewardsPoolBalance = Number(validatorData.rewardsPool);
+    const rewardsPoolBalance = validatorData.rewardsPool;
 
     const [formattedTotalStakeAmount, totalStakeSymbol] = useFormatCoin({
         balance: totalStake,
