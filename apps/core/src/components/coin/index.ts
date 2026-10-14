@@ -6,3 +6,4 @@ export * from './CoinSelector';
 export * from './CoinItem';
 export * from './CoinFiatValue';
 export * from './AmountWithFiat';
+export * from './TruncatedBalance';

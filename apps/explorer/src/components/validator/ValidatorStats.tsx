@@ -4,8 +4,13 @@
 
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { LabelText, LabelTextSize, Panel, Title, TooltipPosition } from '@iota/apps-ui-kit';
-import { CoinFiatValue, getValidatorEffectiveCommission, useFormatCoin } from '@iota/core';
-import { CoinFormat } from '@iota/iota-sdk/utils';
+import {
+    CoinFiatValue,
+    getValidatorEffectiveCommission,
+    useFormatCoin,
+    TruncatedBalance,
+} from '@iota/core';
+import { CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -26,11 +31,11 @@ export function ValidatorStats({
     const effectiveCommissionRate = getValidatorEffectiveCommission(validatorData);
     const rewardsPoolBalance = validatorData.rewardsPool;
 
-    const [formattedTotalStakeAmount, totalStakeSymbol] = useFormatCoin({
+    const [, totalStakeSymbol] = useFormatCoin({
         balance: totalStake,
         format: CoinFormat.Full,
     });
-    const [formattedRewardsPoolBalance, rewardsPoolBalanceSymbol] = useFormatCoin({
+    const [, rewardsPoolBalanceSymbol] = useFormatCoin({
         balance: rewardsPoolBalance,
         format: CoinFormat.Full,
     });
@@ -80,7 +85,13 @@ export function ValidatorStats({
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
                                 <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                    <span className="break-all">{formattedTotalStakeAmount}</span>
+                                    <span className="break-all">
+                                        <TruncatedBalance
+                                            balance={totalStake}
+                                            decimals={IOTA_DECIMALS}
+                                            symbol={totalStakeSymbol}
+                                        />
+                                    </span>
                                     <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                                         {totalStakeSymbol}
                                     </span>
@@ -96,7 +107,13 @@ export function ValidatorStats({
                         text={
                             <div className="flex min-w-0 flex-col gap-xxs">
                                 <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                                    <span className="break-all">{formattedRewardsPoolBalance}</span>
+                                    <span className="break-all">
+                                        <TruncatedBalance
+                                            balance={rewardsPoolBalance}
+                                            decimals={IOTA_DECIMALS}
+                                            symbol={rewardsPoolBalanceSymbol}
+                                        />
+                                    </span>
                                     <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                                         {rewardsPoolBalanceSymbol}
                                     </span>

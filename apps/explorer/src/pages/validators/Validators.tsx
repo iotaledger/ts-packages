@@ -16,6 +16,7 @@ import {
     sanitizeValidatorObjects,
     CoinFiatValue,
     type IotaValidatorSummaryExtended,
+    TruncatedBalance,
 } from '@iota/core';
 import {
     DisplayStats,
@@ -33,7 +34,12 @@ import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEnhancedRpcClient } from '~/hooks';
-import { CoinFormat, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
+import {
+    CoinFormat,
+    IOTA_DECIMALS,
+    IOTA_TYPE_ARG,
+    normalizeIotaAddress,
+} from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
@@ -242,12 +248,14 @@ function ValidatorPageResult(): JSX.Element {
     const activeCommitteeSize = data?.committeeMembers.length ?? null;
     const protocolVersion = data?.protocolVersion ?? null;
 
-    const [formattedTotalStakedAmount, totalStakedSymbol] = useFormatCoin({
+    const [, totalStakedSymbol] = useFormatCoin({
         balance: totalStaked,
         format: CoinFormat.Full,
     });
-    const [formattedlastEpochRewardOnAllValidatorsAmount, lastEpochRewardOnAllValidatorsSymbol] =
-        useFormatCoin({ balance: lastEpochRewardOnAllValidators, format: CoinFormat.Full });
+    const [, lastEpochRewardOnAllValidatorsSymbol] = useFormatCoin({
+        balance: lastEpochRewardOnAllValidators,
+        format: CoinFormat.Full,
+    });
 
     const validatorsMainStats = [
         {
@@ -255,7 +263,13 @@ function ValidatorPageResult(): JSX.Element {
             value: (
                 <div className="flex flex-col gap-xxs">
                     <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                        <span className="break-all">{formattedTotalStakedAmount}</span>
+                        <span className="break-all">
+                            <TruncatedBalance
+                                balance={totalStaked}
+                                decimals={IOTA_DECIMALS}
+                                symbol={totalStakedSymbol}
+                            />
+                        </span>
                         <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                             {totalStakedSymbol}
                         </span>
@@ -294,7 +308,11 @@ function ValidatorPageResult(): JSX.Element {
                 <div className="flex flex-col gap-xxs">
                     <div className="flex flex-row flex-wrap items-baseline gap-xxs">
                         <span className="break-all">
-                            {formattedlastEpochRewardOnAllValidatorsAmount}
+                            <TruncatedBalance
+                                balance={lastEpochRewardOnAllValidators}
+                                decimals={IOTA_DECIMALS}
+                                symbol={lastEpochRewardOnAllValidatorsSymbol}
+                            />
                         </span>
                         <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                             {lastEpochRewardOnAllValidatorsSymbol}
