@@ -44,8 +44,12 @@ async function main() {
 
     const breaks: string[] = [];
     for (const [key, definition] of Object.entries(prod)) {
-        compare(key, definition.defaultValue, head[key]?.defaultValue, breaks);
-        if (head[key]?.minVersion && head[key].minVersion !== definition.minVersion) {
+        if (!(key in head)) {
+            breaks.push(`${key} was removed`);
+            continue;
+        }
+        compare(key, definition.defaultValue, head[key].defaultValue, breaks);
+        if (head[key].minVersion && !definition.minVersion) {
             breaks.push(`${key} gained a minVersion, which clients already reading it may ignore`);
         }
     }

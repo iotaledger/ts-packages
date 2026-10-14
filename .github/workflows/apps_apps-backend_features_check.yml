@@ -8,6 +8,11 @@ on:
       - "apps/core/src/constants/coins.constants.ts"
       - "apps/core/src/interfaces/coins.interfaces.ts"
       - "apps/core/src/enums/features.enums.ts"
+      - "apps/core/src/enums/coins.enums.ts"
+      - "sdk/typescript/src/client/network.ts"
+      - "sdk/names/src/**"
+      - "apps/apps-backend/scripts/check-features-compat.ts"
+      - ".github/workflows/apps_apps-backend_features_check.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
