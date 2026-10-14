@@ -14,10 +14,12 @@ import {
     toast,
     useIsValidatorCommitteeMember,
     NO_BALANCE_GENERIC_MESSAGE,
+    SIZE_LIMIT_EXCEEDED,
     getGasBudgetErrorMessage,
     useGetValidatorsApy,
     AmountWithFiat,
     CoinFiatValue,
+    STAKE_AMOUNT_REDUCTION_STEP,
 } from '@iota/core';
 import * as Sentry from '@sentry/react';
 import { ampli } from '_src/shared/analytics/ampli';
@@ -29,7 +31,7 @@ import {
     FormikProvider,
     useFormik,
 } from 'formik';
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
@@ -109,8 +111,11 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
     const { values, isValid, isSubmitting, setFieldValue, submitForm } = formik;
     const { amount } = values;
     const amountWithoutDecimals = parseAmount(amount, decimals);
+    const [possibleAmount, setPossibleAmount] = useState<bigint | null>(null);
+    const [isSearchingProtocolMaxAmount, setSearchingProtocolMaxAmount] = useState(false);
+    const stakeAmount = possibleAmount ?? amountWithoutDecimals;
     const [stakedAmountFormattedPlain] = useFormatCoin({
-        balance: amountWithoutDecimals,
+        balance: stakeAmount,
         format: CoinFormat.Full,
         useGroupSeparator: false,
     });
@@ -182,7 +187,7 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
         isLoading: isStakeTokenTransactionLoading,
         isError,
         error: stakeTransactionError,
-    } = useNewStakeTransaction(validatorAddress, amountWithoutDecimals, activeAddress);
+    } = useNewStakeTransaction(validatorAddress, stakeAmount, activeAddress);
     const transaction = newStakeData?.transaction;
     const gasSummary = newStakeData?.gasSummary;
 
@@ -203,13 +208,32 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
         amountWithoutDecimals > maxSafeAmount &&
         amountWithoutDecimals <= availableBalance;
 
+    const isSizeExceeded =
+        isError && !!stakeTransactionError?.message.includes(SIZE_LIMIT_EXCEEDED);
+    const [possibleAmountFormatted, possibleAmountSymbol] = useFormatCoin({
+        balance: possibleAmount,
+        format: CoinFormat.Full,
+    });
+
+    useEffect(() => {
+        setPossibleAmount(amountWithoutDecimals || null);
+        setSearchingProtocolMaxAmount(false);
+    }, [amountWithoutDecimals]);
+
+    useEffect(() => {
+        if (isSizeExceeded && stakeAmount > STAKE_AMOUNT_REDUCTION_STEP) {
+            setSearchingProtocolMaxAmount(true);
+            setPossibleAmount(stakeAmount - STAKE_AMOUNT_REDUCTION_STEP);
+        }
+    }, [isSizeExceeded, stakeAmount]);
+
     const errorMessage = useMemo(() => {
-        if (isError) {
+        if (isError && !isSizeExceeded) {
             return getGasBudgetErrorMessage(stakeTransactionError) ?? NO_BALANCE_GENERIC_MESSAGE;
         } else {
             return undefined;
         }
-    }, [stakeTransactionError, isError]);
+    }, [stakeTransactionError, isError, isSizeExceeded]);
 
     function setMaxAmount() {
         setFieldValue('amount', availableBalanceFormatted, true);
@@ -287,7 +311,19 @@ export function StakeFormComponent({ validatorAddress, epoch, onSuccess }: Stake
                     />
                 )}
 
-                {isUnsafeAmount ? (
+                {isSearchingProtocolMaxAmount ? (
+                    <InfoBox
+                        type={InfoBoxType.Error}
+                        title="Partial staking"
+                        supportingText={`The current amount is not valid due to the large number of objects. ${
+                            isStakeTokenTransactionLoading
+                                ? 'Determining a valid amount...'
+                                : `Valid amount: ${possibleAmountFormatted} ${possibleAmountSymbol}`
+                        }`}
+                        style={InfoBoxStyle.Elevated}
+                        icon={<Exclamation />}
+                    />
+                ) : isUnsafeAmount ? (
                     <InfoBox
                         type={InfoBoxType.Warning}
                         supportingText={

@@ -12,6 +12,7 @@ import {
     getGasBudgetErrorMessage,
     useCoinMetadata,
     CoinFiatValue,
+    STAKE_AMOUNT_REDUCTION_STEP,
 } from '@iota/core';
 import { CoinFormat, IOTA_TYPE_ARG, parseAmount } from '@iota/iota-sdk/utils';
 import { useFormikContext } from 'formik';
@@ -35,9 +36,6 @@ interface EnterTimelockedAmountViewProps {
     handleClose: () => void;
     onSuccess: (digest: string) => void;
 }
-
-// number of iota for decrease by each attempt
-const REDUCTION_STEP_SIZE = BigInt(1_000_000_000);
 
 export function EnterTimelockedAmountView({
     selectedValidator,
@@ -184,7 +182,7 @@ export function EnterTimelockedAmountView({
             stakeTransactionError?.message.includes(SIZE_LIMIT_EXCEEDED)
         ) {
             setSearchingProtocolMaxAmount(true);
-            setPossibleAmount(possibleAmount - REDUCTION_STEP_SIZE);
+            setPossibleAmount(possibleAmount - STAKE_AMOUNT_REDUCTION_STEP);
         }
     }, [isError, possibleAmount, stakeTransactionError]);
 
