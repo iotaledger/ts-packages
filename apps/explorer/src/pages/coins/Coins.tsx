@@ -11,7 +11,8 @@ import {
     SelectSize,
     Title,
 } from '@iota/apps-ui-kit';
-import { useCursorPagination } from '@iota/core';
+import { useCoinRegistry } from '@iota/core';
+import { normalizeStructTag } from '@iota/iota-sdk/utils';
 import {
     CoinFilters,
     type CoinFilter,
@@ -23,92 +24,107 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { useGetAllCoins, useGetCoinsCount, useGetRecognizedCoins } from '~/hooks';
+import { useDebouncedValue, useGetAllCoinsMetadata, useGetCoinsPublishInfo } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
+const SEARCH_DEBOUNCE_MS = 300;
 
 function CoinsPageResult(): JSX.Element {
     const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
+    const [page, setPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const searchedCoinType = useMemo(() => toCoinType(searchTerm.trim()), [searchTerm]);
+    const debouncedSearchTerm = useDebouncedValue(searchTerm.trim(), SEARCH_DEBOUNCE_MS);
 
-    const { data, pagination, isError, isPending, isFetching } = useCursorPagination(
-        useGetAllCoins(limit, searchedCoinType),
+    const { data: allCoins, isPending, isError } = useGetAllCoinsMetadata();
+    const coinRegistry = useCoinRegistry();
+
+    const { recognizedCoins, notRecognizedCoins } = useMemo(() => {
+        if (!allCoins) return { recognizedCoins: [], notRecognizedCoins: [] };
+        const coinsByType = new Map(allCoins.map((coin) => [coin.coinType, coin]));
+        const recognized = coinRegistry.flatMap(({ coinType }) => {
+            const coin = coinsByType.get(normalizeStructTag(coinType));
+            return coin ? [coin] : [];
+        });
+        const recognizedTypes = new Set(recognized.map(({ coinType }) => coinType));
+        return {
+            recognizedCoins: recognized,
+            notRecognizedCoins: allCoins.filter(({ coinType }) => !recognizedTypes.has(coinType)),
+        };
+    }, [allCoins, coinRegistry]);
+
+    const filteredCoins = useMemo(() => {
+        const coins =
+            filter === 'Recognized'
+                ? recognizedCoins
+                : filter === 'Not Recognized'
+                  ? notRecognizedCoins
+                  : [...recognizedCoins, ...notRecognizedCoins];
+        if (!debouncedSearchTerm) return coins;
+
+        const searchedCoinType = toCoinType(debouncedSearchTerm);
+        if (searchedCoinType) return coins.filter(({ coinType }) => coinType === searchedCoinType);
+
+        const text = debouncedSearchTerm.toLowerCase();
+        return coins.filter(
+            ({ name, symbol }) =>
+                name.toLowerCase().includes(text) || symbol.toLowerCase().includes(text),
+        );
+    }, [debouncedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
+
+    const pageCoins = useMemo(
+        () => filteredCoins.slice(page * limit, (page + 1) * limit),
+        [filteredCoins, page, limit],
     );
-
-    const onSearchTermChange = useCallback(
-        (term: string) => {
-            setSearchTerm(term);
-            pagination.onFirst();
-        },
-        [pagination],
-    );
-
-    const isInvalidSearch = !!searchTerm.trim() && !searchedCoinType;
-
-    const handleFilterChange = useCallback(
-        (newFilter: CoinFilter) => {
-            setFilter(newFilter);
-            pagination.onFirst();
-        },
-        [pagination],
-    );
-
     const {
-        data: recognizedCoins = [],
-        isPending: isRecognizedCoinsPending,
-        isError: isRecognizedCoinsError,
-    } = useGetRecognizedCoins();
-    const { data: coinsCount } = useGetCoinsCount();
+        data: pageCoinsWithPublishInfo,
+        isPending: isPublishInfoPending,
+        isError: isPublishInfoError,
+    } = useGetCoinsPublishInfo(pageCoins);
+
+    const onSearchTermChange = useCallback((term: string) => {
+        setSearchTerm(term);
+        setPage(0);
+    }, []);
+
+    const handleFilterChange = useCallback((newFilter: CoinFilter) => {
+        setFilter(newFilter);
+        setPage(0);
+    }, []);
 
     const filterCounts = useMemo(() => {
-        if (coinsCount === undefined || isRecognizedCoinsPending || isRecognizedCoinsError) {
-            return undefined;
-        }
+        if (!allCoins) return undefined;
         return {
-            All: coinsCount,
+            All: allCoins.length,
             Recognized: recognizedCoins.length,
-            'Not Recognized': coinsCount - recognizedCoins.length,
+            'Not Recognized': notRecognizedCoins.length,
         };
-    }, [coinsCount, isRecognizedCoinsPending, isRecognizedCoinsError, recognizedCoins.length]);
+    }, [allCoins, notRecognizedCoins.length, recognizedCoins.length]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
         [recognizedCoins],
     );
 
-    const visibleCoins = useMemo(() => {
-        if (isInvalidSearch) return [];
+    const lastPage = Math.max(Math.ceil(filteredCoins.length / limit) - 1, 0);
+    const pagination = {
+        onFirst: () => setPage(0),
+        onPrev: () => setPage((current) => Math.max(current - 1, 0)),
+        onNext: () => setPage((current) => Math.min(current + 1, lastPage)),
+        onLast: () => setPage(lastPage),
+        hasFirst: page > 0,
+        hasPrev: page > 0,
+        hasNext: page < lastPage,
+        hasLast: page < lastPage,
+    };
 
-        if (filter === 'Recognized') {
-            return searchedCoinType
-                ? recognizedCoins.filter(({ coinType }) => coinType === searchedCoinType)
-                : recognizedCoins;
-        }
-
-        if (!data) return [];
-        const recognizedTypes = new Set(recognizedCoins.map(({ coinType }) => coinType));
-        const notRecognizedCoins = data.coins.filter(
-            ({ coinType }) => !recognizedTypes.has(coinType),
-        );
-
-        if (filter === 'Not Recognized') return notRecognizedCoins;
-        if (searchedCoinType) return data.coins;
-
-        // Recognized coins are pinned to the top of the first page so they are
-        // never buried among the rest.
-        return pagination.currentPage === 0
-            ? [...recognizedCoins, ...notRecognizedCoins]
-            : notRecognizedCoins;
-    }, [data, filter, isInvalidSearch, pagination.currentPage, recognizedCoins, searchedCoinType]);
-
-    const isRecognizedFilter = filter === 'Recognized';
-    const isTableError = isRecognizedCoinsError || (!isRecognizedFilter && isError);
+    const hasPageCoins = pageCoins.length > 0;
+    const isTableError = isError || (hasPageCoins && isPublishInfoError);
     const isTableLoading =
-        isRecognizedCoinsPending || (!isRecognizedFilter && (isPending || isFetching || !data));
+        isPending || (hasPageCoins && (isPublishInfoPending || !pageCoinsWithPublishInfo));
+    const isNoResults = !!allCoins && filteredCoins.length === 0;
 
     return (
         <PageLayout
@@ -130,7 +146,7 @@ function CoinsPageResult(): JSX.Element {
                         <div className="flex flex-col gap-md p-md">
                             <TableSearch
                                 onSearch={onSearchTermChange}
-                                placeholder="Search by coin type…"
+                                placeholder="Search by name, symbol or coin type…"
                             />
                             <div className="flex">
                                 <CoinFilters
@@ -141,15 +157,6 @@ function CoinsPageResult(): JSX.Element {
                             </div>
                         </div>
                         <div className="p-md">
-                            {isInvalidSearch && (
-                                <InfoBox
-                                    title="No coins found"
-                                    supportingText="Try a different search term"
-                                    icon={<Warning />}
-                                    type={InfoBoxType.Warning}
-                                    style={InfoBoxStyle.Elevated}
-                                />
-                            )}
                             {isTableError ? (
                                 <InfoBox
                                     title="Failed to load data"
@@ -158,42 +165,43 @@ function CoinsPageResult(): JSX.Element {
                                     type={InfoBoxType.Error}
                                     style={InfoBoxStyle.Elevated}
                                 />
+                            ) : isNoResults ? (
+                                <InfoBox
+                                    title="No coins found"
+                                    supportingText="Try a different search term"
+                                    icon={<Warning />}
+                                    type={InfoBoxType.Warning}
+                                    style={InfoBoxStyle.Elevated}
+                                />
                             ) : (
                                 <ErrorBoundary>
                                     {isTableLoading ? (
                                         <PlaceholderTable
-                                            rowCount={isRecognizedFilter ? 3 : limit}
+                                            rowCount={limit}
                                             rowHeight="16px"
                                             colHeadings={COLUMN_HEADINGS}
                                         />
                                     ) : (
                                         <TableCard
                                             sortTable
-                                            data={visibleCoins}
+                                            data={pageCoinsWithPublishInfo ?? []}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
-                                            defaultSorting={[{ id: 'createdAt', desc: false }]}
                                             getRowHref={({ coinType }) => getCoinPagePath(coinType)}
-                                            paginationOptions={
-                                                isRecognizedFilter ? undefined : pagination
-                                            }
+                                            paginationOptions={pagination}
                                             pageSizeSelector={
-                                                !isRecognizedFilter && (
-                                                    <Select
-                                                        value={limit.toString()}
-                                                        options={PAGE_SIZES_RANGE_20_60.map(
-                                                            (size) => ({
-                                                                label: `${size} / page`,
-                                                                id: size.toString(),
-                                                            }),
-                                                        )}
-                                                        size={SelectSize.Small}
-                                                        onValueChange={(value) => {
-                                                            setLimit(Number(value));
-                                                            pagination.onFirst();
-                                                        }}
-                                                    />
-                                                )
+                                                <Select
+                                                    value={limit.toString()}
+                                                    options={PAGE_SIZES_RANGE_20_60.map((size) => ({
+                                                        label: `${size} / page`,
+                                                        id: size.toString(),
+                                                    }))}
+                                                    size={SelectSize.Small}
+                                                    onValueChange={(value) => {
+                                                        setLimit(Number(value));
+                                                        setPage(0);
+                                                    }}
+                                                />
                                             }
                                         />
                                     )}

@@ -3,7 +3,7 @@
 
 import type { OnChainCoin } from '~/hooks';
 
-type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
+export type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
 
 function isSameLabel(value1: string, value2: string): boolean {
     return value1.trim().toLowerCase() === value2.trim().toLowerCase();
@@ -13,10 +13,10 @@ function isSameLabel(value1: string, value2: string): boolean {
  * The recognized coin with the same name or symbol as this coin, if any.
  * Returns null for recognized coins themselves.
  */
-export function findMatchingRecognizedCoin(
+export function findMatchingRecognizedCoin<Coin extends CoinLabels>(
     coin: CoinLabels,
-    recognizedCoins: OnChainCoin[],
-): OnChainCoin | null {
+    recognizedCoins: Coin[],
+): Coin | null {
     if (recognizedCoins.some(({ coinType }) => coinType === coin.coinType)) return null;
 
     return (

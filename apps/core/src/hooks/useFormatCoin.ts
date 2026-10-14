@@ -5,7 +5,7 @@
 import { useIotaClient } from '@iota/dapp-kit';
 import { CoinMetadata } from '@iota/iota-sdk/client';
 import { IOTA_DECIMALS, IOTA_TYPE_ARG, formatBalance, CoinFormat } from '@iota/iota-sdk/utils';
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { type QueryClient, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
@@ -22,12 +22,27 @@ const ELLIPSIS = '\u{2026}';
 const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
+export function getCoinMetadataQueryKey(coinType: string | null | undefined) {
+    return ['coin-metadata', coinType] as const;
+}
+
+export function setCoinMetadataQueryData(
+    queryClient: QueryClient,
+    coinType: string,
+    metadata: CoinMetadata,
+): void {
+    const queryKey = getCoinMetadataQueryKey(coinType);
+    if (queryClient.getQueryData(queryKey) === undefined) {
+        queryClient.setQueryData(queryKey, metadata);
+    }
+}
+
 export function useCoinMetadata(coinType?: string | null, truncate = true) {
     const client = useIotaClient();
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
 
     return useQuery({
-        queryKey: ['coin-metadata', coinType],
+        queryKey: getCoinMetadataQueryKey(coinType),
         queryFn: async () => {
             if (!coinType) {
                 console.warn('coinType is null or undefined');
