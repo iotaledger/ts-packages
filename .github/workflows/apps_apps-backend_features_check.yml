@@ -1,0 +1,37 @@
+name: Apps-Backend Feature Flags Compatibility
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+    paths:
+      - "apps/apps-backend/src/features/**"
+      - "apps/core/src/constants/coins.constants.ts"
+      - "apps/core/src/interfaces/coins.interfaces.ts"
+      - "apps/core/src/enums/features.enums.ts"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    if: (!contains(github.event.pull_request.body, '[features-breaking-ok]') && (github.event.pull_request.draft == false || contains(github.event.pull_request.body, '[run-ci]')))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4.2.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build apps-backend dependencies
+        run: pnpm turbo --filter 'apps-backend^...' build
+
+      - name: Compare feature flags with production
+        run: pnpm --filter apps-backend features:check
+        env:
+          PROD_APPS_BACKEND: ${{ secrets.PROD_APPS_BACKEND }}
