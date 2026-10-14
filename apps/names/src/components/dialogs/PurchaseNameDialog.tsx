@@ -161,9 +161,6 @@ export function PurchaseNameDialog({ name, open, setOpen, onCompleted }: Purchas
                 queryKey: ['iota-name', 'default-name', account?.address],
             });
 
-            const expirationDate = new Date();
-            expirationDate.setFullYear(expirationDate.getFullYear() + purchaseYears);
-
             toast.success(
                 `Successfully registered name ${normalizeIotaName(name, 'at', { truncateLongParts: true })}`,
             );
