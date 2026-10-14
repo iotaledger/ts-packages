@@ -31,7 +31,8 @@
         "wallet-dist-L1/",
         "wallet-dist-L2/",
         "apps/evm-bridge/scripts/",
-        "sdk/signers/*.json"
+        "sdk/signers/*.json",
+        "/sdk/grpc/src/proto"
     ],
     "overrides": [
         {
@@ -71,6 +72,21 @@
             "options": {
                 "sortTailwindcss": {
                     "config": "apps/ui-kit/tailwind.config.ts"
+                }
+            }
+        },
+        {
+            "files": [
+                "sdk/grpc/**"
+            ],
+            "options": {
+                "sortImports": {
+                    "groups": [
+                        "builtin",
+                        { "newlinesBetween": false },
+                        "external",
+                        ["internal", "subpath", "parent", "sibling", "index", "unknown"]
+                    ]
                 }
             }
         }

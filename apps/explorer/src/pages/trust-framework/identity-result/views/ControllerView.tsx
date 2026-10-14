@@ -13,7 +13,7 @@ import {
     TooltipPosition,
 } from '@iota/apps-ui-kit';
 import { AddressLink, CollapsibleCard, ObjectLink } from '~/components';
-import { type IotaObjectData } from '@iota/iota-sdk/src/client';
+import { type IotaObjectData } from '@iota/iota-sdk/client';
 import { ControllerDetail } from '~/components/trust-framework/ControllerDetail';
 import { Warning } from '@iota/apps-ui-icons';
 import { useGetControllerObjects } from '../hooks/useGetControllerObjects';

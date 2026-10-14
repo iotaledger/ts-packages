@@ -1,5 +1,17 @@
 # @iota/graphql-transport
 
+## 0.19.1
+### Patch Changes
+
+- c61a629: Sync generated GraphQL schema and queries with upstream
+- 7ad741c: Sync generated GraphQL schema and queries with upstream
+- Updated dependencies [2a523aa]
+- Updated dependencies [01fd5bb]
+- Updated dependencies [c61a629]
+- Updated dependencies [2a523aa]
+- Updated dependencies [7ad741c]
+  - @iota/iota-sdk@1.17.0
+
 ## 0.19.0
 
 ### Minor Changes

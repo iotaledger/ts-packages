@@ -41,14 +41,14 @@ export const Default: Story = {
             control: 'text',
         },
         icon: {
-            control: 'none',
+            control: false,
         },
         onIconClick: {
-            control: 'none',
+            control: false,
         },
         assetType: { control: 'select', options: Object.values(VisualAssetType) },
         onClick: {
-            control: 'none',
+            control: false,
         },
         assetTitle: {
             control: 'text',
