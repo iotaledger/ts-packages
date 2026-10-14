@@ -1,9 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { OnChainCoin } from '~/hooks';
-
-export type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
+import type { CoinLabels } from '~/hooks';
 
 function isSameLabel(value1: string, value2: string): boolean {
     return value1.trim().toLowerCase() === value2.trim().toLowerCase();

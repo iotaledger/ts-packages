@@ -18,7 +18,6 @@ import {
     useQuery,
     useQueryClient,
 } from '@tanstack/react-query';
-import type { CoinLabels } from '~/lib/utils';
 
 export interface OnChainCoin {
     coinType: string;
@@ -32,6 +31,8 @@ export interface OnChainCoin {
     publishDigest: string | null;
     supply: string | null;
 }
+
+export type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
 
 interface CoinMetadataJson {
     decimals: number;
@@ -212,10 +213,7 @@ async function withPublishInfo(
     const origins = (
         await Promise.all(
             chunkArray(originIds, MAX_RPC_BATCH_SIZE).map((ids) =>
-                client.multiGetObjects({
-                    ids,
-                    options: { showPreviousTransaction: true },
-                }),
+                client.multiGetObjects({ ids, options: { showPreviousTransaction: true } }),
             ),
         )
     ).flat();
@@ -230,10 +228,7 @@ async function withPublishInfo(
                 [...new Set(digests.filter((digest) => digest !== null))],
                 MAX_RPC_BATCH_SIZE,
             ).map((chunk) =>
-                client.multiGetTransactionBlocks({
-                    digests: chunk,
-                    options: { showInput: true },
-                }),
+                client.multiGetTransactionBlocks({ digests: chunk, options: { showInput: true } }),
             ),
         )
     ).flat();
@@ -319,7 +314,7 @@ export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null,
 }
 
 /**
- * The coins in our coin registry, in registry order.
+ * The labels (type, name and symbol) of the coins in our coin registry, in registry order.
  */
 export function useGetRecognizedCoins(): UseQueryResult<CoinLabels[], Error> {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();

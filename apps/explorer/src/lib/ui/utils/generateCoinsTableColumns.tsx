@@ -21,9 +21,9 @@ import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { AddressLink, CoinLink } from '~/components/ui';
 import { DateDisplay } from '~/components';
 import { Copy, RecognizedBadge, Warning } from '@iota/apps-ui-icons';
-import type { OnChainCoin } from '~/hooks';
+import type { CoinLabels, OnChainCoin } from '~/hooks';
 import { getSameNameWarningTitle, SAME_NAME_WARNING_TEXT } from '~/lib/constants';
-import { type CoinLabels, findMatchingRecognizedCoin } from '~/lib/utils';
+import { findMatchingRecognizedCoin } from '~/lib/utils';
 
 interface GenerateCoinsTableColumnsArgs {
     recognizedCoins?: CoinLabels[];
