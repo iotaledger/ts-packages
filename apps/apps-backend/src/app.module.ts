@@ -6,7 +6,6 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 
-import { AnalyticsModule } from './analytics/analytics.module';
 import { FeaturesModule } from './features/features.module';
 import { MonitorNetworkModule } from './monitor-network/monitorNetwork.module';
 import { PricesModule } from './prices/prices.module';
@@ -19,7 +18,6 @@ import { InfoModule } from './info/info.module';
         PricesModule,
         FeaturesModule,
         MonitorNetworkModule,
-        AnalyticsModule,
         RestrictedModule,
         ScheduleModule.forRoot(),
         ConfigModule.forRoot({
