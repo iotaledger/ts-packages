@@ -1,5 +1,17 @@
 # @iota/iota-sdk
 
+## 1.17.0
+### Minor Changes
+
+- 2a523aa: Export the `GasCostSummary` BCS schema as `bcs.GasCostSummary`
+- 01fd5bb: Add the `@iota/iota-sdk/graphql/schemas/latest` export, which follows the current GraphQL schema of the node. `@iota/iota-sdk/graphql/schemas/2025.2` is now frozen and will no longer be updated when the node schema changes.
+- 2a523aa: Add the missing `TransactionKind` and `ExecutionFailureStatus` variants to the BCS schemas, so `bcs.TransactionData` and `bcs.TransactionEffects` can parse system transactions and every execution error
+
+### Patch Changes
+
+- c61a629: Sync generated GraphQL schema and queries with upstream
+- 7ad741c: Sync generated GraphQL schema and queries with upstream
+
 ## 1.16.0
 
 ### Minor Changes
