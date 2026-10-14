@@ -4,7 +4,6 @@
 import {
     chunkArray,
     getDefaultIotaNameQueryKey,
-    setCoinMetadataQueryData,
     setDefaultIotaNameQueryData,
     useCoinRegistry,
     useIotaGraphQLClientContext,
@@ -104,7 +103,7 @@ const NAME_LOOKUP_BATCH_SIZE = 25;
 type GraphQLClient = NonNullable<
     ReturnType<typeof useIotaGraphQLClientContext>['iotaGraphQLClient']
 >;
-interface CoinWithoutPublishInfo extends Omit<
+export interface CoinWithoutPublishInfo extends Omit<
     OnChainCoin,
     'creator' | 'createdAt' | 'publishDigest'
 > {
@@ -112,8 +111,6 @@ interface CoinWithoutPublishInfo extends Omit<
     // frozen, since frozen objects never change again, otherwise its package.
     originObjectId: string;
 }
-
-export type CoinListing = CoinWithoutPublishInfo;
 
 // Most coins keep their metadata in a standalone `CoinMetadata` object. Coins
 // migrated to a `CoinManager` keep it inside the manager instead.
@@ -315,13 +312,13 @@ export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null,
 }
 
 /**
- * The coins in our coin registry, in registry order.
+ * The coins in our coin registry, in registry order, without creator or creation date.
  */
-export function useGetRecognizedCoins(): UseQueryResult<CoinListing[], Error> {
+export function useGetRecognizedCoins(): UseQueryResult<CoinWithoutPublishInfo[], Error> {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const coinTypes = useCoinRegistry().map(({ coinType }) => normalizeStructTag(coinType));
 
-    return useQuery<CoinListing[], Error>({
+    return useQuery<CoinWithoutPublishInfo[], Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ['recognized-coins', coinTypes],
         queryFn: async () => {
@@ -336,76 +333,26 @@ export function useGetRecognizedCoins(): UseQueryResult<CoinListing[], Error> {
 }
 
 /**
- * Every coin on chain with its metadata, without creator or creation date.
+ * Every coin on chain, standalone `CoinMetadata` and `CoinManager` ones together.
  */
-export function useGetAllCoinsMetadata(): UseQueryResult<CoinListing[], Error> {
-    const { iotaGraphQLClient } = useIotaGraphQLClientContext();
-    const queryClient = useQueryClient();
-
-    return useQuery<CoinListing[], Error>({
-        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['all-coins-metadata'],
-        queryFn: async () => {
-            const [metadataCoins, managerCoins] = await Promise.all([
-                fetchAllCoinObjects(iotaGraphQLClient!, 'metadata'),
-                fetchAllCoinObjects(iotaGraphQLClient!, 'manager'),
-            ]);
-            const coins = [...metadataCoins, ...managerCoins];
-            for (const { coinType, name, symbol, decimals, description, iconUrl } of coins) {
-                setCoinMetadataQueryData(queryClient, coinType, {
-                    id: null,
-                    name,
-                    symbol,
-                    decimals,
-                    description,
-                    iconUrl,
-                });
-            }
-            return coins;
-        },
-        enabled: !!iotaGraphQLClient,
-        staleTime: 5 * 60 * 1000,
-    });
-}
-
-type PublishInfo = Pick<OnChainCoin, 'creator' | 'createdAt' | 'publishDigest'>;
-
-function getPublishInfoQueryKey(coinType: string) {
-    return ['coin-publish-info', coinType] as const;
-}
-
-/**
- * Adds creator and creation date to the given coins, fetching only the ones not cached yet.
- */
-export function useGetCoinsPublishInfo(coins: CoinListing[]): UseQueryResult<OnChainCoin[], Error> {
+export function useGetAllCoins(): UseQueryResult<OnChainCoin[], Error> {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const client = useIotaClient();
     const queryClient = useQueryClient();
 
     return useQuery<OnChainCoin[], Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['coins-publish-info', coins.map(({ coinType }) => coinType)],
+        queryKey: ['all-coins'],
         queryFn: async () => {
-            const missing = coins.filter(
-                ({ coinType }) =>
-                    queryClient.getQueryData(getPublishInfoQueryKey(coinType)) === undefined,
-            );
-            const fetched = await withPublishInfo(client, missing);
-            await cacheCreatorNames(iotaGraphQLClient!, queryClient, fetched);
-            for (const { coinType, creator, createdAt, publishDigest } of fetched) {
-                queryClient.setQueryData<PublishInfo>(getPublishInfoQueryKey(coinType), {
-                    creator,
-                    createdAt,
-                    publishDigest,
-                });
-            }
-
-            return coins.map(({ originObjectId: _, ...coin }) => ({
-                ...coin,
-                ...queryClient.getQueryData<PublishInfo>(getPublishInfoQueryKey(coin.coinType))!,
-            }));
+            const [metadataCoins, managerCoins] = await Promise.all([
+                fetchAllCoinObjects(iotaGraphQLClient!, 'metadata'),
+                fetchAllCoinObjects(iotaGraphQLClient!, 'manager'),
+            ]);
+            const coins = await withPublishInfo(client, [...metadataCoins, ...managerCoins]);
+            await cacheCreatorNames(iotaGraphQLClient!, queryClient, coins);
+            return coins;
         },
-        enabled: !!iotaGraphQLClient && coins.length > 0,
+        enabled: !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });
 }

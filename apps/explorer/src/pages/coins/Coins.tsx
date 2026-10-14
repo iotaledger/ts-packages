@@ -24,21 +24,18 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { useDebouncedValue, useGetAllCoinsMetadata, useGetCoinsPublishInfo } from '~/hooks';
+import { type OnChainCoin, useGetAllCoins, useLocalTablePagination } from '~/hooks';
 import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
-const SEARCH_DEBOUNCE_MS = 300;
 
 function CoinsPageResult(): JSX.Element {
-    const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
-    const [page, setPage] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const debouncedSearchTerm = useDebouncedValue(searchTerm.trim(), SEARCH_DEBOUNCE_MS);
+    const trimmedSearchTerm = searchTerm.trim();
 
-    const { data: allCoins, isPending, isError } = useGetAllCoinsMetadata();
+    const { data: allCoins, isPending, isError } = useGetAllCoins();
     const coinRegistry = useCoinRegistry();
 
     const { recognizedCoins, notRecognizedCoins } = useMemo(() => {
@@ -56,43 +53,47 @@ function CoinsPageResult(): JSX.Element {
     }, [allCoins, coinRegistry]);
 
     const filteredCoins = useMemo(() => {
-        const coins =
-            filter === 'Recognized'
-                ? recognizedCoins
-                : filter === 'Not Recognized'
-                  ? notRecognizedCoins
-                  : [...recognizedCoins, ...notRecognizedCoins];
-        if (!debouncedSearchTerm) return coins;
+        const coinsByFilter: Record<CoinFilter, OnChainCoin[]> = {
+            All: [...recognizedCoins, ...notRecognizedCoins],
+            Recognized: recognizedCoins,
+            'Not Recognized': notRecognizedCoins,
+        };
+        const coins = coinsByFilter[filter];
+        if (!trimmedSearchTerm) return coins;
 
-        const searchedCoinType = toCoinType(debouncedSearchTerm);
+        const searchedCoinType = toCoinType(trimmedSearchTerm);
         if (searchedCoinType) return coins.filter(({ coinType }) => coinType === searchedCoinType);
 
-        const text = debouncedSearchTerm.toLowerCase();
+        const text = trimmedSearchTerm.toLowerCase();
         return coins.filter(
             ({ name, symbol }) =>
                 name.toLowerCase().includes(text) || symbol.toLowerCase().includes(text),
         );
-    }, [debouncedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
+    }, [trimmedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
 
-    const pageCoins = useMemo(
-        () => filteredCoins.slice(page * limit, (page + 1) * limit),
-        [filteredCoins, page, limit],
-    );
     const {
-        data: pageCoinsWithPublishInfo,
-        isPending: isPublishInfoPending,
-        isError: isPublishInfoError,
-    } = useGetCoinsPublishInfo(pageCoins);
+        pageData: pageCoins,
+        limit,
+        setLimit,
+        resetPage,
+        paginationOptions,
+    } = useLocalTablePagination(filteredCoins, PAGE_SIZES_RANGE_20_60[0]);
 
-    const onSearchTermChange = useCallback((term: string) => {
-        setSearchTerm(term);
-        setPage(0);
-    }, []);
+    const onSearchTermChange = useCallback(
+        (term: string) => {
+            setSearchTerm(term);
+            resetPage();
+        },
+        [resetPage],
+    );
 
-    const handleFilterChange = useCallback((newFilter: CoinFilter) => {
-        setFilter(newFilter);
-        setPage(0);
-    }, []);
+    const handleFilterChange = useCallback(
+        (newFilter: CoinFilter) => {
+            setFilter(newFilter);
+            resetPage();
+        },
+        [resetPage],
+    );
 
     const filterCounts = useMemo(() => {
         if (!allCoins) return undefined;
@@ -108,23 +109,7 @@ function CoinsPageResult(): JSX.Element {
         [recognizedCoins],
     );
 
-    const lastPage = Math.max(Math.ceil(filteredCoins.length / limit) - 1, 0);
-    const pagination = {
-        onFirst: () => setPage(0),
-        onPrev: () => setPage((current) => Math.max(current - 1, 0)),
-        onNext: () => setPage((current) => Math.min(current + 1, lastPage)),
-        onLast: () => setPage(lastPage),
-        hasFirst: page > 0,
-        hasPrev: page > 0,
-        hasNext: page < lastPage,
-        hasLast: page < lastPage,
-    };
-
-    const hasPageCoins = pageCoins.length > 0;
-    const isTableError = isError || (hasPageCoins && isPublishInfoError);
-    const isTableLoading =
-        isPending || (hasPageCoins && (isPublishInfoPending || !pageCoinsWithPublishInfo));
-    const isNoResults = !!allCoins && filteredCoins.length === 0;
+    const isNoResults = !!allCoins && pageCoins.length === 0;
 
     return (
         <PageLayout
@@ -157,7 +142,7 @@ function CoinsPageResult(): JSX.Element {
                             </div>
                         </div>
                         <div className="p-md">
-                            {isTableError ? (
+                            {isError ? (
                                 <InfoBox
                                     title="Failed to load data"
                                     supportingText="Coins data could not be loaded"
@@ -168,14 +153,18 @@ function CoinsPageResult(): JSX.Element {
                             ) : isNoResults ? (
                                 <InfoBox
                                     title="No coins found"
-                                    supportingText="Try a different search term"
+                                    supportingText={
+                                        trimmedSearchTerm
+                                            ? 'Try a different search term'
+                                            : undefined
+                                    }
                                     icon={<Warning />}
                                     type={InfoBoxType.Warning}
                                     style={InfoBoxStyle.Elevated}
                                 />
                             ) : (
                                 <ErrorBoundary>
-                                    {isTableLoading ? (
+                                    {isPending ? (
                                         <PlaceholderTable
                                             rowCount={limit}
                                             rowHeight="16px"
@@ -184,11 +173,11 @@ function CoinsPageResult(): JSX.Element {
                                     ) : (
                                         <TableCard
                                             sortTable
-                                            data={pageCoinsWithPublishInfo ?? []}
+                                            data={pageCoins}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
                                             getRowHref={({ coinType }) => getCoinPagePath(coinType)}
-                                            paginationOptions={pagination}
+                                            paginationOptions={paginationOptions}
                                             pageSizeSelector={
                                                 <Select
                                                     value={limit.toString()}
@@ -197,10 +186,9 @@ function CoinsPageResult(): JSX.Element {
                                                         id: size.toString(),
                                                     }))}
                                                     size={SelectSize.Small}
-                                                    onValueChange={(value) => {
-                                                        setLimit(Number(value));
-                                                        setPage(0);
-                                                    }}
+                                                    onValueChange={(value) =>
+                                                        setLimit(Number(value))
+                                                    }
                                                 />
                                             }
                                         />
