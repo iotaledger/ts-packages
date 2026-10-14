@@ -1,9 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type JSX, useCallback, useMemo, useRef, useState } from 'react';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
-import { useCoinRegistry, useOnScreen } from '@iota/core';
+import { useCoinRegistry } from '@iota/core';
 import { normalizeStructTag } from '@iota/iota-sdk/utils';
 import {
     CoinFilters,
@@ -20,7 +20,7 @@ import { type OnChainCoin, useGetAllCoins } from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
-const VISIBLE_COINS_STEP = 20;
+const COINS_BATCH_SIZE = 20;
 
 function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
     return (
@@ -31,10 +31,9 @@ function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
 function CoinsPageResult(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const [visibleCount, setVisibleCount] = useState(VISIBLE_COINS_STEP);
+    const [visibleCount, setVisibleCount] = useState(COINS_BATCH_SIZE);
     const trimmedSearchTerm = searchTerm.trim();
-    const loadMoreRef = useRef<HTMLDivElement>(null);
-    const { isIntersecting } = useOnScreen(loadMoreRef);
+    const loadMoreObserverRef = useRef<IntersectionObserver | null>(null);
 
     const { data: allCoins, isPending, isError } = useGetAllCoins();
     const coinRegistry = useCoinRegistry();
@@ -68,28 +67,30 @@ function CoinsPageResult(): JSX.Element {
         if (searchedCoinType) return coins.filter(({ coinType }) => coinType === searchedCoinType);
 
         const text = trimmedSearchTerm.toLowerCase();
-        return coins.filter(
-            ({ name, symbol }) =>
-                name.toLowerCase().includes(text) || symbol.toLowerCase().includes(text),
+        return coins.filter(({ coinType, name, symbol }) =>
+            [coinType, name, symbol].some((value) => value.toLowerCase().includes(text)),
         );
     }, [trimmedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
 
     const hasMoreCoins = visibleCount < filteredCoins.length;
 
-    useEffect(() => {
-        if (isIntersecting && hasMoreCoins) {
-            setVisibleCount((count) => count + VISIBLE_COINS_STEP);
-        }
-    }, [isIntersecting, hasMoreCoins, visibleCount]);
+    const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
+        loadMoreObserverRef.current?.disconnect();
+        if (!node) return;
+        loadMoreObserverRef.current = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) setVisibleCount((count) => count + COINS_BATCH_SIZE);
+        });
+        loadMoreObserverRef.current.observe(node);
+    }, []);
 
     const onSearchTermChange = useCallback((term: string) => {
         setSearchTerm(term);
-        setVisibleCount(VISIBLE_COINS_STEP);
+        setVisibleCount(COINS_BATCH_SIZE);
     }, []);
 
     const handleFilterChange = useCallback((newFilter: CoinFilter) => {
         setFilter(newFilter);
-        setVisibleCount(VISIBLE_COINS_STEP);
+        setVisibleCount(COINS_BATCH_SIZE);
     }, []);
 
     const filterCounts = useMemo(() => {
@@ -163,7 +164,7 @@ function CoinsPageResult(): JSX.Element {
                                 <ErrorBoundary>
                                     {isPending ? (
                                         <PlaceholderTable
-                                            rowCount={VISIBLE_COINS_STEP}
+                                            rowCount={COINS_BATCH_SIZE}
                                             rowHeight="16px"
                                             colHeadings={COLUMN_HEADINGS}
                                         />
@@ -179,7 +180,9 @@ function CoinsPageResult(): JSX.Element {
                                     )}
                                 </ErrorBoundary>
                             )}
-                            <div ref={loadMoreRef} className="h-px" />
+                            {!isPending && hasMoreCoins && (
+                                <div key={visibleCount} ref={loadMoreRef} className="h-px" />
+                            )}
                         </div>
                     </Panel>
                 </div>
