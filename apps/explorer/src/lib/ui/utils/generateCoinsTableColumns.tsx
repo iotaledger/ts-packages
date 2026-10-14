@@ -15,9 +15,9 @@ import {
     ImageIcon,
     ImageIconSize,
     useCoinRegistryEntry,
+    TruncatedBalance,
     useCopyToClipboard,
 } from '@iota/core';
-import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { AddressLink, CoinLink } from '~/components/ui';
 import { DateDisplay } from '~/components';
 import { Copy, RecognizedBadge, Warning } from '@iota/apps-ui-icons';
@@ -170,7 +170,12 @@ export function generateCoinsTableColumns({
                     <TableCellBase>
                         <div className="flex flex-col gap-0.5">
                             <TableCellText>
-                                {`${formatBalance(supply, decimals, CoinFormat.Full)} ${symbol}`}
+                                <TruncatedBalance
+                                    balance={supply}
+                                    decimals={decimals}
+                                    symbol={symbol}
+                                />{' '}
+                                {symbol}
                             </TableCellText>
                             {recognizedTypes.has(coinType) && (
                                 <CoinFiatValue

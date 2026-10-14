@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo } from 'react';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { formatAmount, formatBalance, CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
@@ -55,25 +55,39 @@ export function StorageHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Charge',
-                    text: formatBalance(totalCharge, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalCharge}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalCharge,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Rebate',
-                    text: formatBalance(totalRebate, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalRebate}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalRebate,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Net',
-                    text: formatBalance(
-                        totalCharge - totalRebate,
-                        IOTA_DECIMALS,
-                        CoinFormat.Full,
-                        true,
+                    text: (
+                        <TruncatedBalance
+                            balance={totalCharge - totalRebate}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                            showSign
+                        />
                     ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalCharge - totalRebate,

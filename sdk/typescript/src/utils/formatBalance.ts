@@ -94,6 +94,7 @@ export function formatWithSubscript(
 export enum CoinFormat {
     Rounded = 'Rounded',
     Full = 'Full',
+    TruncatedDecimals = 'TruncatedDecimals',
 }
 
 interface FormatBalanceOptions {
@@ -104,10 +105,15 @@ const defaultOptions: FormatBalanceOptions = {
     useGroupSeparator: true,
 };
 
+function formatFull(bn: BigNumber, options: FormatBalanceOptions): string {
+    if (options.useGroupSeparator === false) {
+        return bn.toFormat({ groupSeparator: '', decimalSeparator: '.' });
+    }
+    return bn.toFormat();
+}
+
 /**
  * Formats a coin balance based on our standard coin display logic.
- * If the balance is less than 1, it will be displayed in its full decimal form.
- * For values greater than 1, it will be truncated to 3 decimal places.
  */
 export function formatBalance(
     balance: bigint | number | string,
@@ -117,16 +123,15 @@ export function formatBalance(
     options: FormatBalanceOptions = {},
 ) {
     const bn = new BigNumber(balance.toString()).shiftedBy(-1 * decimals);
-    let formattedBalance = formatAmount(bn);
-
     options = { ...defaultOptions, ...options };
 
+    let formattedBalance: string;
     if (format === CoinFormat.Full) {
-        if (options?.useGroupSeparator === false) {
-            formattedBalance = bn.toFormat({ groupSeparator: '', decimalSeparator: '.' });
-        } else {
-            formattedBalance = bn.toFormat();
-        }
+        formattedBalance = formatFull(bn, options);
+    } else if (format === CoinFormat.TruncatedDecimals) {
+        formattedBalance = formatFull(bn.decimalPlaces(2, BigNumber.ROUND_DOWN), options);
+    } else {
+        formattedBalance = formatAmount(bn);
     }
 
     if (showSign && !formattedBalance.startsWith('-')) {

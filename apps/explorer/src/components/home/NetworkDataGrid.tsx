@@ -11,9 +11,9 @@ import {
 import {
     CoinFormat,
     formatBalance,
-    IOTA_DECIMALS,
     IOTA_TYPE_ARG,
     NANOS_PER_IOTA,
+    IOTA_DECIMALS,
 } from '@iota/iota-sdk/utils';
 import {
     useCoinFiatValue,
@@ -21,6 +21,7 @@ import {
     Feature,
     useFeatureEnabledByNetwork,
     CoinFiatValue,
+    TruncatedBalance,
 } from '@iota/core';
 import { type Network } from '@iota/iota-sdk/client';
 import { useGetNetworkMetrics } from '~/hooks';
@@ -41,16 +42,17 @@ interface NetworkDataGridProps {
 
 const FALLBACK = '--';
 
-function formatSupply(value: string | undefined): string {
-    if (!value) return FALLBACK;
-    return formatBalance(value, IOTA_DECIMALS, CoinFormat.Full);
-}
-
 function SupplyStatValue({ value }: { value: string | undefined }): React.JSX.Element {
     return (
         <div className="flex flex-col gap-xxs">
             <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                <span>{formatSupply(value)}</span>
+                <span>
+                    {value ? (
+                        <TruncatedBalance balance={value} decimals={IOTA_DECIMALS} symbol="IOTA" />
+                    ) : (
+                        FALLBACK
+                    )}
+                </span>
                 {value && (
                     <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                         IOTA

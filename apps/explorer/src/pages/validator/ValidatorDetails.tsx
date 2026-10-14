@@ -11,6 +11,7 @@ import {
     useMaxCommitteeSize,
     useGetCandidateValidators,
     useGetPendingValidator,
+    TruncatedBalance,
 } from '@iota/core';
 import { useParams } from 'react-router-dom';
 import {
@@ -22,7 +23,7 @@ import {
 } from '~/components';
 import { VALIDATOR_LOW_STAKE_GRACE_PERIOD } from '~/lib/constants';
 import { getValidatorMoveEvent } from '~/lib/utils';
-import { CoinFormat } from '@iota/iota-sdk/utils';
+import { CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import {
     InfoBox,
     InfoBoxStyle,
@@ -97,12 +98,12 @@ function ValidatorDetails(): JSX.Element {
 
     const atRiskRemainingEpochs = getAtRiskRemainingEpochs(systemStateData, validatorAddress);
 
-    const [formattedNextEpochStake, nextEpochStakeSymbol] = useFormatCoin({
+    const [, nextEpochStakeSymbol] = useFormatCoin({
         balance: activeValidatorData?.nextEpochStake ?? 0,
         format: CoinFormat.Full,
     });
 
-    const [formattedPrevEpochRewards, prevEpochRewardsSymbol] = useFormatCoin({
+    const [, prevEpochRewardsSymbol] = useFormatCoin({
         balance: validatorRewards,
         format: CoinFormat.Full,
     });
@@ -228,7 +229,11 @@ function ValidatorDetails(): JSX.Element {
                                             <div className="flex min-w-0 flex-col gap-xxs">
                                                 <div className="flex flex-row flex-wrap items-baseline gap-xxs">
                                                     <span className="break-all">
-                                                        {formattedPrevEpochRewards}
+                                                        <TruncatedBalance
+                                                            balance={validatorRewards}
+                                                            decimals={IOTA_DECIMALS}
+                                                            symbol={prevEpochRewardsSymbol}
+                                                        />
                                                     </span>
                                                     <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                                                         {prevEpochRewardsSymbol}
@@ -272,7 +277,13 @@ function ValidatorDetails(): JSX.Element {
                                         <div className="flex min-w-0 flex-col gap-xxs">
                                             <div className="flex flex-row flex-wrap items-baseline gap-xxs">
                                                 <span className="break-all">
-                                                    {formattedNextEpochStake}
+                                                    <TruncatedBalance
+                                                        balance={
+                                                            activeValidatorData?.nextEpochStake ?? 0
+                                                        }
+                                                        decimals={IOTA_DECIMALS}
+                                                        symbol={nextEpochStakeSymbol}
+                                                    />
                                                 </span>
                                                 <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                                                     {nextEpochStakeSymbol}
