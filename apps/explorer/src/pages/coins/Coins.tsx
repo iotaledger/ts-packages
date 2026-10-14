@@ -1,9 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type JSX, useCallback, useMemo, useRef, useState } from 'react';
+import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
-import { useCoinRegistry } from '@iota/core';
+import { useCoinRegistry, useOnScreen } from '@iota/core';
 import { normalizeStructTag } from '@iota/iota-sdk/utils';
 import {
     CoinFilters,
@@ -33,7 +33,8 @@ function CoinsPageResult(): JSX.Element {
     const [filter, setFilter] = useState<CoinFilter>('All');
     const [visibleCount, setVisibleCount] = useState(COINS_BATCH_SIZE);
     const trimmedSearchTerm = searchTerm.trim();
-    const loadMoreObserverRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreElem = useRef<HTMLDivElement | null>(null);
+    const { isIntersecting } = useOnScreen(loadMoreElem);
 
     const { data: allCoins, isPending, isError } = useGetAllCoins();
     const coinRegistry = useCoinRegistry();
@@ -74,14 +75,11 @@ function CoinsPageResult(): JSX.Element {
 
     const hasMoreCoins = visibleCount < filteredCoins.length;
 
-    const loadMoreRef = useCallback((node: HTMLDivElement | null) => {
-        loadMoreObserverRef.current?.disconnect();
-        if (!node) return;
-        loadMoreObserverRef.current = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) setVisibleCount((count) => count + COINS_BATCH_SIZE);
-        });
-        loadMoreObserverRef.current.observe(node);
-    }, []);
+    useEffect(() => {
+        if (isIntersecting && !isPending && hasMoreCoins) {
+            setVisibleCount((count) => count + COINS_BATCH_SIZE);
+        }
+    }, [isIntersecting, isPending, hasMoreCoins, visibleCount]);
 
     const onSearchTermChange = useCallback((term: string) => {
         setSearchTerm(term);
@@ -96,7 +94,7 @@ function CoinsPageResult(): JSX.Element {
     const filterCounts = useMemo(() => {
         if (!allCoins) return undefined;
         return {
-            All: allCoins.length,
+            All: recognizedCoins.length + notRecognizedCoins.length,
             Recognized: recognizedCoins.length,
             'Not Recognized': notRecognizedCoins.length,
         };
@@ -180,9 +178,7 @@ function CoinsPageResult(): JSX.Element {
                                     )}
                                 </ErrorBoundary>
                             )}
-                            {!isPending && hasMoreCoins && (
-                                <div key={visibleCount} ref={loadMoreRef} className="h-px" />
-                            )}
+                            <div ref={loadMoreElem} className="h-px" />
                         </div>
                     </Panel>
                 </div>
