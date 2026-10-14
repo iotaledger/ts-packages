@@ -1,17 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type JSX, useMemo, useState, useCallback } from 'react';
-import {
-    InfoBox,
-    InfoBoxStyle,
-    InfoBoxType,
-    Panel,
-    Select,
-    SelectSize,
-    Title,
-} from '@iota/apps-ui-kit';
-import { useCoinRegistry } from '@iota/core';
+import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
+import { useCoinRegistry, useOnScreen } from '@iota/core';
 import { normalizeStructTag } from '@iota/iota-sdk/utils';
 import {
     CoinFilters,
@@ -24,16 +16,25 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { type OnChainCoin, useGetAllCoins, useLocalTablePagination } from '~/hooks';
-import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import { type OnChainCoin, useGetAllCoins } from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
+const VISIBLE_COINS_STEP = 20;
+
+function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
+    return (
+        (coin1.createdAt ?? Number.MAX_SAFE_INTEGER) - (coin2.createdAt ?? Number.MAX_SAFE_INTEGER)
+    );
+}
 
 function CoinsPageResult(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
+    const [visibleCount, setVisibleCount] = useState(VISIBLE_COINS_STEP);
     const trimmedSearchTerm = searchTerm.trim();
+    const loadMoreRef = useRef<HTMLDivElement>(null);
+    const { isIntersecting } = useOnScreen(loadMoreRef);
 
     const { data: allCoins, isPending, isError } = useGetAllCoins();
     const coinRegistry = useCoinRegistry();
@@ -48,7 +49,9 @@ function CoinsPageResult(): JSX.Element {
         const recognizedTypes = new Set(recognized.map(({ coinType }) => coinType));
         return {
             recognizedCoins: recognized,
-            notRecognizedCoins: allCoins.filter(({ coinType }) => !recognizedTypes.has(coinType)),
+            notRecognizedCoins: allCoins
+                .filter(({ coinType }) => !recognizedTypes.has(coinType))
+                .sort(byCreationDate),
         };
     }, [allCoins, coinRegistry]);
 
@@ -71,29 +74,23 @@ function CoinsPageResult(): JSX.Element {
         );
     }, [trimmedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
 
-    const {
-        pageData: pageCoins,
-        limit,
-        setLimit,
-        resetPage,
-        paginationOptions,
-    } = useLocalTablePagination(filteredCoins, PAGE_SIZES_RANGE_20_60[0]);
+    const hasMoreCoins = visibleCount < filteredCoins.length;
 
-    const onSearchTermChange = useCallback(
-        (term: string) => {
-            setSearchTerm(term);
-            resetPage();
-        },
-        [resetPage],
-    );
+    useEffect(() => {
+        if (isIntersecting && hasMoreCoins) {
+            setVisibleCount((count) => count + VISIBLE_COINS_STEP);
+        }
+    }, [isIntersecting, hasMoreCoins, visibleCount]);
 
-    const handleFilterChange = useCallback(
-        (newFilter: CoinFilter) => {
-            setFilter(newFilter);
-            resetPage();
-        },
-        [resetPage],
-    );
+    const onSearchTermChange = useCallback((term: string) => {
+        setSearchTerm(term);
+        setVisibleCount(VISIBLE_COINS_STEP);
+    }, []);
+
+    const handleFilterChange = useCallback((newFilter: CoinFilter) => {
+        setFilter(newFilter);
+        setVisibleCount(VISIBLE_COINS_STEP);
+    }, []);
 
     const filterCounts = useMemo(() => {
         if (!allCoins) return undefined;
@@ -109,7 +106,7 @@ function CoinsPageResult(): JSX.Element {
         [recognizedCoins],
     );
 
-    const isNoResults = !!allCoins && pageCoins.length === 0;
+    const isNoResults = !!allCoins && filteredCoins.length === 0;
 
     return (
         <PageLayout
@@ -155,7 +152,7 @@ function CoinsPageResult(): JSX.Element {
                                     title="No coins found"
                                     supportingText={
                                         trimmedSearchTerm
-                                            ? 'Try a different search term'
+                                            ? 'No coin matches your search. Try a valid name, symbol or coin type'
                                             : undefined
                                     }
                                     icon={<Warning />}
@@ -166,35 +163,23 @@ function CoinsPageResult(): JSX.Element {
                                 <ErrorBoundary>
                                     {isPending ? (
                                         <PlaceholderTable
-                                            rowCount={limit}
+                                            rowCount={VISIBLE_COINS_STEP}
                                             rowHeight="16px"
                                             colHeadings={COLUMN_HEADINGS}
                                         />
                                     ) : (
                                         <TableCard
                                             sortTable
-                                            data={pageCoins}
+                                            data={filteredCoins}
+                                            rowLimit={visibleCount}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
                                             getRowHref={({ coinType }) => getCoinPagePath(coinType)}
-                                            paginationOptions={paginationOptions}
-                                            pageSizeSelector={
-                                                <Select
-                                                    value={limit.toString()}
-                                                    options={PAGE_SIZES_RANGE_20_60.map((size) => ({
-                                                        label: `${size} / page`,
-                                                        id: size.toString(),
-                                                    }))}
-                                                    size={SelectSize.Small}
-                                                    onValueChange={(value) =>
-                                                        setLimit(Number(value))
-                                                    }
-                                                />
-                                            }
                                         />
                                     )}
                                 </ErrorBoundary>
                             )}
+                            <div ref={loadMoreRef} className="h-px" />
                         </div>
                     </Panel>
                 </div>

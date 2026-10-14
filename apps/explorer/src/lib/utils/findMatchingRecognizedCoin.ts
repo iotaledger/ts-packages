@@ -13,10 +13,10 @@ function isSameLabel(value1: string, value2: string): boolean {
  * The recognized coin with the same name or symbol as this coin, if any.
  * Returns null for recognized coins themselves.
  */
-export function findMatchingRecognizedCoin<Coin extends CoinLabels>(
+export function findMatchingRecognizedCoin(
     coin: CoinLabels,
-    recognizedCoins: Coin[],
-): Coin | null {
+    recognizedCoins: CoinLabels[],
+): CoinLabels | null {
     if (recognizedCoins.some(({ coinType }) => coinType === coin.coinType)) return null;
 
     return (

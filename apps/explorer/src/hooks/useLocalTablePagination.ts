@@ -1,14 +1,13 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { TablePaginationOptions } from '@iota/apps-ui-kit';
 
 interface UseLocalTablePaginationResult<T> {
     pageData: T[];
     limit: number;
     setLimit: (limit: number) => void;
-    resetPage: () => void;
     paginationOptions?: TablePaginationOptions;
     supportingLabel?: string;
 }
@@ -30,15 +29,13 @@ export function useLocalTablePagination<T>(
         [data, currentPage, limit],
     );
 
-    const resetPage = useCallback(() => setPageIndex(0), []);
-
     function updateLimit(newLimit: number) {
         setLimit(newLimit);
         setPageIndex(0);
     }
 
     if (totalCount <= limit) {
-        return { pageData, limit, setLimit: updateLimit, resetPage };
+        return { pageData, limit, setLimit: updateLimit };
     }
 
     const start = currentPage * limit + 1;
@@ -48,7 +45,6 @@ export function useLocalTablePagination<T>(
         pageData,
         limit,
         setLimit: updateLimit,
-        resetPage,
         supportingLabel: `Showing ${start}-${end} out of ${totalCount}`,
         paginationOptions: {
             onFirst: () => setPageIndex(0),
