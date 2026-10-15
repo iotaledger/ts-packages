@@ -48,7 +48,7 @@ export function EpochDetailSkeleton({ showEndOfEpochStats }: EpochDetailSkeleton
             </Panel>
 
             <Panel>
-                <Title title="Validator Set" />
+                <Title title="Validators in this epoch" />
                 <div className="flex flex-col gap-lg p-md--rs md:flex-row md:justify-between">
                     <div className="flex flex-row flex-wrap gap-xl">
                         {range(VALIDATOR_COUNTS).map((index) => (
