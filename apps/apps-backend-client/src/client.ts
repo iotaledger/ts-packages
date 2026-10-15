@@ -3,8 +3,10 @@
 
 import type {
     CoinPriceResponse,
+    CoinsResponse,
     FeatureDefinition,
     FeaturesResponse,
+    GetCoinsParams,
     MonitorNetworkResponse,
     ProductAnalyticsConfigResponse,
 } from './types';
@@ -115,6 +117,22 @@ export class AppsBackendClient {
             throw new Error('Unexpected response');
         }
         return res.json();
+    }
+
+    async getCoins({
+        network,
+        filter,
+        search = '',
+        offset = 0,
+        limit = 20,
+    }: GetCoinsParams): Promise<CoinsResponse> {
+        return this.request('coins', {
+            network,
+            filter,
+            search,
+            offset: String(offset),
+            limit: String(limit),
+        });
     }
 
     private updateSnapshot(): void {

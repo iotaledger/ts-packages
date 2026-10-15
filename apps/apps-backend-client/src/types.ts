@@ -28,3 +28,32 @@ export interface FeatureResult<T> {
     on: boolean;
     off: boolean;
 }
+
+export interface OnChainCoin {
+    coinType: string;
+    name: string;
+    symbol: string;
+    decimals: number;
+    description: string;
+    iconUrl: string | null;
+    supply: string | null;
+    creator: string | null;
+    createdAt: number | null;
+    publishDigest: string | null;
+}
+
+export type CoinsFilter = 'all' | 'recognized' | 'not-recognized';
+
+export interface GetCoinsParams {
+    network: string;
+    filter: CoinsFilter;
+    search?: string;
+    offset?: number;
+    limit?: number;
+}
+
+export interface CoinsResponse {
+    coins: OnChainCoin[];
+    nextOffset: number | null;
+    counts: Record<CoinsFilter, number>;
+}
