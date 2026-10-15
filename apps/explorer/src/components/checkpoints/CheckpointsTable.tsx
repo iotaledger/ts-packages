@@ -23,15 +23,18 @@ interface CheckpointsTableProps {
 
 export function CheckpointsTable({
     disablePagination,
+    refetchInterval,
     initialLimit = DEFAULT_CHECKPOINTS_LIMIT,
     initialCursor,
     maxCursor,
 }: CheckpointsTableProps): JSX.Element {
     const [limit, setLimit] = useState(initialLimit);
 
-    const countQuery = useIotaClientQuery('getLatestCheckpointSequenceNumber');
+    const countQuery = useIotaClientQuery('getLatestCheckpointSequenceNumber', undefined, {
+        refetchInterval,
+    });
 
-    const checkpoints = useGetCheckpoints(initialCursor, limit);
+    const checkpoints = useGetCheckpoints(initialCursor, limit, refetchInterval);
 
     const { data, isFetching, pagination, isPending, isError } = useCursorPagination(checkpoints);
 
@@ -64,7 +67,7 @@ export function CheckpointsTable({
                 <PlaceholderTable
                     rowCount={Number(limit)}
                     rowHeight="16px"
-                    colHeadings={['Digest', 'Sequence Number', 'Time', 'Transactions']}
+                    colHeadings={['Digest', 'Sequence Number', 'Transactions', 'Time']}
                 />
             ) : (
                 <TableCard
