@@ -25,10 +25,11 @@ import { Info, Warning } from '@iota/apps-ui-icons';
 import {
     COINS_PAGE_SIZE,
     useDebouncedValue,
+    useGetCoin,
     useGetIndexedCoins,
     useGetRecognizedCoins,
 } from '~/hooks';
-import { getCoinPagePath } from '~/lib/utils';
+import { getCoinPagePath, toCoinType } from '~/lib/utils';
 import { useNetworkContext } from '~/contexts';
 import { type CoinsFilter as BackendCoinsFilter, type CoinsSort } from '@iota/apps-backend-client';
 import type { SortingState } from '@tanstack/react-table';
@@ -86,7 +87,20 @@ function CoinsPageResult(): JSX.Element {
         () => generateCoinsTableColumns({ recognizedCoins }),
         [recognizedCoins],
     );
-    const isNoResults = !!data && !isIndexing && coins.length === 0;
+    // Coins created after the last indexing are not in the index yet, so a coin
+    // type search falls back to looking the coin up on chain.
+    const searchedCoinType = toCoinType(search);
+    const isCoinLookupNeeded =
+        !!searchedCoinType && filter === 'All' && !!data && !isIndexing && coins.length === 0;
+    const { data: searchedCoin, isPending: isSearchedCoinPending } = useGetCoin(
+        searchedCoinType ?? '',
+        { enabled: isCoinLookupNeeded },
+    );
+    const isSearchedCoinLoading = isCoinLookupNeeded && isSearchedCoinPending;
+    const displayedCoins = isCoinLookupNeeded && searchedCoin ? [searchedCoin] : coins;
+
+    const isNoResults =
+        !!data && !isIndexing && !isSearchedCoinLoading && displayedCoins.length === 0;
     const isSpinnerVisible = hasNextPage && isFetchingNextPage;
 
     return (
@@ -144,7 +158,7 @@ function CoinsPageResult(): JSX.Element {
                                         />
                                     ) : (
                                         <ErrorBoundary>
-                                            {isPending || isIndexing ? (
+                                            {isPending || isIndexing || isSearchedCoinLoading ? (
                                                 <PlaceholderTable
                                                     rowCount={COINS_PAGE_SIZE}
                                                     rowHeight="16px"
@@ -155,7 +169,7 @@ function CoinsPageResult(): JSX.Element {
                                                     sortTable
                                                     sorting={sorting}
                                                     onSortingChange={setSorting}
-                                                    data={coins}
+                                                    data={displayedCoins}
                                                     columns={tableColumns}
                                                     areHeadersCentered={false}
                                                     getRowHref={({ coinType }) =>

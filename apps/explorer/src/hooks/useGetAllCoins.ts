@@ -272,7 +272,10 @@ async function cacheCreatorNames(
 /**
  * A single coin by its type, or null when no coin with that type exists.
  */
-export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null, Error> {
+export function useGetCoin(
+    coinType: string,
+    { enabled = true }: CoinsQueryOptions = {},
+): UseQueryResult<OnChainCoin | null, Error> {
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const client = useIotaClient();
     const queryClient = useQueryClient();
@@ -287,7 +290,7 @@ export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null,
             await cacheCreatorNames(iotaGraphQLClient!, queryClient, [coin]);
             return coin;
         },
-        enabled: !!iotaGraphQLClient,
+        enabled: enabled && !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });
 }

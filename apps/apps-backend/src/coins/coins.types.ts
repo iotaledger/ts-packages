@@ -44,6 +44,7 @@ export enum CoinsSortOrder {
  */
 export interface CoinsIndex {
     lists: Record<CoinsFilter, Record<string, OnChainCoin[]>>;
+    searchTextByType: Map<string, string>;
     counts: Record<CoinsFilter, number>;
 }
 

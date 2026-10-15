@@ -20,12 +20,6 @@ function orderKey(sort: CoinsSort | undefined, order: CoinsSortOrder): string {
     return sort ? `${sort}-${order}` : DEFAULT_ORDER;
 }
 
-function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
-    return (
-        (coin1.createdAt ?? Number.MAX_SAFE_INTEGER) - (coin2.createdAt ?? Number.MAX_SAFE_INTEGER)
-    );
-}
-
 // Coins without a creation date go last in both orders.
 function compareCreatedAt(coin1: OnChainCoin, coin2: OnChainCoin, order: CoinsSortOrder): number {
     if (coin1.createdAt === null || coin2.createdAt === null) {
@@ -65,16 +59,18 @@ function toCoinType(value: string): string | null {
     }
 }
 
-function searchCoins(coins: OnChainCoin[], search: string): OnChainCoin[] {
+function searchCoins(
+    coins: OnChainCoin[],
+    search: string,
+    searchTextByType: Map<string, string>,
+): OnChainCoin[] {
     if (!search) return coins;
 
     const searchedCoinType = toCoinType(search);
     if (searchedCoinType) return coins.filter(({ coinType }) => coinType === searchedCoinType);
 
     const text = search.toLowerCase();
-    return coins.filter(({ coinType, name, symbol }) =>
-        [coinType, name, symbol].some((value) => value.toLowerCase().includes(text)),
-    );
+    return coins.filter(({ coinType }) => searchTextByType.get(coinType)?.includes(text));
 }
 
 /**
@@ -92,7 +88,10 @@ export function buildCoinsIndex(coins: OnChainCoin[], registry: CoinRegistryEntr
     const notRecognized = coins.filter(({ coinType }) => !recognizedTypes.has(coinType));
 
     const recognizedLists = orderedLists(recognized, recognized);
-    const notRecognizedLists = orderedLists(notRecognized, [...notRecognized].sort(byCreationDate));
+    const notRecognizedLists = orderedLists(
+        notRecognized,
+        sortCoins(notRecognized, CoinsSort.CreatedAt, CoinsSortOrder.Asc),
+    );
     const allLists = Object.fromEntries(
         Object.keys(recognizedLists).map((key) => [
             key,
@@ -100,7 +99,16 @@ export function buildCoinsIndex(coins: OnChainCoin[], registry: CoinRegistryEntr
         ]),
     );
 
+    // Lowercased once here so a search does not lowercase every coin on each request.
+    const searchTextByType = new Map(
+        coins.map(({ coinType, name, symbol }) => [
+            coinType,
+            [coinType, name, symbol].join('\n').toLowerCase(),
+        ]),
+    );
+
     return {
+        searchTextByType,
         lists: {
             [CoinsFilter.All]: allLists,
             [CoinsFilter.Recognized]: recognizedLists,
@@ -118,7 +126,11 @@ export function listCoins(
     index: CoinsIndex,
     { filter, search, sort, order, offset, limit }: ListCoinsOptions,
 ): CoinsResponse {
-    const matchingCoins = searchCoins(index.lists[filter][orderKey(sort, order)], search);
+    const matchingCoins = searchCoins(
+        index.lists[filter][orderKey(sort, order)],
+        search,
+        index.searchTextByType,
+    );
     const end = offset + limit;
 
     return {
