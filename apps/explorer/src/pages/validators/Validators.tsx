@@ -34,12 +34,7 @@ import { generateValidatorsTableColumns } from '~/lib/ui';
 import { Warning } from '@iota/apps-ui-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useEnhancedRpcClient } from '~/hooks';
-import {
-    CoinFormat,
-    IOTA_DECIMALS,
-    IOTA_TYPE_ARG,
-    normalizeIotaAddress,
-} from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS, IOTA_TYPE_ARG, normalizeIotaAddress } from '@iota/iota-sdk/utils';
 import { ValidatorFilters, ValidatorStatusLegend } from '~/components/validator';
 import type { ValidatorStatus } from '~/components/validator';
 import { useEpochProgress } from '../epochs/utils';
@@ -250,11 +245,9 @@ function ValidatorPageResult(): JSX.Element {
 
     const [, totalStakedSymbol] = useFormatCoin({
         balance: totalStaked,
-        format: CoinFormat.Full,
     });
     const [, lastEpochRewardOnAllValidatorsSymbol] = useFormatCoin({
         balance: lastEpochRewardOnAllValidators,
-        format: CoinFormat.Full,
     });
 
     const validatorsMainStats = [

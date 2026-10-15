@@ -23,7 +23,7 @@ import {
 } from '~/components';
 import { VALIDATOR_LOW_STAKE_GRACE_PERIOD } from '~/lib/constants';
 import { getValidatorMoveEvent } from '~/lib/utils';
-import { CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import {
     InfoBox,
     InfoBoxStyle,
@@ -100,12 +100,10 @@ function ValidatorDetails(): JSX.Element {
 
     const [, nextEpochStakeSymbol] = useFormatCoin({
         balance: activeValidatorData?.nextEpochStake ?? 0,
-        format: CoinFormat.Full,
     });
 
     const [, prevEpochRewardsSymbol] = useFormatCoin({
         balance: validatorRewards,
-        format: CoinFormat.Full,
     });
     if (
         isLoadingSystemState ||

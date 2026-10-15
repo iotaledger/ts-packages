@@ -10,7 +10,7 @@ import {
     useFormatCoin,
     TruncatedBalance,
 } from '@iota/core';
-import { CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { EpochStatusIndicator } from '~/pages/validator/ValidatorDetails';
 
 type StatsCardProps = {
@@ -33,11 +33,9 @@ export function ValidatorStats({
 
     const [, totalStakeSymbol] = useFormatCoin({
         balance: totalStake,
-        format: CoinFormat.Full,
     });
     const [, rewardsPoolBalanceSymbol] = useFormatCoin({
         balance: rewardsPoolBalance,
-        format: CoinFormat.Full,
     });
 
     const votingPower = Number(validatorData.votingPower) / 100;
