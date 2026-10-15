@@ -107,18 +107,16 @@ export class AppsBackendClient {
         queryParams?: Record<string, string>,
         options?: RequestInit,
     ): Promise<T> {
-        const base = `${this.url}/${path}`;
-        const url =
-            queryParams && Object.keys(queryParams).length > 0
-                ? `${base}?${new URLSearchParams(queryParams)}`
-                : base;
-        const res = await fetch(url, options);
+        const res = await this.fetchPath(path, queryParams, options);
         if (!res.ok) {
             throw new Error('Unexpected response');
         }
         return res.json();
     }
 
+    /**
+     * Resolves to null while apps-backend is still indexing the network's coins.
+     */
     async getCoins({
         network,
         filter,
@@ -127,8 +125,8 @@ export class AppsBackendClient {
         order = 'asc',
         offset = 0,
         limit = 20,
-    }: GetCoinsParams): Promise<CoinsResponse> {
-        return this.request('coins', {
+    }: GetCoinsParams): Promise<CoinsResponse | null> {
+        const response = await this.fetchPath('coins', {
             network,
             filter,
             search,
@@ -136,6 +134,26 @@ export class AppsBackendClient {
             offset: String(offset),
             limit: String(limit),
         });
+        if (response.status === 503) {
+            return null;
+        }
+        if (!response.ok) {
+            throw new Error('Unexpected response');
+        }
+        return response.json();
+    }
+
+    private fetchPath(
+        path: string,
+        queryParams?: Record<string, string>,
+        options?: RequestInit,
+    ): Promise<Response> {
+        const base = `${this.url}/${path}`;
+        const url =
+            queryParams && Object.keys(queryParams).length > 0
+                ? `${base}?${new URLSearchParams(queryParams)}`
+                : base;
+        return fetch(url, options);
     }
 
     private updateSnapshot(): void {

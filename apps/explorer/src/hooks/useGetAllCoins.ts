@@ -29,6 +29,7 @@ import {
 import { useNetworkContext } from '~/contexts';
 
 export const COINS_PAGE_SIZE = 20;
+const COINS_INDEXING_REFETCH_INTERVAL = 10_000;
 
 export type { OnChainCoin };
 
@@ -50,7 +51,6 @@ interface CoinManagerJson {
 interface CoinMetadataObjectsQueryResult {
     data?: {
         objects: {
-            pageInfo: { hasNextPage: boolean; endCursor?: string | null };
             nodes: {
                 address: string;
                 owner?: { __typename: string } | null;
@@ -65,27 +65,13 @@ interface CoinMetadataObjectsQueryResult {
 
 type CoinSource = 'metadata' | 'manager';
 
-interface CoinsPageParam {
-    source: CoinSource;
-    cursor: string | null;
-}
-
-interface OnChainCoinsPage {
-    coins: OnChainCoin[];
-    nextCursor: CoinsPageParam | null;
-}
-
 interface CoinsQueryOptions {
     enabled?: boolean;
 }
 
 const COIN_METADATA_OBJECTS_QUERY = graphql(`
-    query getCoinMetadataObjects($type: String!, $first: Int!, $after: String) {
-        objects(filter: { type: $type }, first: $first, after: $after) {
-            pageInfo {
-                hasNextPage
-                endCursor
-            }
+    query getCoinMetadataObjects($type: String!) {
+        objects(filter: { type: $type }, first: 1) {
             nodes {
                 address
                 owner {
@@ -132,24 +118,17 @@ interface CoinWithoutPublishInfo extends Omit<
 async function fetchCoinObjects(
     graphQLClient: GraphQLClient,
     source: CoinSource,
-    coinType: string | null,
-    first: number,
-    after: string | null,
-): Promise<{ coins: CoinWithoutPublishInfo[]; nextCursor: string | null }> {
-    const objectType = COIN_OBJECT_TYPES[source];
+    coinType: string,
+): Promise<CoinWithoutPublishInfo[]> {
     const response: CoinMetadataObjectsQueryResult = await graphQLClient.query({
         query: COIN_METADATA_OBJECTS_QUERY,
-        variables: {
-            type: coinType ? `${objectType}<${coinType}>` : objectType,
-            first,
-            after,
-        },
+        variables: { type: `${COIN_OBJECT_TYPES[source]}<${coinType}>` },
     });
 
     const result = response.data?.objects;
-    if (!result) return { coins: [], nextCursor: null };
+    if (!result) return [];
 
-    const coins = result.nodes.flatMap(({ address, owner, asMoveObject }) => {
+    return result.nodes.flatMap(({ address, owner, asMoveObject }) => {
         const contents = asMoveObject?.contents;
         const [coinTypeTag] = contents ? parseStructTag(contents.type.repr).typeParams : [];
         if (!contents || !coinTypeTag) return [];
@@ -183,50 +162,16 @@ async function fetchCoinObjects(
             supply: asMoveObject?.asCoinMetadata?.supply ?? null,
         };
     });
-
-    return {
-        coins,
-        nextCursor: result.pageInfo.hasNextPage ? (result.pageInfo.endCursor ?? null) : null,
-    };
 }
 
 async function fetchCoinByType(
     graphQLClient: GraphQLClient,
     coinType: string,
 ): Promise<CoinWithoutPublishInfo[]> {
-    const { coins } = await fetchCoinObjects(graphQLClient, 'metadata', coinType, 1, null);
+    const coins = await fetchCoinObjects(graphQLClient, 'metadata', coinType);
     if (coins.length > 0) return coins;
 
-    return (await fetchCoinObjects(graphQLClient, 'manager', coinType, 1, null)).coins;
-}
-
-/**
- * Lists the standalone `CoinMetadata` coins first and then the `CoinManager`
- * ones, filling the page that crosses from one source to the other.
- */
-async function fetchCoinsPage(
-    graphQLClient: GraphQLClient,
-    pageSize: number,
-    { source, cursor }: CoinsPageParam,
-): Promise<{ coins: CoinWithoutPublishInfo[]; nextCursor: CoinsPageParam | null }> {
-    const page = await fetchCoinObjects(graphQLClient, source, null, pageSize, cursor);
-    if (page.nextCursor) {
-        return { coins: page.coins, nextCursor: { source, cursor: page.nextCursor } };
-    }
-    if (source === 'manager') {
-        return { coins: page.coins, nextCursor: null };
-    }
-
-    const remaining = pageSize - page.coins.length;
-    if (remaining === 0) {
-        return { coins: page.coins, nextCursor: { source: 'manager', cursor: null } };
-    }
-
-    const managers = await fetchCoinObjects(graphQLClient, 'manager', null, remaining, null);
-    return {
-        coins: [...page.coins, ...managers.coins],
-        nextCursor: managers.nextCursor ? { source: 'manager', cursor: managers.nextCursor } : null,
-    };
+    return fetchCoinObjects(graphQLClient, 'manager', coinType);
 }
 
 // GraphQL does not resolve the transaction that last touched an object, so it
@@ -241,7 +186,10 @@ async function withPublishInfo(
     const origins = (
         await Promise.all(
             chunkArray(originIds, MAX_RPC_BATCH_SIZE).map((ids) =>
-                client.multiGetObjects({ ids, options: { showPreviousTransaction: true } }),
+                client.multiGetObjects({
+                    ids,
+                    options: { showPreviousTransaction: true },
+                }),
             ),
         )
     ).flat();
@@ -256,7 +204,10 @@ async function withPublishInfo(
                 [...new Set(digests.filter((digest) => digest !== null))],
                 MAX_RPC_BATCH_SIZE,
             ).map((chunk) =>
-                client.multiGetTransactionBlocks({ digests: chunk, options: { showInput: true } }),
+                client.multiGetTransactionBlocks({
+                    digests: chunk,
+                    options: { showInput: true },
+                }),
             ),
         )
     ).flat();
@@ -364,6 +315,8 @@ export function useGetRecognizedCoins(): UseQueryResult<CoinLabels[], Error> {
 
 /**
  * The coins indexed by apps-backend, filtered and searched on the server, one page at a time.
+ * A page is null while apps-backend is still indexing the network, and the query keeps
+ * polling until the coins are ready.
  */
 export function useGetIndexedCoins(
     filter: CoinsFilter,
@@ -391,43 +344,14 @@ export function useGetIndexedCoins(
                 offset: pageParam,
                 limit: COINS_PAGE_SIZE,
             });
-            await cacheCreatorNames(iotaGraphQLClient!, queryClient, response.coins);
+            if (response) {
+                await cacheCreatorNames(iotaGraphQLClient!, queryClient, response.coins);
+            }
             return response;
         },
-        getNextPageParam: ({ nextOffset }) => nextOffset,
-        enabled: enabled && !!iotaGraphQLClient,
-        staleTime: 5 * 60 * 1000,
-        // Errors switch the page to the GraphQL listing, so they should surface right away.
-        retry: false,
-    });
-}
-
-/**
- * Every coin on chain straight from GraphQL, one page at a time, for networks
- * apps-backend does not index. Passing a `coinType` narrows the result to that single coin.
- */
-export function useGetCoinsFromChain(
-    pageSize: number,
-    coinType: string | null,
-    { enabled = true }: CoinsQueryOptions = {},
-) {
-    const { iotaGraphQLClient } = useIotaGraphQLClientContext();
-    const client = useIotaClient();
-    const queryClient = useQueryClient();
-
-    return useInfiniteQuery<OnChainCoinsPage, Error>({
-        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['chain-coins', pageSize, coinType],
-        initialPageParam: { source: 'metadata', cursor: null } satisfies CoinsPageParam,
-        queryFn: async ({ pageParam }) => {
-            const { coins, nextCursor } = coinType
-                ? { coins: await fetchCoinByType(iotaGraphQLClient!, coinType), nextCursor: null }
-                : await fetchCoinsPage(iotaGraphQLClient!, pageSize, pageParam as CoinsPageParam);
-            const coinsWithPublishInfo = await withPublishInfo(client, coins);
-            await cacheCreatorNames(iotaGraphQLClient!, queryClient, coinsWithPublishInfo);
-            return { coins: coinsWithPublishInfo, nextCursor };
-        },
-        getNextPageParam: ({ nextCursor }) => nextCursor,
+        getNextPageParam: (page) => page?.nextOffset ?? null,
+        refetchInterval: ({ state }) =>
+            state.data?.pages[0] === null ? COINS_INDEXING_REFETCH_INTERVAL : false,
         enabled: enabled && !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });

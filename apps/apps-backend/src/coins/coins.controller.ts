@@ -6,6 +6,7 @@ import {
     Controller,
     DefaultValuePipe,
     Get,
+    InternalServerErrorException,
     ParseEnumPipe,
     ParseIntPipe,
     Query,
@@ -23,7 +24,7 @@ export class CoinsController {
     constructor(private readonly coinsService: CoinsService) {}
 
     @Get('/')
-    async getCoins(
+    getCoins(
         @Query('network') network: Network,
         @Query('filter', new DefaultValuePipe(CoinsFilter.All), new ParseEnumPipe(CoinsFilter))
         filter: CoinsFilter,
@@ -35,12 +36,12 @@ export class CoinsController {
             | undefined,
         @Query('order', new DefaultValuePipe(CoinsSortOrder.Asc), new ParseEnumPipe(CoinsSortOrder))
         order: CoinsSortOrder,
-    ): Promise<CoinsResponse> {
+    ): CoinsResponse {
         if (!INDEXED_COIN_NETWORKS.includes(network)) {
             throw new BadRequestException(`Coins are not indexed for network "${network}"`);
         }
 
-        const response = await this.coinsService.getCoins(network, {
+        const response = this.coinsService.getCoins(network, {
             filter,
             search: search.trim(),
             offset: Math.max(offset, 0),
@@ -49,6 +50,9 @@ export class CoinsController {
             order,
         });
         if (!response) {
+            if (this.coinsService.hasIndexingFailed(network)) {
+                throw new InternalServerErrorException('Coins could not be indexed');
+            }
             throw new ServiceUnavailableException('Coins are still being indexed');
         }
         return response;

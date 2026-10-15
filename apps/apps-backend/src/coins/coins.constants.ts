@@ -3,11 +3,10 @@
 
 import { CoinSource } from './coins.types';
 
-export const coinsKey = (network: string) => `coins${network}`;
-export const COINS_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
-
 export const DEFAULT_COINS_LIMIT = 20;
 export const MAX_COINS_LIMIT = 100;
+
+export const COINS_RETRY_INTERVAL_MS = 1000 * 60 * 5;
 
 export const COINS_PER_PAGE = 50;
 export const MAX_RPC_BATCH_SIZE = 50;
