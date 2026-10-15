@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import cx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -374,15 +373,11 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                                 </div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-x-md gap-y-md pb-md sm:flex sm:flex-row sm:justify-center sm:gap-x-0">
-                            {stats.map(({ label, value }, index) => (
+                        <div className="grid grid-cols-2 gap-x-md gap-y-md pb-md sm:flex sm:flex-row sm:justify-evenly sm:gap-x-0">
+                            {stats.map(({ label, value }) => (
                                 <div
                                     key={label}
-                                    className={cx(
-                                        'flex flex-col items-center gap-xxs text-center sm:px-xl',
-                                        index > 0 &&
-                                            'sm:border-l sm:border-iota-neutral-90 sm:dark:border-iota-neutral-20',
-                                    )}
+                                    className="flex flex-col items-center gap-xxs text-center sm:px-md"
                                 >
                                     <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                         {label}
