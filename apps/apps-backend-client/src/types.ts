@@ -51,14 +51,14 @@ export interface CoinsResponse {
 }
 
 export type CoinsSort = 'name' | 'createdAt';
-export type SortOrder = 'asc' | 'desc';
+export type CoinsSortOrder = 'asc' | 'desc';
 
 export interface GetCoinsParams {
     network: string;
     filter: CoinsFilter;
     search?: string;
     sort?: CoinsSort;
-    order?: SortOrder;
+    order?: CoinsSortOrder;
     offset?: number;
     limit?: number;
 }

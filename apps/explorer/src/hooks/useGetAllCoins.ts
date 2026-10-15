@@ -11,7 +11,7 @@ import {
 import { useIotaClient } from '@iota/dapp-kit';
 import { graphql } from '@iota/iota-sdk/graphql/schemas/2025.2';
 import { normalizeStructTag, parseStructTag } from '@iota/iota-sdk/utils';
-import { type IotaClient, Network } from '@iota/iota-sdk/client';
+import type { IotaClient } from '@iota/iota-sdk/client';
 import {
     type QueryClient,
     type UseQueryResult,
@@ -22,30 +22,15 @@ import {
 import {
     type CoinsFilter,
     type CoinsSort,
-    type SortOrder,
+    type CoinsSortOrder,
+    type OnChainCoin,
     useAppsBackendClient,
 } from '@iota/apps-backend-client';
 import { useNetworkContext } from '~/contexts';
 
-const COINS_PAGE_SIZE = 20;
+export const COINS_PAGE_SIZE = 20;
 
-/**
- * The networks whose coins apps-backend indexes. Any other network lists them from GraphQL.
- */
-export const INDEXED_COIN_NETWORKS: string[] = [Network.Mainnet, Network.Testnet, Network.Devnet];
-
-export interface OnChainCoin {
-    coinType: string;
-    name: string;
-    symbol: string;
-    decimals: number;
-    description: string;
-    iconUrl: string | null;
-    creator: string | null;
-    createdAt: number | null;
-    publishDigest: string | null;
-    supply: string | null;
-}
+export type { OnChainCoin };
 
 export type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
 
@@ -380,11 +365,11 @@ export function useGetRecognizedCoins(): UseQueryResult<CoinLabels[], Error> {
 /**
  * The coins indexed by apps-backend, filtered and searched on the server, one page at a time.
  */
-export function useGetAllCoins(
+export function useGetIndexedCoins(
     filter: CoinsFilter,
     search: string,
     sort: CoinsSort | undefined,
-    order: SortOrder,
+    order: CoinsSortOrder,
     { enabled = true }: CoinsQueryOptions = {},
 ) {
     const appsBackendClient = useAppsBackendClient();

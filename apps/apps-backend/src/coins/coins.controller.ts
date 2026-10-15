@@ -11,11 +11,12 @@ import {
     Query,
     ServiceUnavailableException,
 } from '@nestjs/common';
+import { INDEXED_COIN_NETWORKS } from '@iota/core/constants/coins.constants';
 import { Network } from '@iota/iota-sdk/client';
 
 import { CoinsService } from './coins.service';
-import { DEFAULT_COINS_LIMIT, INDEXED_NETWORKS, MAX_COINS_LIMIT } from './coins.constants';
-import { CoinsFilter, CoinsResponse, CoinsSort, SortOrder } from './coins.types';
+import { DEFAULT_COINS_LIMIT, MAX_COINS_LIMIT } from './coins.constants';
+import { CoinsFilter, CoinsResponse, CoinsSort, CoinsSortOrder } from './coins.types';
 
 @Controller('/coins')
 export class CoinsController {
@@ -32,10 +33,10 @@ export class CoinsController {
         @Query('sort', new ParseEnumPipe(CoinsSort, { optional: true })) sort:
             | CoinsSort
             | undefined,
-        @Query('order', new DefaultValuePipe(SortOrder.Asc), new ParseEnumPipe(SortOrder))
-        order: SortOrder,
+        @Query('order', new DefaultValuePipe(CoinsSortOrder.Asc), new ParseEnumPipe(CoinsSortOrder))
+        order: CoinsSortOrder,
     ): Promise<CoinsResponse> {
-        if (!INDEXED_NETWORKS.includes(network)) {
+        if (!INDEXED_COIN_NETWORKS.includes(network)) {
             throw new BadRequestException(`Coins are not indexed for network "${network}"`);
         }
 

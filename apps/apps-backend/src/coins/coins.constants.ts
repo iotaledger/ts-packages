@@ -1,11 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Network } from '@iota/iota-sdk/client';
 import { CoinSource } from './coins.types';
 
 export const coinsKey = (network: string) => `coins${network}`;
-export const INDEXED_NETWORKS = [Network.Mainnet, Network.Testnet, Network.Devnet];
 export const COINS_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
 
 export const DEFAULT_COINS_LIMIT = 20;

@@ -33,16 +33,25 @@ export enum CoinsSort {
     CreatedAt = 'createdAt',
 }
 
-export enum SortOrder {
+export enum CoinsSortOrder {
     Asc = 'asc',
     Desc = 'desc',
+}
+
+/**
+ * The coins of a network in every order the endpoint offers, built once per refresh.
+ * Lists are keyed by filter and then by order (see `orderKey`).
+ */
+export interface CoinsIndex {
+    lists: Record<CoinsFilter, Record<string, OnChainCoin[]>>;
+    counts: Record<CoinsFilter, number>;
 }
 
 export interface ListCoinsOptions {
     filter: CoinsFilter;
     search: string;
     sort?: CoinsSort;
-    order: SortOrder;
+    order: CoinsSortOrder;
     offset: number;
     limit: number;
 }

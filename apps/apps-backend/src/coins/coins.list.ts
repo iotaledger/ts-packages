@@ -6,17 +6,54 @@ import { normalizeStructTag } from '@iota/iota-sdk/utils';
 
 import {
     CoinsFilter,
+    CoinsIndex,
     CoinsResponse,
     CoinsSort,
+    CoinsSortOrder,
     ListCoinsOptions,
     OnChainCoin,
-    SortOrder,
 } from './coins.types';
+
+const DEFAULT_ORDER = 'default';
+
+function orderKey(sort: CoinsSort | undefined, order: CoinsSortOrder): string {
+    return sort ? `${sort}-${order}` : DEFAULT_ORDER;
+}
 
 function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
     return (
         (coin1.createdAt ?? Number.MAX_SAFE_INTEGER) - (coin2.createdAt ?? Number.MAX_SAFE_INTEGER)
     );
+}
+
+// Coins without a creation date go last in both orders.
+function compareCreatedAt(coin1: OnChainCoin, coin2: OnChainCoin, order: CoinsSortOrder): number {
+    if (coin1.createdAt === null || coin2.createdAt === null) {
+        return Number(coin1.createdAt === null) - Number(coin2.createdAt === null);
+    }
+    const difference = coin1.createdAt - coin2.createdAt;
+    return order === CoinsSortOrder.Asc ? difference : -difference;
+}
+
+function sortCoins(coins: OnChainCoin[], sort: CoinsSort, order: CoinsSortOrder): OnChainCoin[] {
+    return [...coins].sort((coin1, coin2) => {
+        if (sort === CoinsSort.CreatedAt) return compareCreatedAt(coin1, coin2, order);
+        const difference = coin1.name.localeCompare(coin2.name);
+        return order === CoinsSortOrder.Asc ? difference : -difference;
+    });
+}
+
+function orderedLists(
+    coins: OnChainCoin[],
+    defaultOrder: OnChainCoin[],
+): Record<string, OnChainCoin[]> {
+    const lists: Record<string, OnChainCoin[]> = { [DEFAULT_ORDER]: defaultOrder };
+    for (const sort of Object.values(CoinsSort)) {
+        for (const order of Object.values(CoinsSortOrder)) {
+            lists[orderKey(sort, order)] = sortCoins(coins, sort, order);
+        }
+    }
+    return lists;
 }
 
 function toCoinType(value: string): string | null {
@@ -40,57 +77,53 @@ function searchCoins(coins: OnChainCoin[], search: string): OnChainCoin[] {
     );
 }
 
-// Coins without a creation date go last in both orders.
-function compareCreatedAt(coin1: OnChainCoin, coin2: OnChainCoin, order: SortOrder): number {
-    if (coin1.createdAt === null || coin2.createdAt === null) {
-        return Number(coin1.createdAt === null) - Number(coin2.createdAt === null);
-    }
-    const difference = coin1.createdAt - coin2.createdAt;
-    return order === SortOrder.Asc ? difference : -difference;
-}
-
-function sortCoins(coins: OnChainCoin[], sort: CoinsSort | undefined, order: SortOrder) {
-    if (!sort) return coins;
-    return [...coins].sort((coin1, coin2) => {
-        if (sort === CoinsSort.CreatedAt) return compareCreatedAt(coin1, coin2, order);
-        const difference = coin1.name.localeCompare(coin2.name);
-        return order === SortOrder.Asc ? difference : -difference;
-    });
-}
-
 /**
- * Recognized coins first, in registry order, then the rest from oldest to newest.
+ * Orders the coins once per refresh, so a request only searches and slices.
+ * Recognized coins stay on top in every order: by default in registry order,
+ * then the rest from oldest to newest.
  */
-export function listCoins(
-    coins: OnChainCoin[],
-    registry: CoinRegistryEntry[],
-    { filter, search, offset, limit, sort, order }: ListCoinsOptions,
-): CoinsResponse {
+export function buildCoinsIndex(coins: OnChainCoin[], registry: CoinRegistryEntry[]): CoinsIndex {
     const coinsByType = new Map(coins.map((coin) => [coin.coinType, coin]));
     const recognized = registry.flatMap(({ coinType }) => {
         const coin = coinsByType.get(normalizeStructTag(coinType));
         return coin ? [coin] : [];
     });
     const recognizedTypes = new Set(recognized.map(({ coinType }) => coinType));
-    const notRecognized = coins
-        .filter(({ coinType }) => !recognizedTypes.has(coinType))
-        .sort(byCreationDate);
+    const notRecognized = coins.filter(({ coinType }) => !recognizedTypes.has(coinType));
 
-    const coinsByFilter: Record<CoinsFilter, OnChainCoin[]> = {
-        [CoinsFilter.All]: [...recognized, ...notRecognized],
-        [CoinsFilter.Recognized]: recognized,
-        [CoinsFilter.NotRecognized]: notRecognized,
+    const recognizedLists = orderedLists(recognized, recognized);
+    const notRecognizedLists = orderedLists(notRecognized, [...notRecognized].sort(byCreationDate));
+    const allLists = Object.fromEntries(
+        Object.keys(recognizedLists).map((key) => [
+            key,
+            [...recognizedLists[key], ...notRecognizedLists[key]],
+        ]),
+    );
+
+    return {
+        lists: {
+            [CoinsFilter.All]: allLists,
+            [CoinsFilter.Recognized]: recognizedLists,
+            [CoinsFilter.NotRecognized]: notRecognizedLists,
+        },
+        counts: {
+            [CoinsFilter.All]: coins.length,
+            [CoinsFilter.Recognized]: recognized.length,
+            [CoinsFilter.NotRecognized]: notRecognized.length,
+        },
     };
-    const matchingCoins = sortCoins(searchCoins(coinsByFilter[filter], search), sort, order);
+}
+
+export function listCoins(
+    index: CoinsIndex,
+    { filter, search, sort, order, offset, limit }: ListCoinsOptions,
+): CoinsResponse {
+    const matchingCoins = searchCoins(index.lists[filter][orderKey(sort, order)], search);
     const end = offset + limit;
 
     return {
         coins: matchingCoins.slice(offset, end),
         nextOffset: end < matchingCoins.length ? end : null,
-        counts: {
-            [CoinsFilter.All]: coinsByFilter[CoinsFilter.All].length,
-            [CoinsFilter.Recognized]: recognized.length,
-            [CoinsFilter.NotRecognized]: notRecognized.length,
-        },
+        counts: index.counts,
     };
 }

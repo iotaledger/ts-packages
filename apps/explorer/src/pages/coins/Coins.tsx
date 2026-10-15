@@ -3,7 +3,7 @@
 
 import { type JSX, useEffect, useMemo, useRef, useState } from 'react';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
-import { useOnScreen } from '@iota/core';
+import { INDEXED_COIN_NETWORKS, useOnScreen } from '@iota/core';
 import {
     CoinFilters,
     type CoinFilter,
@@ -16,11 +16,11 @@ import {
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
 import {
-    INDEXED_COIN_NETWORKS,
+    COINS_PAGE_SIZE,
     type OnChainCoin,
     useDebouncedValue,
-    useGetAllCoins,
     useGetCoinsFromChain,
+    useGetIndexedCoins,
     useGetRecognizedCoins,
 } from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
@@ -32,7 +32,6 @@ import {
 import type { SortingState } from '@tanstack/react-table';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
-const COINS_BATCH_SIZE = 20;
 const COINS_FILTER: Record<CoinFilter, CoinFilterResponseType> = {
     All: 'all',
     Recognized: 'recognized',
@@ -53,9 +52,9 @@ function CoinsPageResult(): JSX.Element {
     const { isIntersecting } = useOnScreen(loadMoreElem);
 
     const [network] = useNetworkContext();
-    const isIndexedNetwork = INDEXED_COIN_NETWORKS.includes(network);
+    const isIndexedNetwork = INDEXED_COIN_NETWORKS.some((indexed) => indexed === network);
 
-    const backendCoins = useGetAllCoins(
+    const backendCoins = useGetIndexedCoins(
         COINS_FILTER[filter],
         search,
         columnSort ? COINS_SORT_BY_COLUMN[columnSort.id] : undefined,
@@ -67,7 +66,7 @@ function CoinsPageResult(): JSX.Element {
     const isFallback = !isIndexedNetwork || backendCoins.isError;
     const searchedCoinType = toCoinType(search);
     const isInvalidFallbackSearch = isFallback && !!search && !searchedCoinType;
-    const chainCoins = useGetCoinsFromChain(COINS_BATCH_SIZE, searchedCoinType, {
+    const chainCoins = useGetCoinsFromChain(COINS_PAGE_SIZE, searchedCoinType, {
         enabled: isFallback && !isInvalidFallbackSearch,
     });
     const { isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = isFallback
@@ -161,7 +160,7 @@ function CoinsPageResult(): JSX.Element {
                                 <ErrorBoundary>
                                     {isPending ? (
                                         <PlaceholderTable
-                                            rowCount={COINS_BATCH_SIZE}
+                                            rowCount={COINS_PAGE_SIZE}
                                             rowHeight="16px"
                                             colHeadings={COLUMN_HEADINGS}
                                         />
