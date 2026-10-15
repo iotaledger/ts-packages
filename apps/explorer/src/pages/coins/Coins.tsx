@@ -1,10 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type JSX, useEffect, useMemo, useRef, useState } from 'react';
 import { InfoBox, InfoBoxStyle, InfoBoxType, Panel, Title } from '@iota/apps-ui-kit';
-import { useCoinRegistry, useOnScreen } from '@iota/core';
-import { normalizeStructTag } from '@iota/iota-sdk/utils';
+import { useOnScreen } from '@iota/core';
 import {
     CoinFilters,
     type CoinFilter,
@@ -16,96 +15,88 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { type OnChainCoin, useGetAllCoins } from '~/hooks';
+import {
+    INDEXED_COIN_NETWORKS,
+    type OnChainCoin,
+    useDebouncedValue,
+    useGetAllCoins,
+    useGetCoinsFromChain,
+    useGetRecognizedCoins,
+} from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
+import { useNetworkContext } from '~/contexts';
+import {
+    type CoinsFilter as CoinFilterResponseType,
+    type CoinsSort,
+} from '@iota/apps-backend-client';
+import type { SortingState } from '@tanstack/react-table';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
 const COINS_BATCH_SIZE = 20;
-
-function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
-    return (
-        (coin1.createdAt ?? Number.MAX_SAFE_INTEGER) - (coin2.createdAt ?? Number.MAX_SAFE_INTEGER)
-    );
-}
+const COINS_FILTER: Record<CoinFilter, CoinFilterResponseType> = {
+    All: 'all',
+    Recognized: 'recognized',
+    'Not Recognized': 'not-recognized',
+};
+const COINS_SORT_BY_COLUMN: Record<string, CoinsSort> = {
+    name: 'name',
+    createdAt: 'createdAt',
+};
 
 function CoinsPageResult(): JSX.Element {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const [visibleCount, setVisibleCount] = useState(COINS_BATCH_SIZE);
-    const trimmedSearchTerm = searchTerm.trim();
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnSort] = sorting;
+    const search = useDebouncedValue(searchTerm.trim());
     const loadMoreElem = useRef<HTMLDivElement | null>(null);
     const { isIntersecting } = useOnScreen(loadMoreElem);
 
-    const { data: allCoins, isPending, isError } = useGetAllCoins();
-    const coinRegistry = useCoinRegistry();
+    const [network] = useNetworkContext();
+    const isIndexedNetwork = INDEXED_COIN_NETWORKS.includes(network);
 
-    const { recognizedCoins, notRecognizedCoins } = useMemo(() => {
-        if (!allCoins) return { recognizedCoins: [], notRecognizedCoins: [] };
-        const coinsByType = new Map(allCoins.map((coin) => [coin.coinType, coin]));
-        const recognized = coinRegistry.flatMap(({ coinType }) => {
-            const coin = coinsByType.get(normalizeStructTag(coinType));
-            return coin ? [coin] : [];
-        });
-        const recognizedTypes = new Set(recognized.map(({ coinType }) => coinType));
-        return {
-            recognizedCoins: recognized,
-            notRecognizedCoins: allCoins
-                .filter(({ coinType }) => !recognizedTypes.has(coinType))
-                .sort(byCreationDate),
-        };
-    }, [allCoins, coinRegistry]);
+    const backendCoins = useGetAllCoins(
+        COINS_FILTER[filter],
+        search,
+        columnSort ? COINS_SORT_BY_COLUMN[columnSort.id] : undefined,
+        columnSort?.desc ? 'desc' : 'asc',
+        { enabled: isIndexedNetwork },
+    );
+    // Networks apps-backend does not index, and any backend failure, fall back to
+    // listing the coins from GraphQL, which can only search by coin type.
+    const isFallback = !isIndexedNetwork || backendCoins.isError;
+    const searchedCoinType = toCoinType(search);
+    const isInvalidFallbackSearch = isFallback && !!search && !searchedCoinType;
+    const chainCoins = useGetCoinsFromChain(COINS_BATCH_SIZE, searchedCoinType, {
+        enabled: isFallback && !isInvalidFallbackSearch,
+    });
+    const { isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } = isFallback
+        ? chainCoins
+        : backendCoins;
+    const { data: recognizedCoins } = useGetRecognizedCoins();
 
-    const filteredCoins = useMemo(() => {
-        const coinsByFilter: Record<CoinFilter, OnChainCoin[]> = {
-            All: [...recognizedCoins, ...notRecognizedCoins],
-            Recognized: recognizedCoins,
-            'Not Recognized': notRecognizedCoins,
-        };
-        const coins = coinsByFilter[filter];
-        if (!trimmedSearchTerm) return coins;
-
-        const searchedCoinType = toCoinType(trimmedSearchTerm);
-        if (searchedCoinType) return coins.filter(({ coinType }) => coinType === searchedCoinType);
-
-        const text = trimmedSearchTerm.toLowerCase();
-        return coins.filter(({ coinType, name, symbol }) =>
-            [coinType, name, symbol].some((value) => value.toLowerCase().includes(text)),
-        );
-    }, [trimmedSearchTerm, filter, notRecognizedCoins, recognizedCoins]);
-
-    const hasMoreCoins = visibleCount < filteredCoins.length;
+    const coinPages: { coins: OnChainCoin[] }[] | undefined = isFallback
+        ? chainCoins.data?.pages
+        : backendCoins.data?.pages;
+    const coins = useMemo(() => coinPages?.flatMap((page) => page.coins) ?? [], [coinPages]);
+    const counts = isFallback ? undefined : backendCoins.data?.pages[0]?.counts;
+    const filterCounts = counts && {
+        All: counts.all,
+        Recognized: counts.recognized,
+        'Not Recognized': counts['not-recognized'],
+    };
 
     useEffect(() => {
-        if (isIntersecting && !isPending && hasMoreCoins) {
-            setVisibleCount((count) => count + COINS_BATCH_SIZE);
+        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
         }
-    }, [isIntersecting, isPending, hasMoreCoins, visibleCount]);
-
-    const onSearchTermChange = useCallback((term: string) => {
-        setSearchTerm(term);
-        setVisibleCount(COINS_BATCH_SIZE);
-    }, []);
-
-    const handleFilterChange = useCallback((newFilter: CoinFilter) => {
-        setFilter(newFilter);
-        setVisibleCount(COINS_BATCH_SIZE);
-    }, []);
-
-    const filterCounts = useMemo(() => {
-        if (!allCoins) return undefined;
-        return {
-            All: recognizedCoins.length + notRecognizedCoins.length,
-            Recognized: recognizedCoins.length,
-            'Not Recognized': notRecognizedCoins.length,
-        };
-    }, [allCoins, notRecognizedCoins.length, recognizedCoins.length]);
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
         [recognizedCoins],
     );
-
-    const isNoResults = !!allCoins && filteredCoins.length === 0;
+    const isNoResults = isInvalidFallbackSearch || (!!coinPages && coins.length === 0);
 
     return (
         <PageLayout
@@ -126,16 +117,22 @@ function CoinsPageResult(): JSX.Element {
 
                         <div className="flex flex-col gap-md p-md">
                             <TableSearch
-                                onSearch={onSearchTermChange}
-                                placeholder="Search by name, symbol or coin type…"
+                                onSearch={setSearchTerm}
+                                placeholder={
+                                    isFallback
+                                        ? 'Search by coin type…'
+                                        : 'Search by name, symbol or coin type…'
+                                }
                             />
-                            <div className="flex">
-                                <CoinFilters
-                                    selectedFilter={filter}
-                                    onFilterChange={handleFilterChange}
-                                    counts={filterCounts}
-                                />
-                            </div>
+                            {!isFallback && (
+                                <div className="flex">
+                                    <CoinFilters
+                                        selectedFilter={filter}
+                                        onFilterChange={setFilter}
+                                        counts={filterCounts}
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className="p-md">
                             {isError ? (
@@ -150,8 +147,10 @@ function CoinsPageResult(): JSX.Element {
                                 <InfoBox
                                     title="No coins found"
                                     supportingText={
-                                        trimmedSearchTerm
-                                            ? 'No coin matches your search. Try a valid name, symbol or coin type'
+                                        search
+                                            ? isFallback
+                                                ? 'No coin matches your search. Try a valid coin type'
+                                                : 'No coin matches your search. Try a valid name, symbol or coin type'
                                             : undefined
                                     }
                                     icon={<Warning />}
@@ -168,9 +167,11 @@ function CoinsPageResult(): JSX.Element {
                                         />
                                     ) : (
                                         <TableCard
-                                            sortTable
-                                            data={filteredCoins}
-                                            rowLimit={visibleCount}
+                                            sortTable={!isFallback}
+                                            allowManualTableSort={!isFallback}
+                                            sorting={sorting}
+                                            onSortingChange={setSorting}
+                                            data={coins}
                                             columns={tableColumns}
                                             areHeadersCentered={false}
                                             getRowHref={({ coinType }) => getCoinPagePath(coinType)}
