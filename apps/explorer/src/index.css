@@ -13,11 +13,7 @@ body,
 }
 
 :root {
-    @apply bg-iota-neutral-98;
-}
-
-:root.dark {
-    @apply bg-iota-neutral-4;
+    @apply bg-page;
 }
 
 @layer base {
@@ -27,6 +23,10 @@ body,
 }
 
 @layer components {
+    .bg-page {
+        @apply bg-iota-neutral-98 dark:bg-iota-neutral-4;
+    }
+
     .home-page-grid-container-top {
         @apply grid grid-cols-1 gap-4;
         grid-template-areas:
