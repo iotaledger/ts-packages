@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -51,14 +51,14 @@ export function EpochDetail() {
     const enhancedRpc = useEnhancedRpcClient();
     const { paused, togglePaused } = useAutoRefresh();
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
-    const { data, isPending, isError } = useQuery({
+    const { data, isPending, isError, isPlaceholderData } = useQuery({
         queryKey: ['epoch', id],
         queryFn: async () =>
             enhancedRpc.getEpochs({
-                // todo: endpoint returns no data for epoch 0
                 cursor: id === '0' ? undefined : (Number(id!) - 1).toString(),
                 limit: 1,
             }),
+        placeholderData: keepPreviousData,
     });
 
     const [epochData] = data?.data ?? [];
@@ -104,7 +104,7 @@ export function EpochDetail() {
 
     if (isPending)
         return (
-            <EpochPageLayout epoch={Number(id)}>
+            <EpochPageLayout>
                 <EpochDetailSkeleton showEndOfEpochStats={systemState?.epoch !== id} />
             </EpochPageLayout>
         );
@@ -133,9 +133,13 @@ export function EpochDetail() {
     const refetchInterval = isOngoing && !paused ? AUTO_REFRESH_INTERVAL : undefined;
 
     return (
-        <EpochPageLayout epoch={Number(epochData.epoch)} hasNextEpoch={!isOngoing}>
+        <EpochPageLayout>
             <div className="flex flex-col gap-lg">
-                <EpochPageHero epochInfo={epochData} refetchInterval={refetchInterval} />
+                <EpochPageHero
+                    epochInfo={epochData}
+                    isLoading={isPlaceholderData}
+                    refetchInterval={refetchInterval}
+                />
 
                 <EpochValidatorSet
                     validators={epochData.validators}
@@ -198,73 +202,61 @@ export function EpochDetail() {
     );
 }
 
-interface EpochPageLayoutProps {
-    epoch: number;
-    hasNextEpoch?: boolean;
-}
-
-function EpochPageLayout({
-    epoch,
-    hasNextEpoch,
-    children,
-}: React.PropsWithChildren<EpochPageLayoutProps>) {
+function EpochPageLayout({ children }: React.PropsWithChildren) {
     return (
         <PageLayout
             content={
-                <div className="relative">
-                    <NavigateEpochButtons epoch={epoch} hasNextEpoch={hasNextEpoch} />
-                    <div className="flex flex-col gap-xl">
-                        <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
-                            Epoch
-                        </div>
-                        {children}
+                <div className="flex flex-col gap-xl">
+                    <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                        Epoch
                     </div>
+                    {children}
                 </div>
             }
         />
     );
 }
 
-interface NavigateEpochButtonsProps {
+interface EpochNavButtonProps {
     epoch: number;
-    hasNextEpoch?: boolean;
+    disabled: boolean;
+    isLoading?: boolean;
+    isNext?: boolean;
 }
-function NavigateEpochButtons({ epoch, hasNextEpoch }: NavigateEpochButtonsProps) {
-    return (
-        <div className="container pointer-events-none fixed left-0 right-0 top-1/2 flex w-full justify-between">
-            <div className="bg-page pointer-events-auto -translate-x-3/4 rounded-full p-1">
-                <LinkWithQuery to={`/epoch/${epoch - 1}`}>
-                    <Button
-                        type={ButtonType.Secondary}
-                        size={ButtonSize.Medium}
-                        icon={<ArrowLeft className="size-5" />}
-                        disabled={epoch === 0}
-                        aria-label="Go to previous epoch"
-                    />
-                </LinkWithQuery>
-            </div>
 
-            <div className="bg-page pointer-events-auto translate-x-3/4 rounded-full p-1">
-                <LinkWithQuery to={`/epoch/${epoch + 1}`}>
-                    <Button
-                        type={ButtonType.Secondary}
-                        size={ButtonSize.Medium}
-                        icon={<ArrowRight className="size-5" />}
-                        disabled={!hasNextEpoch}
-                        aria-label="Go to next epoch"
-                    />
-                </LinkWithQuery>
-            </div>
-        </div>
+function EpochNavButton({ epoch, disabled, isLoading, isNext }: EpochNavButtonProps) {
+    const Icon = isNext ? ArrowRight : ArrowLeft;
+    return (
+        <span
+            className={
+                isLoading ? 'inline-flex cursor-wait [&_*]:pointer-events-none' : 'inline-flex'
+            }
+        >
+            <LinkWithQuery
+                to={`/epoch/${epoch}`}
+                aria-disabled={isLoading}
+                onClick={(event) => isLoading && event.preventDefault()}
+            >
+                <Button
+                    type={ButtonType.Secondary}
+                    size={ButtonSize.Medium}
+                    icon={<Icon className="size-5" />}
+                    disabled={disabled}
+                    aria-label={isNext ? 'Go to next epoch' : 'Go to previous epoch'}
+                />
+            </LinkWithQuery>
+        </span>
     );
 }
 
 interface EpochPageHeroProps {
     epochInfo: EpochInfo;
+    isLoading: boolean;
     refetchInterval?: number;
 }
 
-function EpochPageHero({ epochInfo, refetchInterval }: EpochPageHeroProps) {
+function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroProps) {
+    const routeEpoch = Number(useParams().id);
     const { progress, end } = useEpochProgress();
     const isDesktop = useBreakpoint('sm');
     const dateSize = isDesktop ? LabelTextSize.Medium : LabelTextSize.Small;
@@ -321,9 +313,25 @@ function EpochPageHero({ epochInfo, refetchInterval }: EpochPageHeroProps) {
                         />
                     </div>
                     <div className="flex flex-col gap-xl">
-                        <h2 className="title-main-color flex w-full flex-col gap-xxxs text-center">
-                            <span className="text-7xl text-display-lg">{epoch + 1}</span>
-                        </h2>
+                        <div className="flex w-full flex-row items-center justify-center gap-md">
+                            <div>
+                                <EpochNavButton
+                                    epoch={routeEpoch - 1}
+                                    disabled={routeEpoch === 0}
+                                />
+                            </div>
+                            <h2 className="title-main-color text-center">
+                                <span className="text-7xl text-display-lg">{epoch}</span>
+                            </h2>
+                            <div>
+                                <EpochNavButton
+                                    epoch={routeEpoch + 1}
+                                    disabled={!epochFinished && !isLoading}
+                                    isLoading={isLoading}
+                                    isNext
+                                />
+                            </div>
+                        </div>
                         <div className="flex flex-col gap-lg">
                             <ProgressBar
                                 progress={endOfEpochInfo ? 100 : progress || 0}
