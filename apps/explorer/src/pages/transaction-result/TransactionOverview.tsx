@@ -163,24 +163,16 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     fullwidth={!isMediumOrAbove}
                 />
             )}
-            {isAdvancedMode && digestMatches !== undefined && (
+            {transaction.timestampMs && (
                 <KeyValueInfo
                     layout="receipt"
-                    keyText="Integrity"
-                    tooltipText="The transaction digest is recomputed from the raw BCS-encoded transaction data and compared against the digest reported by the network."
+                    keyText="Timestamp"
                     value={
-                        <span className="flex min-w-0 items-center gap-xxs">
-                            {digestMatches ? (
-                                <CheckmarkFilled className="h-4 w-4 shrink-0" />
-                            ) : (
-                                <Warning className="h-4 w-4 shrink-0" />
-                            )}
-                            <span className="min-w-0 truncate">
-                                {digestMatches
-                                    ? 'digest re-derived from the raw BCS — matches'
-                                    : 'digest re-derived from the raw BCS — mismatch'}
-                            </span>
-                        </span>
+                        <DateDisplay
+                            timestamp={transaction.timestampMs}
+                            type="transaction"
+                            showTimeAgo
+                        />
                     }
                     fullwidth={!isMediumOrAbove}
                 />
@@ -213,6 +205,28 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     fullwidth={!isMediumOrAbove}
                 />
             )}
+            {isAdvancedMode && digestMatches !== undefined && (
+                <KeyValueInfo
+                    layout="receipt"
+                    keyText="Integrity"
+                    tooltipText="The transaction digest is recomputed from the raw BCS-encoded transaction data and compared against the digest reported by the network."
+                    value={
+                        <span className="flex min-w-0 items-center gap-xxs">
+                            {digestMatches ? (
+                                <CheckmarkFilled className="h-4 w-4 shrink-0" />
+                            ) : (
+                                <Warning className="h-4 w-4 shrink-0" />
+                            )}
+                            <span className="min-w-0 truncate">
+                                {digestMatches
+                                    ? 'digest re-derived from the raw BCS — matches'
+                                    : 'digest re-derived from the raw BCS — mismatch'}
+                            </span>
+                        </span>
+                    }
+                    fullwidth={!isMediumOrAbove}
+                />
+            )}
             {transaction.effects?.executedEpoch && (
                 <KeyValueInfo
                     layout="receipt"
@@ -240,20 +254,6 @@ export function TransactionOverview({ transaction }: TransactionOverviewProps): 
                     keyText="Lamport Version"
                     tooltipText="The highest object version written by this transaction, used to order causally dependent transactions."
                     value={`v${lamportVersion}`}
-                    fullwidth={!isMediumOrAbove}
-                />
-            )}
-            {transaction.timestampMs && (
-                <KeyValueInfo
-                    layout="receipt"
-                    keyText="Timestamp"
-                    value={
-                        <DateDisplay
-                            timestamp={transaction.timestampMs}
-                            type="transaction"
-                            showTimeAgo
-                        />
-                    }
                     fullwidth={!isMediumOrAbove}
                 />
             )}
