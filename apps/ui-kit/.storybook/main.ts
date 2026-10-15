@@ -22,7 +22,7 @@ const config: StorybookConfig = {
     typescript: {
         reactDocgen: 'react-docgen-typescript',
         reactDocgenTypescriptOptions: {
-            exclude: ['**/.storybook/**'],
+            tsconfigPath: 'tsconfig.storybook.json',
         },
     },
     docs: {},

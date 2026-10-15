@@ -21,11 +21,11 @@
         "@tailwindcss/vite": "^4.2.2",
         "@types/react": "^18.3.28",
         "@types/react-dom": "^18.3.7",
-        "@vitejs/plugin-react": "^6.0.1",
+        "@vitejs/plugin-react": "^6.1.1",
         "oxfmt": "^0.41.0",
         "oxlint": "^1.56.0",
         "tailwindcss": "^4.2.2",
-        "typescript": "^5.9.3",
+        "typescript": "^7.0.2",
         "vite": "^8.0.1"
     }
 }

@@ -16,7 +16,7 @@ Sentry.init({
     tracesSampleRate: IS_PROD ? 0.0025 : 1.0,
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
-    debug: !IS_PROD,
+    debug: IS_SENTRY_ENABLED && !IS_PROD,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

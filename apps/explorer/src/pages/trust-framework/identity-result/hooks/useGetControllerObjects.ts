@@ -3,7 +3,7 @@
 
 import { getObjectOrPastObjectQuery } from '@iota/core';
 import { useIotaClient } from '@iota/dapp-kit';
-import type { IotaObjectData } from '@iota/iota-sdk/src/client';
+import type { IotaObjectData } from '@iota/iota-sdk/client';
 import { useQueries } from '@tanstack/react-query';
 import type { IdentityController } from '../types';
 import { extractControllerCaps } from '../helper';

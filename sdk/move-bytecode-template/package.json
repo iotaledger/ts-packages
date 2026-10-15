@@ -15,7 +15,7 @@
     "devDependencies": {
         "@iota/bcs": "workspace:*",
         "@iota/build-scripts": "workspace:*",
-        "typescript": "^5.5.3",
+        "typescript": "^7.0.2",
         "vitest": "^4.1.0",
         "wasm-pack": "^0.13.0"
     }

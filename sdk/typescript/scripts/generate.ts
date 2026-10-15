@@ -5,7 +5,7 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { format } from 'oxfmt';
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 
 import oxfmtConfig from '../../../.oxfmtrc.json' with { type: 'json' };
 import type {
