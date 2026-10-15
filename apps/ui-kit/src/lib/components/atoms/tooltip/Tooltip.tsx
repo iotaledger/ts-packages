@@ -14,6 +14,7 @@ interface TooltipProps {
     offset?: number;
     openDelay?: number;
     closeDelay?: number;
+    open?: boolean;
 }
 
 const OPPOSITE_POSITION: Record<TooltipPosition, TooltipPosition> = {
@@ -30,12 +31,14 @@ export function Tooltip({
     offset = 8,
     openDelay = 0,
     closeDelay = 100,
+    open: isOpenControlled,
     children,
 }: PropsWithChildren<TooltipProps>) {
     const triggerRef = useRef<HTMLDivElement>(null);
     const tooltipRef = useRef<HTMLDivElement>(null);
 
-    const [visible, setVisible] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const visible = isOpenControlled || isHovered;
     const [coords, setCoords] = useState({ top: 0, left: 0, overlapsTrigger: false });
 
     const openTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -48,12 +51,12 @@ export function Tooltip({
 
     const open = () => {
         clearTimers();
-        openTimer.current = setTimeout(() => setVisible(true), openDelay);
+        openTimer.current = setTimeout(() => setIsHovered(true), openDelay);
     };
 
     const close = () => {
         clearTimers();
-        closeTimer.current = setTimeout(() => setVisible(false), closeDelay);
+        closeTimer.current = setTimeout(() => setIsHovered(false), closeDelay);
     };
 
     const computePosition = (rect: DOMRect, placement: TooltipPosition) =>
@@ -141,7 +144,7 @@ export function Tooltip({
         if (!visible) return;
         const dismiss = () => {
             clearTimers();
-            setVisible(false);
+            setIsHovered(false);
         };
         window.addEventListener('scroll', dismiss, true);
         window.addEventListener('resize', dismiss);
