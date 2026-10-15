@@ -12,6 +12,11 @@ import type { KioskItem } from '@iota/kiosk';
 
 const RPC_PAGE_SIZE = 50;
 
+interface CategorizedElement {
+    address: string;
+    category: OwnedObjectCategory;
+}
+
 export enum OwnedObjectCategory {
     Nft = 'nft',
     Name = 'name',
@@ -210,11 +215,26 @@ export function useGetCategorizedOwnedObjects(
         },
     };
 
+    const [initialElement, setInitialElement] = useState<CategorizedElement | undefined>();
+    const pinnedCategory =
+        initialElement?.address === address && availableCategories.includes(initialElement.category)
+            ? initialElement.category
+            : undefined;
+
     const defaultCategory =
+        pinnedCategory ??
         availableCategories.find((category) => {
             const { count, hasNextPage } = categoryItems[category];
             return count > 0 && (count > pageSize || !hasNextPage);
-        }) ?? availableCategories[0];
+        }) ??
+        availableCategories[0];
+
+    useEffect(() => {
+        if (!isPending && !pinnedCategory && defaultCategory) {
+            setInitialElement({ address, category: defaultCategory });
+        }
+    }, [isPending, pinnedCategory, defaultCategory, address]);
+
     const activeCategory = isPending
         ? undefined
         : selectedCategory && availableCategories.includes(selectedCategory)
