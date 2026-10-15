@@ -100,4 +100,18 @@ describe('Gas payment resolution', () => {
         expect(result.effects?.status.status).toEqual('success');
         expect(result.transaction?.data.gasData.payment.length).toBe(MAX_GAS_OBJECTS);
     });
+
+    it(`uses ${MAX_GAS_OBJECTS} gas coins when transferring the gas coin`, async () => {
+        const tx = new Transaction();
+        tx.transferObjects([tx.gas], DEFAULT_RECIPIENT);
+
+        const result = await toolbox.client.signAndExecuteTransaction({
+            transaction: tx,
+            signer: toolbox.keypair,
+            options: { showEffects: true, showInput: true },
+        });
+
+        expect(result.effects?.status.status).toEqual('success');
+        expect(result.transaction?.data.gasData.payment.length).toBe(MAX_GAS_OBJECTS);
+    });
 });

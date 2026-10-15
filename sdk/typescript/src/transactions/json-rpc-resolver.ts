@@ -108,8 +108,6 @@ async function setGasBudget(
     );
 }
 
-// Uses all coins of the first page. If the owner has more pages, keeps the highest-balance coins
-// seen so far and only fetches the next page while they cannot pay for the transaction.
 async function setGasPayment(
     transactionData: TransactionDataBuilder,
     options: BuildTransactionOptions,
@@ -124,24 +122,26 @@ async function setGasPayment(
             input.Object?.ImmOrOwnedObject ? [input.Object.ImmOrOwnedObject.objectId] : [],
         ),
     );
+    const splitAmount = getGasCoinSplitAmount(transactionData);
+    const requiredAmount =
+        splitAmount === null ? null : BigInt(transactionData.gasData.budget ?? 0) + splitAmount;
 
     let paymentCoins: CoinStruct[] = [];
+    let availableBalance = 0n;
+    let availableCoinCount = 0;
     let cursor: string | null | undefined = null;
-    let hasNextPage = true;
-    let seenCoins = 0;
-
-    while (hasNextPage) {
+    do {
         const page = await client.getCoins({
             owner: transactionData.gasData.owner || transactionData.sender!,
             coinType: IOTA_TYPE_ARG,
             cursor,
         });
-        cursor = page.nextCursor;
-        hasNextPage = page.hasNextPage;
+        cursor = page.hasNextPage ? page.nextCursor : null;
 
         // Filter out coins that are also used as input:
         const availableCoins = page.data.filter((coin) => !inputObjectIds.has(coin.coinObjectId));
-        seenCoins += availableCoins.length;
+        availableBalance += sumBalances(availableCoins);
+        availableCoinCount += availableCoins.length;
 
         paymentCoins = [...paymentCoins, ...availableCoins]
             .sort((a, b) => {
@@ -149,68 +149,52 @@ async function setGasPayment(
                 return diff > 0n ? 1 : diff < 0n ? -1 : 0;
             })
             .slice(0, MAX_GAS_OBJECTS);
-
-        if (hasNextPage && (await canPayGas(transactionData, paymentCoins, client))) {
-            break;
-        }
-    }
+    } while (cursor && (requiredAmount === null || sumBalances(paymentCoins) < requiredAmount));
 
     if (!paymentCoins.length) {
         throw new Error('No valid gas coins found for the transaction.');
     }
 
-    if (
-        !hasNextPage &&
-        seenCoins > MAX_GAS_OBJECTS &&
-        !(await canPayGas(transactionData, paymentCoins, client))
-    ) {
+    transactionData.gasData.payment = toGasPayment(paymentCoins);
+    const paymentBalance = sumBalances(paymentCoins);
+    const coinLimitNote =
+        availableCoinCount > MAX_GAS_OBJECTS
+            ? ` Only the ${MAX_GAS_OBJECTS} largest of ${availableCoinCount} coins can pay gas, holding ${paymentBalance} of ${availableBalance}.`
+            : '';
+
+    if (requiredAmount !== null) {
+        if (paymentBalance >= requiredAmount) {
+            return;
+        }
         throw new Error(
-            `Not enough balance in ${MAX_GAS_OBJECTS} gas coins. Merge your coins or add funds.`,
+            availableBalance < requiredAmount
+                ? `Insufficient balance: ${requiredAmount} needed, ${availableBalance} available.`
+                : `Not enough balance in gas coins.${coinLimitNote} Merge your coins.`,
         );
     }
 
-    transactionData.gasData.payment = toGasPayment(paymentCoins);
+    // The budget dry run uses a placeholder gas coin, so only this one shows whether the chosen coins pay.
+    const { effects } = await client.dryRunTransactionBlock({
+        transactionBlock: transactionData.build(),
+    });
+    if (effects.status.status !== 'success') {
+        throw new Error(`Transaction cannot be paid: ${effects.status.error}.${coinLimitNote}`, {
+            cause: effects,
+        });
+    }
 }
 
-async function canPayGas(
-    transactionData: TransactionDataBuilder,
-    coins: CoinStruct[],
-    client: IotaClient,
-) {
-    const balance = coins.reduce((total, coin) => total + BigInt(coin.balance), 0n);
-    const budget = BigInt(transactionData.gasData.budget ?? 0);
-    if (balance < budget) {
-        return false;
-    }
-
-    const gasCoinSplitAmount = getGasCoinSplitAmount(transactionData);
-    if (gasCoinSplitAmount !== null) {
-        // The budget is reserved inside the gas coin, so only `balance - budget` can be split from it.
-        return balance - budget >= gasCoinSplitAmount;
-    }
-
-    const dryRunResult = await client.dryRunTransactionBlock({
-        transactionBlock: transactionData.build({
-            overrides: { gasData: { payment: toGasPayment(coins) } },
-        }),
-    });
-    const error = dryRunResult.effects.status.error ?? '';
-
-    return (
-        !error.includes('InsufficientCoinBalance') && !error.includes('Insufficient coin balance')
-    );
+function sumBalances(coins: CoinStruct[]) {
+    return coins.reduce((total, coin) => total + BigInt(coin.balance), 0n);
 }
 
 function getGasCoinSplitAmount(transactionData: TransactionDataBuilder): bigint | null {
     let isStaticallyKnown = true;
     transactionData.mapArguments((arg, command) => {
-        if (arg.$kind !== 'GasCoin') {
-            return arg;
-        }
-        const isSplitSource = command.$kind === 'SplitCoins' && arg === command.SplitCoins.coin;
-        const isTransferred =
-            command.$kind === 'TransferObjects' && command.TransferObjects.objects.includes(arg);
-        if (!isSplitSource && !isTransferred) {
+        if (
+            arg.$kind === 'GasCoin' &&
+            !(command.$kind === 'SplitCoins' && arg === command.SplitCoins.coin)
+        ) {
             isStaticallyKnown = false;
         }
         return arg;
