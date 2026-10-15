@@ -1,14 +1,8 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-    LabelText,
-    LabelTextSize,
-    Panel,
-    Title,
-    Tooltip,
-    TooltipPosition,
-} from '@iota/apps-ui-kit';
+import { Info } from '@iota/apps-ui-icons';
+import { Panel, Title, Tooltip, TooltipPosition } from '@iota/apps-ui-kit';
 import { ImageIcon, ImageIconSize } from '@iota/core';
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
@@ -66,20 +60,13 @@ export function EpochValidatorSet({
         <Panel>
             <Title title="Validators in this epoch" />
             <div className="flex flex-col gap-lg p-md--rs md:flex-row md:justify-between">
-                <div className="flex flex-row flex-wrap gap-xl">
-                    {counts.map(({ label, value, tooltipText }) => (
-                        <LabelText
-                            key={label}
-                            label={label}
-                            text={value.toString()}
-                            size={LabelTextSize.Large}
-                            tooltipText={tooltipText}
-                            tooltipPosition={TooltipPosition.Top}
-                        />
+                <div className="grid grid-cols-3 content-start gap-md md:w-1/2">
+                    {counts.map((count) => (
+                        <ValidatorCount key={count.label} {...count} />
                     ))}
                 </div>
 
-                <div className="flex w-full flex-col gap-sm md:max-w-[50%]">
+                <div className="flex w-full flex-col gap-sm md:w-1/2">
                     <div className="flex flex-row justify-between text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                         <span>Voting power distribution</span>
                         <span>
@@ -114,7 +101,7 @@ export function EpochValidatorSet({
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 gap-x-md gap-y-xs text-body-sm sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-x-md gap-y-xs text-body-sm sm:grid-cols-2">
                         {namedValidators.map((validator, index) => (
                             <VotingPowerLegendItem
                                 key={validator.iotaAddress}
@@ -133,6 +120,28 @@ export function EpochValidatorSet({
                 </div>
             </div>
         </Panel>
+    );
+}
+
+interface ValidatorCountProps {
+    label: string;
+    value: number;
+    tooltipText: string;
+}
+
+function ValidatorCount({ label, value, tooltipText }: ValidatorCountProps) {
+    return (
+        <div className="flex flex-col gap-xxs">
+            <span className="flex flex-row items-center gap-xxs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                {label}
+                <Tooltip text={tooltipText} position={TooltipPosition.Top}>
+                    <Info className="opacity-40" />
+                </Tooltip>
+            </span>
+            <span className="text-headline-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                {value}
+            </span>
+        </div>
     );
 }
 

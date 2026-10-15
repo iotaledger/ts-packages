@@ -50,18 +50,18 @@ export function EpochDetailSkeleton({ showEndOfEpochStats }: EpochDetailSkeleton
             <Panel>
                 <Title title="Validators in this epoch" />
                 <div className="flex flex-col gap-lg p-md--rs md:flex-row md:justify-between">
-                    <div className="flex flex-row flex-wrap gap-xl">
+                    <div className="grid grid-cols-3 content-start gap-md md:w-1/2">
                         {range(VALIDATOR_COUNTS).map((index) => (
                             <div key={index} className="flex flex-col gap-xs">
-                                <Skeleton className="!h-7 !w-12 !rounded-md" />
                                 <Skeleton className="!h-3 !w-28" />
+                                <Skeleton className="!h-7 !w-12 !rounded-md" />
                             </div>
                         ))}
                     </div>
-                    <div className="flex w-full flex-col gap-sm md:max-w-[50%]">
+                    <div className="flex w-full flex-col gap-sm md:w-1/2">
                         <Skeleton className="!h-3 !w-40" />
                         <Skeleton className="!h-3" />
-                        <div className="grid grid-cols-1 gap-x-md gap-y-xs sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-x-md gap-y-xs sm:grid-cols-2">
                             {range(LEGEND_ITEMS).map((index) => (
                                 <Skeleton key={index} className="my-xxxs !h-3" />
                             ))}
