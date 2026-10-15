@@ -198,7 +198,7 @@ export function Tooltip({
                         onMouseEnter={open}
                         onMouseLeave={close}
                     >
-                        <p className="w-full break-words">{text}</p>
+                        <div className="w-full break-words">{text}</div>
                     </div>,
                     document.body,
                 )}
