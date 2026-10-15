@@ -22,15 +22,27 @@ export enum CoinsFilter {
     NotRecognized = 'not-recognized',
 }
 
-export interface ListCoinsOptions {
-    filter: CoinsFilter;
-    search: string;
-    offset: number;
-    limit: number;
-}
-
 export interface CoinsResponse {
     coins: OnChainCoin[];
     nextOffset: number | null;
     counts: Record<CoinsFilter, number>;
+}
+
+export enum CoinsSort {
+    Name = 'name',
+    CreatedAt = 'createdAt',
+}
+
+export enum SortOrder {
+    Asc = 'asc',
+    Desc = 'desc',
+}
+
+export interface ListCoinsOptions {
+    filter: CoinsFilter;
+    search: string;
+    sort?: CoinsSort;
+    order: SortOrder;
+    offset: number;
+    limit: number;
 }

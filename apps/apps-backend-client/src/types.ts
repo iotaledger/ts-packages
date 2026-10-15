@@ -44,16 +44,21 @@ export interface OnChainCoin {
 
 export type CoinsFilter = 'all' | 'recognized' | 'not-recognized';
 
-export interface GetCoinsParams {
-    network: string;
-    filter: CoinsFilter;
-    search?: string;
-    offset?: number;
-    limit?: number;
-}
-
 export interface CoinsResponse {
     coins: OnChainCoin[];
     nextOffset: number | null;
     counts: Record<CoinsFilter, number>;
+}
+
+export type CoinsSort = 'name' | 'createdAt';
+export type SortOrder = 'asc' | 'desc';
+
+export interface GetCoinsParams {
+    network: string;
+    filter: CoinsFilter;
+    search?: string;
+    sort?: CoinsSort;
+    order?: SortOrder;
+    offset?: number;
+    limit?: number;
 }

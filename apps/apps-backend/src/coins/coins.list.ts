@@ -4,7 +4,14 @@
 import { CoinRegistryEntry } from '@iota/core/interfaces/coins.interfaces';
 import { normalizeStructTag } from '@iota/iota-sdk/utils';
 
-import { CoinsFilter, CoinsResponse, ListCoinsOptions, OnChainCoin } from './coins.types';
+import {
+    CoinsFilter,
+    CoinsResponse,
+    CoinsSort,
+    ListCoinsOptions,
+    OnChainCoin,
+    SortOrder,
+} from './coins.types';
 
 function byCreationDate(coin1: OnChainCoin, coin2: OnChainCoin): number {
     return (
@@ -33,13 +40,31 @@ function searchCoins(coins: OnChainCoin[], search: string): OnChainCoin[] {
     );
 }
 
+// Coins without a creation date go last in both orders.
+function compareCreatedAt(coin1: OnChainCoin, coin2: OnChainCoin, order: SortOrder): number {
+    if (coin1.createdAt === null || coin2.createdAt === null) {
+        return Number(coin1.createdAt === null) - Number(coin2.createdAt === null);
+    }
+    const difference = coin1.createdAt - coin2.createdAt;
+    return order === SortOrder.Asc ? difference : -difference;
+}
+
+function sortCoins(coins: OnChainCoin[], sort: CoinsSort | undefined, order: SortOrder) {
+    if (!sort) return coins;
+    return [...coins].sort((coin1, coin2) => {
+        if (sort === CoinsSort.CreatedAt) return compareCreatedAt(coin1, coin2, order);
+        const difference = coin1.name.localeCompare(coin2.name);
+        return order === SortOrder.Asc ? difference : -difference;
+    });
+}
+
 /**
  * Recognized coins first, in registry order, then the rest from oldest to newest.
  */
 export function listCoins(
     coins: OnChainCoin[],
     registry: CoinRegistryEntry[],
-    { filter, search, offset, limit }: ListCoinsOptions,
+    { filter, search, offset, limit, sort, order }: ListCoinsOptions,
 ): CoinsResponse {
     const coinsByType = new Map(coins.map((coin) => [coin.coinType, coin]));
     const recognized = registry.flatMap(({ coinType }) => {
@@ -56,7 +81,7 @@ export function listCoins(
         [CoinsFilter.Recognized]: recognized,
         [CoinsFilter.NotRecognized]: notRecognized,
     };
-    const matchingCoins = searchCoins(coinsByFilter[filter], search);
+    const matchingCoins = sortCoins(searchCoins(coinsByFilter[filter], search), sort, order);
     const end = offset + limit;
 
     return {

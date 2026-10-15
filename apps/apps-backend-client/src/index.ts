@@ -6,6 +6,7 @@ export type {
     CoinPriceResponse,
     CoinsFilter,
     CoinsResponse,
+    CoinsSort,
     FeatureDefinition,
     FeaturesResponse,
     FeatureResult,
@@ -13,6 +14,7 @@ export type {
     MonitorNetworkResponse,
     OnChainCoin,
     ProductAnalyticsConfigResponse,
+    SortOrder,
 } from './types';
 export {
     AppsBackendClientProvider,

@@ -15,7 +15,7 @@ import { Network } from '@iota/iota-sdk/client';
 
 import { CoinsService } from './coins.service';
 import { DEFAULT_COINS_LIMIT, INDEXED_NETWORKS, MAX_COINS_LIMIT } from './coins.constants';
-import { CoinsFilter, CoinsResponse } from './coins.types';
+import { CoinsFilter, CoinsResponse, CoinsSort, SortOrder } from './coins.types';
 
 @Controller('/coins')
 export class CoinsController {
@@ -29,6 +29,11 @@ export class CoinsController {
         @Query('search', new DefaultValuePipe('')) search: string,
         @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
         @Query('limit', new DefaultValuePipe(DEFAULT_COINS_LIMIT), ParseIntPipe) limit: number,
+        @Query('sort', new ParseEnumPipe(CoinsSort, { optional: true })) sort:
+            | CoinsSort
+            | undefined,
+        @Query('order', new DefaultValuePipe(SortOrder.Asc), new ParseEnumPipe(SortOrder))
+        order: SortOrder,
     ): Promise<CoinsResponse> {
         if (!INDEXED_NETWORKS.includes(network)) {
             throw new BadRequestException(`Coins are not indexed for network "${network}"`);
@@ -39,6 +44,8 @@ export class CoinsController {
             search: search.trim(),
             offset: Math.max(offset, 0),
             limit: Math.min(Math.max(limit, 1), MAX_COINS_LIMIT),
+            sort,
+            order,
         });
         if (!response) {
             throw new ServiceUnavailableException('Coins are still being indexed');

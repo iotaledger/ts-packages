@@ -123,6 +123,8 @@ export class AppsBackendClient {
         network,
         filter,
         search = '',
+        sort,
+        order = 'asc',
         offset = 0,
         limit = 20,
     }: GetCoinsParams): Promise<CoinsResponse> {
@@ -130,6 +132,7 @@ export class AppsBackendClient {
             network,
             filter,
             search,
+            ...(sort ? { sort, order } : {}),
             offset: String(offset),
             limit: String(limit),
         });
