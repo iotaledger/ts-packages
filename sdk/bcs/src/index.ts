@@ -30,6 +30,7 @@ import type {
     EnumInputShape,
     EnumOutputShape,
     EnumOutputShapeWithKeys,
+    JoinString,
     InferBcsInput,
     InferBcsType,
 } from './types.js';
@@ -64,4 +65,5 @@ export {
     type EnumOutputShape,
     type EnumInputShape,
     type EnumOutputShapeWithKeys,
+    type JoinString,
 };

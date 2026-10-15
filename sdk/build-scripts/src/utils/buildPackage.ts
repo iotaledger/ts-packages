@@ -8,6 +8,7 @@ import * as path from 'path';
 import dotenv from 'dotenv';
 import type { BuildOptions } from 'esbuild';
 import { build } from 'esbuild';
+import YAML from 'yaml';
 
 dotenv.config({
     path: [
@@ -32,11 +33,24 @@ const ignorePatterns = [/\.test.ts$/, /\.graphql$/];
 
 export async function buildPackage(buildOptions?: BuildOptions) {
     const allFiles = await findAllFiles(path.join(process.cwd(), 'src'));
+    const declarationFiles = allFiles.filter((file) => file.endsWith('.d.ts'));
+    const sourceFiles = allFiles.filter((file) => !file.endsWith('.d.ts'));
     const packageJson = await readPackageJson();
     await clean();
-    await buildCJS(allFiles, packageJson, buildOptions);
-    await buildESM(allFiles, packageJson, buildOptions);
+    await buildCJS(sourceFiles, packageJson, buildOptions);
+    await copyDeclarationFiles(declarationFiles, 'dist/cjs');
+    await buildESM(sourceFiles, packageJson, buildOptions);
+    await copyDeclarationFiles(declarationFiles, 'dist/esm');
     await buildImportDirectories(packageJson);
+}
+
+async function copyDeclarationFiles(files: string[], outdir: string) {
+    const srcDir = path.join(process.cwd(), 'src');
+    for (const file of files) {
+        const target = path.join(process.cwd(), outdir, path.relative(srcDir, file));
+        await fs.mkdir(path.dirname(target), { recursive: true });
+        await fs.copyFile(file, target);
+    }
 }
 
 async function findAllFiles(dir: string, files: string[] = []) {
@@ -132,7 +146,7 @@ async function buildESM(
 }
 
 async function buildTypes(config: string) {
-    const tsc = require.resolve('typescript/bin/tsc');
+    const tsc = path.join(path.dirname(require.resolve('typescript/package.json')), 'bin/tsc');
     execSync(`node ${tsc} --build ${config}`, {
         stdio: 'inherit',
         cwd: process.cwd(),
@@ -226,19 +240,25 @@ async function addPackageFiles(paths: string[]) {
 }
 
 async function addIgnoredWorkspaces(paths: string[]) {
-    const file = await fs.readFile(path.join(process.cwd(), '../../pnpm-workspace.yaml'), 'utf-8');
-    const lines = file.split('\n').filter(Boolean);
-    let changed = false;
+    const workspacePath = path.join(process.cwd(), '../../pnpm-workspace.yaml');
+    const doc = YAML.parseDocument(await fs.readFile(workspacePath, 'utf-8'));
+    const packages = doc.get('packages') as YAML.YAMLSeq<YAML.Scalar<string>>;
 
-    for (const path of paths) {
-        if (!lines.find((line) => line.includes(`!${path}`))) {
-            changed = true;
-            lines.push(`  - "!${path}"`);
-        }
+    const ignoredGlobs = packages.items
+        .map((item) => item.value)
+        .filter((value) => value.startsWith('!'))
+        .map((value) => value.slice(1));
+    const missing = new Set(
+        paths.filter((p) => !ignoredGlobs.some((glob) => path.matchesGlob(p, glob))),
+    );
+
+    if (!missing.size) return;
+
+    for (const value of missing) {
+        const scalar = new YAML.Scalar(`!${value}`);
+        scalar.type = YAML.Scalar.QUOTE_DOUBLE;
+        packages.add(scalar);
     }
 
-    if (changed) {
-        lines.push('');
-        await fs.writeFile(path.join(process.cwd(), '../../pnpm-workspace.yaml'), lines.join('\n'));
-    }
+    await fs.writeFile(workspacePath, doc.toString());
 }

@@ -10,9 +10,6 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T
     const getValue = useCallback(() => {
         try {
             if (typeof window === 'undefined') {
-                console.warn(
-                    `Tried reading localStorage key "${key}" even though window is not defined`,
-                );
                 return initialValue;
             }
             const item = window.localStorage.getItem(key);

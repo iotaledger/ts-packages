@@ -1,5 +1,4 @@
 {
-    "extends": "./tsconfig.base.json",
-    "include": ["src"],
-    "exclude": ["node_modules", "src/storybook"]
+    "files": [],
+    "references": [{ "path": "./tsconfig.lib.json" }, { "path": "./tsconfig.storybook.json" }]
 }

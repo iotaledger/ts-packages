@@ -43,7 +43,7 @@ export const Default: Story = {
             },
         },
         icon: {
-            control: 'none',
+            control: false,
         },
         style: {
             control: {
