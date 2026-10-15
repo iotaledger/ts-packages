@@ -80,7 +80,7 @@ function ObjectTypeCell({ objectType }: { objectType?: string }): JSX.Element {
 
     return (
         <TableCellBase>
-            <div className="flex items-center gap-xxs" title={objectType}>
+            <div className="flex items-center gap-xxs whitespace-nowrap" title={objectType}>
                 <Badge
                     type={BadgeType.PrimarySoft}
                     label={objectType ? getShortObjectType(objectType) : 'Package'}
@@ -170,7 +170,13 @@ export function generateObjectChangesTableColumns(
                                 />
                             )}
                             <div className="flex flex-col gap-xs">
-                                {name && <TableCellText>{name}</TableCellText>}
+                                {name && (
+                                    <TableCellText>
+                                        <span className="block max-w-[200px] truncate" title={name}>
+                                            {name}
+                                        </span>
+                                    </TableCellText>
+                                )}
                                 <ObjectLink
                                     objectId={row.original.objectId}
                                     copyText={row.original.objectId}
