@@ -31,7 +31,7 @@ import {
     ROW_LINK_PROPS,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
-import { CoinFormat, formatAddress, IOTA_DECIMALS, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { formatAddress, IOTA_DECIMALS, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { TableCard, ValidatorLink } from '../ui';
 import { TableCoinDisplay } from '../TableCoinDisplay';
@@ -233,7 +233,7 @@ interface StakingStatProps {
 }
 
 function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX.Element {
-    const [, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+    const [, symbol] = useFormatCoin({ balance: value });
     return (
         <DisplayStats
             label={label}
