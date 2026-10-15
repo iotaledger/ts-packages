@@ -7,6 +7,7 @@ import { ImageIcon, ImageIconSize } from '@iota/core';
 import type { IotaValidatorSummary } from '@iota/iota-sdk/client';
 import { CoinFormat, formatBalance, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import cx from 'clsx';
+import { useState } from 'react';
 import { LinkWithQuery, useNavigateWithQuery } from '~/components/ui';
 import { getInternalPath } from '~/lib/utils';
 
@@ -19,6 +20,12 @@ const sumVotingPower = (validators: IotaValidatorSummary[]) =>
     validators.reduce((sum, { votingPower }) => sum + Number(votingPower), 0);
 
 const getShadeOpacity = (index: number) => 1 - index * 0.08;
+
+const OTHER_SEGMENT = 'other';
+
+const LEGEND_ITEM_CLASSES = 'flex min-w-0 flex-row items-center gap-xs';
+const LEGEND_LINK_CLASSES =
+    '-mx-xxs rounded px-xxs transition-colors hover:bg-iota-primary-90/30 hover:ring-1 hover:ring-iota-primary-70/60 dark:hover:bg-iota-primary-70/30';
 
 interface EpochValidatorSetProps {
     validators: IotaValidatorSummary[];
@@ -36,6 +43,8 @@ export function EpochValidatorSet({
     const otherValidators = byVotingPower.slice(NAMED_VALIDATORS);
     const otherVotingPower = sumVotingPower(otherValidators);
     const namedVotingPower = sumVotingPower(namedValidators);
+
+    const [highlightedSegment, setHighlightedSegment] = useState<string | null>(null);
 
     const counts = [
         {
@@ -81,6 +90,7 @@ export function EpochValidatorSet({
                                 validator={validator}
                                 opacity={getShadeOpacity(index)}
                                 isFirst={index === 0}
+                                isHighlighted={highlightedSegment === validator.iotaAddress}
                             />
                         ))}
                         {otherValidators.length > 0 && (
@@ -97,6 +107,7 @@ export function EpochValidatorSet({
                                     </span>
                                 }
                                 className="rounded-r-full bg-iota-neutral-80 dark:bg-iota-neutral-30"
+                                isHighlighted={highlightedSegment === OTHER_SEGMENT}
                             />
                         )}
                     </div>
@@ -108,12 +119,19 @@ export function EpochValidatorSet({
                                 label={validator.name}
                                 votingPower={Number(validator.votingPower)}
                                 opacity={getShadeOpacity(index)}
+                                to={getInternalPath('validator', validator.iotaAddress)}
+                                onHighlight={(isOn) =>
+                                    setHighlightedSegment(isOn ? validator.iotaAddress : null)
+                                }
                             />
                         ))}
                         {otherValidators.length > 0 && (
                             <VotingPowerLegendItem
                                 label={`Other ${otherValidators.length}`}
                                 votingPower={otherVotingPower}
+                                onHighlight={(isOn) =>
+                                    setHighlightedSegment(isOn ? OTHER_SEGMENT : null)
+                                }
                             />
                         )}
                     </div>
@@ -149,9 +167,15 @@ interface VotingPowerBarSegmentProps {
     validator: IotaValidatorSummary;
     opacity: number;
     isFirst: boolean;
+    isHighlighted: boolean;
 }
 
-function VotingPowerBarSegment({ validator, opacity, isFirst }: VotingPowerBarSegmentProps) {
+function VotingPowerBarSegment({
+    validator,
+    opacity,
+    isFirst,
+    isHighlighted,
+}: VotingPowerBarSegmentProps) {
     const navigate = useNavigateWithQuery();
     const validatorPath = getInternalPath('validator', validator.iotaAddress);
 
@@ -169,6 +193,7 @@ function VotingPowerBarSegment({ validator, opacity, isFirst }: VotingPowerBarSe
             )}
             opacity={opacity}
             onClick={openValidator}
+            isHighlighted={isHighlighted}
             tooltip={
                 <span className="flex flex-col gap-xxxs text-body-sm">
                     <LinkWithQuery
@@ -208,21 +233,33 @@ interface BarSegmentProps {
     className: string;
     opacity?: number;
     onClick?: () => void;
+    isHighlighted: boolean;
 }
 
-function BarSegment({ votingPower, tooltip, className, opacity, onClick }: BarSegmentProps) {
+function BarSegment({
+    votingPower,
+    tooltip,
+    className,
+    opacity,
+    onClick,
+    isHighlighted,
+}: BarSegmentProps) {
     return (
         <div
             className="h-full [&>div]:block [&>div]:h-full"
             style={{ width: formatVotingPower(votingPower) }}
         >
-            <Tooltip text={tooltip} maxWidth="max-w-[260px]">
+            <Tooltip text={tooltip} maxWidth="max-w-[260px]" open={isHighlighted}>
                 <div
                     role={onClick ? 'link' : undefined}
                     tabIndex={0}
                     onClick={onClick}
                     onKeyDown={(event) => event.key === 'Enter' && onClick?.()}
-                    className={cx('h-full transition-opacity hover:!opacity-100', className)}
+                    className={cx(
+                        'h-full transition-opacity hover:!opacity-100',
+                        isHighlighted && '!opacity-100',
+                        className,
+                    )}
                     style={{ opacity }}
                 />
             </Tooltip>
@@ -234,11 +271,19 @@ interface VotingPowerLegendItemProps {
     label: string;
     votingPower: number;
     opacity?: number;
+    to?: string;
+    onHighlight: (isHighlighted: boolean) => void;
 }
 
-function VotingPowerLegendItem({ label, votingPower, opacity }: VotingPowerLegendItemProps) {
-    return (
-        <div className="flex min-w-0 flex-row items-center gap-xs">
+function VotingPowerLegendItem({
+    label,
+    votingPower,
+    opacity,
+    to,
+    onHighlight,
+}: VotingPowerLegendItemProps) {
+    const content = (
+        <>
             <span
                 className={
                     opacity === undefined
@@ -253,6 +298,26 @@ function VotingPowerLegendItem({ label, votingPower, opacity }: VotingPowerLegen
             <span className="ml-auto text-iota-neutral-40 dark:text-iota-neutral-60">
                 {formatVotingPower(votingPower)}
             </span>
+        </>
+    );
+    const highlightProps = {
+        onMouseEnter: () => onHighlight(true),
+        onMouseLeave: () => onHighlight(false),
+        onFocus: () => onHighlight(true),
+        onBlur: () => onHighlight(false),
+    };
+
+    return to ? (
+        <LinkWithQuery
+            to={to}
+            className={cx(LEGEND_ITEM_CLASSES, LEGEND_LINK_CLASSES)}
+            {...highlightProps}
+        >
+            {content}
+        </LinkWithQuery>
+    ) : (
+        <div className={LEGEND_ITEM_CLASSES} {...highlightProps}>
+            {content}
         </div>
     );
 }
