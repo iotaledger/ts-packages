@@ -78,31 +78,36 @@ function createInternalLink<T extends string>(
                     truncateUnknown={!noTruncate}
                     hideAlias={hideAlias}
                     renderAddress={(address, copyButton, hasAlias) => (
-                        <NamedAddressTooltip
-                            name={hasAlias ? undefined : iotaName}
-                            address={address}
-                        >
-                            <span className="inline-flex max-w-full items-center gap-x-xs whitespace-nowrap">
-                                {iotaName ? (
-                                    <NameAvatar address={id} size={NameAvatarSize.Xxs} />
-                                ) : null}
-                                <span className="inline-flex min-w-0 items-center">
-                                    <Link
-                                        className={clsx(
-                                            'shrink-0 truncate text-iota-primary-30 dark:text-iota-primary-80',
-                                            className,
-                                        )}
-                                        variant="mono"
-                                        size={hasAlias ? 'sm' : undefined}
-                                        to={to}
-                                        {...props}
-                                    >
-                                        {hasAlias ? label || address : iotaName || label || address}
-                                    </Link>
-                                    {copyButton}
+                        <span className="block [&>div]:max-w-full">
+                            <NamedAddressTooltip
+                                name={hasAlias ? undefined : iotaName}
+                                address={address}
+                            >
+                                <span className="inline-flex max-w-full items-center gap-x-xs whitespace-nowrap">
+                                    {iotaName ? (
+                                        <NameAvatar address={id} size={NameAvatarSize.Xxs} />
+                                    ) : null}
+                                    <span className="inline-flex min-w-0 items-center">
+                                        <Link
+                                            className={clsx(
+                                                'min-w-0 truncate text-iota-primary-30 dark:text-iota-primary-80 [&>div]:truncate',
+                                                className,
+                                            )}
+                                            variant="mono"
+                                            display="block"
+                                            size={hasAlias ? 'sm' : undefined}
+                                            to={to}
+                                            {...props}
+                                        >
+                                            {hasAlias
+                                                ? label || address
+                                                : iotaName || label || address}
+                                        </Link>
+                                        {copyButton}
+                                    </span>
                                 </span>
-                            </span>
-                        </NamedAddressTooltip>
+                            </NamedAddressTooltip>
+                        </span>
                     )}
                     renderAlias={renderAddressAlias}
                 />
