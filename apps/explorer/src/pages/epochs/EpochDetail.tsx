@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import cx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -335,7 +336,7 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                         <div className="flex flex-col gap-lg">
                             <ProgressBar
                                 progress={endOfEpochInfo ? 100 : progress || 0}
-                                size="large"
+                                size="medium"
                             />
                             <div className="flex flex-row items-start justify-between gap-md">
                                 <div className="min-w-0">
@@ -373,11 +374,15 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                                 </div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-x-md gap-y-md pb-md sm:flex sm:flex-row sm:justify-center sm:gap-x-2xl">
-                            {stats.map(({ label, value }) => (
+                        <div className="grid grid-cols-2 gap-x-md gap-y-md pb-md sm:flex sm:flex-row sm:justify-center sm:gap-x-0">
+                            {stats.map(({ label, value }, index) => (
                                 <div
                                     key={label}
-                                    className="flex flex-col items-center gap-xxs text-center"
+                                    className={cx(
+                                        'flex flex-col items-center gap-xxs text-center sm:px-xl',
+                                        index > 0 &&
+                                            'sm:border-l sm:border-iota-neutral-90 sm:dark:border-iota-neutral-20',
+                                    )}
                                 >
                                     <span className="text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
                                         {label}
