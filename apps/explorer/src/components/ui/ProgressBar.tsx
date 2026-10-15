@@ -2,15 +2,24 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+type ProgressBarSize = 'small' | 'medium' | 'large';
+
+const sizes: Record<ProgressBarSize, string> = {
+    small: 'h-1',
+    medium: 'h-2',
+    large: 'h-3',
+};
+
 export interface ProgressBarProps {
     progress: number;
+    size?: ProgressBarSize;
 }
 
-export function ProgressBar({ progress }: ProgressBarProps): JSX.Element {
+export function ProgressBar({ progress, size = 'small' }: ProgressBarProps): JSX.Element {
     return (
         <div className="relative w-full rounded-full bg-iota-primary-90 dark:bg-iota-primary-10">
             <div
-                className="h-1 rounded-full bg-iota-primary-30 dark:bg-iota-primary-80"
+                className={`${sizes[size]} rounded-full bg-iota-primary-30 dark:bg-iota-primary-80`}
                 style={{ width: `${progress}%` }}
             />
         </div>

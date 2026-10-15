@@ -18,22 +18,27 @@ import {
     Panel,
     SegmentedButton,
     SegmentedButtonType,
+    LabelText,
+    LabelTextSize,
+    Badge,
+    BadgeType,
 } from '@iota/apps-ui-kit';
-import { CheckpointsTable, PageLayout } from '~/components';
-import { LinkWithQuery, TableCard } from '~/components/ui';
+import { CheckpointsTable, PageLayout, DateDisplay } from '~/components';
+import { LinkWithQuery, ProgressBar, TableCard } from '~/components/ui';
 import { useEnhancedRpcClient } from '~/hooks/useEnhancedRpc';
 import { EpochStats, EpochStatsGrid } from './stats/EpochStats';
 import { ValidatorStatus } from './stats/ValidatorStatus';
 import { generateValidatorsTableColumns } from '~/lib/ui/utils/generateValidatorsTableColumns';
-import cx from 'clsx';
 import { TokenStats } from './stats/TokenStats';
-import { EpochTopStats } from './stats/EpochTopStats';
 import { getEpochStorageFundFlow, getInternalPath } from '~/lib/utils';
 import { ArrowLeft, ArrowRight, Warning } from '@iota/apps-ui-icons';
 import { VALIDATORS_EVENTS_QUERY } from '@iota/core';
 import { useEndOfEpochTransactionFromCheckpoint } from '~/hooks/useEndOfEpochTransactionFromCheckpoint';
-import { type IotaEvent } from '@iota/iota-sdk/client';
+import { type EndOfEpochInfo, type IotaEvent } from '@iota/iota-sdk/client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
+import { useEpochProgress } from './utils';
+
+import { getSupplyChangeAfterEpochEnd } from '~/lib';
 
 enum EpochTabs {
     Checkpoints = 'checkpoints',
@@ -128,130 +133,238 @@ export function EpochDetail() {
     return (
         <PageLayout
             content={
-                <div className="flex flex-col gap-2xl">
-                    <div
-                        className={cx(
-                            'grid grid-cols-1 gap-md--rs',
-                            isCurrentEpoch ? 'md:grid-cols-2' : 'md:grid-cols-3',
-                        )}
-                    >
-                        <EpochStats
-                            title={`Epoch ${epochData.epoch}`}
-                            subtitle={isCurrentEpoch ? 'In progress' : 'Ended'}
-                            trailingElement={
-                                <div className="flex flex-row gap-x-xs">
-                                    <LinkWithQuery to={`/epoch/${Number(epochData.epoch) - 1}`}>
-                                        <Button
-                                            type={ButtonType.Secondary}
-                                            size={ButtonSize.Small}
-                                            icon={<ArrowLeft />}
-                                            disabled={epochData.epoch === '0'}
-                                            aria-label="Go to previous epoch"
-                                        />
-                                    </LinkWithQuery>
-                                    <LinkWithQuery to={`/epoch/${Number(epochData.epoch) + 1}`}>
-                                        <Button
-                                            type={ButtonType.Secondary}
-                                            size={ButtonSize.Small}
-                                            icon={<ArrowRight />}
-                                            disabled={!epochData?.endOfEpochInfo}
-                                            aria-label="Go to next epoch"
-                                        />
-                                    </LinkWithQuery>
-                                </div>
-                            }
-                        >
-                            <EpochTopStats
-                                inProgress={isCurrentEpoch}
-                                start={Number(epochData.epochStartTimestamp)}
-                                end={Number(epochData.endOfEpochInfo?.epochEndTimestamp ?? 0)}
+                <div className="relative">
+                    <NavigateEpochButtons
+                        epoch={Number(epochData.epoch)}
+                        hasNextEpoch={!!epochData?.endOfEpochInfo}
+                    />
+
+                    <div className="flex flex-col gap-xl">
+                        <div className="pt-md--rs text-display-sm text-iota-neutral-10 dark:text-iota-neutral-92">
+                            Epoch
+                        </div>
+
+                        <div className="flex flex-col gap-lg">
+                            <EpochPageHero
+                                epoch={Number(epochData.epoch)}
+                                startTimestamp={Number(epochData.epochStartTimestamp)}
                                 endOfEpochInfo={epochData.endOfEpochInfo}
                             />
-                        </EpochStats>
-                        {!isCurrentEpoch && (
-                            <>
-                                <EpochStats title="Rewards">
-                                    <EpochStatsGrid>
-                                        <TokenStats
-                                            label="Total Stake"
-                                            amount={epochData.endOfEpochInfo?.totalStake}
-                                        />
-                                        <TokenStats
-                                            label="Stake Rewards"
-                                            amount={
-                                                epochData.endOfEpochInfo
-                                                    ?.totalStakeRewardsDistributed
-                                            }
-                                        />
-                                        <TokenStats
-                                            label="Gas Fees"
-                                            amount={epochData.endOfEpochInfo?.totalGasFees}
-                                        />
-                                    </EpochStatsGrid>
-                                </EpochStats>
 
-                                <EpochStats title="Storage Fund Balance">
-                                    <EpochStatsGrid>
-                                        <TokenStats
-                                            label="Fund Size"
-                                            amount={epochData.endOfEpochInfo?.storageFundBalance}
-                                        />
-                                        <TokenStats label="Net Inflow" amount={netInflow} />
-                                        <TokenStats label="Fund Inflow" amount={fundInflow} />
-                                        <TokenStats label="Fund Outflow" amount={fundOutflow} />
-                                    </EpochStatsGrid>
-                                </EpochStats>
-                            </>
-                        )}
+                            {!isCurrentEpoch && (
+                                <>
+                                    <EpochStats title="Rewards">
+                                        <EpochStatsGrid>
+                                            <TokenStats
+                                                label="Total Stake"
+                                                amount={epochData.endOfEpochInfo?.totalStake}
+                                            />
+                                            <TokenStats
+                                                label="Stake Rewards"
+                                                amount={
+                                                    epochData.endOfEpochInfo
+                                                        ?.totalStakeRewardsDistributed
+                                                }
+                                            />
+                                            <TokenStats
+                                                label="Gas Fees"
+                                                amount={epochData.endOfEpochInfo?.totalGasFees}
+                                            />
+                                        </EpochStatsGrid>
+                                    </EpochStats>
 
-                        {isCurrentEpoch && <ValidatorStatus />}
+                                    <EpochStats title="Storage Fund Balance">
+                                        <EpochStatsGrid>
+                                            <TokenStats
+                                                label="Fund Size"
+                                                amount={
+                                                    epochData.endOfEpochInfo?.storageFundBalance
+                                                }
+                                            />
+                                            <TokenStats label="Net Inflow" amount={netInflow} />
+                                            <TokenStats label="Fund Inflow" amount={fundInflow} />
+                                            <TokenStats label="Fund Outflow" amount={fundOutflow} />
+                                        </EpochStatsGrid>
+                                    </EpochStats>
+                                </>
+                            )}
+
+                            {isCurrentEpoch && <ValidatorStatus />}
+                        </div>
+
+                        <Panel>
+                            <div className="relative">
+                                <SegmentedButton
+                                    type={SegmentedButtonType.Transparent}
+                                    shape={ButtonSegmentType.Underlined}
+                                >
+                                    <ButtonSegment
+                                        type={ButtonSegmentType.Underlined}
+                                        label="Checkpoints"
+                                        selected={activeTabId === EpochTabs.Checkpoints}
+                                        onClick={() => setActiveTabId(EpochTabs.Checkpoints)}
+                                    />
+                                    <ButtonSegment
+                                        type={ButtonSegmentType.Underlined}
+                                        label="Participating Validators"
+                                        selected={activeTabId === EpochTabs.Validators}
+                                        onClick={() => setActiveTabId(EpochTabs.Validators)}
+                                    />
+                                </SegmentedButton>
+                            </div>
+                            <div className="p-md">
+                                {activeTabId === EpochTabs.Checkpoints ? (
+                                    <CheckpointsTable
+                                        initialCursor={initialCursorPlusOne}
+                                        maxCursor={epochData.firstCheckpointId}
+                                        initialLimit={20}
+                                    />
+                                ) : null}
+                                {activeTabId === EpochTabs.Validators &&
+                                committeeMembers &&
+                                tableColumns ? (
+                                    <TableCard
+                                        sortTable
+                                        defaultSorting={[
+                                            { id: 'stakingPoolIotaBalance', desc: true },
+                                        ]}
+                                        data={committeeMembers}
+                                        columns={tableColumns}
+                                        getRowHref={({ iotaAddress }) =>
+                                            getInternalPath('validator', iotaAddress)
+                                        }
+                                    />
+                                ) : null}
+                            </div>
+                        </Panel>
                     </div>
-
-                    <Panel>
-                        <div className="relative">
-                            <SegmentedButton
-                                type={SegmentedButtonType.Transparent}
-                                shape={ButtonSegmentType.Underlined}
-                            >
-                                <ButtonSegment
-                                    type={ButtonSegmentType.Underlined}
-                                    label="Checkpoints"
-                                    selected={activeTabId === EpochTabs.Checkpoints}
-                                    onClick={() => setActiveTabId(EpochTabs.Checkpoints)}
-                                />
-                                <ButtonSegment
-                                    type={ButtonSegmentType.Underlined}
-                                    label="Participating Validators"
-                                    selected={activeTabId === EpochTabs.Validators}
-                                    onClick={() => setActiveTabId(EpochTabs.Validators)}
-                                />
-                            </SegmentedButton>
-                        </div>
-                        <div className="p-md">
-                            {activeTabId === EpochTabs.Checkpoints ? (
-                                <CheckpointsTable
-                                    initialCursor={initialCursorPlusOne}
-                                    maxCursor={epochData.firstCheckpointId}
-                                    initialLimit={20}
-                                />
-                            ) : null}
-                            {activeTabId === EpochTabs.Validators &&
-                            committeeMembers &&
-                            tableColumns ? (
-                                <TableCard
-                                    sortTable
-                                    defaultSorting={[{ id: 'stakingPoolIotaBalance', desc: true }]}
-                                    data={committeeMembers}
-                                    columns={tableColumns}
-                                    getRowHref={({ iotaAddress }) =>
-                                        getInternalPath('validator', iotaAddress)
-                                    }
-                                />
-                            ) : null}
-                        </div>
-                    </Panel>
                 </div>
             }
         />
+    );
+}
+
+interface NavigateEpochButtonsProps {
+    epoch: number;
+    hasNextEpoch?: boolean;
+}
+function NavigateEpochButtons({ epoch, hasNextEpoch }: NavigateEpochButtonsProps) {
+    return (
+        <div className="container fixed left-0 right-0 top-1/2 flex w-full justify-between">
+            <div className="bg-page -translate-x-3/4 rounded-full p-1">
+                <LinkWithQuery to={`/epoch/${epoch - 1}`}>
+                    <Button
+                        type={ButtonType.Secondary}
+                        size={ButtonSize.Medium}
+                        icon={<ArrowLeft className="size-5" />}
+                        disabled={epoch === 0}
+                        aria-label="Go to previous epoch"
+                    />
+                </LinkWithQuery>
+            </div>
+
+            <div className="bg-page translate-x-3/4 rounded-full p-1">
+                <LinkWithQuery to={`/epoch/${epoch + 1}`}>
+                    <Button
+                        type={ButtonType.Secondary}
+                        size={ButtonSize.Medium}
+                        icon={<ArrowRight className="size-5" />}
+                        disabled={!hasNextEpoch}
+                        aria-label="Go to next epoch"
+                    />
+                </LinkWithQuery>
+            </div>
+        </div>
+    );
+}
+
+interface EpochPageHeroProps {
+    epoch: number;
+    startTimestamp: number;
+    endOfEpochInfo?: EndOfEpochInfo | null;
+}
+function EpochPageHero({ epoch, startTimestamp, endOfEpochInfo }: EpochPageHeroProps) {
+    const { progress, end } = useEpochProgress();
+
+    const epochFinished = !!endOfEpochInfo?.epochEndTimestamp;
+
+    return (
+        <Panel>
+            <div className="flex flex-col">
+                <div className="flex w-full flex-col gap-xs p-md--rs">
+                    <div className="flex w-full flex-row items-center justify-center pt-md">
+                        <Badge
+                            type={epochFinished ? BadgeType.Success : BadgeType.Neutral}
+                            label={epochFinished ? 'Completed' : 'In Progress'}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-xl">
+                        <h2 className="title-main-color flex w-full flex-col gap-xxxs text-center">
+                            <span className="text-7xl text-display-lg">{epoch + 1}</span>
+                        </h2>
+                        <div className="flex flex-col gap-lg">
+                            <ProgressBar
+                                progress={endOfEpochInfo ? 100 : progress || 0}
+                                size="large"
+                            />
+                            <div className="flex flex-row items-center justify-between">
+                                <LabelText
+                                    label="Started"
+                                    size={LabelTextSize.Medium}
+                                    text={
+                                        <DateDisplay
+                                            timestamp={startTimestamp}
+                                            type="epoch"
+                                            relativeTimeHelperText="ago"
+                                        />
+                                    }
+                                />
+
+                                <div className="[&>div]:items-end">
+                                    <LabelText
+                                        label={epochFinished ? 'Ended' : 'Ends'}
+                                        size={LabelTextSize.Medium}
+                                        text={
+                                            <DateDisplay
+                                                timestamp={Number(
+                                                    endOfEpochInfo?.epochEndTimestamp ?? end,
+                                                )}
+                                                type="epoch"
+                                                relativeTimeHelperText={
+                                                    epochFinished ? 'ago' : 'left'
+                                                }
+                                            />
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {endOfEpochInfo && (
+                            <EpochStatsGrid>
+                                <>
+                                    <TokenStats
+                                        label="Burnt Tokens"
+                                        size={LabelTextSize.Large}
+                                        amount={BigInt(endOfEpochInfo?.burntTokensAmount)}
+                                    />
+                                    <TokenStats
+                                        label="Minted Tokens"
+                                        size={LabelTextSize.Large}
+                                        amount={BigInt(endOfEpochInfo?.mintedTokensAmount)}
+                                    />
+                                    <TokenStats
+                                        label="Supply Change"
+                                        size={LabelTextSize.Large}
+                                        amount={getSupplyChangeAfterEpochEnd(endOfEpochInfo)}
+                                        showSign
+                                    />
+                                </>
+                            </EpochStatsGrid>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </Panel>
     );
 }

@@ -19,6 +19,7 @@ interface DateDisplayProps {
     showTimeAgo?: boolean;
     showTooltip?: boolean;
     showHoverStyle?: boolean;
+    relativeTimeHelperText?: string;
 }
 
 export function DateDisplay({
@@ -27,6 +28,7 @@ export function DateDisplay({
     showTimeAgo = false,
     showTooltip = true,
     showHoverStyle = true,
+    relativeTimeHelperText,
 }: DateDisplayProps): JSX.Element {
     const effectiveType = type ?? GLOBAL_DATE_TYPE;
     const timestampMs = Number(timestamp);
@@ -68,6 +70,10 @@ export function DateDisplay({
             }
         >
             {displayed}
+
+            {format === 'default' && relativeTimeHelperText ? (
+                <span> {relativeTimeHelperText}</span>
+            ) : null}
         </time>
     );
 
