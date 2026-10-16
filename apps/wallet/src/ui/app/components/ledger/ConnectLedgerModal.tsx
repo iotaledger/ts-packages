@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { useIotaLedgerClient } from '_components';
 import { useState } from 'react';
 import { Button, ButtonType, Dialog, DialogBody, DialogContent, Header } from '@iota/apps-ui-kit';
@@ -90,11 +89,6 @@ export function ConnectLedgerModal({
                             </span>
                             <Link
                                 to={LEDGER_SUPPORT_LINK}
-                                onClick={() =>
-                                    ampli.openedLink({
-                                        type: 'ledger support',
-                                    })
-                                }
                                 className="text-body-md text-iota-primary-30 no-underline dark:text-iota-primary-80"
                                 target="_blank"
                                 rel="noreferrer"

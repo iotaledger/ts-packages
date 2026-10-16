@@ -90,7 +90,6 @@ export function ProtectAccountForm({
                     {...register('password.input', { shouldUnregister: true })}
                     name="password.input"
                     data-testid="password.input"
-                    data-amp-mask
                 />
                 <Input
                     type={InputType.Password}
@@ -101,7 +100,6 @@ export function ProtectAccountForm({
                     {...register('password.confirmation', { shouldUnregister: true })}
                     name="password.confirmation"
                     data-testid="password.confirmation"
-                    data-amp-mask
                 />
                 <AutoLockSelector />
             </div>
@@ -117,7 +115,6 @@ export function ProtectAccountForm({
                                 <ExternalLink
                                     href={ToS_LINK}
                                     className="text-label-lg text-iota-primary-30 dark:text-iota-primary-80"
-                                    type="legal"
                                 >
                                     Terms of Services
                                 </ExternalLink>

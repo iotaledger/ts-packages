@@ -22,7 +22,6 @@ import {
 } from '@iota/core';
 import { useMemo } from 'react';
 import { useActiveAccount, useSigner } from '_hooks';
-import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
     Button,
     ButtonType,
@@ -39,7 +38,6 @@ import {
 import { Field, type FieldProps, FormikProvider } from 'formik';
 import { useMutation } from '@tanstack/react-query';
 import * as Sentry from '@sentry/react';
-import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '../../helpers';
 import { Info, Loader } from '@iota/apps-ui-icons';
 import { type IotaTransactionBlockResponse, type StakeObject } from '@iota/iota-sdk/client';
@@ -57,9 +55,6 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
     const activeAccount = useActiveAccount();
     const activeAddress = activeAccount?.address ?? '';
     const signer = useSigner(activeAccount);
-    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
-    const validatorName =
-        systemState?.activeValidators.find((v) => v.iotaAddress === validatorAddress)?.name ?? '';
 
     const { data: allDelegation, isPending } = useGetDelegatedStake({
         address: activeAddress || '',
@@ -93,8 +88,6 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
         switchToFullUnstake,
         switchToPartialUnstake,
         unstakeAmounts,
-        unstakeAmountFormattedPlain,
-        rewardsFormattedPlain,
         transaction,
         activeIsError,
         activeIsLoading,
@@ -152,14 +145,6 @@ export function UnStakeForm({ stakedIotaId, validatorAddress, epoch, onSuccess }
                         }
                     },
                 );
-            },
-            onSuccess: () => {
-                ampli.unstakedIota({
-                    stakedAmount: Number(unstakeAmountFormattedPlain),
-                    validatorAddress: validatorAddress!,
-                    rewards: Number(rewardsFormattedPlain),
-                    validatorName,
-                });
             },
         });
     const handleSubmit = async () => {

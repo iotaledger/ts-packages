@@ -102,7 +102,6 @@ export function AppProviders({ children }: React.PropsWithChildren) {
                                                                 <React.Fragment key={href}>
                                                                     <ExternalLink
                                                                         href={href}
-                                                                        type="legal"
                                                                         className="text-iota-primary-30 hover:text-iota-primary-50 dark:text-iota-primary-80 dark:hover:text-iota-primary-60"
                                                                     >
                                                                         {title}

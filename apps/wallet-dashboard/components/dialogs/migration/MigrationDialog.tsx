@@ -11,7 +11,6 @@ import { TransactionDetailsLayout } from '../transaction/TransactionDetailsLayou
 import { DialogLayout } from '../layout';
 import { MigrationDialogView } from './enums';
 import { ConfirmMigrationView } from './views';
-import { ampli } from '@/lib/utils/analytics';
 import { isSizeExceededError } from '@/lib/utils';
 
 // Number of objects to reduce on every attempt
@@ -83,10 +82,6 @@ export function MigrationDialog({
                     onSuccess(tx.digest);
                     setTxDigest(tx.digest);
                     setView(MigrationDialogView.TransactionDetails);
-                    ampli.migration({
-                        basicOutputObjects: basicOutputs.length,
-                        nftOutputObjects: nftOutputs.length,
-                    });
                 },
             },
         )
