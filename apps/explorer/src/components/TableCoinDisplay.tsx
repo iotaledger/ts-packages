@@ -7,6 +7,7 @@ import {
     CoinIcon,
     ImageIconSize,
     isRecognizedCoinType,
+    TruncatedBalance,
     useFormatCoin,
     useRecognizedPackages,
 } from '@iota/core';
@@ -36,13 +37,12 @@ export function TableCoinDisplay({
     const recognizedPackages = useRecognizedPackages();
     const showTrusted = showTrustedBadge && isRecognizedCoinType(coinType, recognizedPackages);
 
-    const [formatted, symbol] = useFormatCoin({
+    const [formatted, symbol, queryResult] = useFormatCoin({
         balance: amount,
         coinType,
         showSign,
         format: CoinFormat.Full,
         truncate,
-        truncateDecimals,
     });
 
     const changeColorClass = isPositive ? 'coin-change-positive' : 'coin-change-negative';
@@ -54,7 +54,16 @@ export function TableCoinDisplay({
                 <CoinIcon coinType={coinType} size={ImageIconSize.Small} />
             </LinkWithQuery>
             <span className={clsx(showSign ? changeColorClass : 'table-text-color')}>
-                {formatted}{' '}
+                {truncateDecimals && queryResult.isFetched ? (
+                    <TruncatedBalance
+                        balance={amount}
+                        decimals={queryResult.data?.decimals ?? 0}
+                        symbol={symbol}
+                        showSign={showSign}
+                    />
+                ) : (
+                    formatted
+                )}{' '}
                 <LinkWithQuery
                     to={coinPagePath}
                     className="text-iota-primary-30 dark:text-iota-primary-80"

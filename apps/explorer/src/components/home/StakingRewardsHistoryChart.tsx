@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo } from 'react';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { formatAmount, formatBalance, CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
@@ -54,7 +54,13 @@ export function StakingRewardsHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Distributed',
-                    text: formatBalance(totalDistributed, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalDistributed}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalDistributed,
                 },

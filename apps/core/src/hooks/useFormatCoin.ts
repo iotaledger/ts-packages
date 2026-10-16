@@ -6,7 +6,6 @@ import { useIotaClient } from '@iota/dapp-kit';
 import { CoinMetadata } from '@iota/iota-sdk/client';
 import { IOTA_DECIMALS, IOTA_TYPE_ARG, formatBalance, CoinFormat } from '@iota/iota-sdk/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
 import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
@@ -121,7 +120,6 @@ interface FormatCoinOptions {
     showSign?: boolean;
     useGroupSeparator?: boolean;
     truncate?: boolean;
-    truncateDecimals?: boolean;
 }
 // TODO #1: This handles undefined values to make it easier to integrate with
 // the reset of the app as it is today, but it really shouldn't in a perfect world.
@@ -132,7 +130,6 @@ export function useFormatCoin({
     showSign = false,
     useGroupSeparator = true,
     truncate = true,
-    truncateDecimals = false,
 }: FormatCoinOptions): FormattedCoin {
     const fallbackSymbol = useMemo(
         () => (coinType ? (getCoinSymbol(coinType) ?? '') : ''),
@@ -146,18 +143,9 @@ export function useFormatCoin({
 
         if (!isFetched) return '...';
 
-        const decimals = data?.decimals ?? 0;
-        const amount = truncateDecimals
-            ? new BigNumber(balance.toString())
-                  .shiftedBy(-decimals)
-                  .decimalPlaces(2, BigNumber.ROUND_DOWN)
-                  .shiftedBy(decimals)
-                  .toFixed()
-            : balance;
-
-        return formatBalance(amount, decimals, format, showSign, { useGroupSeparator });
+        return formatBalance(balance, data?.decimals ?? 0, format, showSign, { useGroupSeparator });
         // oxlint-disable-next-line react-hooks/exhaustive-deps
-    }, [data?.decimals, isFetched, balance, format, useGroupSeparator, truncateDecimals]);
+    }, [data?.decimals, isFetched, balance, format, useGroupSeparator]);
 
     return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
 }
