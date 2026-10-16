@@ -2,21 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-    BadRequestException,
     Controller,
     DefaultValuePipe,
     Get,
     InternalServerErrorException,
+    NotFoundException,
     ParseEnumPipe,
     ParseIntPipe,
     Query,
     ServiceUnavailableException,
 } from '@nestjs/common';
-import { INDEXED_COIN_NETWORKS } from '@iota/core/constants/coins.constants';
 import { Network } from '@iota/iota-sdk/client';
 
 import { CoinsService } from './coins.service';
-import { DEFAULT_COINS_LIMIT, MAX_COINS_LIMIT } from './coins.constants';
+import { DEFAULT_COINS_LIMIT, INDEXED_COIN_NETWORKS, MAX_COINS_LIMIT } from './coins.constants';
 import { CoinsFilter, CoinsResponse, CoinsSort, CoinsSortOrder } from './coins.types';
 
 @Controller('/coins')
@@ -38,7 +37,7 @@ export class CoinsController {
         order: CoinsSortOrder,
     ): CoinsResponse {
         if (!INDEXED_COIN_NETWORKS.includes(network)) {
-            throw new BadRequestException(`Coins are not indexed for network "${network}"`);
+            throw new NotFoundException(`Coins are not indexed for network "${network}"`);
         }
 
         const response = this.coinsService.getCoins(network, {

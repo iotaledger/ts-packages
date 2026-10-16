@@ -19,10 +19,11 @@
         "forceConsistentCasingInFileNames": false,
         "noFallthroughCasesInSwitch": false,
         "paths": {
-            "@iota/apps-backend-client/types": ["./../apps-backend-client/src/types"],
+            "@iota/apps-backend-client": ["./../apps-backend-client/src/types"],
             "@iota/core/enums/*": ["./../core/src/enums/*"],
             "@iota/core/interfaces/*": ["./../core/src/interfaces/*"],
-            "@iota/core/constants/*": ["./../core/src/constants/*"]
+            "@iota/core/constants/*": ["./../core/src/constants/*"],
+            "@iota/core/utils/*": ["./../core/src/utils/*"]
         }
     }
 }

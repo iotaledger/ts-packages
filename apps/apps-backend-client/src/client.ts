@@ -3,7 +3,7 @@
 
 import type {
     CoinPriceResponse,
-    CoinsResponse,
+    CoinsResult,
     FeatureDefinition,
     FeaturesResponse,
     GetCoinsParams,
@@ -109,9 +109,6 @@ export class AppsBackendClient {
         return res.json();
     }
 
-    /**
-     * Resolves to null while apps-backend is still indexing the network's coins.
-     */
     async getCoins({
         network,
         filter,
@@ -120,7 +117,7 @@ export class AppsBackendClient {
         order = 'asc',
         offset = 0,
         limit = 20,
-    }: GetCoinsParams): Promise<CoinsResponse | null> {
+    }: GetCoinsParams): Promise<CoinsResult> {
         const response = await this.fetchPath('coins', {
             network,
             filter,
@@ -129,13 +126,16 @@ export class AppsBackendClient {
             offset: String(offset),
             limit: String(limit),
         });
+        if (response.status === 404) {
+            return { status: 'not-indexed' };
+        }
         if (response.status === 503) {
-            return null;
+            return { status: 'indexing' };
         }
         if (!response.ok) {
             throw new Error('Unexpected response');
         }
-        return response.json();
+        return { status: 'ready', ...(await response.json()) };
     }
 
     private fetchPath(

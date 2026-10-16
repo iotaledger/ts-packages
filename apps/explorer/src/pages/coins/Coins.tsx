@@ -10,7 +10,7 @@ import {
     Panel,
     Title,
 } from '@iota/apps-ui-kit';
-import { isIndexedCoinNetwork, useOnScreen } from '@iota/core';
+import { useOnScreen } from '@iota/core';
 import {
     CoinFilters,
     type CoinFilter,
@@ -30,7 +30,6 @@ import {
     useGetRecognizedCoins,
 } from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
-import { useNetworkContext } from '~/contexts';
 import { type CoinsFilter as BackendCoinsFilter, type CoinsSort } from '@iota/apps-backend-client';
 import type { SortingState } from '@tanstack/react-table';
 
@@ -55,9 +54,6 @@ function CoinsPageResult(): JSX.Element {
     const loadMoreElem = useRef<HTMLDivElement | null>(null);
     const { isIntersecting } = useOnScreen(loadMoreElem);
 
-    const [network] = useNetworkContext();
-    const isIndexedNetwork = isIndexedCoinNetwork(network);
-
     const {
         data,
         isPending,
@@ -71,13 +67,17 @@ function CoinsPageResult(): JSX.Element {
         search,
         columnSort && toCoinsSort(columnSort.id),
         columnSort?.desc ? 'desc' : 'asc',
-        { enabled: isIndexedNetwork },
     );
     const { data: recognizedCoins } = useGetRecognizedCoins();
 
-    const isIndexing = data?.pages[0] === null;
-    const coins = useMemo(() => data?.pages.flatMap((page) => page?.coins ?? []) ?? [], [data]);
-    const counts = data?.pages[0]?.counts;
+    const firstPage = data?.pages[0];
+    const isIndexing = firstPage?.status === 'indexing';
+    const isNotIndexed = firstPage?.status === 'not-indexed';
+    const coins = useMemo(
+        () => data?.pages.flatMap((page) => (page.status === 'ready' ? page.coins : [])) ?? [],
+        [data],
+    );
+    const counts = firstPage?.status === 'ready' ? firstPage.counts : undefined;
     const filterCounts = counts && {
         All: counts.all,
         Recognized: counts.recognized,
@@ -132,7 +132,7 @@ function CoinsPageResult(): JSX.Element {
                     <Panel>
                         <Title title="All Coins" />
 
-                        {isIndexedNetwork ? (
+                        {!isNotIndexed ? (
                             <>
                                 <div className="flex flex-col gap-md p-md">
                                     <TableSearch

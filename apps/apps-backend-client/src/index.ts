@@ -6,6 +6,7 @@ export type {
     CoinPriceResponse,
     CoinsFilter,
     CoinsResponse,
+    CoinsResult,
     CoinsSort,
     CoinsSortOrder,
     FeatureDefinition,

@@ -1,11 +1,9 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { CoinsResponse, OnChainCoin } from '@iota/apps-backend-client/types';
+import type { CoinsResponse, OnChainCoin } from '@iota/apps-backend-client';
 
 export type { CoinsResponse, OnChainCoin };
-
-export type CoinSource = 'metadata' | 'manager';
 
 export enum CoinsFilter {
     All = 'all',

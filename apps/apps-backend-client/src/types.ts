@@ -46,6 +46,15 @@ export interface CoinsResponse {
     counts: Record<CoinsFilter, number>;
 }
 
+/**
+ * `indexing` while apps-backend is still indexing the network's coins, and
+ * `not-indexed` for networks whose coins apps-backend does not index.
+ */
+export type CoinsResult =
+    | ({ status: 'ready' } & CoinsResponse)
+    | { status: 'indexing' }
+    | { status: 'not-indexed' };
+
 export type CoinsSort = 'name' | 'createdAt';
 export type CoinsSortOrder = 'asc' | 'desc';
 

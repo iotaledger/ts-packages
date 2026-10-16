@@ -2,4 +2,4 @@
 "@iota/apps-backend-client": minor
 ---
 
-Add `getCoins` to list the coins indexed by apps-backend, with filtering, search by name, symbol or coin type, sorting by name or creation date, and pagination. Resolves to `null` while apps-backend is still indexing the coins.
+Add `getCoins` to list the coins indexed by apps-backend, with filtering, search by name, symbol or coin type, sorting by name or creation date, and pagination. The result's `status` tells whether the coins are ready, still being indexed, or not indexed on that network.

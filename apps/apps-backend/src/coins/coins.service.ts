@@ -3,13 +3,13 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression, Interval, Timeout } from '@nestjs/schedule';
-import { DEFAULT_COIN_REGISTRY, INDEXED_COIN_NETWORKS } from '@iota/core/constants/coins.constants';
+import { DEFAULT_COIN_REGISTRY } from '@iota/core/constants/coins.constants';
 import { Network } from '@iota/iota-sdk/client';
 
 import { COIN_REGISTRY } from '../features/coins.constants';
 import { fetchAllCoins } from './coins.fetcher';
 import { buildCoinsIndex, listCoins } from './coins.list';
-import { COINS_RETRY_INTERVAL_MS } from './coins.constants';
+import { COINS_RETRY_INTERVAL_MS, INDEXED_COIN_NETWORKS } from './coins.constants';
 import { CoinsIndex, CoinsResponse, ListCoinsOptions } from './coins.types';
 
 function getCoinRegistry(network: Network) {
