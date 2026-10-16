@@ -7,7 +7,7 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { useGetStardustMigratableObjects, useGroupedStardustObjects } from '@/hooks';
-import { getStardustObjectsTotals, trackElementCopied } from '@/lib/utils';
+import { getStardustObjectsTotals } from '@/lib/utils';
 import {
     Address,
     Button,
@@ -182,7 +182,6 @@ function MigrationDashboardPage(): JSX.Element {
 
     const onCopySuccess = useCallback(() => {
         toast('Address copied');
-        trackElementCopied('stardust-address');
     }, []);
 
     return (
@@ -214,10 +213,7 @@ function MigrationDashboardPage(): JSX.Element {
                         />
                     )}
                     <Panel>
-                        <div
-                            className="flex flex-col gap-y-xxxs break-all rounded-md px-md--rs py-sm--rs"
-                            data-amp-mask
-                        >
+                        <div className="flex flex-col gap-y-xxxs break-all rounded-md px-md--rs py-sm--rs">
                             <span className="text-label-md">Stardust address</span>
                             <Address
                                 text={bech32Address}

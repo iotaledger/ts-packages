@@ -37,7 +37,6 @@ import { NameRecordData, queryKey, useNameRecord, useRegistrationNfts } from '@/
 import { useGetPublicName } from '@/hooks/useGetPublicName';
 import { NameUpdate, useUpdateNameTransaction } from '@/hooks/useUpdateNameTransaction';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { copyToClipboard } from '@/lib/utils/copyToClipboard';
 import { getNameObject, isNameRecordExpired } from '@/lib/utils/names';
 
@@ -144,23 +143,6 @@ export function ConnectToAddressDialog({ name, setOpen }: ConnectToAddressDialog
                 queryKey: ['iota-name', 'default-name', account?.address],
             });
 
-            const hasAddressUpdate = updates.some((update) => update.type === 'set-target-address');
-            const hasSetPublicUpdate = updates.some((update) => update.type === 'set-public');
-
-            if (hasAddressUpdate || hasSetPublicUpdate) {
-                const addressType = isTargetingCurrentAddress
-                    ? 'current'
-                    : editTargetAddress
-                      ? 'external'
-                      : 'empty';
-
-                ampli.connectedAddress({
-                    name: cleanName,
-                    addressType: addressType,
-                    setNameAsDisplayed: hasSetPublicUpdate,
-                });
-            }
-
             if (editTargetAddress.length === 0) {
                 toast.success(`Successfully disconnected ${cleanName}`);
                 setOpen(false);
@@ -226,7 +208,6 @@ export function ConnectToAddressDialog({ name, setOpen }: ConnectToAddressDialog
                                                 onClearInput={() => setEditTargetAddress('')}
                                                 disabled={disableEdit}
                                                 errorMessage={errorMessage}
-                                                data-amp-mask
                                             />
                                         </div>
                                         {!isTargetingCurrentAddress && (
@@ -244,10 +225,7 @@ export function ConnectToAddressDialog({ name, setOpen }: ConnectToAddressDialog
                                         {nameRecord?.nameRecord.targetAddress &&
                                             !hasAddressChange &&
                                             editIsPublicName && (
-                                                <div
-                                                    data-amp-mask
-                                                    className="flex w-full break-all"
-                                                >
+                                                <div className="flex w-full break-all">
                                                     <InfoBox
                                                         type={InfoBoxType.Success}
                                                         style={InfoBoxStyle.Default}
@@ -386,7 +364,7 @@ function UpdatesResult({ name, updates }: { name: string; updates: NameUpdate[] 
         <div className="flex flex-col gap-y-md">
             <div className="flex flex-col gap-y-sm">
                 <div className="text-headline-sm text-iota-neutral-100">{cleanName}</div>
-                <div data-amp-mask>
+                <div>
                     <Chip
                         leadingElement={<Link className="w-4 h-4" />}
                         label={formatAddress(targetAddress)}

@@ -10,9 +10,8 @@ import {
     TableHeaderCell,
     TableRow,
 } from '@iota/apps-ui-kit';
+import { getCookieConsentStatus } from '@iota/core';
 import { useEffect, useState } from 'react';
-
-import { getAmplitudeConsentStatus } from '@/lib/utils/analytics/amplitude';
 
 import { CookiePolicyContentProps, DescribedCookie } from './types';
 
@@ -27,7 +26,7 @@ export function CookiePolicyContent({
     );
 
     useEffect(() => {
-        const status = getAmplitudeConsentStatus();
+        const status = getCookieConsentStatus();
         setConsentStatus(status);
     }, []);
 

@@ -21,8 +21,6 @@
         "test:watch": "vitest",
         "playwright": "cross-env PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS=\"1\" playwright",
         "pack:zip": "web-ext build --source-dir ./dist --overwrite-dest",
-        "ampli": "ampli",
-        "pull-amplitude": "ampli pull web && node prependLicense.mjs && oxfmt ampli.json src/shared/analytics/ampli/index.ts",
         "demoApp:dev": "pnpm vite -c ./tests/demo-app/vite.config.ts ./tests/demo-app/ --port 5181"
     },
     "repository": {
@@ -39,8 +37,6 @@
     "author": "IOTA Foundation <info@iota.org>",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@amplitude/ampli": "^1.36.2",
-        "@amplitude/analytics-types": "^2.11.0",
         "@playwright/test": "^1.60.0",
         "@rspack/cli": "^1.7.6",
         "@rspack/core": "^1.7.6",
@@ -78,7 +74,6 @@
         "web-ext": "^9.3.0"
     },
     "dependencies": {
-        "@amplitude/analytics-browser": "^2.32.2",
         "@floating-ui/react": "^0.23.0",
         "@fontsource-variable/inter": "^5.0.5",
         "@iota/apps-backend-client": "workspace:*",

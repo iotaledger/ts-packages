@@ -61,7 +61,7 @@ export function PreviewTransfer({
                             address={accountAddress || ''}
                             eventType="address"
                         >
-                            <span data-amp-mask>{formatAddress(accountAddress || '')}</span>
+                            <span>{formatAddress(accountAddress || '')}</span>
                         </ExplorerLink>
                     }
                     fullwidth
@@ -85,7 +85,7 @@ export function PreviewTransfer({
                                     address={nameRecord?.targetAddress || to}
                                     eventType="address"
                                 >
-                                    <span data-amp-mask>
+                                    <span>
                                         {nameRecord ? nameRecord.name : formatAddress(to || '')}
                                     </span>
                                 </ExplorerLink>

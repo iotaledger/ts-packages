@@ -65,7 +65,7 @@ export function Input({ input, dryRunInput }: InputProps) {
                             objectID={objectId || ''}
                             eventType="object"
                         >
-                            <span data-amp-mask>{formatAddress(objectId || '')}</span>
+                            <span>{formatAddress(objectId || '')}</span>
                         </ExplorerLink>
                     }
                     fullwidth

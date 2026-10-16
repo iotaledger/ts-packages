@@ -24,7 +24,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useNamesPurchaseMode } from '@/hooks/useNamesPurchaseMode';
 import { MY_NAMES_ROUTE } from '@/lib/constants';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { denormalizeName } from '@/lib/utils/format/formatNames';
 import { useAvailabilityCheckDialog } from '@/stores/useAvailabilityCheckDialog';
 
@@ -103,13 +102,6 @@ export function AvailabilityCheck({ autoFocusInput }: AvailabilityCheckProps) {
     const isAuctionInProgress = auctionMetadata?.isActive;
     const isUnavailable = nameRecordData?.type === 'unavailable';
     const isNameTaken = isUnavailable && !isAuctionInProgress;
-
-    useEffect(() => {
-        if (!name) {
-            return;
-        }
-        ampli.performedSearch({ query: name });
-    }, [name]);
 
     useEffect(() => {
         if (nameRecordData && searchValue && name === `${searchValue}.iota`) {

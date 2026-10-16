@@ -17,7 +17,6 @@ import {
     useGetDefaultIotaName,
     useCopyToClipboard,
 } from '@iota/core';
-import { trackElementCopied } from '@/lib/utils';
 import { useCallback } from 'react';
 
 interface ReceiveFundsDialogProps {
@@ -32,10 +31,7 @@ export function ReceiveFundsDialog({
     setOpen,
 }: ReceiveFundsDialogProps): React.JSX.Element {
     const { data: iotaName } = useGetDefaultIotaName(address);
-    const copyToClipboard = useCopyToClipboard(
-        () => trackElementCopied('address'),
-        'Address copied',
-    );
+    const copyToClipboard = useCopyToClipboard(undefined, 'Address copied');
 
     const handleCopyAddress = useCallback(() => {
         copyToClipboard(address);
@@ -46,10 +42,7 @@ export function ReceiveFundsDialog({
             <DialogContent containerId="overlay-portal-container">
                 <Header title="Receive" onClose={() => setOpen(false)} />
                 <DialogBody>
-                    <div
-                        className="flex max-h-[500px] flex-col gap-lg overflow-y-auto text-center [&_span]:w-full [&_span]:break-words"
-                        data-amp-mask
-                    >
+                    <div className="flex max-h-[500px] flex-col gap-lg overflow-y-auto text-center [&_span]:w-full [&_span]:break-words">
                         <div className="self-center">
                             <QR value={address} size={130} marginSize={2} />
                         </div>

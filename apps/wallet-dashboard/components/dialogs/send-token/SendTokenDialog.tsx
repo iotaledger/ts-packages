@@ -17,7 +17,6 @@ import {
 import { Dialog, DialogContent, DialogPosition } from '@iota/apps-ui-kit';
 import { INITIAL_VALUES } from './constants';
 import { useTransferTransactionMutation } from '@/hooks';
-import { ampli } from '@/lib/utils/analytics';
 import { useQueryClient } from '@tanstack/react-query';
 import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { FormikProvider, useFormik } from 'formik';
@@ -106,10 +105,6 @@ function SendTokenDialogBody({
 
                 setStep(FormStep.TransactionDetails);
                 toast.success('Transfer transaction has been sent');
-                ampli.sentCoins({
-                    coinType: selectedCoin.coinType,
-                    amount: Number(formik.values.amount),
-                });
             },
             onError: (error) => {
                 setOpen(false);

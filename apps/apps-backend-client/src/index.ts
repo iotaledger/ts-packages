@@ -8,7 +8,6 @@ export type {
     FeaturesResponse,
     FeatureResult,
     MonitorNetworkResponse,
-    ProductAnalyticsConfigResponse,
 } from './types';
 export {
     AppsBackendClientProvider,
