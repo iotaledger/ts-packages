@@ -1,4 +1,3 @@
-import { TruncatedBalance } from '@iota/core';
 // Copyright (c) Mysten Labs, Inc.
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
@@ -16,6 +15,7 @@ import {
 
 import { useGetNetworkMetrics } from '~/hooks/useGetNetworkMetrics';
 import { CoinFormat, formatBalance, IOTA_TYPE_ARG, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { TruncatedBalance } from '@iota/core';
 
 const FALLBACK = '--';
 
