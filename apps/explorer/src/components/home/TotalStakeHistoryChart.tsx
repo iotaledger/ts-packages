@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo } from 'react';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { formatAmount, formatBalance, CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
@@ -46,9 +46,15 @@ export function TotalStakeHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Staked',
-                    text: latestTotalStake
-                        ? formatBalance(latestTotalStake, IOTA_DECIMALS, CoinFormat.Full)
-                        : '--',
+                    text: latestTotalStake ? (
+                        <TruncatedBalance
+                            balance={latestTotalStake}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ) : (
+                        '--'
+                    ),
                     supportingLabel: latestTotalStake ? 'IOTA' : undefined,
                     fiatAmount: latestTotalStake,
                 },

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo } from 'react';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { formatAmount, formatBalance, CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
@@ -55,25 +55,39 @@ export function TokenEmissionChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Minted',
-                    text: formatBalance(totalMinted, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalMinted}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalMinted,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Burnt',
-                    text: formatBalance(totalBurnt, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalBurnt}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalBurnt,
                 },
                 {
                     size: LabelTextSize.Large,
                     label: 'Net',
-                    text: formatBalance(
-                        totalMinted - totalBurnt,
-                        IOTA_DECIMALS,
-                        CoinFormat.Full,
-                        true,
+                    text: (
+                        <TruncatedBalance
+                            balance={totalMinted - totalBurnt}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                            showSign
+                        />
                     ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalMinted - totalBurnt,

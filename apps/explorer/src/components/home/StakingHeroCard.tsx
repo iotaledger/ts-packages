@@ -19,8 +19,9 @@ import {
     useFormatCoin,
     useGetValidatorsApy,
     useMaxCommitteeSize,
+    TruncatedBalance,
 } from '@iota/core';
-import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { IOTA_DECIMALS, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 
 // Scale before the BigInt division so the percentage keeps two decimal places,
 // then divide the resulting Number by the divisor to get the final value.
@@ -54,9 +55,8 @@ export function StakingHeroCard(): JSX.Element {
         return apys.length > 0 ? roundFloat(avg / apys.length) : 0;
     }, [validatorsApy]);
 
-    const [formattedStaked, stakedSymbol] = useFormatCoin({
+    const [, stakedSymbol] = useFormatCoin({
         balance: totalStaked,
-        format: CoinFormat.Full,
     });
 
     const { data: maxCommitteeSize } = useMaxCommitteeSize();
@@ -77,11 +77,15 @@ export function StakingHeroCard(): JSX.Element {
                             size={LabelTextSize.Large}
                             label="Total Staked"
                             text={
-                                formattedStaked ? (
+                                stakedSymbol ? (
                                     <div className="flex min-w-0 flex-col gap-xxs">
                                         <div className="flex min-w-0 flex-row flex-wrap items-baseline gap-xxs">
                                             <span className="min-w-0 break-all text-title-sm">
-                                                {formattedStaked}
+                                                <TruncatedBalance
+                                                    balance={totalStaked}
+                                                    decimals={IOTA_DECIMALS}
+                                                    symbol={stakedSymbol}
+                                                />
                                             </span>
                                             <span className="whitespace-nowrap break-normal text-label-md opacity-40">
                                                 {stakedSymbol}
