@@ -12,7 +12,7 @@ import {
 import { formatAddress, formatType } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
 import { ObjectLink } from '~/components/ui';
-import { ArgCommaList, type InputDisplay } from './Transaction';
+import { BracketedArgList, type InputDisplay } from './Transaction';
 import { getResultUsedByCommands } from './utils';
 import { HighlightableRef, PtbIndexCell, usePtbHighlight } from './PtbHighlight';
 
@@ -76,26 +76,6 @@ function CommandSignature({ type, data }: { type: string; data: unknown }): JSX.
     return null;
 }
 
-function Bracketed({
-    args,
-    inputs,
-    inputDisplay,
-}: {
-    args: IotaArgument[];
-    inputs: IotaCallArg[];
-    inputDisplay: InputDisplay;
-}): JSX.Element {
-    return (
-        <span className="inline-flex items-center gap-[2px]">
-            <span className={MUTED_TEXT}>[</span>
-            {args.length > 0 && (
-                <ArgCommaList args={args} inputs={inputs} inputDisplay={inputDisplay} />
-            )}
-            <span className={MUTED_TEXT}>]</span>
-        </span>
-    );
-}
-
 function Keyword({ children }: { children: string }): JSX.Element {
     return <span className={MUTED_TEXT}>{children}</span>;
 }
@@ -112,7 +92,7 @@ function CommandBody({
     inputDisplay: InputDisplay;
 }): JSX.Element | null {
     const list = (args: IotaArgument[]) => (
-        <Bracketed args={args} inputs={inputs} inputDisplay={inputDisplay} />
+        <BracketedArgList args={args} inputs={inputs} inputDisplay={inputDisplay} />
     );
 
     switch (type) {
@@ -219,6 +199,7 @@ function CommandCard({
     return (
         <div
             data-testid="command-card"
+            data-ptb-target={`command-${index}`}
             className={clsx(
                 'flex flex-col gap-xxs rounded-lg border px-md--rs py-sm--rs',
                 isHighlighted
@@ -232,15 +213,8 @@ function CommandCard({
                 <CommandSignature type={type} data={data} />
                 {usedBy.length > 0 && <UsedBy commandIndexes={usedBy} />}
             </div>
-            <div className="-my-[2px] overflow-x-auto py-[2px] pl-lg text-body-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <div className="flex w-max items-baseline gap-x-xs whitespace-nowrap">
-                    <CommandBody
-                        type={type}
-                        data={data}
-                        inputs={inputs}
-                        inputDisplay={inputDisplay}
-                    />
-                </div>
+            <div className="flex flex-wrap items-baseline gap-x-xs gap-y-xxs pl-lg text-body-sm">
+                <CommandBody type={type} data={data} inputs={inputs} inputDisplay={inputDisplay} />
             </div>
         </div>
     );
@@ -258,7 +232,7 @@ export function CommandsList({
     return (
         <div
             data-testid="commands-content"
-            className="flex max-h-[560px] flex-col gap-xs overflow-y-auto"
+            className="flex max-h-96 flex-col gap-xs overflow-y-auto"
         >
             {transactions.map((transaction, index) => (
                 <CommandCard
