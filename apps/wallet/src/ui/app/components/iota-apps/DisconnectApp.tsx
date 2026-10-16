@@ -94,9 +94,7 @@ export function DisconnectApp({
                                         }
                                         text={
                                             connectedAccounts[0] ? (
-                                                <span data-amp-mask>
-                                                    {formatAddress(connectedAccounts[0])}
-                                                </span>
+                                                <span>{formatAddress(connectedAccounts[0])}</span>
                                             ) : (
                                                 ''
                                             )

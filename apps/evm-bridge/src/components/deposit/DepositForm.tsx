@@ -144,7 +144,6 @@ export function DepositForm({
                 errorMessage={depositAmountErrorMessage}
                 {...registerDepositAmount}
                 data-testid="bridge-amount"
-                data-amp-mask
                 onValueChange={(values) => {
                     setValue(BridgeFormInputName.DepositAmount, values.value, {
                         shouldValidate: true,
@@ -169,7 +168,6 @@ export function DepositForm({
                         value={fromAddress}
                         key={fromAddress}
                         readOnly
-                        data-amp-mask
                     />
                 ) : (
                     <WalletConnectInput label={FROM_LABEL} isLayer1={isFromLayer1} />
@@ -189,7 +187,6 @@ export function DepositForm({
                     errorMessage={receivingAddressErrorMessage}
                     {...register(BridgeFormInputName.ReceivingAddress)}
                     data-testid="receive-address"
-                    data-amp-mask
                 />
             </div>
 

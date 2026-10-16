@@ -223,7 +223,7 @@ export function TokenDetails() {
                     data-testid="coin-page"
                 >
                     <div className="flex w-full items-center justify-between gap-lg px-sm py-lg">
-                        <div className="flex flex-col gap-xs" data-amp-mask>
+                        <div className="flex flex-col gap-xs">
                             <Address
                                 isExternal={!!explorerHref}
                                 externalLink={explorerHref!}

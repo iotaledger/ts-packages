@@ -10,7 +10,7 @@ export function ConnectButtonL2({
     text = 'Connect L2 Wallet',
 }: ConnectButtonL2Props): React.JSX.Element {
     return (
-        <div className="text-label-lg" data-testid="connect-l2-wallet" data-amp-mask>
+        <div className="text-label-lg" data-testid="connect-l2-wallet">
             <ConnectButton
                 label={text}
                 accountStatus={{

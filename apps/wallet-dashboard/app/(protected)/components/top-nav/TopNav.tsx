@@ -28,7 +28,7 @@ export function TopNav() {
                     persistedNetwork === Network.Mainnet ? BadgeType.PrimarySoft : BadgeType.Neutral
                 }
             />
-            <div data-amp-mask>
+            <div>
                 <ConnectButton size="md" iotaNamesEnabled={true} />
             </div>
             <SettingsDialog

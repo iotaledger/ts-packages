@@ -227,7 +227,6 @@ export function CreateSubnameDialog({ name, setOpen }: CreateSubnameProps) {
                                 />
                             </div>
                             <Input
-                                data-amp-mask
                                 type={InputType.Text}
                                 value={editSubname}
                                 onChange={(e) => setEditSubname(e.target.value)}

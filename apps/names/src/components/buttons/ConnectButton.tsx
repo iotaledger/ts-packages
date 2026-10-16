@@ -7,7 +7,7 @@ import { ConnectButton as DappConnectButton } from '@iota/dapp-kit';
 
 export function ConnectButton() {
     return (
-        <div className="amp-obfuscation" data-amp-mask>
+        <div className="amp-obfuscation">
             <DappConnectButton connectText="Connect" />
         </div>
     );

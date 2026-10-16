@@ -17,7 +17,7 @@ export function ConnectButtonL1({
     iotaNamesEnabled = true,
 }: ConnectButtonL1Props) {
     return (
-        <div data-amp-mask>
+        <div>
             <ConnectButton
                 data-testid="connect-l1-wallet"
                 className={className}

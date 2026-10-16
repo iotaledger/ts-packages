@@ -121,7 +121,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                                 style={InfoBoxStyle.Elevated}
                             />
                         )}
-                    <div data-amp-mask>
+                    <div>
                         <TransactionSummary
                             isDryRun
                             isLoading={isDryRunLoading}
@@ -132,7 +132,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
                             transaction={signer instanceof LedgerSigner ? transaction : undefined}
                         />
                     </div>
-                    <div data-amp-mask>
+                    <div>
                         <GasFees
                             sender={addressForTransaction}
                             gasSummary={summary?.gas}

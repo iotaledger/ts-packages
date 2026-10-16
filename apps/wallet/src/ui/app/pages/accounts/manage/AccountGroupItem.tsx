@@ -111,7 +111,7 @@ export function AccountGroupItem({
           };
     return (
         <div className="relative overflow-visible [&_span]:whitespace-nowrap">
-            <div onClick={handleSelectAccount} ref={anchorRef} data-amp-mask>
+            <div onClick={handleSelectAccount} ref={anchorRef}>
                 <Account
                     isCopyable
                     isActive={isActive}

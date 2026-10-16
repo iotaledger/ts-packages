@@ -34,7 +34,7 @@ export function HideShowDisplayBox({
     }
 
     return (
-        <div className="flex flex-col gap-md" data-testid="mnemonic-display-box" data-amp-mask>
+        <div className="flex flex-col gap-md" data-testid="mnemonic-display-box">
             <TextArea
                 defaultValue={value}
                 isVisibilityToggleEnabled

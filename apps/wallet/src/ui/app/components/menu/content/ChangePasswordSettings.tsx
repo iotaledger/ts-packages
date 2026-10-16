@@ -124,7 +124,6 @@ export function ChangePasswordSettings() {
                     placeholder="********"
                     errorMessage={errors.currentPassword?.message}
                     {...register('currentPassword')}
-                    data-amp-mask
                 />
                 <Input
                     type={InputType.Password}
@@ -133,7 +132,6 @@ export function ChangePasswordSettings() {
                     placeholder="********"
                     errorMessage={errors.newPassword?.message}
                     {...register('newPassword')}
-                    data-amp-mask
                 />
                 <Input
                     type={InputType.Password}
@@ -142,7 +140,6 @@ export function ChangePasswordSettings() {
                     placeholder="********"
                     errorMessage={errors.confirmPassword?.message}
                     {...register('confirmPassword')}
-                    data-amp-mask
                 />
                 <div className="flex-1" />
                 <CheckboxField

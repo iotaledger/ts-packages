@@ -37,7 +37,7 @@ export function AccountItem({ icon, accountID, hideExplorerLink, hideCopy }: Acc
         if (newWindow) newWindow.opener = null;
     }
     return (
-        <div data-amp-mask>
+        <div>
             <Account
                 title={accountName}
                 subtitle={formatAddress(account.address)}
