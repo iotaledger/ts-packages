@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import cx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { GLOBAL_DATE_TYPE, type DateFormat, type DateType } from '~/contexts/dateFormatContext';
 import { useFormattedDate } from '~/hooks/useFormattedDate';
@@ -19,6 +20,8 @@ interface DateDisplayProps {
     showTimeAgo?: boolean;
     showTooltip?: boolean;
     showHoverStyle?: boolean;
+    relativeTimeHelperText?: string;
+    allowWrap?: boolean;
 }
 
 export function DateDisplay({
@@ -27,6 +30,8 @@ export function DateDisplay({
     showTimeAgo = false,
     showTooltip = true,
     showHoverStyle = true,
+    relativeTimeHelperText,
+    allowWrap = false,
 }: DateDisplayProps): JSX.Element {
     const effectiveType = type ?? GLOBAL_DATE_TYPE;
     const timestampMs = Number(timestamp);
@@ -61,13 +66,18 @@ export function DateDisplay({
             tabIndex={0}
             onClick={handleClick}
             onKeyDown={handleKeyDown}
-            className={
-                showHoverStyle
-                    ? 'cursor-pointer select-none text-nowrap rounded-md p-1 hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12'
-                    : 'cursor-pointer select-none'
-            }
+            className={cx(
+                'cursor-pointer select-none',
+                showHoverStyle &&
+                    'rounded-md p-1 hover:bg-iota-neutral-96 dark:hover:bg-iota-neutral-12',
+                showHoverStyle && (allowWrap ? 'inline-block' : 'text-nowrap'),
+            )}
         >
             {displayed}
+
+            {format === 'default' && relativeTimeHelperText ? (
+                <span> {relativeTimeHelperText}</span>
+            ) : null}
         </time>
     );
 
