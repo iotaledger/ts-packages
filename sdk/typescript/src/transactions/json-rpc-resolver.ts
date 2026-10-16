@@ -173,6 +173,10 @@ async function setGasPayment(
         );
     }
 
+    if (availableCoinCount <= MAX_GAS_OBJECTS) {
+        return;
+    }
+
     // The budget dry run uses a placeholder gas coin, so only this one shows whether the chosen coins pay.
     const { effects } = await client.dryRunTransactionBlock({
         transactionBlock: transactionData.build(),
