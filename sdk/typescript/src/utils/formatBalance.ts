@@ -135,7 +135,7 @@ export function formatBalance(
     }
 
     if (showSign && !formattedBalance.startsWith('-')) {
-        formattedBalance = `+${formattedBalance}`;
+        formattedBalance = `${bn.isNegative() ? '-' : '+'}${formattedBalance}`;
     }
 
     return formattedBalance;
