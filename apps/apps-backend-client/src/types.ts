@@ -3,6 +3,8 @@
 
 export interface FeatureDefinition<T = unknown> {
     defaultValue?: T;
+    // `x.y.z` or `x.y.z.n` where n is the RC version
+    minVersion?: string;
 }
 
 export interface FeaturesResponse {
