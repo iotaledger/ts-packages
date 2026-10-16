@@ -99,11 +99,7 @@ export function ImportExistingWallet() {
     const hasManyProfileOptions = profileOptions.length >= 3;
 
     return (
-        <PageTemplate
-            title="Import a wallet"
-            isTitleCentered
-            onBack={() => navigate('/accounts/add-account')}
-        >
+        <PageTemplate title="Import a wallet" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col justify-center gap-4 py-md--rs text-center">
                     <img

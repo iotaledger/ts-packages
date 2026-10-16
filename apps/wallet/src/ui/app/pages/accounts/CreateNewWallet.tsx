@@ -78,11 +78,7 @@ export function CreateNewWallet() {
     };
 
     return (
-        <PageTemplate
-            title="Create a new wallet"
-            isTitleCentered
-            onBack={() => navigate('/accounts/add-account')}
-        >
+        <PageTemplate title="Create a new wallet" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col justify-center py-md--rs text-center">
                     <div className="flex flex-col items-center gap-y-4">

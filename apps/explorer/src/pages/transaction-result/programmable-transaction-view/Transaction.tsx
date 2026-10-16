@@ -7,7 +7,7 @@ import { useGetDefaultIotaName } from '@iota/core';
 import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
 import clsx from 'clsx';
-import { ObjectLink, AddressLink } from '~/components/ui';
+import { NameTag, AddressLink } from '~/components/ui';
 import {
     REGEX_NUMBER,
     decodeVectorU8Value,
@@ -21,14 +21,7 @@ const RESULT_BADGE_TYPE = BadgeType.Neutral;
 const INPUT_BADGE_TYPE = BadgeType.Outlined;
 
 function ObjectInputArg({ objectId }: { objectId: string }): JSX.Element {
-    return (
-        <ObjectLink
-            objectId={objectId}
-            label={formatAddress(objectId)}
-            copyText={objectId}
-            showAddressAlias={false}
-        />
-    );
+    return <NameTag id={objectId} isObject label={formatAddress(objectId)} copyable />;
 }
 
 function AddressInputArg({ address }: { address: string }): JSX.Element {

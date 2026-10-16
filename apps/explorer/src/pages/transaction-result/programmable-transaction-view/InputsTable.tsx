@@ -20,7 +20,7 @@ import clsx from 'clsx';
 import { useCopyToClipboard, useGetObject } from '@iota/core';
 import { type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatDigest } from '@iota/iota-sdk/utils';
-import { ObjectLink, AddressLink, ObjectVideoImage } from '~/components';
+import { ObjectLink, AddressLink, ObjectVideoImage, NameTag } from '~/components';
 import { ExpandableValue } from './ExpandableValue';
 import {
     REGEX_NUMERIC_MOVE_TYPE,
@@ -93,7 +93,7 @@ function ObjectInputValue({ objectId }: { objectId: string }): JSX.Element {
         );
     }
 
-    return <ObjectLink objectId={objectId} copyText={objectId} />;
+    return <NameTag id={objectId} isObject copyable />;
 }
 
 function ValueTypeLabel({ valueType }: { valueType?: string | null }): JSX.Element | null {
