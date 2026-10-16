@@ -112,10 +112,7 @@ function LeftContent({ account }: { account: SerializedUIAccount | null }) {
                 />
             </div>
             <div className="flex flex-col items-start">
-                <span
-                    className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92"
-                    data-amp-mask
-                >
+                <span className="text-title-sm text-iota-neutral-10 dark:text-iota-neutral-92">
                     {accountName}
                 </span>
             </div>

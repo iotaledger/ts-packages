@@ -8,7 +8,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
-import { appsBackendClient, initAmplitude, initSentry, queryClient } from './lib/utils';
+import { appsBackendClient, initSentry, queryClient } from './lib/utils';
 import { router } from './pages';
 
 initSentry();
@@ -19,9 +19,6 @@ import { Disclaimer, handleConsentAccepted } from '@iota/core';
 import { LEGAL_LINKS } from './lib';
 import { Link } from './components';
 import { initIdentityWasmWeb, initNotarizationWasmWeb } from './lib/utils/trust-framework/client';
-
-// Load Amplitude as early as we can:
-initAmplitude();
 
 // Load Identity WASM module as early as we can:
 initIdentityWasmWeb();

@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { ExternalLink } from '_components';
 import { useEffect } from 'react';
 import { Portal } from '../../../shared/Portal';
@@ -75,14 +74,9 @@ export function Interstitial({
                         <ExternalLink
                             href={bannerUrl}
                             onClick={() => {
-                                ampli.clickedAppsBannerCta({
-                                    sourceFlow: 'Interstitial',
-                                    bannerUrl,
-                                });
                                 closeInterstitial(dismissKey);
                             }}
                             className="block h-full"
-                            trackEvent={false}
                         >
                             {imageNode}
                         </ExternalLink>

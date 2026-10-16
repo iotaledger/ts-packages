@@ -15,7 +15,7 @@ type NonVisualAssetCardProps = {
 export function NonVisualAssetCard({ asset }: NonVisualAssetCardProps): React.JSX.Element {
     const { address, module, name } = parseStructTag(asset.type!);
     return (
-        <div data-amp-mask>
+        <div>
             <ExplorerLink objectID={asset.objectId} type={ExplorerLinkType.Object}>
                 <Card type={CardType.Default} isHoverable>
                     <CardBody

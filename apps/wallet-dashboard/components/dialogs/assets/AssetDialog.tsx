@@ -19,7 +19,6 @@ import { IotaObjectData, IotaTransactionBlockResponse } from '@iota/iota-sdk/cli
 import { AssetsDialogView } from './constants';
 import { TransactionDetailsLayout } from '../transaction';
 import { DialogLayout } from '../layout';
-import { ampli } from '@/lib/utils/analytics';
 import { shouldResolveInputAsName } from '@iota/core/utils/validation/names';
 
 interface AssetsDialogProps {
@@ -88,9 +87,6 @@ export function AssetDialog({ onClose, asset, refetchAssets }: AssetsDialogProps
             refetchAssets();
             toast.success('Transfer transaction successful');
             setView(AssetsDialogView.TransactionDetails);
-            ampli.sentCollectible({
-                collectibleType: objectData?.type || undefined,
-            });
         } catch {
             toast.error('Transfer transaction failed');
         }

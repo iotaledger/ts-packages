@@ -8,7 +8,6 @@ import type {
     FeaturesResponse,
     GetCoinsParams,
     MonitorNetworkResponse,
-    ProductAnalyticsConfigResponse,
 } from './types';
 
 export class AppsBackendClient {
@@ -87,10 +86,6 @@ export class AppsBackendClient {
 
     async getMonitorNetwork(project: string): Promise<MonitorNetworkResponse> {
         return this.request('monitor-network', { project });
-    }
-
-    async getProductAnalyticsConfig(): Promise<ProductAnalyticsConfigResponse> {
-        return this.request('product-analytics');
     }
 
     async checkRestricted(): Promise<boolean> {

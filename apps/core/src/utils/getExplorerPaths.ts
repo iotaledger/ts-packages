@@ -9,12 +9,11 @@ function getExplorerUrl(
     network: NetworkId,
     customExplorer: string,
     customRpc?: string | null,
-    getUrlWithDeviceId: (url: URL) => URL = (url) => url,
 ) {
     const networkConfig = getNetwork(network);
     const explorer = network === Network.Custom ? customExplorer : networkConfig?.explorer;
 
-    const url = getUrlWithDeviceId(new URL(path, explorer));
+    const url = new URL(path, explorer);
     if (explorer) {
         url.searchParams.append(
             'network',

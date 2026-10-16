@@ -84,7 +84,7 @@ function createInternalLink<T extends string>(
                                 address={address}
                             >
                                 <span className="inline-flex max-w-full items-center gap-x-xs whitespace-nowrap">
-                                    {iotaName ? (
+                                    {iotaName && !hasAlias ? (
                                         <NameAvatar address={id} size={NameAvatarSize.Xxs} />
                                     ) : null}
                                     <span className="inline-flex min-w-0 items-center">

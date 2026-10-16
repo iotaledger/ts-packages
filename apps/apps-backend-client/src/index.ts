@@ -14,7 +14,6 @@ export type {
     GetCoinsParams,
     MonitorNetworkResponse,
     OnChainCoin,
-    ProductAnalyticsConfigResponse,
 } from './types';
 export {
     AppsBackendClientProvider,

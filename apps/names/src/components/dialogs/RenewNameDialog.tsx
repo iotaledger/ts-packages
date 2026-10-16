@@ -31,7 +31,6 @@ import { NameRecordData, queryKey, useCalculatePrice, useNameRecord } from '@/ho
 import { useNamesConfig } from '@/hooks/useNamesConfig';
 import { NameUpdate, useUpdateNameTransaction } from '@/hooks/useUpdateNameTransaction';
 import { getUserFriendlyErrorMessage } from '@/lib/utils';
-import { ampli } from '@/lib/utils/analytics/ampli';
 import { formatExpirationDate } from '@/lib/utils/format/formatExpirationDate';
 import { getNamePermissions, getNameRenewableYears, isGracePeriodExpired } from '@/lib/utils/names';
 
@@ -150,13 +149,7 @@ export function RenewNameDialog({ setOpen, name, onRenew }: RenewDialogProps) {
                 ? new Date(nameRecord.nameRecord.expirationDate)
                 : new Date();
             currentExpiration.setFullYear(currentExpiration.getFullYear() + (renewYears || 0));
-            const expirationTime = currentExpiration.getTime();
 
-            ampli.renewedName({
-                name,
-                expirationTime,
-                renewYears: renewYears || 0,
-            });
             toast.success('Name renewed successfully');
         },
         onError(error) {
@@ -244,7 +237,7 @@ export function RenewNameDialog({ setOpen, name, onRenew }: RenewDialogProps) {
                 <DialogBody>
                     <div className="flex flex-col justify-between h-full items-center">
                         <div className="flex flex-col w-full gap-y-md">
-                            <Panel bgColor="bg-names-neutral-12" data-amp-mask>
+                            <Panel bgColor="bg-names-neutral-12">
                                 <div className="px-md py-lg">
                                     <span className="text-names-neutral-100 text-headline-sm break-words">
                                         {cleanName}

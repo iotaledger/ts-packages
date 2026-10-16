@@ -1,33 +1,27 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ampli } from '_src/shared/analytics/ampli';
 import { useNavigate } from 'react-router-dom';
 import SecureYourWallet from '_assets/images/onboarding/secure-your-wallet.png';
 import SecureYourWalletDark from '_assets/images/onboarding/secure-your-wallet-darkmode.png';
 import { Card, CardType, CardBody, CardAction, CardActionType } from '@iota/apps-ui-kit';
-import { AccountsFormType, useAccountsFormContext, PageTemplate, useSourceFlow } from '_components';
-import { useAppSelector, useAccounts } from '_hooks';
+import { AccountsFormType, useAccountsFormContext, PageTemplate } from '_components';
+import { useAppSelector } from '_hooks';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { ImportPass, Passkey } from '@iota/apps-ui-icons';
 import { openInNewTab } from '_src/shared/utils';
 import { type ActionCardItem, OnboardingCardIcon } from './AddAccountPage';
 import { Theme, useTheme } from '@iota/core';
-import { ACCOUNT_FORM_TYPE_TO_AMPLI } from '_src/shared/analytics';
-import { isFirstAccount } from '../../helpers';
 
 export function CreateNewWallet() {
     const { theme } = useTheme();
     const navigate = useNavigate();
     const [, setAccountsFormValues] = useAccountsFormContext();
-    const { sourceFlowRef } = useSourceFlow();
-    const sourceFlow = sourceFlowRef.current;
     const isPopupOrSidePanel = useAppSelector(
         (state) =>
             state.app.extensionViewType === ExtensionViewType.Popup ||
             state.app.extensionViewType === ExtensionViewType.SidePanel,
     );
-    const { data: accounts } = useAccounts();
 
     const profileOptions = [
         {
@@ -45,17 +39,6 @@ export function CreateNewWallet() {
     ] as const satisfies ActionCardItem[];
 
     const handleCardAction = async (actionType: (typeof profileOptions)[number]['actionType']) => {
-        const ampliData = ACCOUNT_FORM_TYPE_TO_AMPLI[actionType];
-
-        if (ampliData) {
-            ampli.clickedCreateNewAccount({
-                accountType: ampliData.accountType,
-                accountOrigin: ampliData.accountOrigin,
-                isFirstAccount: isFirstAccount(accounts),
-                sourceFlow,
-            });
-        }
-
         switch (actionType) {
             case AccountsFormType.NewMnemonic:
                 setAccountsFormValues({ type: AccountsFormType.NewMnemonic });
@@ -66,7 +49,7 @@ export function CreateNewWallet() {
             case AccountsFormType.Passkey:
                 const url = '/accounts/passkey-account';
                 if (isPopupOrSidePanel) {
-                    openInNewTab(`${url}?sourceFlow=${sourceFlow}`);
+                    openInNewTab(url);
                     window.close();
                 } else {
                     navigate(url);
@@ -78,11 +61,7 @@ export function CreateNewWallet() {
     };
 
     return (
-        <PageTemplate
-            title="Create a new wallet"
-            isTitleCentered
-            onBack={() => navigate('/accounts/add-account')}
-        >
+        <PageTemplate title="Create a new wallet" isTitleCentered>
             <div className="flex h-full w-full flex-col">
                 <div className="flex w-full flex-1 flex-col justify-center py-md--rs text-center">
                     <div className="flex flex-col items-center gap-y-4">
