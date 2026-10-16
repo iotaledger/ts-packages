@@ -10,7 +10,7 @@ import {
     Panel,
     Title,
 } from '@iota/apps-ui-kit';
-import { INDEXED_COIN_NETWORKS, useOnScreen } from '@iota/core';
+import { isIndexedCoinNetwork, useOnScreen } from '@iota/core';
 import {
     CoinFilters,
     type CoinFilter,
@@ -56,16 +56,23 @@ function CoinsPageResult(): JSX.Element {
     const { isIntersecting } = useOnScreen(loadMoreElem);
 
     const [network] = useNetworkContext();
-    const isIndexedNetwork = INDEXED_COIN_NETWORKS.some((indexed) => indexed === network);
+    const isIndexedNetwork = isIndexedCoinNetwork(network);
 
-    const { data, isPending, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
-        useGetIndexedCoins(
-            COINS_FILTER[filter],
-            search,
-            columnSort && toCoinsSort(columnSort.id),
-            columnSort?.desc ? 'desc' : 'asc',
-            { enabled: isIndexedNetwork },
-        );
+    const {
+        data,
+        isPending,
+        isError,
+        isPlaceholderData,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
+    } = useGetIndexedCoins(
+        COINS_FILTER[filter],
+        search,
+        columnSort && toCoinsSort(columnSort.id),
+        columnSort?.desc ? 'desc' : 'asc',
+        { enabled: isIndexedNetwork },
+    );
     const { data: recognizedCoins } = useGetRecognizedCoins();
 
     const isIndexing = data?.pages[0] === null;
@@ -78,10 +85,10 @@ function CoinsPageResult(): JSX.Element {
     };
 
     useEffect(() => {
-        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (isIntersecting && hasNextPage && !isFetchingNextPage && !isPlaceholderData) {
             fetchNextPage();
         }
-    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, isPlaceholderData, fetchNextPage]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
@@ -91,7 +98,12 @@ function CoinsPageResult(): JSX.Element {
     // type search falls back to looking the coin up on chain.
     const searchedCoinType = toCoinType(search);
     const isCoinLookupNeeded =
-        !!searchedCoinType && filter === 'All' && !!data && !isIndexing && coins.length === 0;
+        !!searchedCoinType &&
+        filter === 'All' &&
+        !!data &&
+        !isPlaceholderData &&
+        !isIndexing &&
+        coins.length === 0;
     const { data: searchedCoin, isPending: isSearchedCoinPending } = useGetCoin(
         searchedCoinType ?? '',
         { enabled: isCoinLookupNeeded },

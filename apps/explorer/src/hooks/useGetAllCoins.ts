@@ -4,6 +4,7 @@
 import {
     chunkArray,
     getDefaultIotaNameQueryKey,
+    isIndexedCoinNetwork,
     setDefaultIotaNameQueryData,
     useCoinRegistry,
     useIotaGraphQLClientContext,
@@ -15,6 +16,7 @@ import type { IotaClient } from '@iota/iota-sdk/client';
 import {
     type QueryClient,
     type UseQueryResult,
+    keepPreviousData,
     useInfiniteQuery,
     useQuery,
     useQueryClient,
@@ -186,10 +188,7 @@ async function withPublishInfo(
     const origins = (
         await Promise.all(
             chunkArray(originIds, MAX_RPC_BATCH_SIZE).map((ids) =>
-                client.multiGetObjects({
-                    ids,
-                    options: { showPreviousTransaction: true },
-                }),
+                client.multiGetObjects({ ids, options: { showPreviousTransaction: true } }),
             ),
         )
     ).flat();
@@ -204,10 +203,7 @@ async function withPublishInfo(
                 [...new Set(digests.filter((digest) => digest !== null))],
                 MAX_RPC_BATCH_SIZE,
             ).map((chunk) =>
-                client.multiGetTransactionBlocks({
-                    digests: chunk,
-                    options: { showInput: true },
-                }),
+                client.multiGetTransactionBlocks({ digests: chunk, options: { showInput: true } }),
             ),
         )
     ).flat();
@@ -295,21 +291,36 @@ export function useGetCoin(
     });
 }
 
+function toCoinLabels({ coinType, name, symbol }: CoinLabels): CoinLabels {
+    return { coinType, name, symbol };
+}
+
 /**
  * The labels (type, name and symbol) of the coins in our coin registry, in registry order.
+ * They come from apps-backend on indexed networks, otherwise from GraphQL.
  */
 export function useGetRecognizedCoins(): UseQueryResult<CoinLabels[], Error> {
+    const appsBackendClient = useAppsBackendClient();
+    const [network] = useNetworkContext();
     const { iotaGraphQLClient } = useIotaGraphQLClientContext();
     const coinTypes = useCoinRegistry().map(({ coinType }) => normalizeStructTag(coinType));
 
     return useQuery<CoinLabels[], Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['recognized-coins', coinTypes],
+        queryKey: ['recognized-coins', network, coinTypes],
         queryFn: async () => {
+            if (isIndexedCoinNetwork(network)) {
+                const response = await appsBackendClient.getCoins({
+                    network,
+                    filter: 'recognized',
+                    limit: coinTypes.length,
+                });
+                if (response) return response.coins.map(toCoinLabels);
+            }
             const coins = await Promise.all(
                 coinTypes.map((coinType) => fetchCoinByType(iotaGraphQLClient!, coinType)),
             );
-            return coins.flat().map(({ coinType, name, symbol }) => ({ coinType, name, symbol }));
+            return coins.flat().map(toCoinLabels);
         },
         enabled: !!iotaGraphQLClient && coinTypes.length > 0,
         staleTime: 5 * 60 * 1000,
@@ -355,6 +366,7 @@ export function useGetIndexedCoins(
         getNextPageParam: (page) => page?.nextOffset ?? null,
         refetchInterval: ({ state }) =>
             state.data?.pages[0] === null ? COINS_INDEXING_REFETCH_INTERVAL : false,
+        placeholderData: keepPreviousData,
         enabled: enabled && !!iotaGraphQLClient,
         staleTime: 5 * 60 * 1000,
     });

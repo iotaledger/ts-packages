@@ -11,9 +11,13 @@ export const COINS_QUERY_STALE_TIME = 20_000;
 export const COIN_TYPE = '0x2::coin::Coin';
 
 /**
- * The networks whose coins apps-backend indexes. Apps list the coins of any other network from GraphQL.
+ * The networks whose coins apps-backend indexes. The coin list is not available on any other network.
  */
 export const INDEXED_COIN_NETWORKS: Network[] = [Network.Mainnet, Network.Testnet, Network.Devnet];
+
+export function isIndexedCoinNetwork(network: string): network is Network {
+    return INDEXED_COIN_NETWORKS.some((indexed) => indexed === network);
+}
 
 export const DEFAULT_COIN_REGISTRY: CoinRegistryEntry[] = [
     {
