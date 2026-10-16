@@ -5,18 +5,7 @@
 import { ALL_PERMISSION_TYPES, isValidPermissionTypes } from '_payloads/permissions';
 import type { Permission, PermissionResponse, PermissionType } from '_payloads/permissions';
 import mitt from 'mitt';
-import {
-    catchError,
-    concatMap,
-    defaultIfEmpty,
-    filter,
-    firstValueFrom,
-    from,
-    map,
-    mergeWith,
-    share,
-    Subject,
-} from 'rxjs';
+import { catchError, concatMap, filter, from, mergeWith, share, Subject } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';
@@ -208,13 +197,7 @@ class Permissions {
         connection: ContentScriptConnection,
     ): Promise<void> {
         const permission = await this.getPermissionByID(permissionId);
-        const isHandling = await firstValueFrom(
-            this._permissionResponses.pipe(
-                map((response) => response.id === permissionId),
-                defaultIfEmpty(false),
-            ),
-        );
-        if (!permission || !this.isPendingPermissionRequest(permission) || isHandling) {
+        if (!permission || !this.isPendingPermissionRequest(permission)) {
             return; // Permission already handled, doesn't exist or is being handled
         }
 
