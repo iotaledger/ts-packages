@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IotaClient } from '@iota/iota-sdk/client';
+import type { IotaClient, ObjectOwner } from '@iota/iota-sdk/client';
 import { fromBase64, isValidIotaAddress } from '@iota/iota-sdk/utils';
 
 import '../bcs.js';
@@ -15,6 +15,9 @@ import {
     TRANSFER_POLICY_TYPE,
 } from '../types/index.js';
 import { getAllOwnedObjects, parseTransferPolicyCapObject } from '../utils.js';
+import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
+import type { GraphQLOwner } from './queries.js';
+import { TRANSFER_POLICY_QUERY } from './queries.js';
 
 /**
  * Searches the `TransferPolicy`-s for the given type. The search is performed via
@@ -25,11 +28,10 @@ import { getAllOwnedObjects, parseTransferPolicyCapObject } from '../utils.js';
  * @param provider
  * @param type
  */
-export async function queryTransferPolicy(
+export async function queryTransferPolicyByEvents(
     client: IotaClient,
     type: string,
 ): Promise<TransferPolicy[]> {
-    // console.log('event type: %s', `${TRANSFER_POLICY_CREATED_EVENT}<${type}>`);
     const { data } = await client.queryEvents({
         query: {
             MoveEventType: `${TRANSFER_POLICY_CREATED_EVENT}<${type}>`,
@@ -63,6 +65,43 @@ export async function queryTransferPolicy(
                 balance: parsed.balance,
             } as TransferPolicy;
         });
+}
+
+export async function queryTransferPolicy(
+    graphQlClient: IotaGraphQLClient,
+    itemType: string,
+): Promise<TransferPolicy[]> {
+    const type = `${TRANSFER_POLICY_TYPE}<${itemType}>`;
+    const { data, errors } = await graphQlClient.query({
+        query: TRANSFER_POLICY_QUERY,
+        variables: {
+            filter: { type },
+        },
+    });
+
+    if (errors?.length) {
+        throw new Error(errors.map((error) => error.message).join('\n'));
+    }
+
+    return (
+        data?.objects.nodes?.map(({ address: id, asMoveObject, owner }) => {
+            const bcs = asMoveObject?.contents?.bcs;
+
+            if (!asMoveObject || !bcs) {
+                throw new Error(`Invalid policy: ${id}, expected object, got package`);
+            }
+
+            const parsed = TransferPolicyType.parse(fromBase64(bcs));
+
+            return {
+                id,
+                type,
+                owner: parseGraphqlObjectOwner(owner),
+                rules: parsed.rules,
+                balance: parsed.balance,
+            };
+        }) ?? []
+    );
 }
 
 /**
@@ -134,4 +173,23 @@ export async function queryOwnedTransferPolicies(
     }
 
     return policies;
+}
+
+function parseGraphqlObjectOwner(owner: GraphQLOwner): ObjectOwner {
+    switch (owner?.__typename) {
+        case 'AddressOwner':
+            if (owner.owner) return { AddressOwner: owner.owner.address };
+            break;
+        case 'Parent':
+            if (owner.parent) return { ObjectOwner: owner.parent.address };
+            break;
+        case 'Shared':
+            return {
+                Shared: { initial_shared_version: String(owner.initialSharedVersion) },
+            };
+        case 'Immutable':
+            return 'Immutable';
+    }
+
+    throw new Error(`Missing owner or invalid owner type`);
 }

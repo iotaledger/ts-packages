@@ -5,6 +5,7 @@
 import { useIotaClientContext } from '@iota/dapp-kit';
 import { KioskClient } from '@iota/kiosk';
 import { createContext, useMemo, type ReactNode } from 'react';
+import { useIotaGraphQLClient } from '../../contexts';
 
 export const KioskClientContext = createContext<KioskClient | null>(null);
 
@@ -14,7 +15,11 @@ export type KioskClientProviderProps = {
 
 export function KioskClientProvider({ children }: KioskClientProviderProps) {
     const { client, network } = useIotaClientContext();
-    const kioskClient = useMemo(() => new KioskClient({ client, network }), [client, network]);
+    const { iotaGraphQLClient } = useIotaGraphQLClient(network);
+    const kioskClient = useMemo(
+        () => new KioskClient({ client, network, graphQlClient: iotaGraphQLClient }),
+        [client, network, iotaGraphQLClient],
+    );
     return (
         <KioskClientContext.Provider value={kioskClient}>{children}</KioskClientContext.Provider>
     );
