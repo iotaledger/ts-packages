@@ -266,6 +266,18 @@ interface EpochNavButtonProps {
 
 function EpochNavButton({ epoch, disabled, isLoading, isNext }: EpochNavButtonProps) {
     const Icon = isNext ? ArrowRight : ArrowLeft;
+    const button = (
+        <Button
+            type={ButtonType.Secondary}
+            size={ButtonSize.Medium}
+            icon={<Icon className="size-5" />}
+            disabled={disabled}
+            aria-label={isNext ? 'Go to next epoch' : 'Go to previous epoch'}
+        />
+    );
+
+    if (disabled) return button;
+
     return (
         <span
             className={
@@ -277,13 +289,7 @@ function EpochNavButton({ epoch, disabled, isLoading, isNext }: EpochNavButtonPr
                 aria-disabled={isLoading}
                 onClick={(event) => isLoading && event.preventDefault()}
             >
-                <Button
-                    type={ButtonType.Secondary}
-                    size={ButtonSize.Medium}
-                    icon={<Icon className="size-5" />}
-                    disabled={disabled}
-                    aria-label={isNext ? 'Go to next epoch' : 'Go to previous epoch'}
-                />
+                {button}
             </LinkWithQuery>
         </span>
     );
@@ -391,7 +397,7 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                                 />
                             </div>
                             <h2 className="title-main-color text-center">
-                                <span className="text-7xl text-display-lg">{epoch}</span>
+                                <span className="text-display-lg">{epoch}</span>
                             </h2>
                             <div>
                                 <EpochNavButton

@@ -89,6 +89,10 @@ export function EpochValidatorSet({
                                 validator={validator}
                                 opacity={getShadeOpacity(index)}
                                 isFirst={index === 0}
+                                isLast={
+                                    index === namedValidators.length - 1 &&
+                                    otherValidators.length === 0
+                                }
                                 isHighlighted={highlightedSegment === validator.iotaAddress}
                             />
                         ))}
@@ -166,6 +170,7 @@ interface VotingPowerBarSegmentProps {
     validator: IotaValidatorSummary;
     opacity: number;
     isFirst: boolean;
+    isLast: boolean;
     isHighlighted: boolean;
 }
 
@@ -173,6 +178,7 @@ function VotingPowerBarSegment({
     validator,
     opacity,
     isFirst,
+    isLast,
     isHighlighted,
 }: VotingPowerBarSegmentProps) {
     const navigate = useNavigateWithQuery();
@@ -189,6 +195,7 @@ function VotingPowerBarSegment({
             className={cx(
                 'bg-iota-primary-30 dark:bg-iota-primary-80',
                 isFirst && 'rounded-l-full',
+                isLast && 'rounded-r-full',
             )}
             opacity={opacity}
             onClick={openValidator}
