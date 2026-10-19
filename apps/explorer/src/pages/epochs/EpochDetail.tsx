@@ -2,8 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     Button,
@@ -36,9 +36,11 @@ import { VALIDATORS_EVENTS_QUERY } from '@iota/core';
 import { useEndOfEpochTransactionFromCheckpoint } from '~/hooks/useEndOfEpochTransactionFromCheckpoint';
 import { type EndOfEpochInfo, type EpochInfo, type IotaEvent } from '@iota/iota-sdk/client';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { useEpochProgress } from './utils';
+import { LINK_HIGHLIGHT_CLASSES, useEpochProgress, useIsPastTimestamp } from './utils';
 import { getSupplyChangeAfterEpochEnd } from '~/lib';
 import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
+
+const EPOCH_SYNC_INTERVAL = 2_000;
 
 enum EpochTabs {
     Checkpoints = 'checkpoints',
@@ -50,7 +52,18 @@ export function EpochDetail() {
     const { id } = useParams();
     const enhancedRpc = useEnhancedRpcClient();
     const { paused, togglePaused } = useAutoRefresh();
-    const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
+    const queryClient = useQueryClient();
+    const { data: systemState, refetch: refetchSystemState } = useIotaClientQuery(
+        'getLatestIotaSystemState',
+    );
+    const networkEpoch = systemState ? Number(systemState.epoch) : undefined;
+    const isNetworkEpochOver = useIsPastTimestamp(
+        systemState
+            ? Number(systemState.epochStartTimestampMs) + Number(systemState.epochDurationMs)
+            : undefined,
+    );
+    const isEpochReached =
+        networkEpoch !== undefined && Number(id) <= networkEpoch + (isNetworkEpochOver ? 1 : 0);
     const { data, isPending, isError, isPlaceholderData } = useQuery({
         queryKey: ['epoch', id],
         queryFn: async () =>
@@ -59,9 +72,36 @@ export function EpochDetail() {
                 limit: 1,
             }),
         placeholderData: keepPreviousData,
+        refetchInterval: (query) => {
+            const [epoch] = query.state.data?.data ?? [];
+            const isUpToDate =
+                !!epoch &&
+                (!!epoch.endOfEpochInfo ||
+                    (Number(epoch.epoch) === networkEpoch && !isNetworkEpochOver));
+            return isEpochReached && !isUpToDate ? EPOCH_SYNC_INTERVAL : false;
+        },
     });
 
     const [epochData] = data?.data ?? [];
+    const isLive =
+        !!epochData &&
+        !epochData.endOfEpochInfo &&
+        networkEpoch === Number(epochData.epoch) &&
+        !isNetworkEpochOver;
+
+    useEffect(() => {
+        if (epochData && networkEpoch !== undefined && Number(epochData.epoch) > networkEpoch) {
+            refetchSystemState();
+        }
+    }, [epochData, networkEpoch, refetchSystemState]);
+
+    useEffect(() => {
+        if (!isLive) return;
+        queryClient.invalidateQueries({ queryKey: ['get-checkpoints'] });
+        queryClient.invalidateQueries({
+            predicate: ({ queryKey }) => queryKey.includes('getLatestCheckpointSequenceNumber'),
+        });
+    }, [isLive, epochData?.epoch, queryClient]);
 
     const endOfPreviousEpochCheckpoint = epochData?.firstCheckpointId
         ? (Number(epochData.firstCheckpointId) - 1).toString()
@@ -102,7 +142,7 @@ export function EpochDetail() {
         // oxlint-disable-next-line react-hooks/exhaustive-deps
     }, [epochData, validatorEvents, committeeMembers]);
 
-    if (isPending)
+    if (isPending || (!epochData && isEpochReached && !isError))
         return (
             <EpochPageLayout>
                 <EpochDetailSkeleton showEndOfEpochStats={systemState?.epoch !== id} />
@@ -130,7 +170,7 @@ export function EpochDetail() {
         : undefined;
 
     const isOngoing = !epochData.endOfEpochInfo;
-    const refetchInterval = isOngoing && !paused ? AUTO_REFRESH_INTERVAL : undefined;
+    const refetchInterval = isLive && !paused ? AUTO_REFRESH_INTERVAL : undefined;
 
     return (
         <EpochPageLayout>
@@ -257,7 +297,13 @@ interface EpochPageHeroProps {
 
 function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroProps) {
     const routeEpoch = Number(useParams().id);
-    const { progress, end } = useEpochProgress();
+    const {
+        epoch: networkEpoch,
+        progress,
+        start: networkEpochStart,
+        end,
+        label,
+    } = useEpochProgress();
     const isDesktop = useBreakpoint('sm');
     const dateSize = isDesktop ? LabelTextSize.Medium : LabelTextSize.Small;
     const { data: systemState } = useIotaClientQuery('getLatestIotaSystemState');
@@ -265,18 +311,42 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
     const epoch = Number(epochInfo.epoch);
     const startTimestamp = Number(epochInfo.epochStartTimestamp);
     const epochFinished = !!endOfEpochInfo?.epochEndTimestamp;
+    const isNetworkEpoch = networkEpoch === epoch;
+    const hasEnded = !epochFinished && networkEpoch !== undefined && networkEpoch > epoch;
+    const endTimestamp = endOfEpochInfo?.epochEndTimestamp ?? (hasEnded ? networkEpochStart : end);
 
     const { data: latestCheckpoint } = useIotaClientQuery(
         'getLatestCheckpointSequenceNumber',
         undefined,
-        { enabled: !epochFinished, refetchInterval },
+        { enabled: !epochFinished && isNetworkEpoch, refetchInterval },
     );
-    const protocolVersion = endOfEpochInfo?.protocolVersion ?? systemState?.protocolVersion;
-    const lastCheckpoint = endOfEpochInfo?.lastCheckpointId ?? latestCheckpoint;
+    const { data: binaryVersion } = useIotaClientQuery('getRpcApiVersion', undefined, {
+        enabled: isNetworkEpoch,
+    });
+    const protocolVersion =
+        endOfEpochInfo?.protocolVersion ??
+        (isNetworkEpoch ? systemState?.protocolVersion : undefined);
+    const lastCheckpoint =
+        endOfEpochInfo?.lastCheckpointId ??
+        (isNetworkEpoch || hasEnded ? latestCheckpoint : undefined);
     const referenceGasPrice = endOfEpochInfo?.referenceGasPrice ?? epochInfo.referenceGasPrice;
 
     const stats = [
-        { label: 'Protocol version', value: protocolVersion ? `v${protocolVersion}` : '--' },
+        {
+            label: 'Protocol',
+            value: protocolVersion ? (
+                <>
+                    {protocolVersion}
+                    {!epochFinished && isNetworkEpoch && binaryVersion && (
+                        <span className="ml-xxs text-label-md text-iota-neutral-40 dark:text-iota-neutral-60">
+                            v{binaryVersion}
+                        </span>
+                    )}
+                </>
+            ) : (
+                '--'
+            ),
+        },
         {
             label: 'Checkpoints',
             value: (
@@ -326,7 +396,7 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                             <div>
                                 <EpochNavButton
                                     epoch={routeEpoch + 1}
-                                    disabled={!epochFinished && !isLoading}
+                                    disabled={!epochFinished && !hasEnded && !isLoading}
                                     isLoading={isLoading}
                                     isNext
                                 />
@@ -334,7 +404,9 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                         </div>
                         <div className="flex flex-col gap-lg">
                             <ProgressBar
-                                progress={endOfEpochInfo ? 100 : progress || 0}
+                                progress={
+                                    epochFinished || hasEnded ? 100 : isNetworkEpoch ? progress : 0
+                                }
                                 size="medium"
                             />
                             <div className="flex flex-row items-start justify-between gap-md">
@@ -358,16 +430,23 @@ function EpochPageHero({ epochInfo, isLoading, refetchInterval }: EpochPageHeroP
                                         label={epochFinished ? 'Ended' : 'Ends'}
                                         size={dateSize}
                                         text={
-                                            <DateDisplay
-                                                timestamp={Number(
-                                                    endOfEpochInfo?.epochEndTimestamp ?? end,
-                                                )}
-                                                type="epoch"
-                                                relativeTimeHelperText={
-                                                    epochFinished ? 'ago' : 'left'
-                                                }
-                                                allowWrap
-                                            />
+                                            epochFinished || isNetworkEpoch || hasEnded ? (
+                                                <DateDisplay
+                                                    timestamp={Number(endTimestamp)}
+                                                    type="epoch"
+                                                    relativeTimeHelperText="ago"
+                                                    relativeText={
+                                                        epochFinished
+                                                            ? undefined
+                                                            : hasEnded
+                                                              ? 'Ending soon'
+                                                              : label
+                                                    }
+                                                    allowWrap
+                                                />
+                                            ) : (
+                                                '--'
+                                            )
                                         }
                                     />
                                 </div>
@@ -399,7 +478,7 @@ function CheckpointLink({ sequenceNumber }: { sequenceNumber: string }) {
     return (
         <LinkWithQuery
             to={getInternalPath('checkpoint', sequenceNumber)}
-            className="text-iota-primary-30 hover:underline dark:text-iota-primary-80"
+            className={`text-iota-primary-30 dark:text-iota-primary-80 ${LINK_HIGHLIGHT_CLASSES}`}
         >
             {formatBalance(sequenceNumber, 0, CoinFormat.Full)}
         </LinkWithQuery>

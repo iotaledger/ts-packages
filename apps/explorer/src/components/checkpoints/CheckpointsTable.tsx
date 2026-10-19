@@ -13,6 +13,8 @@ import { generateCheckpointsTableColumns } from '~/lib/ui';
 import { numberSuffix, getInternalPath } from '~/lib/utils';
 import { useCursorPagination } from '@iota/core';
 
+export const CHECKPOINTS_TABLE_HEADINGS = ['Digest', 'Sequence Number', 'Transactions', 'Time'];
+
 interface CheckpointsTableProps {
     disablePagination?: boolean;
     refetchInterval?: number;
@@ -67,7 +69,7 @@ export function CheckpointsTable({
                 <PlaceholderTable
                     rowCount={Number(limit)}
                     rowHeight="16px"
-                    colHeadings={['Digest', 'Sequence Number', 'Transactions', 'Time']}
+                    colHeadings={CHECKPOINTS_TABLE_HEADINGS}
                 />
             ) : (
                 <TableCard

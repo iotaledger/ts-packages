@@ -10,13 +10,13 @@ import {
     Skeleton,
     Title,
 } from '@iota/apps-ui-kit';
+import { CHECKPOINTS_TABLE_HEADINGS } from '~/components';
 import { PlaceholderTable } from '~/components/ui';
 
 const HERO_STATS = 4;
 const VALIDATOR_COUNTS = 3;
 const LEGEND_ITEMS = 7;
 const END_OF_EPOCH_STATS_ROWS = [3, 3, 4];
-const CHECKPOINTS_COLUMNS = ['Digest', 'Sequence Number', 'Transactions', 'Time'];
 
 const range = (length: number) => Array.from({ length }, (_, index) => index);
 
@@ -110,7 +110,7 @@ export function EpochDetailSkeleton({ showEndOfEpochStats }: EpochDetailSkeleton
                     <PlaceholderTable
                         rowCount={20}
                         rowHeight="16px"
-                        colHeadings={CHECKPOINTS_COLUMNS}
+                        colHeadings={CHECKPOINTS_TABLE_HEADINGS}
                     />
                 </div>
             </Panel>

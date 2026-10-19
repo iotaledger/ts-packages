@@ -21,6 +21,7 @@ interface DateDisplayProps {
     showTooltip?: boolean;
     showHoverStyle?: boolean;
     relativeTimeHelperText?: string;
+    relativeText?: string;
     allowWrap?: boolean;
 }
 
@@ -31,6 +32,7 @@ export function DateDisplay({
     showTooltip = true,
     showHoverStyle = true,
     relativeTimeHelperText,
+    relativeText,
     allowWrap = false,
 }: DateDisplayProps): JSX.Element {
     const effectiveType = type ?? GLOBAL_DATE_TYPE;
@@ -73,9 +75,9 @@ export function DateDisplay({
                 showHoverStyle && (allowWrap ? 'inline-block' : 'text-nowrap'),
             )}
         >
-            {displayed}
+            {format === 'default' && relativeText ? relativeText : displayed}
 
-            {format === 'default' && relativeTimeHelperText ? (
+            {format === 'default' && !relativeText && relativeTimeHelperText ? (
                 <span> {relativeTimeHelperText}</span>
             ) : null}
         </time>

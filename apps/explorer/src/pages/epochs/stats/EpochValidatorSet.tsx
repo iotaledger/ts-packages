@@ -10,6 +10,7 @@ import cx from 'clsx';
 import { useState } from 'react';
 import { LinkWithQuery, useNavigateWithQuery } from '~/components/ui';
 import { getInternalPath } from '~/lib/utils';
+import { LINK_HIGHLIGHT_CLASSES } from '../utils';
 
 const NAMED_VALIDATORS = 6;
 
@@ -24,8 +25,6 @@ const getShadeOpacity = (index: number) => 1 - index * 0.08;
 const OTHER_SEGMENT = 'other';
 
 const LEGEND_ITEM_CLASSES = 'flex min-w-0 flex-row items-center gap-xs';
-const LEGEND_LINK_CLASSES =
-    '-mx-xxs rounded px-xxs transition-colors hover:bg-iota-primary-90/30 hover:ring-1 hover:ring-iota-primary-70/60 dark:hover:bg-iota-primary-70/30';
 
 interface EpochValidatorSetProps {
     validators: IotaValidatorSummary[];
@@ -310,7 +309,7 @@ function VotingPowerLegendItem({
     return to ? (
         <LinkWithQuery
             to={to}
-            className={cx(LEGEND_ITEM_CLASSES, LEGEND_LINK_CLASSES)}
+            className={cx(LEGEND_ITEM_CLASSES, LINK_HIGHLIGHT_CLASSES)}
             {...highlightProps}
         >
             {content}
