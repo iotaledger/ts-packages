@@ -155,7 +155,7 @@ async function setGasPayment(
         throw new Error('No valid gas coins found for the transaction.');
     }
 
-    transactionData.gasData.payment = toGasPayment(paymentCoins);
+    const payment = toGasPayment(paymentCoins);
     const paymentBalance = sumBalances(paymentCoins);
     const coinLimitNote =
         availableCoinCount > MAX_GAS_OBJECTS
@@ -164,6 +164,7 @@ async function setGasPayment(
 
     if (requiredAmount !== null) {
         if (paymentBalance >= requiredAmount) {
+            transactionData.gasData.payment = payment;
             return;
         }
         throw new Error(
@@ -174,18 +175,20 @@ async function setGasPayment(
     }
 
     if (availableCoinCount <= MAX_GAS_OBJECTS) {
+        transactionData.gasData.payment = payment;
         return;
     }
 
     // The budget dry run uses a placeholder gas coin, so only this one shows whether the chosen coins pay.
     const { effects } = await client.dryRunTransactionBlock({
-        transactionBlock: transactionData.build(),
+        transactionBlock: transactionData.build({ overrides: { gasData: { payment } } }),
     });
     if (effects.status.status !== 'success') {
         throw new Error(`Transaction cannot be paid: ${effects.status.error}.${coinLimitNote}`, {
             cause: effects,
         });
     }
+    transactionData.gasData.payment = payment;
 }
 
 function sumBalances(coins: CoinStruct[]) {

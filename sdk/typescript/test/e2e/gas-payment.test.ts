@@ -101,6 +101,16 @@ describe('Gas payment resolution', () => {
         expect(result.transaction?.data.gasData.payment.length).toBe(MAX_GAS_OBJECTS);
     });
 
+    it(`keeps failing when the ${MAX_GAS_OBJECTS} largest coins cannot pay`, async () => {
+        const tx = new Transaction();
+        tx.setSender(toolbox.address());
+        const [coin] = tx.splitCoins(tx.gas, [coinBalance * BigInt(MAX_GAS_OBJECTS + 10)]);
+        tx.transferObjects([coin], DEFAULT_RECIPIENT);
+
+        await expect(tx.build({ client: toolbox.client })).rejects.toThrow('Merge your coins');
+        await expect(tx.build({ client: toolbox.client })).rejects.toThrow('Merge your coins');
+    });
+
     it(`uses ${MAX_GAS_OBJECTS} gas coins when transferring the gas coin`, async () => {
         const tx = new Transaction();
         tx.transferObjects([tx.gas], DEFAULT_RECIPIENT);
