@@ -9,6 +9,7 @@ import {
     useTransactionDryRun,
     useAccountByAddress,
     useSigner,
+    useTransactionNetwork,
 } from '_hooks';
 import { type TransactionApprovalRequest } from '_src/shared/messaging/messages/payloads/transactions/approvalRequest';
 import { respondToTransactionRequest } from '_redux/slices/transaction-requests';
@@ -55,6 +56,7 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
         isPending: isDryRunLoading,
     } = useTransactionDryRun(addressForTransaction, transaction, chain);
     const recognizedPackagesList = useRecognizedPackages();
+    const { transactionNetwork, activeNetwork, isNetworkMismatch } = useTransactionNetwork(chain);
 
     const summary = useTransactionSummary({
         transaction: data,
@@ -100,6 +102,15 @@ export function TransactionRequest({ txRequest }: TransactionRequestProps) {
             >
                 <PageMainLayoutTitle title="Approve Transaction" />
                 <div className="-mr-3 flex flex-col gap-md">
+                    {isNetworkMismatch && (
+                        <InfoBox
+                            title="Network mismatch"
+                            supportingText={`This transaction will be sent on ${transactionNetwork.name}, but your wallet is on ${activeNetwork.name}.`}
+                            icon={<Warning />}
+                            type={InfoBoxType.Warning}
+                            style={InfoBoxStyle.Elevated}
+                        />
+                    )}
                     {isDryRunExecutionFailed && dryRunExecutionSupportingText && (
                         <InfoBox
                             title={DRY_RUN_UI_ERROR_TITLE}

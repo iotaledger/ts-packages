@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { Header } from '@iota/apps-ui-kit';
 import { Portal } from '../shared/Portal';
+import { NetworkBanner } from '../shared/network-banner/NetworkBanner';
 import { useNavigate } from 'react-router-dom';
 import { useNavigationDepth } from './NavigationStackProvider';
 
@@ -21,6 +22,7 @@ interface OverlayProps {
     onBack?: () => void;
     hideCloseIcon?: boolean;
     headerAction?: ReactNode;
+    showNetworkBanner?: boolean;
 }
 
 export function Overlay({
@@ -33,6 +35,7 @@ export function Overlay({
     onBack,
     headerAction,
     hideCloseIcon,
+    showNetworkBanner,
 }: OverlayProps) {
     const closeModal = useCallback(
         (e: React.MouseEvent<HTMLElement>) => {
@@ -69,6 +72,7 @@ export function Overlay({
                         )}
                     </div>
                 )}
+                {showNetworkBanner && <NetworkBanner />}
                 <div className="flex w-full flex-1 flex-col overflow-hidden bg-iota-neutral-100 p-md dark:bg-iota-neutral-6">
                     {children}
                 </div>

@@ -18,6 +18,7 @@ export function CoinsSelectorPage() {
 
     return (
         <Overlay
+            showNetworkBanner
             showModal={true}
             title="Select Coin"
             closeOverlay={() =>

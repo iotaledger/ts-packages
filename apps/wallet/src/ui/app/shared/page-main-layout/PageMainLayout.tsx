@@ -2,12 +2,19 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { ErrorBoundary, MenuContent, Navigation, WalletSettingsButton } from '_components';
+import {
+    ErrorBoundary,
+    MenuContent,
+    Navigation,
+    NetworkButton,
+    WalletSettingsButton,
+} from '_components';
 import cn from 'clsx';
 import { createContext, type ReactNode, useState } from 'react';
 import { useAppSelector, useActiveAccount } from '_hooks';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { Header } from '../header/Header';
+import { NetworkBanner } from '../network-banner/NetworkBanner';
 import { Toaster } from '../toaster';
 import { IotaLogoMark, Keystone, Ledger, Passkey } from '@iota/apps-ui-icons';
 import { Link, useLocation } from 'react-router-dom';
@@ -54,9 +61,17 @@ export function PageMainLayout({
                 <Header
                     leftContent={<LeftContent account={activeAccount} />}
                     middleContent={<div ref={setTitlePortalContainer} />}
-                    rightContent={topNavMenuEnabled ? <WalletSettingsButton /> : undefined}
+                    rightContent={
+                        topNavMenuEnabled ? (
+                            <div className="flex items-center gap-xxxs">
+                                <NetworkButton />
+                                <WalletSettingsButton />
+                            </div>
+                        ) : undefined
+                    }
                 />
             ) : null}
+            {topNavMenuEnabled ? <NetworkBanner className={cn({ 'pt-xs': !isHomePage })} /> : null}
             <div className="relative flex flex-grow flex-col flex-nowrap overflow-hidden">
                 <div className="flex flex-grow flex-col flex-nowrap overflow-y-auto overflow-x-hidden bg-iota-neutral-100 dark:bg-iota-neutral-6">
                     <main

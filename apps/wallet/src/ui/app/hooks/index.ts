@@ -38,3 +38,4 @@ export * from './useCheckCameraPermissionStatus';
 export * from './useShouldOpenInNewTab';
 export * from './useLogoutMutation';
 export * from './useBalanceVisibility';
+export * from './useTransactionNetwork';
