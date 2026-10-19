@@ -7,7 +7,7 @@ import { WindowMessageStream } from '_src/shared/messaging/windowMessageStream';
 import type { BasePayload, Payload } from '_payloads';
 import type { GetAccount } from '_src/shared/messaging/messages/payloads/account/getAccount';
 import type { GetAccountResponse } from '_src/shared/messaging/messages/payloads/account/getAccountResponse';
-import type { SetNetworkPayload } from '_payloads/network';
+import type { DappNetwork, SetDappNetworkPayload } from '_payloads/network';
 import {
     ALL_PERMISSION_TYPES,
     type AcquirePermissionsRequest,
@@ -21,7 +21,7 @@ import type {
     SignTransactionRequest,
     SignTransactionResponse,
 } from '_payloads/transactions';
-import { getCustomNetwork, type NetworkEnvType } from '@iota/core';
+import { getCustomNetwork } from '@iota/core';
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/signMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
 import { getNetwork, Network, type ChainType } from '@iota/iota-sdk/client';
@@ -291,14 +291,14 @@ export class IotaWallet implements Wallet {
 
     #getActiveNetwork() {
         return mapToPromise(
-            this.#send<BasePayload, SetNetworkPayload>({
+            this.#send<BasePayload, SetDappNetworkPayload>({
                 type: 'get-network',
             }),
             ({ network }) => network,
         );
     }
 
-    #setActiveChain({ network }: NetworkEnvType) {
+    #setActiveChain({ network }: DappNetwork) {
         this.#activeChain =
             network === Network.Custom ? getCustomNetwork().chain : getNetwork(network).chain;
     }
