@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { AccountType, type SerializedUIAccount } from '_src/background/accounts/account';
-import { AccountsFormType, useAccountsFormContext, useSourceFlow } from '_components';
+import { AccountsFormType, useAccountsFormContext } from '_components';
 import { useAccountSources, useActiveAccount, useCreateAccountsMutation } from '_hooks';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
-import { AmpliSourceFlow } from '_src/shared/analytics';
 import { Button, ButtonSize, ButtonType, Divider, Dropdown, ListItem } from '@iota/apps-ui-kit';
 import { Add, ArrowDown, MoreHoriz, TriangleDown } from '@iota/apps-ui-icons';
 import { OutsideClickHandler } from '_components/OutsideClickHandler';
@@ -62,7 +61,6 @@ export function AccountGroup({
     const isMnemonicDerivedGroup = type === AccountType.MnemonicDerived;
     const isSeedDerivedGroup = type === AccountType.SeedDerived;
     const [, setAccountsFormValues] = useAccountsFormContext();
-    const { setSourceFlow } = useSourceFlow();
     const { data: accountSources } = useAccountSources();
     const accountSource = accountSources?.find(({ id }) => id === accountSourceID);
 
@@ -80,7 +78,6 @@ export function AccountGroup({
             type: accountsFormType,
             sourceID: accountSource.id,
         });
-        setSourceFlow(AmpliSourceFlow.ManageAccounts);
         try {
             const accountCreationResult = await createAccountsMutation.mutateAsync({
                 type: accountsFormType,

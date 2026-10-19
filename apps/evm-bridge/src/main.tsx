@@ -41,7 +41,6 @@ import { getNetwork } from '@iota/iota-sdk/client';
 import { metaMaskWallet, rabbyWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { LEGAL_LINKS } from './lib/constants/routes.constants.ts';
 import { Link } from './components/link/Link.tsx';
-import { initAmplitude } from './shared/analytics';
 
 // Load Sentry as early as we can:
 initSentry();
@@ -51,9 +50,6 @@ initSentry();
 interceptProviderAnnouncements();
 
 appsBackendClient.init();
-
-// Load Amplitude as early as we can (respects opt-out based on consent status):
-initAmplitude();
 
 const queryClient = new QueryClient();
 

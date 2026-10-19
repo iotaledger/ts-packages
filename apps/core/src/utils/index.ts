@@ -9,7 +9,6 @@ export * from './formatPercentageDisplay';
 export * from './getRefGasPrice';
 export * from './hasDisplayData';
 export * from './kiosk';
-export * from './persistableStorage';
 export * from './roundFloat';
 export * from './filterAndSortTokenBalances';
 export * from './getOwnerDisplay';

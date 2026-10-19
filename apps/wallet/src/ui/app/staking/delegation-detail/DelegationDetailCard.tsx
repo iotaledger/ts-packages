@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useAppSelector, useActiveAddress } from '_hooks';
-import { ampli } from '_src/shared/analytics/ampli';
 import {
     useBalance,
     useCoinMetadata,
@@ -24,7 +23,7 @@ import {
     AmountWithFiat,
 } from '@iota/core';
 import { Network, type StakeObject } from '@iota/iota-sdk/client';
-import { IOTA_TYPE_ARG, CoinFormat } from '@iota/iota-sdk/utils';
+import { IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
@@ -51,8 +50,6 @@ interface DelegationDetailCardProps {
     validatorAddress: string;
     stakedId: string;
 }
-
-const SOURCE_FLOW = 'Delegation detail card';
 
 export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationDetailCardProps) {
     const navigate = useNavigate();
@@ -114,11 +111,6 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 
     const [iotaEarnedFormatted, iotaEarnedSymbol] = useFormatCoin({ balance: iotaEarned });
     const [totalStakeFormatted, totalStakeSymbol] = useFormatCoin({ balance: totalStake });
-    const [totalStakeFormattedPlain] = useFormatCoin({
-        balance: totalStake,
-        format: CoinFormat.Full,
-        useGroupSeparator: false,
-    });
 
     const delegationId = delegationData?.stakedIotaId;
 
@@ -145,18 +137,10 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 
     function handleAddNewStake() {
         navigate(stakeByValidatorAddress);
-        ampli.clickedStakeIota({
-            isCurrentlyStaking: true,
-            sourceFlow: SOURCE_FLOW,
-        });
     }
 
     function handleUnstake() {
         navigate(stakeByValidatorAddress + '&unstake=true');
-        ampli.clickedUnstakeIota({
-            stakedAmount: Number(totalStakeFormattedPlain),
-            validatorAddress,
-        });
     }
 
     return (

@@ -8,7 +8,6 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { AppProviders } from '@/providers';
 import { FontLinks } from '@/components/FontLinks';
 import { ConnectionGuard } from '@/components/connection-guard';
-import { Amplitude } from '@/components/Amplitude';
 import { METADATA } from '@/lib/constants';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -25,7 +24,6 @@ export default function RootLayout({
             <body className={inter.className}>
                 <AppProviders>
                     <FontLinks />
-                    <Amplitude />
                     <ConnectionGuard>
                         <ErrorBoundary>{children}</ErrorBoundary>
                     </ConnectionGuard>

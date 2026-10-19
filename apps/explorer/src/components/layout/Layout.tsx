@@ -15,14 +15,12 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Fragment } from 'react';
 import { Outlet, ScrollRestoration } from 'react-router-dom';
 import { AdvancedModeProvider, DateFormatProvider, NetworkContext } from '~/contexts';
-import { useAmplitudeIdentity, useNetwork } from '~/hooks';
+import { useNetwork } from '~/hooks';
 import { createIotaClient, SupportedNetworks } from '~/lib/utils';
 import { TrustFrameworkProvider } from '../trust-framework/trustFrameworkProvider';
 
 export function Layout(): JSX.Element {
     const [network, setNetwork] = useNetwork();
-
-    useAmplitudeIdentity(network);
 
     return (
         // NOTE: We set a top-level key here to force the entire react tree to be re-created when the network changes:

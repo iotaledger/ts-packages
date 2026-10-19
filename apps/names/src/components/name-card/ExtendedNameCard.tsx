@@ -123,7 +123,6 @@ export function ExtendedNameCard({
                         }
                         onClick={handleButtonClick}
                         icon={targetAddress ? <Link /> : null}
-                        data-amp-mask
                     />
                 </NameCardBody>
             </NameCard>

@@ -19,7 +19,7 @@ import {
     ImageIconSize,
     useCopyToClipboard,
 } from '@iota/core';
-import { ampli, getValidatorMoveEvent } from '~/lib';
+import { getValidatorMoveEvent } from '~/lib';
 import { TableCoinDisplay } from '~/components';
 import type { IotaEvent } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
@@ -125,13 +125,6 @@ function ValidatorWithImage({
             {...ROW_LINK_PROPS}
             address={validator.iotaAddress}
             showAddressAlias={false}
-            onClick={() =>
-                ampli.clickedValidatorRow({
-                    sourceFlow: 'Epoch details',
-                    validatorAddress: validator.iotaAddress,
-                    validatorName: validator.name,
-                })
-            }
             label={
                 <div className="flex items-center gap-x-2.5 text-iota-neutral-40 dark:text-iota-neutral-60">
                     {avatarElement}
