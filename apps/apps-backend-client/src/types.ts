@@ -21,10 +21,6 @@ export interface MonitorNetworkResponse {
     degraded: boolean;
 }
 
-export interface ProductAnalyticsConfigResponse {
-    mustProvideCookieConsent: boolean;
-}
-
 export interface FeatureResult<T> {
     value: T | null;
     on: boolean;

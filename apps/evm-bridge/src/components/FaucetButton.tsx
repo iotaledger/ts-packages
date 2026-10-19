@@ -7,7 +7,6 @@ import { useNetworkVariables } from '../config/l1config';
 import { Button } from '@iota/apps-ui-kit';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { ampli } from '../shared/analytics';
 
 export function FaucetButton() {
     const { isConnected } = useCurrentWallet();
@@ -23,7 +22,6 @@ export function FaucetButton() {
         mutationKey: ['faucet-funds', recipient],
         async mutationFn() {
             toast('Requesting funds from faucet...');
-            ampli.requestedFaucetFunds();
             if (recipient && variables.faucet) {
                 await requestIotaFromFaucetV0({
                     host: variables.faucet,
@@ -41,7 +39,6 @@ export function FaucetButton() {
 
     function onFaucetClick() {
         if (variables.faucetWebsite) {
-            ampli.requestedFaucetFunds();
             window.open(
                 getFaucetWebsiteUrl(variables.faucetWebsite, recipient),
                 '_blank',

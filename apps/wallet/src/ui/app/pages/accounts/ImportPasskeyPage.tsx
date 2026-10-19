@@ -4,12 +4,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Form } from '../../shared/forms/Form';
 
-import {
-    AccountsFormType,
-    PageTemplate,
-    useAccountsFormContext,
-    useBootstrapSourceFlow,
-} from '_components';
+import { AccountsFormType, PageTemplate, useAccountsFormContext } from '_components';
 import { Input, Button, ButtonHtmlType, ButtonType, InputType } from '@iota/apps-ui-kit';
 import { Theme, useTheme, useZodForm } from '@iota/core';
 import PasskeyAuthenticationRequired from '_assets/images/passkey_authentication_required.png';
@@ -18,16 +13,15 @@ import { z } from 'zod';
 import { useBackgroundClient } from '../../hooks';
 
 export function ImportPasskeyPage() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const accountID = searchParams.get('accountID') || '';
-    useBootstrapSourceFlow();
 
     return (
         <PageTemplate
             title="Import Passkey Account"
             isTitleCentered
-            onBack={() => navigate('/accounts/import-existing')}
+            onBack={accountID ? () => navigate('/tokens', { replace: true }) : undefined}
         >
             {accountID ? (
                 <NicknameSetContent accountID={accountID} />

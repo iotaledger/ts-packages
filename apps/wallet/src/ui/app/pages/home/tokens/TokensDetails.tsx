@@ -54,7 +54,6 @@ import { OverviewHint } from './OverviewHint';
 import { SupplyIncreaseVestingStakingDialog } from './SupplyIncreaseVestingStakingDialog';
 import { MigrationDialog } from './MigrationDialog';
 import { openInNewTab } from '_src/shared/utils';
-import { ampli } from '_src/shared/analytics';
 
 export function TokenDetails() {
     const navigate = useNavigate();
@@ -224,7 +223,7 @@ export function TokenDetails() {
                     data-testid="coin-page"
                 >
                     <div className="flex w-full items-center justify-between gap-lg px-sm py-lg">
-                        <div className="flex flex-col gap-xs" data-amp-mask>
+                        <div className="flex flex-col gap-xs">
                             <Address
                                 isExternal={!!explorerHref}
                                 externalLink={explorerHref!}
@@ -232,12 +231,8 @@ export function TokenDetails() {
                                 isCopyable
                                 copyText={activeAccountAddress}
                                 onCopySuccess={() => {
-                                    ampli.copiedElement({
-                                        type: 'address',
-                                    });
                                     toast('Address copied');
                                 }}
-                                onOpen={() => ampli.openedLink({ type: 'address' })}
                             />
                             <CoinBalance amount={tokenBalance} type={activeCoinType} />
                         </div>

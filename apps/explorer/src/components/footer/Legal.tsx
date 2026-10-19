@@ -2,7 +2,6 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useProductAnalyticsConfig } from '@iota/core';
 import { LEGAL_LINKS } from '~/lib/constants';
 import { Link } from '~/components/ui';
 
@@ -18,8 +17,6 @@ export function LegalText(): JSX.Element {
 }
 
 export function LegalLinks(): JSX.Element {
-    const { data: productAnalyticsConfig } = useProductAnalyticsConfig();
-
     return (
         <ul className="flex flex-col gap-3 md:flex-row md:gap-8">
             {LEGAL_LINKS.map(({ title, href }) => (
@@ -33,17 +30,6 @@ export function LegalLinks(): JSX.Element {
                     </Link>
                 </li>
             ))}
-            {productAnalyticsConfig?.mustProvideCookieConsent && (
-                <li className="flex items-center justify-center">
-                    <Link
-                        variant="text"
-                        data-cc="c-settings"
-                        className="text-body-md text-iota-neutral-40 dark:text-iota-neutral-60"
-                    >
-                        Manage Cookies
-                    </Link>
-                </li>
-            )}
         </ul>
     );
 }

@@ -4,8 +4,6 @@
 
 import { useGetCategorizedOwnedObjects, OwnedObjectCategory, useLocalStorage } from '@iota/core';
 import {
-    Badge,
-    BadgeType,
     Button,
     ButtonSize,
     Divider,
@@ -23,11 +21,10 @@ import {
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
-    Tooltip,
 } from '@iota/apps-ui-kit';
 import { ListViewLarge, ListViewSmall, Warning } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ListView, NoObjectsOwnedMessage, ThumbnailsView } from '~/components';
 import { ObjectViewMode } from '~/lib/enums';
 import { Pagination } from '~/components/ui';
@@ -89,69 +86,30 @@ interface OwnedObjectsProps {
 
 export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
     const [limit, setLimit] = useState(10);
-    const [filter, setFilter] = useLocalStorage<string | undefined>(
-        'owned-objects-category-filter',
-        undefined,
-    );
+    const [selection, setSelection] = useLocalStorage<
+        { address: string; category: OwnedObjectCategory } | undefined
+    >('owned-objects-category-filter', undefined);
     const [viewMode, setViewMode] = useLocalStorage<ObjectViewMode>(
         'owned-objects-view-mode',
         ObjectViewMode.Thumbnail,
     );
 
-    const [prevId, setPrevId] = useState(id);
-    const idChanged = id !== prevId;
+    const ownedObjects = useGetCategorizedOwnedObjects(
+        id,
+        limit,
+        selection?.address === id ? selection.category : undefined,
+    );
 
-    useEffect(() => {
-        if (idChanged) {
-            setPrevId(id);
-            setFilter(undefined);
-        }
-    }, [idChanged, id, setFilter]);
+    const { availableCategories, activeCategory, isPending: isLoading } = ownedObjects;
+    const activeCategoryData = activeCategory ? ownedObjects[activeCategory] : undefined;
 
-    const ownedObjects = useGetCategorizedOwnedObjects(id, limit);
+    const isPending = isLoading || !!activeCategoryData?.isFetching;
 
-    const activeCategory = (idChanged ? undefined : (filter as OwnedObjectCategory)) ?? undefined;
-
-    const activeCategoryData = (() => {
-        switch (activeCategory) {
-            case OwnedObjectCategory.Nft:
-                return ownedObjects.nft;
-            case OwnedObjectCategory.Name:
-                return ownedObjects.name;
-            case OwnedObjectCategory.Kiosk:
-                return ownedObjects.kiosk;
-            case OwnedObjectCategory.Other:
-                return ownedObjects.other;
-            default:
-                return undefined;
-        }
-    })();
-
-    const { availableCategories, isPending: isLoading } = ownedObjects;
-
-    const totalAssetsCount =
-        ownedObjects.nft.totalItems +
-        ownedObjects.name.totalItems +
-        ownedObjects.kiosk.totalItems +
-        ownedObjects.other.totalItems;
-
-    useEffect(() => {
-        if (!isLoading && availableCategories.length) {
-            if (!filter || !availableCategories.includes(filter as OwnedObjectCategory)) {
-                setFilter(availableCategories[0]);
-                return;
-            }
-        }
-    }, [filter, availableCategories, isLoading, setFilter]);
-
-    const isFilterSettled =
-        !isLoading && !!filter && availableCategories.includes(filter as OwnedObjectCategory);
-    const isPending = isLoading || (!isFilterSettled && availableCategories.length > 0);
-
-    const effectiveViewMode = filter === OwnedObjectCategory.Other ? ObjectViewMode.List : viewMode;
+    const effectiveViewMode =
+        activeCategory === OwnedObjectCategory.Other ? ObjectViewMode.List : viewMode;
 
     const availableViewModes =
-        filter === OwnedObjectCategory.Other
+        activeCategory === OwnedObjectCategory.Other
             ? VIEW_MODES.filter((mode) => mode.value === ObjectViewMode.List)
             : VIEW_MODES;
 
@@ -232,20 +190,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                 >
                     <div className="flex w-full flex-col flex-wrap items-start justify-between gap-xs sm:min-h-[72px] sm:flex-row sm:items-center md:gap-0">
                         <div className="-mx-md--rs">
-                            <Title
-                                size={TitleSize.Medium}
-                                title="Assets"
-                                supportingElement={
-                                    <span className="ml-sm">
-                                        <Tooltip text="Total assets owned">
-                                            <Badge
-                                                type={BadgeType.Neutral}
-                                                label={String(totalAssetsCount)}
-                                            />
-                                        </Tooltip>
-                                    </span>
-                                }
-                            />
+                            <Title size={TitleSize.Medium} title="Assets" />
                         </div>
                         {hasVisualAssets && availableCategories.length > 0 && (
                             <div className="flex flex-col gap-sm sm:flex-row sm:gap-0">
@@ -293,10 +238,12 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                         <ButtonSegment
                                             key={value}
                                             type={ButtonSegmentType.Rounded}
-                                            selected={value === filter}
+                                            selected={value === activeCategory}
                                             label={CATEGORY_LABELS[value]}
-                                            disabled={isPending}
-                                            onClick={() => setFilter(value)}
+                                            disabled={isLoading}
+                                            onClick={() =>
+                                                setSelection({ address: id, category: value })
+                                            }
                                         />
                                     ))}
                                 </SegmentedButton>
@@ -317,7 +264,7 @@ export function OwnedObjects({ id }: OwnedObjectsProps): JSX.Element {
                                 <ListView
                                     loading={isPending}
                                     data={sortedDataByDisplayImages}
-                                    hideAssetColumn={filter === OwnedObjectCategory.Other}
+                                    hideAssetColumn={activeCategory === OwnedObjectCategory.Other}
                                 />
                             )}
                             {hasVisualAssets && effectiveViewMode === ObjectViewMode.Thumbnail && (

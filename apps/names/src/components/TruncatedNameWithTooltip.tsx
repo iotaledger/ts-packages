@@ -22,7 +22,6 @@ export function TruncatedNameWithTooltip({
 
     const content = (
         <div
-            data-amp-mask
             onClick={() => copyToClipboard(name)}
             className="group inline-flex items-center gap-x-xs cursor-pointer"
             role="button"
@@ -35,7 +34,7 @@ export function TruncatedNameWithTooltip({
     );
 
     return showTooltip ? (
-        <div className="w-full [&>div]:break-words [&>div]:w-full" data-amp-mask>
+        <div className="w-full [&>div]:break-words [&>div]:w-full">
             <Tooltip text={full} position={tooltipPosition}>
                 {content}
             </Tooltip>

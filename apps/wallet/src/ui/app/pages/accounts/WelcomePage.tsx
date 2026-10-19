@@ -2,7 +2,7 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Loading, useSourceFlow } from '_components';
+import { Loading } from '_components';
 import { useNavigate } from 'react-router-dom';
 import { useFullscreenGuard, useInitializedGuard } from '_hooks';
 import { Button, ButtonType } from '@iota/apps-ui-kit';
@@ -10,14 +10,12 @@ import { IotaLogoWeb } from '@iota/apps-ui-icons';
 import GetStartedImage from '_assets/images/onboarding/get-started.png';
 import GetStartedImageDark from '_assets/images/onboarding/get-started-darkmode.png';
 import { useTheme, Theme } from '@iota/core';
-import { AmpliSourceFlow } from '_src/shared/analytics';
 
 export function WelcomePage() {
     const { theme } = useTheme();
     const isFullscreenGuardLoading = useFullscreenGuard(true);
     const isInitializedLoading = useInitializedGuard(false);
     const navigate = useNavigate();
-    const { setSourceFlow } = useSourceFlow();
     const CURRENT_YEAR = new Date().getFullYear();
 
     return (
@@ -43,7 +41,6 @@ export function WelcomePage() {
                         type={ButtonType.Primary}
                         text="Get Started"
                         onClick={() => {
-                            setSourceFlow(AmpliSourceFlow.Onboarding);
                             navigate('/accounts/add-account');
                         }}
                     />
