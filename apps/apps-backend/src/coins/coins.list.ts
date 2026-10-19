@@ -122,6 +122,21 @@ export function buildCoinsIndex(coins: OnChainCoin[], registry: CoinRegistryEntr
     };
 }
 
+function countCoins(index: CoinsIndex, search: string): Record<CoinsFilter, number> {
+    if (!search) return index.counts;
+
+    const count = (filter: CoinsFilter) =>
+        searchCoins(index.lists[filter][DEFAULT_ORDER], search, index.searchTextByType).length;
+    const all = count(CoinsFilter.All);
+    const recognized = count(CoinsFilter.Recognized);
+
+    return {
+        [CoinsFilter.All]: all,
+        [CoinsFilter.Recognized]: recognized,
+        [CoinsFilter.NotRecognized]: all - recognized,
+    };
+}
+
 export function listCoins(
     index: CoinsIndex,
     { filter, search, sort, order, offset, limit }: ListCoinsOptions,
@@ -136,6 +151,6 @@ export function listCoins(
     return {
         coins: matchingCoins.slice(offset, end),
         nextOffset: end < matchingCoins.length ? end : null,
-        counts: index.counts,
+        counts: countCoins(index, search),
     };
 }
