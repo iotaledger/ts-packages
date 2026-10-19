@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector, useAccountGroups, useActiveAccount } fr
 import type { RootState } from '_src/ui/app/redux/rootReducer';
 import { permissionsSelectors, respondToPermissionRequest } from '_redux/slices/permissions';
 import { type SerializedUIAccount } from '_src/background/accounts/account';
-import { ampli } from '_src/shared/analytics/ampli';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageMainLayoutTitle } from '../../shared/page-main-layout/PageMainLayoutTitle';
@@ -15,7 +14,6 @@ import { InfoBox, InfoBoxStyle, InfoBoxType } from '@iota/apps-ui-kit';
 import { Warning, Info } from '@iota/apps-ui-icons';
 import { ExtensionViewType } from '../../redux/slices/app/appType';
 import { SidePanel } from '_src/polyfills/sidepanel';
-import { resolveApplicationName } from '_src/shared/utils';
 
 export function SiteConnectPage() {
     const { requestID } = useParams();
@@ -63,15 +61,6 @@ export function SiteConnectPage() {
                         allowed,
                     }),
                 );
-                const resolvedAppName = resolveApplicationName(
-                    permissionRequest.name,
-                    permissionRequest.origin,
-                );
-                ampli.respondedToConnectionRequest({
-                    applicationName: resolvedAppName,
-                    applicationUrl: permissionRequest.origin,
-                    approvedConnection: allowed,
-                });
                 handleOnFinish();
             }
         },
@@ -104,19 +93,6 @@ export function SiteConnectPage() {
         },
         [handleOnSubmit],
     );
-
-    useEffect(() => {
-        if (permissionRequest) {
-            const resolvedAppName = resolveApplicationName(
-                permissionRequest.name,
-                permissionRequest.origin,
-            );
-            ampli.startedDappConnection({
-                applicationName: resolvedAppName,
-                applicationUrl: permissionRequest.origin,
-            });
-        }
-    }, [permissionRequest]);
 
     return (
         <Loading loading={loading}>

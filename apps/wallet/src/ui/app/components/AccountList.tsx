@@ -103,9 +103,7 @@ function AccountRow<A extends { address: string }>({
         >
             {cells.map((cell, cellIndex) => (
                 <TableCellBase key={cellIndex}>
-                    <TableCellText>
-                        {cellIndex === 0 ? <span data-amp-mask>{cell}</span> : cell}
-                    </TableCellText>
+                    <TableCellText>{cellIndex === 0 ? <span>{cell}</span> : cell}</TableCellText>
                 </TableCellBase>
             ))}
         </TableRow>

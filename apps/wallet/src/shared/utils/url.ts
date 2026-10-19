@@ -1,10 +1,6 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { getUrlWithDeviceId } from '../analytics/amplitude';
-
-const IOTA_DAPPS: string[] = [];
-
 export function isValidUrl(url: string | null) {
     if (!url) {
         return false;
@@ -19,8 +15,7 @@ export function isValidUrl(url: string | null) {
 
 export function getDAppUrl(appUrl: string) {
     const url = new URL(appUrl);
-    const isIotaDApp = IOTA_DAPPS.includes(url.hostname);
-    return isIotaDApp ? getUrlWithDeviceId(url) : url;
+    return url;
 }
 
 export function getValidDAppUrl(appUrl: string) {

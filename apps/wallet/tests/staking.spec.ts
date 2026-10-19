@@ -143,7 +143,7 @@ test.describe('Staking functionality', () => {
             await submitAndVerifyUnstaking(page);
         });
 
-        test('should show error message when staking with over 50 small-amount coin objects', async ({
+        test('should stake using over 50 small-amount coin objects and then unstake', async ({
             page,
             extensionUrl,
         }) => {
@@ -159,9 +159,10 @@ test.describe('Staking functionality', () => {
 
             await navigateToStakePage(page);
             await page.getByPlaceholder('0 IOTA').fill('500');
-            await expect(page.getByTestId('error-info-box')).toBeVisible({
-                timeout: SHORT_TIMEOUT,
-            });
+            await submitAndVerifyStaking(page);
+
+            await navigateToUnstakePage(page);
+            await submitAndVerifyUnstaking(page);
         });
     });
 });

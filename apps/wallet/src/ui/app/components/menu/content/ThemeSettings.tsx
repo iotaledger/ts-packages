@@ -5,7 +5,6 @@ import { RadioButton } from '@iota/apps-ui-kit';
 import { ThemePreference, useTheme } from '@iota/core';
 import { Overlay } from '_components';
 import { useNavigate } from 'react-router-dom';
-import { ampli } from '_src/shared/analytics/ampli';
 
 const THEMES_TO_SHOW = [ThemePreference.Light, ThemePreference.Dark, ThemePreference.System];
 
@@ -20,7 +19,6 @@ export function ThemeSettings() {
 
     function updateThemePreference(value: ThemePreference) {
         setThemePreference(value);
-        ampli.changedTheme({ theme: value });
     }
     return (
         <Overlay showModal title="Theme" closeOverlay={() => navigate('/tokens')}>

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ReactNode } from 'react';
-import { ampli } from '_src/shared/analytics/ampli';
 
 export interface ExternalLinkProps {
     href: string;
@@ -11,25 +10,10 @@ export interface ExternalLinkProps {
     children: ReactNode;
     title?: string;
     onClick?(): void;
-    type?: string; // e.g. 'documentation' | 'application' | 'address' | 'digest' | ...
-    trackEvent?: boolean;
 }
 
-export function ExternalLink({
-    href,
-    className,
-    children,
-    title,
-    onClick,
-    type,
-    trackEvent = true,
-}: ExternalLinkProps) {
+export function ExternalLink({ href, className, children, title, onClick }: ExternalLinkProps) {
     const handleClick = () => {
-        if (trackEvent && type) {
-            ampli.openedLink({
-                type,
-            });
-        }
         onClick?.();
     };
 

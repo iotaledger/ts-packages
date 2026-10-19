@@ -80,15 +80,10 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
     const queryClient = useQueryClient();
     const [isBurnConfirmationOpen, setIsBurnConfirmationOpen] = useState(false);
 
-    const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/', {
-        type: 'ts-sdk-documentation',
-    });
+    const handleMoreAboutKiosk = useExternalLink('https://docs.iota.org/developer/ts-sdk/kiosk/');
 
     const handleMarketplace = useExternalLink(
         'https://docs.iota.org/developer/iota-101/nft/marketplace',
-        {
-            type: 'marketplace',
-        },
     );
 
     const handleBurnAsset = async () => {
@@ -186,7 +181,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                                                         type={ExplorerLinkType.Address}
                                                         address={ownerAddress}
                                                     >
-                                                        <span data-amp-mask>
+                                                        <span>
                                                             {formatIotaName(iotaName) ||
                                                                 formatAddress(ownerAddress)}
                                                         </span>
@@ -200,7 +195,7 @@ export function DetailsView({ onClose, asset, onSend, onBack }: DetailsViewProps
                                 {objectId && (
                                     <KeyValueInfo
                                         keyText="Object ID"
-                                        value={<span data-amp-mask>{formatAddress(objectId)}</span>}
+                                        value={<span>{formatAddress(objectId)}</span>}
                                         fullwidth
                                     />
                                 )}
