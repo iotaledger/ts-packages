@@ -23,7 +23,10 @@ function compare(path: string, before: unknown, after: unknown, breaks: string[]
         return;
     }
     if (Array.isArray(before)) {
-        compare(`${path}[]`, before[0], (after as unknown[])[0], breaks);
+        const afterItems = after as unknown[];
+        before.forEach((item, i) => {
+            if (i < afterItems.length) compare(`${path}[${i}]`, item, afterItems[i], breaks);
+        });
     } else if (kind(before) === 'object') {
         for (const key of Object.keys(before as object)) {
             compare(`${path}.${key}`, before[key], after[key], breaks);
@@ -39,18 +42,25 @@ async function main() {
     if (!res.ok) throw new Error(`Failed to fetch ${prodFeaturesUrl}: ${res.status}`);
     const prod: Record<string, Definition> = (await res.json()).features;
 
-    const config = { get: () => 'production' } as unknown as ConfigService;
-    const head: Record<string, Definition> = new FeaturesController(config).getFeatures().features;
-
     const breaks: string[] = [];
-    for (const [key, definition] of Object.entries(prod)) {
-        if (!(key in head)) {
-            breaks.push(`${key} was removed`);
-            continue;
-        }
-        compare(key, definition.defaultValue, head[key].defaultValue, breaks);
-        if (head[key].minVersion && !definition.minVersion) {
-            breaks.push(`${key} gained a minVersion, which clients already reading it may ignore`);
+    for (const deployType of ['production', 'rc']) {
+        const config = { get: () => deployType } as unknown as ConfigService;
+        const head: Record<string, Definition> = new FeaturesController(config).getFeatures()
+            .features;
+
+        for (const [key, definition] of Object.entries(prod)) {
+            if (!(key in head)) {
+                breaks.push(`[${deployType}] ${key} was removed`);
+                continue;
+            }
+            const found: string[] = [];
+            compare(key, definition.defaultValue, head[key].defaultValue, found);
+            breaks.push(...found.map((b) => `[${deployType}] ${b}`));
+            if (head[key].minVersion && !definition.minVersion) {
+                breaks.push(
+                    `[${deployType}] ${key} gained a minVersion, which clients already reading it may ignore`,
+                );
+            }
         }
     }
 
