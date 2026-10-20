@@ -101,58 +101,63 @@ export function Tooltip({
     useLayoutEffect(() => {
         if (!visible) return;
 
-        const rect = triggerRef.current?.getBoundingClientRect();
-        const tooltipEl = tooltipRef.current;
-        if (!rect || !tooltipEl) return;
+        const updatePosition = () => {
+            const rect = triggerRef.current?.getBoundingClientRect();
+            const tooltipEl = tooltipRef.current;
+            if (!rect || !tooltipEl) return;
 
-        const { width, height } = tooltipEl.getBoundingClientRect();
-        const margin = 8;
-        const isVertical = position === TooltipPosition.Top || position === TooltipPosition.Bottom;
+            const { width, height } = tooltipEl.getBoundingClientRect();
+            const margin = 8;
+            const isVertical =
+                position === TooltipPosition.Top || position === TooltipPosition.Bottom;
 
-        const fitsMainAxis = (pos: ReturnType<typeof computePosition>) =>
-            isVertical
-                ? clampDelta(pos.top - height * pos.anchorY, height, window.innerHeight, margin) ===
-                  0
-                : clampDelta(pos.left - width * pos.anchorX, width, window.innerWidth, margin) ===
-                  0;
+            const fitsMainAxis = (pos: ReturnType<typeof computePosition>) =>
+                isVertical
+                    ? clampDelta(
+                          pos.top - height * pos.anchorY,
+                          height,
+                          window.innerHeight,
+                          margin,
+                      ) === 0
+                    : clampDelta(
+                          pos.left - width * pos.anchorX,
+                          width,
+                          window.innerWidth,
+                          margin,
+                      ) === 0;
 
-        let pos = computePosition(rect, position);
-        if (!fitsMainAxis(pos)) {
-            const flipped = computePosition(rect, OPPOSITE_POSITION[position]);
-            if (fitsMainAxis(flipped)) pos = flipped;
-        }
-        tooltipEl.style.transform = pos.transform;
+            let pos = computePosition(rect, position);
+            if (!fitsMainAxis(pos)) {
+                const flipped = computePosition(rect, OPPOSITE_POSITION[position]);
+                if (fitsMainAxis(flipped)) pos = flipped;
+            }
+            tooltipEl.style.transform = pos.transform;
 
-        const boxLeft = pos.left - width * pos.anchorX;
-        const boxTop = pos.top - height * pos.anchorY;
+            const boxLeft = pos.left - width * pos.anchorX;
+            const boxTop = pos.top - height * pos.anchorY;
 
-        const deltaX = clampDelta(boxLeft, width, window.innerWidth, margin);
-        const deltaY = clampDelta(boxTop, height, window.innerHeight, margin);
+            const deltaX = clampDelta(boxLeft, width, window.innerWidth, margin);
+            const deltaY = clampDelta(boxTop, height, window.innerHeight, margin);
 
-        const left = boxLeft + deltaX;
-        const top = boxTop + deltaY;
-        const overlapsTrigger =
-            left < rect.right &&
-            left + width > rect.left &&
-            top < rect.bottom &&
-            top + height > rect.top;
+            const left = boxLeft + deltaX;
+            const top = boxTop + deltaY;
+            const overlapsTrigger =
+                left < rect.right &&
+                left + width > rect.left &&
+                top < rect.bottom &&
+                top + height > rect.top;
 
-        setCoords({ top: pos.top + deltaY, left: pos.left + deltaX, overlapsTrigger });
-    }, [visible, position, offset]);
-
-    useLayoutEffect(() => {
-        if (!visible) return;
-        const dismiss = () => {
-            clearTimers();
-            setIsHovered(false);
+            setCoords({ top: pos.top + deltaY, left: pos.left + deltaX, overlapsTrigger });
         };
-        window.addEventListener('scroll', dismiss, true);
-        window.addEventListener('resize', dismiss);
+
+        updatePosition();
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
         return () => {
-            window.removeEventListener('scroll', dismiss, true);
-            window.removeEventListener('resize', dismiss);
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
         };
-    }, [visible]);
+    }, [visible, position, offset]);
 
     // Keeps a link or button wrapping the trigger from acting on clicks meant to open the tooltip.
     const handleTriggerClick = (event: MouseEvent<HTMLDivElement>) => {
