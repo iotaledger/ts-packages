@@ -10,7 +10,7 @@ import {
     IOTA_DECIMALS,
     IOTA_TYPE_ARG,
 } from '@iota/iota-sdk/utils';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
 import { StatisticsPanel } from '../StatisticsPanel';
@@ -67,10 +67,6 @@ export function SupplyHistoryChart(): React.JSX.Element {
         return sampleEpochs(allPoints, EPOCH_METRICS_SAMPLE_INTERVAL);
     }, [completedEpochs, totalSupply]);
 
-    const totalSupplyFormatted = totalSupply?.value
-        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Full)
-        : '--';
-
     return (
         <StatisticsPanel
             title="Historical Supply"
@@ -80,7 +76,15 @@ export function SupplyHistoryChart(): React.JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Supply',
-                    text: totalSupplyFormatted,
+                    text: totalSupply?.value ? (
+                        <TruncatedBalance
+                            balance={totalSupply.value}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ) : (
+                        '--'
+                    ),
                     supportingLabel: totalSupply?.value ? 'IOTA' : undefined,
                     fiatAmount: totalSupply?.value,
                 },

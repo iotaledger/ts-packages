@@ -1,50 +1,44 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { LabelText, LabelTextSize } from '@iota/apps-ui-kit';
-import { CoinFiatValue, useFormatCoin } from '@iota/core';
-import { CoinFormat } from '@iota/iota-sdk/utils';
+import { DisplayStats } from '@iota/apps-ui-kit';
+import { CoinFiatValue, TruncatedBalance, useFormatCoin } from '@iota/core';
+import { IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 
-type LabelTextProps = Omit<
-    React.ComponentProps<typeof LabelText>,
-    'text' | 'size' | 'supportingLabel'
->;
-
-interface TokenStatsProps extends LabelTextProps {
+interface TokenStatsProps {
+    label: string;
     amount: bigint | number | string | undefined | null;
     showSign?: boolean;
-    size?: LabelTextSize;
 }
 
-export function TokenStats({
-    amount,
-    showSign,
-    size = LabelTextSize.Large,
-    ...props
-}: TokenStatsProps): React.JSX.Element {
-    const [formattedAmount, symbol] = useFormatCoin({
-        balance: amount,
-        format: CoinFormat.Full,
-        showSign,
-    });
+export function TokenStats({ label, amount, showSign }: TokenStatsProps): React.JSX.Element {
+    const [, symbol] = useFormatCoin({ balance: amount });
 
     return (
-        <LabelText
-            text={
-                <div className="flex min-w-0 flex-col gap-xxs">
-                    <div className="flex flex-row flex-wrap items-baseline gap-xxs">
-                        <span className="break-all">{formattedAmount}</span>
-                        <span className="whitespace-nowrap break-normal text-label-md opacity-40">
-                            {symbol}
-                        </span>
-                    </div>
-                    {amount !== undefined && amount !== null && (
+        <DisplayStats
+            label={label}
+            value={
+                amount === undefined || amount === null ? (
+                    '--'
+                ) : (
+                    <div className="flex flex-col gap-xxs">
+                        <div className="flex flex-row flex-wrap items-baseline gap-xxs">
+                            <span className="break-all">
+                                <TruncatedBalance
+                                    balance={amount}
+                                    decimals={IOTA_DECIMALS}
+                                    symbol={symbol}
+                                    showSign={showSign}
+                                />
+                            </span>
+                            <span className="whitespace-nowrap break-normal text-label-md opacity-40">
+                                {symbol}
+                            </span>
+                        </div>
                         <CoinFiatValue amount={amount} withParentheses={false} />
-                    )}
-                </div>
+                    </div>
+                )
             }
-            size={size}
-            {...props}
         />
     );
 }

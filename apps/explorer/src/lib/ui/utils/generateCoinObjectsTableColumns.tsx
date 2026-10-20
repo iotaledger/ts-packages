@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
-import { CoinFiatValue } from '@iota/core';
+import { CoinFiatValue, TruncatedBalance } from '@iota/core';
 import type { ColumnDef } from '@tanstack/react-table';
-import { CoinFormat, formatBalance } from '@iota/iota-sdk/utils';
 import { AddressLink, ObjectLink } from '~/components/ui';
 import type { CoinObject } from '~/hooks';
 
@@ -59,7 +58,11 @@ export function generateCoinObjectsTableColumns({
                     <TableCellBase>
                         <div className="flex flex-col gap-0.5">
                             <TableCellText supportingLabel={symbol}>
-                                {formatBalance(balance, decimals, CoinFormat.Full)}
+                                <TruncatedBalance
+                                    balance={balance}
+                                    decimals={decimals}
+                                    symbol={symbol}
+                                />
                             </TableCellText>
                             <CoinFiatValue
                                 amount={balance}

@@ -14,6 +14,7 @@ import {
     useGetAllOwnedObjects,
     useGetDelegatedStake,
     useGetTimelockedStakedObjects,
+    TruncatedBalance,
 } from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
 import {
@@ -30,7 +31,7 @@ import {
     ROW_LINK_PROPS,
 } from '@iota/apps-ui-kit';
 import { Warning } from '@iota/apps-ui-icons';
-import { CoinFormat, formatAddress, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { formatAddress, IOTA_DECIMALS, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import type { ColumnDef } from '@tanstack/react-table';
 import { TableCard, ValidatorLink } from '../ui';
 import { TableCoinDisplay } from '../TableCoinDisplay';
@@ -232,7 +233,7 @@ interface StakingStatProps {
 }
 
 function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX.Element {
-    const [amount, symbol] = useFormatCoin({ balance: value, format: CoinFormat.Full });
+    const [, symbol] = useFormatCoin({ balance: value });
     return (
         <DisplayStats
             label={label}
@@ -240,7 +241,13 @@ function StakingStat({ label, tooltipText, value }: StakingStatProps): React.JSX
             value={
                 <div className="flex flex-col gap-xxs">
                     <div className="flex flex-row items-baseline gap-xxs">
-                        <span>{amount}</span>
+                        <span>
+                            <TruncatedBalance
+                                balance={value}
+                                decimals={IOTA_DECIMALS}
+                                symbol={symbol}
+                            />
+                        </span>
                         <span className="text-label-md opacity-40">{symbol}</span>
                     </div>
                     <CoinFiatValue amount={value} withParentheses={false} showApproxSymbol />
@@ -268,7 +275,11 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
+                    <TableCoinDisplay
+                        amount={getValue<bigint>()}
+                        coinType={IOTA_TYPE_ARG}
+                        truncateDecimals
+                    />
                 </TableCellBase>
             );
         },
@@ -279,7 +290,11 @@ const DELEGATION_COLUMNS: ColumnDef<DelegationRow>[] = [
         cell({ getValue }) {
             return (
                 <TableCellBase>
-                    <TableCoinDisplay amount={getValue<bigint>()} coinType={IOTA_TYPE_ARG} />
+                    <TableCoinDisplay
+                        amount={getValue<bigint>()}
+                        coinType={IOTA_TYPE_ARG}
+                        truncateDecimals
+                    />
                 </TableCellBase>
             );
         },

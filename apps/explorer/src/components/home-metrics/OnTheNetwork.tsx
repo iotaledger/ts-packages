@@ -14,7 +14,8 @@ import {
 } from '@iota/apps-ui-kit';
 
 import { useGetNetworkMetrics } from '~/hooks/useGetNetworkMetrics';
-import { CoinFormat, formatBalance, IOTA_DECIMALS, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
+import { CoinFormat, formatBalance, IOTA_TYPE_ARG, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { TruncatedBalance } from '@iota/core';
 
 const FALLBACK = '--';
 
@@ -24,13 +25,6 @@ export function OnTheNetwork(): JSX.Element {
         coinType: IOTA_TYPE_ARG,
     });
     const { data: circulatingSupply } = useIotaClientQuery('getCirculatingSupply');
-
-    const circulatingSupplyFormatted = circulatingSupply?.value
-        ? formatBalance(circulatingSupply.value, IOTA_DECIMALS, CoinFormat.Full)
-        : null;
-    const totalSupplyFormatted = totalSupply?.value
-        ? formatBalance(totalSupply.value, IOTA_DECIMALS, CoinFormat.Full)
-        : null;
 
     const currentTpsFormatted = networkMetrics?.currentTps
         ? formatBalance(Math.floor(networkMetrics.currentTps), 0, CoinFormat.Rounded)
@@ -96,18 +90,36 @@ export function OnTheNetwork(): JSX.Element {
                         <LabelText
                             size={LabelTextSize.Large}
                             label="Total Supply"
-                            text={totalSupplyFormatted ?? '--'}
-                            supportingLabel={totalSupplyFormatted !== null ? 'IOTA' : undefined}
+                            text={
+                                totalSupply?.value ? (
+                                    <TruncatedBalance
+                                        balance={totalSupply.value}
+                                        decimals={IOTA_DECIMALS}
+                                        symbol="IOTA"
+                                    />
+                                ) : (
+                                    '--'
+                                )
+                            }
+                            supportingLabel={totalSupply?.value ? 'IOTA' : undefined}
                         />
                     </div>
                     <div className="flex-1">
                         <LabelText
                             size={LabelTextSize.Large}
                             label="Circulating Supply"
-                            text={circulatingSupplyFormatted ?? '--'}
-                            supportingLabel={
-                                circulatingSupplyFormatted !== null ? 'IOTA' : undefined
+                            text={
+                                circulatingSupply?.value ? (
+                                    <TruncatedBalance
+                                        balance={circulatingSupply.value}
+                                        decimals={IOTA_DECIMALS}
+                                        symbol="IOTA"
+                                    />
+                                ) : (
+                                    '--'
+                                )
                             }
+                            supportingLabel={circulatingSupply?.value ? 'IOTA' : undefined}
                         />
                     </div>
                 </div>

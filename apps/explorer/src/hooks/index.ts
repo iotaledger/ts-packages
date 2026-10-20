@@ -1,6 +1,7 @@
 // Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+export * from './useAutoRefresh';
 export * from './useBreakpoint';
 export * from './useDebouncedValue';
 export * from './useEnhancedRpc';
