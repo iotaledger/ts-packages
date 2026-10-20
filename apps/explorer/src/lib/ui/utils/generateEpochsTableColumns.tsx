@@ -59,6 +59,7 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                             <TableCoinDisplay
                                 amount={totalStakeRewardsDistributed}
                                 coinType={IOTA_TYPE_ARG}
+                                truncateDecimals
                             />
                         )}
                     </TableCellBase>
@@ -92,7 +93,11 @@ export function generateEpochsTableColumns(currentEpoch?: string): ColumnDef<Epo
                         {storageNetInflow === null ? (
                             <TableCellText>--</TableCellText>
                         ) : (
-                            <TableCoinDisplay amount={storageNetInflow} coinType={IOTA_TYPE_ARG} />
+                            <TableCoinDisplay
+                                amount={storageNetInflow}
+                                coinType={IOTA_TYPE_ARG}
+                                truncateDecimals
+                            />
                         )}
                     </TableCellBase>
                 );

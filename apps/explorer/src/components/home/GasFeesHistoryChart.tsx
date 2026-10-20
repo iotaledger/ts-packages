@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useMemo } from 'react';
-import { formatDate } from '@iota/core';
+import { formatDate, TruncatedBalance } from '@iota/core';
 import { formatAmount, formatBalance, CoinFormat, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { LabelTextSize } from '@iota/apps-ui-kit';
 import { GraphTooltipContent } from '../GraphTooltipContent';
@@ -50,7 +50,13 @@ export function GasFeesHistoryChart(): JSX.Element {
                 {
                     size: LabelTextSize.Large,
                     label: 'Total Collected',
-                    text: formatBalance(totalFees, IOTA_DECIMALS, CoinFormat.Full),
+                    text: (
+                        <TruncatedBalance
+                            balance={totalFees}
+                            decimals={IOTA_DECIMALS}
+                            symbol="IOTA"
+                        />
+                    ),
                     supportingLabel: 'IOTA',
                     fiatAmount: totalFees,
                 },
