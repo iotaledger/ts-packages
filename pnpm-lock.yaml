@@ -234,9 +234,6 @@ importers:
       '@iota/dapp-kit':
         specifier: workspace:*
         version: link:../../sdk/dapp-kit
-      '@iota/graphql-transport':
-        specifier: workspace:*
-        version: link:../../sdk/graphql-transport
       '@iota/iota-names-sdk':
         specifier: workspace:^
         version: link:../../sdk/names
@@ -340,9 +337,6 @@ importers:
       '@iota/apps-ui-kit':
         specifier: workspace:*
         version: link:../ui-kit
-      '@iota/bcs':
-        specifier: workspace:*
-        version: link:../../sdk/bcs
       '@iota/core':
         specifier: workspace:*
         version: link:../core
@@ -394,9 +388,6 @@ importers:
       zod:
         specifier: ^3.25.76
         version: 3.25.76
-      zustand:
-        specifier: ^4.4.1
-        version: 4.5.5(@types/react@18.3.9)(immer@9.0.21)(react@18.3.1)
     devDependencies:
       '@playwright/test':
         specifier: ^1.60.0
@@ -521,9 +512,6 @@ importers:
       d3-array:
         specifier: ^3.2.4
         version: 3.2.4
-      date-fns:
-        specifier: ^2.30.0
-        version: 2.30.0
       prism-react-renderer:
         specifier: ^2.3.1
         version: 2.4.0(react@18.3.1)
@@ -545,9 +533,6 @@ importers:
       react-hook-form:
         specifier: ^7.45.2
         version: 7.57.0(react@18.3.1)
-      react-resizable-panels:
-        specifier: ^0.0.39
-        version: 0.0.39(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-dom:
         specifier: ^6.30.6
         version: 6.30.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -662,7 +647,7 @@ importers:
         version: 1.8.0
       '@sentry/nextjs':
         specifier: ^10.76.2
-        version: 10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23))(esbuild@0.28.1))
+        version: 10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23))(esbuild@0.28.1))
       '@tanstack/react-query':
         specifier: ^5.50.1
         version: 5.56.2(react@18.3.1)
@@ -683,7 +668,7 @@ importers:
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next:
         specifier: ^16.3.8
-        version: 16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
+        version: 16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -693,9 +678,6 @@ importers:
       react-hot-toast:
         specifier: ^2.4.1
         version: 2.5.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      swiper:
-        specifier: '>=12.1.2'
-        version: 12.1.3
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -1204,9 +1186,6 @@ importers:
       '@iota/dapp-kit':
         specifier: workspace:*
         version: link:../../sdk/dapp-kit
-      '@iota/iota-names-sdk':
-        specifier: workspace:^
-        version: link:../../sdk/names
       '@iota/iota-sdk':
         specifier: workspace:*
         version: link:../../sdk/typescript
@@ -1215,7 +1194,7 @@ importers:
         version: link:../../sdk/wallet-standard
       '@sentry/nextjs':
         specifier: ^10.76.2
-        version: 10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23)))
+        version: 10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23)))
       '@tanstack/react-query':
         specifier: ^5.50.1
         version: 5.56.2(react@18.3.1)
@@ -1230,7 +1209,7 @@ importers:
         version: 2.4.6(react@18.3.1)
       next:
         specifier: ^16.3.8
-        version: 16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
+        version: 16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -13862,12 +13841,6 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@0.0.39:
-    resolution: {integrity: sha512-qQDZtC9a+CxW8gPQ+E1aTK9j8dvKigRiBYcoWqZWkJlulsgPZda+GjWk4SXZHZzsCNJmyVjEVW2QaM850rNRUQ==}
-    peerDependencies:
-      react: ^16.14.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0
-
   react-router-dom@6.30.6:
     resolution: {integrity: sha512-0RHKZz7wwffvkU+2MFVT2NnjK44ssLEV+m0CAJaS2Ksmorrwj7WxH00jO0SOCW26/tINUnJHToXblDs33I38YQ==}
     engines: {node: '>=14.0.0'}
@@ -14760,10 +14733,6 @@ packages:
 
   swap-case@2.0.2:
     resolution: {integrity: sha512-kc6S2YS/2yXbtkSMunBtKdah4VFETZ8Oh6ONSmSd9bRxhqTrtARUCBUiWXH3xVPpvR7tz2CSnkuXVE42EcGnMw==}
-
-  swiper@12.1.3:
-    resolution: {integrity: sha512-XcWlVmkHFICI4fuoJKgbp8PscDcS4i7pBH8nwJRBi3dpQvhCySwsWRYm4bOf/BzKVWkHOYaFw7qz9uBSrY3oug==}
-    engines: {node: '>= 4.7.0'}
 
   symbol-observable@4.0.0:
     resolution: {integrity: sha512-b19dMThMV4HVFynSAM1++gBHAbk2Tc/osgLIBZMKsyqh34jb2e8Os7T6ZW/Bt3pJFdBTd2JwAnAAEQV7rSNvcQ==}
@@ -21548,7 +21517,7 @@ snapshots:
       '@sentry/utils': 7.120.3
       localforage: 1.10.0
 
-  '@sentry/nextjs@10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23))(esbuild@0.28.1))':
+  '@sentry/nextjs@10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23))(esbuild@0.28.1))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.59.0)
@@ -21562,7 +21531,7 @@ snapshots:
       '@sentry/server-utils': 10.76.2
       '@sentry/vercel-edge': 10.76.2
       '@sentry/webpack-plugin': 5.4.1(rollup@4.59.0)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23))(esbuild@0.28.1))
-      next: 16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
+      next: 16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
       rollup: 4.59.0
       stacktrace-parser: 0.1.11
     transitivePeerDependencies:
@@ -21574,7 +21543,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@sentry/nextjs@10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23)))':
+  '@sentry/nextjs@10.76.2(@opentelemetry/core@2.12.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.12.0(@opentelemetry/api@1.9.1))(next@16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3))(react@18.3.1)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23)))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.59.0)
@@ -21588,7 +21557,7 @@ snapshots:
       '@sentry/server-utils': 10.76.2
       '@sentry/vercel-edge': 10.76.2
       '@sentry/webpack-plugin': 5.4.1(rollup@4.59.0)(webpack@5.94.0(@swc/core@1.16.13(@swc/helpers@0.5.23)))
-      next: 16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
+      next: 16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3)
       rollup: 4.59.0
       stacktrace-parser: 0.1.11
     transitivePeerDependencies:
@@ -28904,7 +28873,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next@16.4.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3):
+  next@16.4.0(@opentelemetry/api@1.9.1)(@playwright/test@1.60.0)(@types/node@24.10.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.79.3):
     dependencies:
       '@next/env': 16.4.0
       '@swc/helpers': 0.5.23
@@ -28913,7 +28882,7 @@ snapshots:
       postcss: 8.5.23
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      styled-jsx: 5.1.6(@babel/core@7.29.7)(react@18.3.1)
+      styled-jsx: 5.1.6(react@18.3.1)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.4.0
       '@next/swc-darwin-x64': 16.4.0
@@ -30205,11 +30174,6 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.9
 
-  react-resizable-panels@0.0.39(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
   react-router-dom@6.30.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@remix-run/router': 1.23.4
@@ -31243,12 +31207,10 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
-  styled-jsx@5.1.6(@babel/core@7.29.7)(react@18.3.1):
+  styled-jsx@5.1.6(react@18.3.1):
     dependencies:
       client-only: 0.0.1
       react: 18.3.1
-    optionalDependencies:
-      '@babel/core': 7.29.7
 
   sucrase@3.35.0:
     dependencies:
@@ -31315,8 +31277,6 @@ snapshots:
   swap-case@2.0.2:
     dependencies:
       tslib: 2.8.1
-
-  swiper@12.1.3: {}
 
   symbol-observable@4.0.0: {}
 
