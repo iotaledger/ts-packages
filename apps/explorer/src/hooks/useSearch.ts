@@ -318,19 +318,21 @@ const getResultsForValidatorByPoolIdOrIotaAddress = async (
 
 export function useSearch(query: string): UseQueryResult<Results, Error> {
     const client = useIotaClient();
-    const { client: identityClient } = useIdentityClient();
-    const { client: notarizationClient } = useNotarizationClient();
-    const { client: auditTrailClient } = useAuditTrailClient();
     const { data: systemStateSummary } = useIotaClientQuery('getLatestIotaSystemState');
 
     const isTFIdentityEnabled = useFeatureIsOn(Feature.ExplorerTFIdentity as string);
     const isTFNotarizationEnabled = useFeatureIsOn(Feature.ExplorerTFNotarization as string);
     const isTFAuditTrailEnabled = useFeatureIsOn(Feature.ExplorerTFAuditTrail as string);
+    const { client: identityClient } = useIdentityClient(!!query && isTFIdentityEnabled);
+    const { client: notarizationClient } = useNotarizationClient(
+        !!query && isTFNotarizationEnabled,
+    );
+    const { client: auditTrailClient } = useAuditTrailClient(!!query && isTFAuditTrailEnabled);
     const { iotaNamesClient } = useIotaNamesClient();
 
     return useQuery<Results, Error>({
         // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ['search', query],
+        queryKey: ['search', query, !!identityClient, !!notarizationClient, !!auditTrailClient],
         queryFn: async () => {
             const results = (
                 await Promise.allSettled([
@@ -353,5 +355,7 @@ export function useSearch(query: string): UseQueryResult<Results, Error> {
         },
         enabled: !!query,
         gcTime: 10000,
+        placeholderData: (previousData, previousQuery) =>
+            previousQuery?.queryKey[1] === query ? previousData : undefined,
     });
 }
