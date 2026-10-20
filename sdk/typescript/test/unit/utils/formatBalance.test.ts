@@ -77,8 +77,8 @@ describe('formatBalance', () => {
             expect(formatBalance(balance, 9, format, true)).toBe(expected);
         });
 
-        test('keeps the negative sign when a negative value truncates to zero', () => {
-            expect(formatBalance('-5000000', 9, CoinFormat.TruncatedDecimals, true)).toBe('-0');
+        test('shows a positive sign when a negative value truncates to zero', () => {
+            expect(formatBalance('-5000000', 9, CoinFormat.TruncatedDecimals, true)).toBe('+0');
         });
     });
 

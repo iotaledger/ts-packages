@@ -124,18 +124,20 @@ export function formatBalance(
 ) {
     const bn = new BigNumber(balance.toString()).shiftedBy(-1 * decimals);
     options = { ...defaultOptions, ...options };
+    const displayed =
+        format === CoinFormat.TruncatedDecimals ? bn.decimalPlaces(2, BigNumber.ROUND_DOWN) : bn;
 
     let formattedBalance: string;
     if (format === CoinFormat.Full) {
         formattedBalance = formatFull(bn, options);
     } else if (format === CoinFormat.TruncatedDecimals) {
-        formattedBalance = formatFull(bn.decimalPlaces(2, BigNumber.ROUND_DOWN), options);
+        formattedBalance = formatFull(displayed, options);
     } else {
         formattedBalance = formatAmount(bn);
     }
 
     if (showSign && !formattedBalance.startsWith('-')) {
-        formattedBalance = `${bn.isNegative() ? '-' : '+'}${formattedBalance}`;
+        formattedBalance = `${displayed.isNegative() && !displayed.isZero() ? '-' : '+'}${formattedBalance}`;
     }
 
     return formattedBalance;
