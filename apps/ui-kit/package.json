@@ -23,7 +23,9 @@
             "import": "./dist/index.es.js",
             "require": "./dist/index.umd.js"
         },
-        "./styles": "./dist/style.css"
+        "./styles": "./dist/style.css",
+        "./fonts/inter.css": "./src/lib/styles/fonts/inter.css",
+        "./fonts/roboto-flex.css": "./src/lib/styles/fonts/roboto-flex.css"
     },
     "types": "./dist/index.d.ts",
     "dependencies": {

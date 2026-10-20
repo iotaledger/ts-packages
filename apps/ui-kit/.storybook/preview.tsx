@@ -4,6 +4,8 @@
 import type { Preview } from '@storybook/react';
 import { withThemeByClassName } from '@storybook/addon-themes';
 
+import '../src/lib/styles/fonts/inter.css';
+import '../src/lib/styles/fonts/roboto-flex.css';
 import '../src/lib/styles/index.css';
 
 const preview: Preview = {

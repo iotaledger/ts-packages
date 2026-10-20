@@ -4,7 +4,7 @@
 module.exports = {
     plugins: {
         'postcss-import': {},
-        'postcss-url': { url: 'inline', filter: /@fontsource/ },
+        'postcss-url': { url: 'rebase' },
         'tailwindcss/nesting': {},
         tailwindcss: {},
         autoprefixer: {},
