@@ -220,11 +220,19 @@ function VotingPowerBarSegment({
                     <span>Voting power: {formatVotingPower(Number(validator.votingPower))}</span>
                     <span>
                         Stake:{' '}
-                        {formatBalance(
-                            validator.stakingPoolIotaBalance,
-                            IOTA_DECIMALS,
-                            CoinFormat.Full,
-                        )}{' '}
+                        <span
+                            title={`${formatBalance(
+                                validator.stakingPoolIotaBalance,
+                                IOTA_DECIMALS,
+                                CoinFormat.Full,
+                            )} IOTA`}
+                        >
+                            {formatBalance(
+                                validator.stakingPoolIotaBalance,
+                                IOTA_DECIMALS,
+                                CoinFormat.TruncatedDecimals,
+                            )}
+                        </span>{' '}
                         IOTA
                     </span>
                 </span>
