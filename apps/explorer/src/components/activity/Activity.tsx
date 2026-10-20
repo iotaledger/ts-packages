@@ -4,7 +4,8 @@
 
 import { useFeatureIsOn } from '@iota/apps-backend-client';
 import { useEffect, useState } from 'react';
-import { Feature, toast } from '@iota/core';
+import { Feature } from '@iota/core';
+import { AUTO_REFRESH_INTERVAL, useAutoRefresh } from '~/hooks';
 import { CheckpointsTable } from '../checkpoints/CheckpointsTable';
 import { EpochsActivityTable } from './EpochsActivityTable';
 import { TransactionsActivityTable } from './TransactionsActivityTable';
@@ -47,10 +48,6 @@ type ActivityProps = {
     onCategoryChange?: (category: ActivityCategory) => void;
 };
 
-const AUTO_REFRESH_ID = 'auto-refresh';
-const REFETCH_INTERVAL_SECONDS = 10;
-const REFETCH_INTERVAL = REFETCH_INTERVAL_SECONDS * 1000;
-
 function toActivityCategory(value: string | null | undefined): ActivityCategory | undefined {
     return Object.values(ActivityCategory).find((category) => category === value);
 }
@@ -64,7 +61,7 @@ export function Activity({
 }: ActivityProps): JSX.Element {
     const pollingTxnTableEnabled = useFeatureIsOn(Feature.PollingTxnTable as string);
 
-    const [paused, setPaused] = useState(false);
+    const { paused, togglePaused } = useAutoRefresh();
     const [showSystemTransactions, setshowSystemTransactions] = useState(
         defaultShowSystemTransactions,
     );
@@ -79,24 +76,12 @@ export function Activity({
         }
     }, [initialTab]);
 
-    const handlePauseChange = () => {
-        if (paused) {
-            toast(`Auto-refreshing on - every ${REFETCH_INTERVAL_SECONDS} seconds`, {
-                id: AUTO_REFRESH_ID,
-            });
-        } else {
-            toast('Auto-refresh paused', { id: AUTO_REFRESH_ID });
-        }
-
-        setPaused((paused) => !paused);
-    };
-
     const handleCategoryChange = (category: ActivityCategory) => {
         setSelectedCategory(category);
         onCategoryChange?.(category);
     };
 
-    const refetchInterval = paused || !pollingTxnTableEnabled ? undefined : REFETCH_INTERVAL;
+    const refetchInterval = paused || !pollingTxnTableEnabled ? undefined : AUTO_REFRESH_INTERVAL;
     return (
         <Panel>
             <div className="relative flex w-full flex-col justify-between gap-y-lg md:flex-row">
@@ -122,7 +107,7 @@ export function Activity({
                             size={ToggleSize.Small}
                             onChange={() => setshowSystemTransactions(!showSystemTransactions)}
                         />
-                        <PlayPause paused={paused} onChange={handlePauseChange} />
+                        <PlayPause paused={paused} onChange={togglePaused} />
                     </div>
                 )}
             </div>

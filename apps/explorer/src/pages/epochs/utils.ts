@@ -4,7 +4,10 @@
 
 import { useTimeAgo } from '@iota/core';
 import { useIotaClientQuery } from '@iota/dapp-kit';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+export const LINK_HIGHLIGHT_CLASSES =
+    '-mx-xxs rounded px-xxs transition-colors hover:bg-iota-primary-90/30 hover:ring-1 hover:ring-iota-primary-70/60 dark:hover:bg-iota-primary-70/30';
 
 interface EpochProgress {
     epoch?: number;
@@ -90,6 +93,21 @@ export function useEpochProgress(suffix: string = 'left'): EpochProgress {
         end,
         start,
     };
+}
+
+export function useIsPastTimestamp(timestamp?: number): boolean {
+    const [isPast, setIsPast] = useState(false);
+
+    useEffect(() => {
+        if (!timestamp) return;
+        const remaining = timestamp - Date.now();
+        setIsPast(remaining <= 0);
+        if (remaining <= 0) return;
+        const timeout = setTimeout(() => setIsPast(true), remaining);
+        return () => clearTimeout(timeout);
+    }, [timestamp]);
+
+    return isPast;
 }
 
 export function getElapsedTime(start: number, end: number): string {
