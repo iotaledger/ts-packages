@@ -438,9 +438,6 @@ importers:
 
   apps/explorer:
     dependencies:
-      '@fontsource-variable/inter':
-        specifier: ^5.0.5
-        version: 5.1.0
       '@headlessui/react':
         specifier: ^1.7.15
         version: 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -913,9 +910,6 @@ importers:
       '@floating-ui/react':
         specifier: ^0.23.0
         version: 0.23.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@fontsource-variable/inter':
-        specifier: ^5.0.5
-        version: 5.1.0
       '@iota/apps-backend-client':
         specifier: workspace:*
         version: link:../apps-backend-client
