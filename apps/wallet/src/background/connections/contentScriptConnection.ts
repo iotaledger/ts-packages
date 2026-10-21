@@ -8,7 +8,7 @@ import type { PortChannelName } from '_src/shared/messaging/portChannelName';
 import { isBasePayload, type ErrorPayload } from '_payloads';
 import { isGetAccount } from '_src/shared/messaging/messages/payloads/account/getAccount';
 import type { GetAccountResponse } from '_src/shared/messaging/messages/payloads/account/getAccountResponse';
-import type { SetNetworkPayload } from '_payloads/network';
+import type { SetDappNetworkPayload } from '_payloads/network';
 import {
     isAcquirePermissionsRequest,
     isHasPermissionRequest,
@@ -124,10 +124,10 @@ export class ContentScriptConnection extends Connection {
                 );
             } else if (isBasePayload(payload) && payload.type === 'get-network') {
                 this.send(
-                    createMessage<SetNetworkPayload>(
+                    createMessage<SetDappNetworkPayload>(
                         {
                             type: 'set-network',
-                            network: await NetworkEnv.getActiveNetwork(),
+                            network: { network: (await NetworkEnv.getActiveNetwork()).network },
                         },
                         msg.id,
                     ),
