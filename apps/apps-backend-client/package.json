@@ -12,7 +12,8 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc --noEmit && tsdown"
+        "build": "tsc --noEmit && tsdown",
+        "test": "vitest run"
     },
     "exports": {
         ".": {
@@ -34,6 +35,7 @@
         "@types/react": "^18.3.3",
         "react": "^18.3.1",
         "tsdown": "^0.23.0",
-        "typescript": "^7.0.2"
+        "typescript": "^7.0.2",
+        "vitest": "^4.1.0"
     }
 }

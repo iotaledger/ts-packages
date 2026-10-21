@@ -7,18 +7,15 @@ import {
     TransactionAction,
     TransactionIcon,
     TransactionIconSize,
+    TruncatedBalance,
 } from '@iota/core';
 import type { IotaEvent } from '@iota/iota-sdk/client';
-import { CoinFormat, formatBalance, formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
+import { formatDigest, IOTA_DECIMALS } from '@iota/iota-sdk/utils';
 import { TableCellBase, TableCellText, ROW_LINK_PROPS } from '@iota/apps-ui-kit';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { StakeEventJson, UnstakeEventJson } from '@iota/core';
 import { DateDisplay } from '~/components';
 import { AddressLink, EpochLink, TransactionLink } from '~/components/ui';
-
-function formatIota(amount: string | number | undefined): string {
-    return formatBalance(amount ?? 0, IOTA_DECIMALS, CoinFormat.Full);
-}
 
 function AmountCell({
     amount,
@@ -27,11 +24,15 @@ function AmountCell({
     amount: string | number | undefined;
     negative?: boolean;
 }) {
-    const formatted = formatIota(amount);
+    const value = amount ?? 0;
     return (
         <div className="flex flex-col gap-0.5">
             <TableCellText supportingLabel="IOTA">
-                {negative ? `-${formatted}` : formatted}
+                <TruncatedBalance
+                    balance={negative ? `-${value}` : value}
+                    decimals={IOTA_DECIMALS}
+                    symbol="IOTA"
+                />
             </TableCellText>
             <CoinFiatValue amount={amount ?? 0} withParentheses={false} />
         </div>

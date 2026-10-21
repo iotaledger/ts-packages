@@ -17,6 +17,7 @@ export const DEFAULT_CHECKPOINTS_LIMIT = 20;
 export function useGetCheckpoints(
     cursor?: string,
     limit = DEFAULT_CHECKPOINTS_LIMIT,
+    refetchInterval?: number,
 ): UseInfiniteQueryResult<InfiniteData<CheckpointPage, unknown>, Error> {
     const client = useIotaClient();
 
@@ -34,5 +35,6 @@ export function useGetCheckpoints(
         gcTime: 24 * 60 * 60 * 1000,
         retry: false,
         placeholderData: keepPreviousData,
+        refetchInterval,
     });
 }
