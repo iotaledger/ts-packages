@@ -120,7 +120,7 @@ function AppWrapper() {
                                                                                     : 'max-h-popup-height min-h-popup-minimum w-popup-width',
                                                                                 extensionViewType !==
                                                                                     ExtensionViewType.Popup &&
-                                                                                    'rounded-xl shadow-lg',
+                                                                                    'max-w-[100vw] rounded-xl shadow-lg',
                                                                             )}
                                                                         >
                                                                             <ErrorBoundary>
