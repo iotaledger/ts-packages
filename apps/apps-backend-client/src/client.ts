@@ -7,6 +7,7 @@ import type {
     FeaturesResponse,
     MonitorNetworkResponse,
 } from './types';
+import { isVersionAtLeast } from './version';
 
 export class AppsBackendClient {
     private features: Record<string, FeatureDefinition> = {};
@@ -43,7 +44,7 @@ export class AppsBackendClient {
     }
 
     getFeatureValue<T>(key: string, defaultValue: T): T {
-        const feature = this.features[key];
+        const feature = this.snapshot[key];
         if (feature && feature.defaultValue !== undefined) {
             return feature.defaultValue as T;
         }
@@ -56,6 +57,9 @@ export class AppsBackendClient {
 
     setAttributes(attrs: Record<string, unknown>): void {
         this.attributes = { ...this.attributes, ...attrs };
+        if ('version' in attrs) {
+            this.updateSnapshot();
+        }
     }
 
     getAttributes(): Record<string, unknown> {
@@ -113,7 +117,16 @@ export class AppsBackendClient {
     }
 
     private updateSnapshot(): void {
-        this.snapshot = { ...this.features };
+        const version = this.attributes.version;
+
+        this.snapshot = Object.fromEntries(
+            Object.entries(this.features).filter(
+                ([, feature]) =>
+                    !feature.minVersion ||
+                    typeof version !== 'string' ||
+                    isVersionAtLeast(version, feature.minVersion),
+            ),
+        );
         this.listeners.forEach((listener) => listener());
     }
 }

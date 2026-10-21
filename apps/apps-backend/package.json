@@ -6,7 +6,8 @@
         "dev": "NODE_ENV=development nest start --watch",
         "debug": "nest start --debug --watch",
         "preview": "node dist/apps-backend/src/main",
-        "test:e2e": "jest --config ./jest-e2e.json"
+        "test:e2e": "jest --config ./jest-e2e.json",
+        "features:check": "tsx scripts/check-features-compat.ts"
     },
     "dependencies": {
         "@iota/core": "workspace:*",
