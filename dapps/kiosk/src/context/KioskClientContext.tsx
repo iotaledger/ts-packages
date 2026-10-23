@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useIotaClient, useIotaClientContext } from '@iota/dapp-kit';
-import { NetworkId } from '@iota/iota-sdk/client';
+import { getGraphQLUrl } from '@iota/iota-sdk/client';
+import { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import { KioskClient } from '@iota/kiosk';
 import { createContext, ReactNode, useContext, useMemo } from 'react';
 
@@ -11,14 +12,21 @@ export const KioskClientContext = createContext<KioskClient | undefined>(undefin
 
 export function KioskClientProvider({ children }: { children: ReactNode }) {
     const iotaClient = useIotaClient();
-    const { network } = useIotaClientContext();
+    const { network: networkId } = useIotaClientContext();
+    const graphQlUrl = getGraphQLUrl(networkId);
+
+    const graphQlClient = useMemo(
+        () => (graphQlUrl ? new IotaGraphQLClient({ url: graphQlUrl }) : null),
+        [graphQlUrl],
+    );
     const kioskClient = useMemo(
         () =>
             new KioskClient({
                 client: iotaClient,
-                network: network as NetworkId,
+                graphQlClient,
+                network: networkId,
             }),
-        [iotaClient, network],
+        [iotaClient, graphQlClient, networkId],
     );
 
     return (
