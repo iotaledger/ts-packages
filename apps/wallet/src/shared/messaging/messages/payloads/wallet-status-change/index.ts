@@ -4,10 +4,10 @@
 
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
-import type { NetworkEnvType } from '@iota/core';
+import type { DappNetwork } from '_payloads/network';
 
 export type WalletStatusChange = {
-    network?: NetworkEnvType;
+    network?: DappNetwork;
     accounts?: { address: string; publicKey: string | null; nickname: string | null }[];
 };
 

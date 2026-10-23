@@ -125,6 +125,6 @@ NetworkEnv.on('changed', async (network) => {
     connections.notifyUI({ event: 'networkChanged', network });
     connections.notifyContentScript({
         event: 'walletStatusChange',
-        change: { network },
+        change: { network: { network: network.network } },
     });
 });

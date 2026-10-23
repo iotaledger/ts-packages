@@ -11,6 +11,13 @@ export interface SetNetworkPayload extends BasePayload {
     network: NetworkEnvType;
 }
 
+export type DappNetwork = Pick<NetworkEnvType, 'network'>;
+
+export interface SetDappNetworkPayload extends BasePayload {
+    type: 'set-network';
+    network: DappNetwork;
+}
+
 export function isSetNetworkPayload(payload: Payload): payload is SetNetworkPayload {
     return isBasePayload(payload) && payload.type === 'set-network';
 }

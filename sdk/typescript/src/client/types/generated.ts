@@ -1375,6 +1375,14 @@ export interface PaginatedCheckpoints {
     data: Checkpoint[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1385,6 +1393,14 @@ export interface PaginatedCoins {
     data: CoinStruct[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1395,6 +1411,14 @@ export interface PaginatedDynamicFieldInfos {
     data: DynamicFieldInfo[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1405,6 +1429,14 @@ export interface PaginatedEpochInfos {
     data: EpochInfo[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1415,6 +1447,14 @@ export interface PaginatedEpochMetricss {
     data: EpochMetrics[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1425,6 +1465,14 @@ export interface PaginatedEvents {
     data: IotaEvent[];
     hasNextPage: boolean;
     nextCursor?: EventId | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1435,6 +1483,14 @@ export interface PaginatedObjectsResponse {
     data: IotaObjectResponse[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /**
  * `next_cursor` points to the last item in the page; Reading with `next_cursor` will start from the
@@ -1445,6 +1501,14 @@ export interface PaginatedTransactionResponse {
     data: IotaTransactionBlockResponse[];
     hasNextPage: boolean;
     nextCursor?: string | null;
+    /**
+     * The oldest checkpoint this response can contain data from.
+     *
+     * Anything before it has been pruned and may be missing from the response.
+     *
+     * Absent for methods that do not return historical data, and for servers that do not report it.
+     */
+    oldestAvailableCheckpoint?: string | null;
 }
 /** Provides metrics about the participation in the network. */
 export interface ParticipationMetrics {
