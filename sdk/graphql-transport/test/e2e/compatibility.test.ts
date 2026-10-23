@@ -363,7 +363,11 @@ describe('GraphQL IotaClient compatibility', () => {
     });
 
     test('queryTransactionBlocks', async () => {
-        const { nextCursor: _, ...rpcTransactions } = await toolbox.client.queryTransactionBlocks({
+        const {
+            nextCursor: _,
+            oldestAvailableCheckpoint: ___,
+            ...rpcTransactions
+        } = await toolbox.client.queryTransactionBlocks({
             filter: {
                 FromAddress: toolbox.address(),
             },
