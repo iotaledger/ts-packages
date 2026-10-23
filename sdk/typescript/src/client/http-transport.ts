@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { JsonRpcError, IotaHTTPStatusError } from './errors.js';
-import type { WebsocketClientOptions } from './rpc-websocket-client.js';
-import { WebsocketClient } from './rpc-websocket-client.js';
 
 /**
  * An object defining headers to be passed to the RPC server
@@ -22,14 +20,26 @@ export type RequestInspector = <T>(
 
 export interface IotaHTTPTransportOptions {
     fetch?: typeof fetch;
+    /**
+     * @deprecated Ignored: full nodes do not serve JSON-RPC over WebSocket. Use
+     * `IotaClientGraphQLTransport` from `@iota/graphql-transport` to subscribe.
+     */
     WebSocketConstructor?: typeof WebSocket;
     url: string;
     rpc?: {
         headers?: HttpHeaders;
         url?: string;
     };
-    websocket?: WebsocketClientOptions & {
+    /**
+     * @deprecated Ignored: full nodes do not serve JSON-RPC over WebSocket. Use
+     * `IotaClientGraphQLTransport` from `@iota/graphql-transport` to subscribe.
+     */
+    websocket?: {
         url?: string;
+        WebSocketConstructor?: typeof WebSocket;
+        callTimeout?: number;
+        reconnectTimeout?: number;
+        maxReconnects?: number;
     };
     inspector?: RequestInspector;
 }
@@ -66,7 +76,6 @@ export interface IotaTransport {
 export class IotaHTTPTransport implements IotaTransport {
     #requestId = 0;
     #options: IotaHTTPTransportOptions;
-    #websocketClient?: WebsocketClient;
 
     constructor(options: IotaHTTPTransportOptions) {
         this.#options = options;
@@ -82,27 +91,6 @@ export class IotaHTTPTransport implements IotaTransport {
         }
 
         return fetchFn(input, init);
-    }
-
-    #getWebsocketClient(): WebsocketClient {
-        if (!this.#websocketClient) {
-            const WebSocketConstructor = this.#options.WebSocketConstructor ?? WebSocket;
-            if (!WebSocketConstructor) {
-                throw new Error(
-                    'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for IotaHTTPTransport.',
-                );
-            }
-
-            this.#websocketClient = new WebsocketClient(
-                this.#options.websocket?.url ?? this.#options.url,
-                {
-                    WebSocketConstructor,
-                    ...this.#options.websocket,
-                },
-            );
-        }
-
-        return this.#websocketClient;
     }
 
     async request<T>(input: IotaTransportRequestOptions): Promise<T> {
@@ -148,19 +136,8 @@ export class IotaHTTPTransport implements IotaTransport {
     }
 
     async subscribe<T>(input: IotaTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
-        if (input.startAfter) {
-            throw new Error(`startAfter is not supported for ${input.method} over JSON-RPC`);
-        }
-
-        const unsubscribe = await this.#getWebsocketClient().subscribe(input);
-
-        if (input.signal) {
-            input.signal.throwIfAborted();
-            input.signal.addEventListener('abort', () => {
-                unsubscribe();
-            });
-        }
-
-        return async () => !!(await unsubscribe());
+        throw new Error(
+            `${input.method} is not available over JSON-RPC. Use IotaClientGraphQLTransport from @iota/graphql-transport to subscribe.`,
+        );
     }
 }

@@ -23,7 +23,7 @@ type SubscriptionTransaction = Extract<
 /**
  * `SubscriptionEventFilter` only supports `emittingModule`, the module that emitted the
  * event. `MoveEventModule` selects the module the struct was declared in, a different set.
- * An empty filter means no filter; anything inexpressible throws so the caller falls back.
+ * An empty filter means no filter; anything inexpressible throws.
  */
 export function mapRpcEventFilterToGraphQL(
     rpcFilter: Record<string, unknown>,

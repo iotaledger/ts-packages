@@ -33,8 +33,6 @@ const client = new IotaClient({
 The following methods are currently unsupported in IotaClientGraphQLTransport, and will either
 error, or fallback to the JSON RPC API if a `fallbackFullNodeUrl` is provided:
 
-- `subscribeTransaction`
-- `subscribeEvents`
 - `call`
 - `getNetworkMetrics`
 - `getMoveCallMetrics`
@@ -45,6 +43,15 @@ error, or fallback to the JSON RPC API if a `fallbackFullNodeUrl` is provided:
 - `executeTransactionBlock`
 - `getParticipationMetrics`
 - `getCirculatingSupply`
+
+### Subscriptions
+
+`subscribeEvent` and `subscribeTransaction` use GraphQL subscriptions. They never fall back to the
+JSON RPC API, which does not serve subscriptions. A filter that GraphQL cannot express is refused:
+
+- `subscribeEvent` supports only the `Package` and `MoveModule` filters
+- `subscribeTransaction` supports only the `TransactionKind`, `FromAddress`, and `MoveFunction`
+  filters
 
 ### Unsupported parameters
 
