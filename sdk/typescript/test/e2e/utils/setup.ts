@@ -8,7 +8,7 @@ import { writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
 import tmp from 'tmp';
-import { expect } from 'vitest';
+import { expect, vi } from 'vitest';
 import { WebSocket } from 'ws';
 
 import type { IotaObjectChangePublished } from '../../../src/client/index.js';
@@ -167,7 +167,19 @@ export async function setupWithFundedAddress(
     await requestIotaFromFaucet({ host: DEFAULT_FAUCET_URL, recipient: address });
 
     execSync(`${IOTA_BIN} client --yes --client.config ${configPath}`, { encoding: 'utf-8' });
-    return new TestToolbox(keypair, rpcURL, configPath);
+    const toolbox = new TestToolbox(keypair, rpcURL, configPath);
+
+    // The faucet reports success once the transfer is in a fullnode checkpoint, but an indexer
+    // only returns the coins after it ingests that checkpoint.
+    await vi.waitFor(
+        async () => {
+            const { data } = await toolbox.getGasObjectsOwnedByAddress();
+            expect(data.length).toBeGreaterThan(0);
+        },
+        { timeout: 30_000, interval: 250 },
+    );
+
+    return toolbox;
 }
 
 export async function publishPackage(packagePath: string, toolbox?: TestToolbox) {
