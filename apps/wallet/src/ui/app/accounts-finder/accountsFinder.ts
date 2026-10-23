@@ -9,6 +9,7 @@ import type { FindBalance } from './types';
 import { Ed25519PublicKey } from '@iota/iota-sdk/keypairs/ed25519';
 import {
     COIN_TYPE,
+    getFirstOwnedObjectsPage,
     STARDUST_BASIC_OUTPUT_TYPE,
     STARDUST_NFT_OUTPUT_TYPE,
     type StardustIndexerClient,
@@ -215,7 +216,7 @@ export class AccountsFinder {
             coinType: this.coinType,
         });
 
-        const ownedAsset = await this.client.getOwnedObjects({
+        const ownedAsset = await getFirstOwnedObjectsPage(this.client, {
             owner: address,
             filter: {
                 MatchNone: [
@@ -229,7 +230,7 @@ export class AccountsFinder {
             limit: NUMBER_OF_OBJECTS_TO_FETCH,
         });
 
-        const ownedTimelockedObject = await this.client.getOwnedObjects({
+        const ownedTimelockedObject = await getFirstOwnedObjectsPage(this.client, {
             owner: address,
             filter: {
                 MatchAny: [
@@ -242,7 +243,7 @@ export class AccountsFinder {
 
         const hasTimelockedObjects = ownedTimelockedObject.data.length > 0;
 
-        const ownedStardustObjects = await this.client.getOwnedObjects({
+        const ownedStardustObjects = await getFirstOwnedObjectsPage(this.client, {
             owner: address,
             filter: {
                 MatchAny: [

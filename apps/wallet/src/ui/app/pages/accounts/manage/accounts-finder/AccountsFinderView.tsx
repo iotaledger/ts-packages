@@ -22,7 +22,7 @@ import {
     useAccountSources,
     useAccounts,
     useAccountsFinder,
-    useGetOwnedObjectsMultipleAddresses,
+    useHasOwnedObjects,
     useGetSharedObjectsMultipleAddresses,
 } from '_hooks';
 import { useMemo, useState } from 'react';
@@ -175,29 +175,19 @@ export function AccountsFinderView(): JSX.Element {
     const findingResultText = `Scanned ${totalCheckedAddresses} addresses`;
     const allAddresses = persistedAccounts?.map((a) => a.address) ?? [];
 
-    const { data: ownedVestingObjects } = useGetOwnedObjectsMultipleAddresses(
-        allAddresses,
-        { MatchAny: [{ StructType: TIMELOCK_IOTA_TYPE }, { StructType: TIMELOCK_STAKED_TYPE }] },
-        10,
-    );
-    const { data: stardustOwned } = useGetOwnedObjectsMultipleAddresses(
-        allAddresses,
-        {
-            MatchAny: [
-                { StructType: STARDUST_BASIC_OUTPUT_TYPE },
-                { StructType: STARDUST_NFT_OUTPUT_TYPE },
-            ],
-        },
-        1,
-    );
+    const { data: hasVestingObjects } = useHasOwnedObjects(allAddresses, {
+        MatchAny: [{ StructType: TIMELOCK_IOTA_TYPE }, { StructType: TIMELOCK_STAKED_TYPE }],
+    });
+    const { data: hasStardustOwned } = useHasOwnedObjects(allAddresses, {
+        MatchAny: [
+            { StructType: STARDUST_BASIC_OUTPUT_TYPE },
+            { StructType: STARDUST_NFT_OUTPUT_TYPE },
+        ],
+    });
     const { data: stardustShared } = useGetSharedObjectsMultipleAddresses(allAddresses, 1);
 
-    const hasVestingObjects = ownedVestingObjects?.pages?.some((p) =>
-        p.some((d) => d.data.length > 0),
-    );
-
     const hasMigrationObjects =
-        stardustOwned?.pages?.some((p) => p.some((d) => d.data.length > 0)) ||
+        hasStardustOwned ||
         stardustShared?.pages?.some((p) =>
             p.some((d) => d.nftOutputs.length > 0 || d.basicOutputs.length > 0),
         );
