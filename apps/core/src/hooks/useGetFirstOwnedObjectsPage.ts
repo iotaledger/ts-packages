@@ -17,7 +17,7 @@ export function useGetFirstOwnedObjectsPage(
 ) {
     const client = useIotaClient();
     return useQuery({
-        queryKey: ['get-owned-objects', address, filter, limit, 'first-non-empty-page'],
+        queryKey: ['get-owned-objects', address, filter, limit, 'first-non-empty-page', client],
         queryFn: () =>
             getFirstOwnedObjectsPage(client, {
                 owner: address!,
