@@ -13,15 +13,13 @@ import {
     TIMELOCK_STAKED_TYPE,
     useBalance,
     useFormatCoin,
+    useGetFirstOwnedObjectsPage,
 } from '@iota/core';
 import { TriangleDown } from '@iota/apps-ui-icons';
 import clsx from 'clsx';
 import { Badge, BadgeType } from '@iota/apps-ui-kit';
 import { formatAddress, IOTA_TYPE_ARG, formatBalance } from '@iota/iota-sdk/utils';
-import {
-    useGetOwnedObjectsMultipleAddresses,
-    useGetSharedObjectsMultipleAddresses,
-} from '../../hooks';
+import { useHasOwnedObjects, useGetSharedObjectsMultipleAddresses } from '../../hooks';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useIotaClientContext } from '@iota/dapp-kit';
 
@@ -110,44 +108,35 @@ export function AddressItem({ address }: { address: string }) {
     });
     const amountLabel = `${formatted} ${symbol}`;
 
-    const { data: ownedObjects } = useGetOwnedObjectsMultipleAddresses(
-        [address],
-        {
-            MatchNone: [
-                { StructType: COIN_TYPE },
-                { StructType: TIMELOCK_IOTA_TYPE },
-                { StructType: TIMELOCK_STAKED_TYPE },
-                { StructType: STARDUST_BASIC_OUTPUT_TYPE },
-                { StructType: STARDUST_NFT_OUTPUT_TYPE },
-            ],
-        },
-        1,
-    );
-    const hasAssets = ownedObjects?.pages?.some((pg) => pg.some((d) => d.data.length > 0)) ?? false;
+    const { data: hasAssets = false } = useHasOwnedObjects([address], {
+        MatchNone: [
+            { StructType: COIN_TYPE },
+            { StructType: TIMELOCK_IOTA_TYPE },
+            { StructType: TIMELOCK_STAKED_TYPE },
+            { StructType: STARDUST_BASIC_OUTPUT_TYPE },
+            { StructType: STARDUST_NFT_OUTPUT_TYPE },
+        ],
+    });
 
-    const { data: vestingObjects } = useGetOwnedObjectsMultipleAddresses(
-        [address],
+    const { data: vestingObjects } = useGetFirstOwnedObjectsPage(
+        address,
         {
             MatchAny: [{ StructType: TIMELOCK_IOTA_TYPE }, { StructType: TIMELOCK_STAKED_TYPE }],
         },
         1,
     );
-    const hasVesting = haveSupplyIncreaseLabel(vestingObjects?.pages?.flat() ?? []);
+    const hasVesting = haveSupplyIncreaseLabel(vestingObjects ? [vestingObjects] : []);
 
-    const { data: stardustOwned } = useGetOwnedObjectsMultipleAddresses(
-        [address],
-        {
-            MatchAny: [
-                { StructType: STARDUST_BASIC_OUTPUT_TYPE },
-                { StructType: STARDUST_NFT_OUTPUT_TYPE },
-            ],
-        },
-        1,
-    );
+    const { data: hasStardustOwned = false } = useHasOwnedObjects([address], {
+        MatchAny: [
+            { StructType: STARDUST_BASIC_OUTPUT_TYPE },
+            { StructType: STARDUST_NFT_OUTPUT_TYPE },
+        ],
+    });
     const { data: stardustShared } = useGetSharedObjectsMultipleAddresses([address], 1);
 
     const hasMigration =
-        (stardustOwned?.pages?.some((pg) => pg.some((d) => d.data.length > 0)) ?? false) ||
+        hasStardustOwned ||
         (stardustShared?.pages?.some((pg) =>
             pg.some((d) => d.nftOutputs.length > 0 || d.basicOutputs.length > 0),
         ) ??

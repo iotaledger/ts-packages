@@ -18,7 +18,7 @@ import {
     DELEGATED_STAKES_QUERY_STALE_TIME,
     useGetDelegatedStake,
     TIMELOCK_IOTA_TYPE,
-    useGetOwnedObjects,
+    useGetFirstOwnedObjectsPage,
     TIMELOCK_STAKED_TYPE,
     STARDUST_BASIC_OUTPUT_TYPE,
     STARDUST_NFT_OUTPUT_TYPE,
@@ -98,14 +98,14 @@ export function TokenDetails() {
         refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
     });
 
-    const { data: supplyIncreaseVestingObjects } = useGetOwnedObjects(
+    const { data: supplyIncreaseVestingObjects } = useGetFirstOwnedObjectsPage(
         activeAccountAddress || '',
         {
             StructType: TIMELOCK_IOTA_TYPE,
         },
         OBJECT_PER_REQ,
     );
-    const { data: supplyIncreaseVestingObjectsStaked } = useGetOwnedObjects(
+    const { data: supplyIncreaseVestingObjectsStaked } = useGetFirstOwnedObjectsPage(
         activeAccountAddress || '',
         {
             StructType: TIMELOCK_STAKED_TYPE,
@@ -113,13 +113,13 @@ export function TokenDetails() {
         OBJECT_PER_REQ,
     );
 
-    const { data: basicOutputObjects } = useGetOwnedObjects(
+    const { data: basicOutputObjects } = useGetFirstOwnedObjectsPage(
         activeAccountAddress || '',
         { StructType: STARDUST_BASIC_OUTPUT_TYPE },
         OBJECT_PER_REQ,
     );
 
-    const { data: nftOutputObjects } = useGetOwnedObjects(
+    const { data: nftOutputObjects } = useGetFirstOwnedObjectsPage(
         activeAccountAddress || '',
         { StructType: STARDUST_NFT_OUTPUT_TYPE },
         OBJECT_PER_REQ,
@@ -135,12 +135,16 @@ export function TokenDetails() {
     );
 
     const hasSupplyIncreaseVestingObjects =
-        haveSupplyIncreaseLabel(supplyIncreaseVestingObjects?.pages || []) ||
-        haveSupplyIncreaseLabel(supplyIncreaseVestingObjectsStaked?.pages || []);
+        haveSupplyIncreaseLabel(
+            supplyIncreaseVestingObjects ? [supplyIncreaseVestingObjects] : [],
+        ) ||
+        haveSupplyIncreaseLabel(
+            supplyIncreaseVestingObjectsStaked ? [supplyIncreaseVestingObjectsStaked] : [],
+        );
 
     const needsMigration =
-        !!basicOutputObjects?.pages?.[0]?.data?.length ||
-        !!nftOutputObjects?.pages?.[0]?.data?.length ||
+        !!basicOutputObjects?.data.length ||
+        !!nftOutputObjects?.data.length ||
         !!stardustSharedBasicObjects?.length ||
         !!stardustSharedNftObjects?.length;
 
