@@ -30,6 +30,7 @@ export * from './useGetTransaction';
 export * from './useSortedCoinsByCategories';
 export * from './useGetNFTDisplay';
 export * from './useGetAllOwnedObjects';
+export * from './useGetFirstOwnedObjectsPage';
 export * from './useGetTimelockedStakedObjects';
 export * from './useGetStakingValidatorDetails';
 export * from './useCursorPagination';
