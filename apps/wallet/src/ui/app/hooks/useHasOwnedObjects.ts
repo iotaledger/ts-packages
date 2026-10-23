@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 export function useHasOwnedObjects(addresses: string[], filter: IotaObjectDataFilter) {
     const client = useIotaClient();
     return useQuery({
-        queryKey: ['get-owned-objects', addresses, filter, 'has-objects'],
+        queryKey: ['get-owned-objects', addresses, filter, 'has-objects', client],
         queryFn: async () => {
             try {
                 const pages = await Promise.all(
