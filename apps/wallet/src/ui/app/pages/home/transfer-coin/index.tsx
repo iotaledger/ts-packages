@@ -161,6 +161,7 @@ export function TransferCoinPage() {
 
     return (
         <Overlay
+            showNetworkBanner
             showModal={true}
             title={showTransactionPreview ? 'Review & Send' : 'Send'}
             closeOverlay={() => navigate('/tokens')}

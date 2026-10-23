@@ -34,6 +34,7 @@ export function Validators() {
 
     return (
         <Overlay
+            showNetworkBanner
             showModal
             title={isPending ? 'Loading' : pageTitle}
             closeOverlay={() => navigate('/')}

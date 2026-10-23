@@ -5,7 +5,6 @@
 import { useNextMenuUrl, Overlay, VerifyPasswordModal } from '_components';
 import { useAppSelector, formatAutoLock, useAutoLockMinutes, useLogoutMutation } from '_hooks';
 import { FaucetRequestButton } from '_src/ui/app/shared/faucet/FaucetRequestButton';
-import { getNetwork, Network } from '@iota/iota-sdk/client';
 import Browser from 'webextension-polyfill';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -13,7 +12,6 @@ import { ConfirmationModal } from '_src/ui/app/shared/ConfirmationModal';
 import { GetSupportModal } from './GetSupportModal';
 import {
     DarkMode,
-    Globe,
     Info,
     Key,
     LockLocked,
@@ -33,7 +31,7 @@ import {
     ImageType,
     Toggle,
 } from '@iota/apps-ui-kit';
-import { useTheme, getCustomNetwork, FAQ_LINK, ToS_LINK } from '@iota/core';
+import { useTheme, FAQ_LINK, ToS_LINK } from '@iota/core';
 import { useSidePanel } from '_src/ui/app/hooks/useSidePanel';
 import { useSidePanelMutation } from '_src/ui/app/hooks/useSidePanelMutation';
 import { SidePanel } from '_src/polyfills/sidepanel';
@@ -43,12 +41,9 @@ import { openInNewTab } from '_src/shared/utils';
 export function MenuList() {
     const { themePreference } = useTheme();
     const navigate = useNavigate();
-    const networkUrl = useNextMenuUrl(true, '/network');
     const autoLockUrl = useNextMenuUrl(true, '/auto-lock');
     const themeUrl = useNextMenuUrl(true, '/theme');
     const changePasswordUrl = useNextMenuUrl(true, '/change-password');
-    const network = useAppSelector((state) => state.app.network);
-    const networkConfig = network === Network.Custom ? getCustomNetwork() : getNetwork(network);
     const version = Browser.runtime.getManifest().version;
     const autoLockInterval = useAutoLockMinutes();
     const sidePanel = useSidePanel();
@@ -70,10 +65,6 @@ export function MenuList() {
             return formatAutoLock(autoLockInterval.data);
         }
         return '';
-    }
-
-    function onNetworkClick() {
-        navigate(networkUrl);
     }
 
     function onAutoLockClick() {
@@ -116,12 +107,6 @@ export function MenuList() {
     const autoLockSubtitle = handleAutoLockSubtitle();
     const themeSubtitle = themePreference.charAt(0).toUpperCase() + themePreference.slice(1);
     const MENU_ITEMS = [
-        {
-            title: 'Network',
-            subtitle: networkConfig.name,
-            icon: <Globe />,
-            onClick: onNetworkClick,
-        },
         {
             title: 'Auto Lock Profile',
             subtitle: autoLockSubtitle,

@@ -32,7 +32,12 @@ export function DelegationDetail() {
     }
 
     return (
-        <Overlay showModal title="Stake Details" closeOverlay={() => navigate('/tokens')}>
+        <Overlay
+            showNetworkBanner
+            showModal
+            title="Stake Details"
+            closeOverlay={() => navigate('/tokens')}
+        >
             <DelegationDetailCard
                 validatorAddress={validatorAddressParams}
                 stakedId={stakeIdParams}

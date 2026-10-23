@@ -18,6 +18,7 @@ export function StakePage() {
 
     return (
         <Overlay
+            showNetworkBanner
             showModal={true}
             title={validatorAddress ? stakingTitle : 'Select a Validator'}
             closeOverlay={() => navigate('/tokens')}
