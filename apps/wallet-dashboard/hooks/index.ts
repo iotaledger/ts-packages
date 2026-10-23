@@ -4,7 +4,6 @@
 export * from './useNewStakeTimelockedTransaction';
 export * from './useNewUnstakeTimelockedTransaction';
 export * from './useGetCurrentEpochStartTimestamp';
-export * from './useTimelockedUnstakeTransaction';
 export * from './useExplorerLinkGetter';
 export * from './useGetStardustMigratableObjects';
 export * from './useGetSupplyIncreaseVestingObjects';
