@@ -1,17 +1,16 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { type JSX, useMemo, useState, useCallback } from 'react';
+import { type JSX, useEffect, useMemo, useRef, useState } from 'react';
 import {
     InfoBox,
     InfoBoxStyle,
     InfoBoxType,
+    LoadingIndicator,
     Panel,
-    Select,
-    SelectSize,
     Title,
 } from '@iota/apps-ui-kit';
-import { useCursorPagination } from '@iota/core';
+import { useOnScreen } from '@iota/core';
 import {
     CoinFilters,
     type CoinFilter,
@@ -23,80 +22,98 @@ import {
 } from '~/components';
 import { generateCoinsTableColumns } from '~/lib/ui';
 import { Info, Warning } from '@iota/apps-ui-icons';
-import { useGetAllCoins, useGetRecognizedCoins } from '~/hooks';
-import { PAGE_SIZES_RANGE_20_60 } from '~/lib/constants';
+import {
+    COINS_PAGE_SIZE,
+    useDebouncedValue,
+    useGetCoin,
+    useGetIndexedCoins,
+    useGetRecognizedCoins,
+} from '~/hooks';
 import { getCoinPagePath, toCoinType } from '~/lib/utils';
+import { type CoinsFilter as BackendCoinsFilter, type CoinsSort } from '@iota/apps-backend-client';
+import type { SortingState } from '@tanstack/react-table';
 
 const COLUMN_HEADINGS = ['Coin', 'Creator', 'Supply', 'Created'];
+const COINS_FILTER: Record<CoinFilter, BackendCoinsFilter> = {
+    All: 'all',
+    Recognized: 'recognized',
+    'Not Recognized': 'not-recognized',
+};
+const COINS_SORTS: CoinsSort[] = ['name', 'createdAt'];
+
+function toCoinsSort(columnId: string): CoinsSort | undefined {
+    return COINS_SORTS.find((sort) => sort === columnId);
+}
 
 function CoinsPageResult(): JSX.Element {
-    const [limit, setLimit] = useState(PAGE_SIZES_RANGE_20_60[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<CoinFilter>('All');
-    const searchedCoinType = useMemo(() => toCoinType(searchTerm.trim()), [searchTerm]);
-
-    const { data, pagination, isError, isPending, isFetching } = useCursorPagination(
-        useGetAllCoins(limit, searchedCoinType),
-    );
-
-    const onSearchTermChange = useCallback(
-        (term: string) => {
-            setSearchTerm(term);
-            pagination.onFirst();
-        },
-        [pagination],
-    );
-
-    const isInvalidSearch = !!searchTerm.trim() && !searchedCoinType;
-
-    const handleFilterChange = useCallback(
-        (newFilter: CoinFilter) => {
-            setFilter(newFilter);
-            pagination.onFirst();
-        },
-        [pagination],
-    );
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnSort] = sorting;
+    const search = useDebouncedValue(searchTerm.trim());
+    const loadMoreElem = useRef<HTMLDivElement | null>(null);
+    const { isIntersecting } = useOnScreen(loadMoreElem);
 
     const {
-        data: recognizedCoins = [],
-        isPending: isRecognizedCoinsPending,
-        isError: isRecognizedCoinsError,
-    } = useGetRecognizedCoins();
+        data,
+        isPending,
+        isError,
+        isPlaceholderData,
+        hasNextPage,
+        isFetchingNextPage,
+        fetchNextPage,
+    } = useGetIndexedCoins(
+        COINS_FILTER[filter],
+        search,
+        columnSort && toCoinsSort(columnSort.id),
+        columnSort?.desc ? 'desc' : 'asc',
+    );
+    const { data: recognizedCoins } = useGetRecognizedCoins();
+
+    const firstPage = data?.pages[0];
+    const isIndexing = firstPage?.status === 'indexing';
+    const isNotIndexed = firstPage?.status === 'not-indexed';
+    const coins = useMemo(
+        () => data?.pages.flatMap((page) => (page.status === 'ready' ? page.coins : [])) ?? [],
+        [data],
+    );
+    const counts = firstPage?.status === 'ready' ? firstPage.counts : undefined;
+    const filterCounts = counts && {
+        All: counts.all,
+        Recognized: counts.recognized,
+        'Not Recognized': counts['not-recognized'],
+    };
+
+    useEffect(() => {
+        if (isIntersecting && hasNextPage && !isFetchingNextPage && !isPlaceholderData) {
+            fetchNextPage();
+        }
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, isPlaceholderData, fetchNextPage]);
 
     const tableColumns = useMemo(
         () => generateCoinsTableColumns({ recognizedCoins }),
         [recognizedCoins],
     );
+    // Coins created after the last indexing are not in the index yet, so a coin
+    // type search falls back to looking the coin up on chain.
+    const searchedCoinType = toCoinType(search);
+    const isCoinLookupNeeded =
+        !!searchedCoinType &&
+        filter === 'All' &&
+        !!data &&
+        !isPlaceholderData &&
+        !isIndexing &&
+        coins.length === 0;
+    const { data: searchedCoin, isPending: isSearchedCoinPending } = useGetCoin(
+        searchedCoinType ?? '',
+        { enabled: isCoinLookupNeeded },
+    );
+    const isSearchedCoinLoading = isCoinLookupNeeded && isSearchedCoinPending;
+    const displayedCoins = isCoinLookupNeeded && searchedCoin ? [searchedCoin] : coins;
 
-    const visibleCoins = useMemo(() => {
-        if (isInvalidSearch) return [];
-
-        if (filter === 'Recognized') {
-            return searchedCoinType
-                ? recognizedCoins.filter(({ coinType }) => coinType === searchedCoinType)
-                : recognizedCoins;
-        }
-
-        if (!data) return [];
-        const recognizedTypes = new Set(recognizedCoins.map(({ coinType }) => coinType));
-        const notRecognizedCoins = data.coins.filter(
-            ({ coinType }) => !recognizedTypes.has(coinType),
-        );
-
-        if (filter === 'Not Recognized') return notRecognizedCoins;
-        if (searchedCoinType) return data.coins;
-
-        // Recognized coins are pinned to the top of the first page so they are
-        // never buried among the rest.
-        return pagination.currentPage === 0
-            ? [...recognizedCoins, ...notRecognizedCoins]
-            : notRecognizedCoins;
-    }, [data, filter, isInvalidSearch, pagination.currentPage, recognizedCoins, searchedCoinType]);
-
-    const isRecognizedFilter = filter === 'Recognized';
-    const isTableError = isRecognizedCoinsError || (!isRecognizedFilter && isError);
-    const isTableLoading =
-        isRecognizedCoinsPending || (!isRecognizedFilter && (isPending || isFetching || !data));
+    const isNoResults =
+        !!data && !isIndexing && !isSearchedCoinLoading && displayedCoins.length === 0;
+    const isSpinnerVisible = hasNextPage && isFetchingNextPage;
 
     return (
         <PageLayout
@@ -115,78 +132,84 @@ function CoinsPageResult(): JSX.Element {
                     <Panel>
                         <Title title="All Coins" />
 
-                        <div className="flex flex-col gap-md p-md">
-                            <TableSearch
-                                onSearch={onSearchTermChange}
-                                placeholder="Search by coin type…"
-                            />
-                            <div className="flex">
-                                <CoinFilters
-                                    selectedFilter={filter}
-                                    onFilterChange={handleFilterChange}
-                                />
-                            </div>
-                        </div>
-                        <div className="p-md">
-                            {isInvalidSearch && (
-                                <InfoBox
-                                    title="No coins found"
-                                    supportingText="Try a different search term"
-                                    icon={<Warning />}
-                                    type={InfoBoxType.Warning}
-                                    style={InfoBoxStyle.Elevated}
-                                />
-                            )}
-                            {isTableError ? (
-                                <InfoBox
-                                    title="Failed to load data"
-                                    supportingText="Coins data could not be loaded"
-                                    icon={<Warning />}
-                                    type={InfoBoxType.Error}
-                                    style={InfoBoxStyle.Elevated}
-                                />
-                            ) : (
-                                <ErrorBoundary>
-                                    {isTableLoading ? (
-                                        <PlaceholderTable
-                                            rowCount={isRecognizedFilter ? 3 : limit}
-                                            rowHeight="16px"
-                                            colHeadings={COLUMN_HEADINGS}
+                        {!isNotIndexed ? (
+                            <>
+                                <div className="flex flex-col gap-md p-md">
+                                    <TableSearch
+                                        onSearch={setSearchTerm}
+                                        placeholder="Search by name, symbol or coin type…"
+                                    />
+                                    <div className="flex">
+                                        <CoinFilters
+                                            selectedFilter={filter}
+                                            onFilterChange={setFilter}
+                                            counts={filterCounts}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="p-md">
+                                    {isError ? (
+                                        <InfoBox
+                                            title="Failed to load data"
+                                            supportingText="Coins data could not be loaded"
+                                            icon={<Warning />}
+                                            type={InfoBoxType.Error}
+                                            style={InfoBoxStyle.Elevated}
+                                        />
+                                    ) : isNoResults ? (
+                                        <InfoBox
+                                            title="No coins found"
+                                            supportingText={
+                                                search
+                                                    ? 'No coin matches your search. Try a valid name, symbol or coin type'
+                                                    : undefined
+                                            }
+                                            icon={<Warning />}
+                                            type={InfoBoxType.Warning}
+                                            style={InfoBoxStyle.Elevated}
                                         />
                                     ) : (
-                                        <TableCard
-                                            sortTable
-                                            data={visibleCoins}
-                                            columns={tableColumns}
-                                            areHeadersCentered={false}
-                                            defaultSorting={[{ id: 'createdAt', desc: false }]}
-                                            getRowHref={({ coinType }) => getCoinPagePath(coinType)}
-                                            paginationOptions={
-                                                isRecognizedFilter ? undefined : pagination
-                                            }
-                                            pageSizeSelector={
-                                                !isRecognizedFilter && (
-                                                    <Select
-                                                        value={limit.toString()}
-                                                        options={PAGE_SIZES_RANGE_20_60.map(
-                                                            (size) => ({
-                                                                label: `${size} / page`,
-                                                                id: size.toString(),
-                                                            }),
-                                                        )}
-                                                        size={SelectSize.Small}
-                                                        onValueChange={(value) => {
-                                                            setLimit(Number(value));
-                                                            pagination.onFirst();
-                                                        }}
-                                                    />
-                                                )
-                                            }
-                                        />
+                                        <ErrorBoundary>
+                                            {isPending || isIndexing || isSearchedCoinLoading ? (
+                                                <PlaceholderTable
+                                                    rowCount={COINS_PAGE_SIZE}
+                                                    rowHeight="16px"
+                                                    colHeadings={COLUMN_HEADINGS}
+                                                />
+                                            ) : (
+                                                <TableCard
+                                                    sortTable
+                                                    sorting={sorting}
+                                                    onSortingChange={setSorting}
+                                                    data={displayedCoins}
+                                                    columns={tableColumns}
+                                                    areHeadersCentered={false}
+                                                    getRowHref={({ coinType }) =>
+                                                        getCoinPagePath(coinType)
+                                                    }
+                                                />
+                                            )}
+                                        </ErrorBoundary>
                                     )}
-                                </ErrorBoundary>
-                            )}
-                        </div>
+                                    {isSpinnerVisible && (
+                                        <div className="mt-1 flex w-full justify-center">
+                                            <LoadingIndicator text="Loading data" />
+                                        </div>
+                                    )}
+                                    <div ref={loadMoreElem} className="h-px" />
+                                </div>
+                            </>
+                        ) : (
+                            <div className="p-md">
+                                <InfoBox
+                                    title="Coin list not available"
+                                    supportingText="The coin list is not available on this network."
+                                    icon={<Info />}
+                                    type={InfoBoxType.Default}
+                                    style={InfoBoxStyle.Elevated}
+                                />
+                            </div>
+                        )}
                     </Panel>
                 </div>
             }

@@ -3,8 +3,10 @@
 
 import type {
     CoinPriceResponse,
+    CoinsResult,
     FeatureDefinition,
     FeaturesResponse,
+    GetCoinsParams,
     MonitorNetworkResponse,
 } from './types';
 import { isVersionAtLeast } from './version';
@@ -104,16 +106,53 @@ export class AppsBackendClient {
         queryParams?: Record<string, string>,
         options?: RequestInit,
     ): Promise<T> {
+        const res = await this.fetchPath(path, queryParams, options);
+        if (!res.ok) {
+            throw new Error('Unexpected response');
+        }
+        return res.json();
+    }
+
+    async getCoins({
+        network,
+        filter,
+        search = '',
+        sort,
+        order = 'asc',
+        offset = 0,
+        limit = 20,
+    }: GetCoinsParams): Promise<CoinsResult> {
+        const response = await this.fetchPath('coins', {
+            network,
+            filter,
+            search,
+            ...(sort ? { sort, order } : {}),
+            offset: String(offset),
+            limit: String(limit),
+        });
+        if (response.status === 404) {
+            return { status: 'not-indexed' };
+        }
+        if (response.status === 503) {
+            return { status: 'indexing' };
+        }
+        if (!response.ok) {
+            throw new Error('Unexpected response');
+        }
+        return { status: 'ready', ...(await response.json()) };
+    }
+
+    private fetchPath(
+        path: string,
+        queryParams?: Record<string, string>,
+        options?: RequestInit,
+    ): Promise<Response> {
         const base = `${this.url}/${path}`;
         const url =
             queryParams && Object.keys(queryParams).length > 0
                 ? `${base}?${new URLSearchParams(queryParams)}`
                 : base;
-        const res = await fetch(url, options);
-        if (!res.ok) {
-            throw new Error('Unexpected response');
-        }
-        return res.json();
+        return fetch(url, options);
     }
 
     private updateSnapshot(): void {

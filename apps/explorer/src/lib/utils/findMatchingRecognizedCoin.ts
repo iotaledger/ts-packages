@@ -1,9 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import type { OnChainCoin } from '~/hooks';
-
-type CoinLabels = Pick<OnChainCoin, 'coinType' | 'name' | 'symbol'>;
+import type { CoinLabels } from '~/hooks';
 
 function isSameLabel(value1: string, value2: string): boolean {
     return value1.trim().toLowerCase() === value2.trim().toLowerCase();
@@ -15,8 +13,8 @@ function isSameLabel(value1: string, value2: string): boolean {
  */
 export function findMatchingRecognizedCoin(
     coin: CoinLabels,
-    recognizedCoins: OnChainCoin[],
-): OnChainCoin | null {
+    recognizedCoins: CoinLabels[],
+): CoinLabels | null {
     if (recognizedCoins.some(({ coinType }) => coinType === coin.coinType)) return null;
 
     return (
