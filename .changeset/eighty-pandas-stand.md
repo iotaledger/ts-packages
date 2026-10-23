@@ -3,4 +3,3 @@
 ---
 
 Remove unused internal `tooltip.classes.ts`
-  
