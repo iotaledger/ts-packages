@@ -9,6 +9,7 @@ import { type IotaCallArg, type IotaTransaction } from '@iota/iota-sdk/client';
 import { FilterList, RawJsonContent, RawJsonToggle } from '~/components/ui';
 import { InputsTable } from './InputsTable';
 import { CommandsList } from './CommandsList';
+import { useResetPtbHighlight } from './PtbHighlight';
 
 const VIEWS = { combined: 'Combined', inputsAndCommands: 'Inputs + Commands' };
 
@@ -34,6 +35,7 @@ export function ProgrammableTransactionCard({
     transactions,
 }: ProgrammableTransactionCardProps): JSX.Element | null {
     const [storedView, setView] = useLocalStorage<PtbView>('ptb-view-mode', VIEWS.combined);
+    const resetHighlight = useResetPtbHighlight();
     const [showRaw, setShowRaw] = useState(false);
     const hasInputs = inputs.length > 0;
     const view = hasInputs ? storedView : VIEWS.combined;
@@ -54,7 +56,10 @@ export function ProgrammableTransactionCard({
                         <FilterList
                             options={PTB_VIEWS}
                             selected={view}
-                            onSelected={(next) => setView(next)}
+                            onSelected={(next) => {
+                                resetHighlight();
+                                setView(next);
+                            }}
                             disabled={showRaw}
                         />
                     )}
