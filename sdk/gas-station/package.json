@@ -1,0 +1,45 @@
+{
+    "name": "@iota/gas-station",
+    "version": "0.0.0",
+    "description": "Client for the IOTA Gas Station",
+    "license": "Apache-2.0",
+    "author": "IOTA Foundation <info@iota.org>",
+    "sideEffects": false,
+    "main": "./dist/cjs/index.js",
+    "module": "./dist/esm/index.js",
+    "types": "./dist/cjs/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js"
+        }
+    },
+    "files": [
+        "CHANGELOG.md",
+        "dist",
+        "src"
+    ],
+    "scripts": {
+        "clean": "rm -rf tsconfig.tsbuildinfo ./dist",
+        "build": "build-package",
+        "prepublishOnly": "pnpm build"
+    },
+    "engines": {
+        "node": ">=24"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iotaledger/ts-packages.git"
+    },
+    "bugs": {
+        "url": "https://github.com/iotaledger/ts-packages/issues"
+    },
+    "peerDependencies": {
+        "@iota/iota-sdk": "workspace:^"
+    },
+    "devDependencies": {
+        "@iota/build-scripts": "workspace:^",
+        "@iota/iota-sdk": "workspace:^",
+        "typescript": "^7.0.2"
+    }
+}
