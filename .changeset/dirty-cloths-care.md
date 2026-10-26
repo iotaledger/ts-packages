@@ -1,6 +1,5 @@
 ---
-"@iota/gas-station": patch
+"@iota/gas-station": minor
 ---
 
 Initial release for @iota/gas-station
-  

@@ -37,15 +37,15 @@ export interface ExecuteTransactionParams extends GasStationRequestOptions {
 }
 
 export interface ReserveGasResponse {
-    result: {
+    result?: {
         sponsor_address: string;
         reservation_id: number;
         gas_coins: ObjectRef[];
-    };
+    } | null;
     error?: string | null;
 }
 
 export interface ExecuteTransactionResponse {
-    effects: TransactionEffects;
+    effects?: TransactionEffects | null;
     error?: string | null;
 }
