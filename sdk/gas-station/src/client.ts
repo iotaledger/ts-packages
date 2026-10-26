@@ -30,10 +30,11 @@ export class GasStationClient {
         headers,
         signal,
     }: ReserveGasParams): Promise<ReserveGasResult> {
-        const { result } = await this.#post<ReserveGasResponse>(
+        const result = await this.#post(
             '/v1/reserve_gas',
             { gas_budget: gasBudget, reserve_duration_secs: reserveDurationSecs },
             { headers, signal },
+            (data: ReserveGasResponse) => data.result,
         );
 
         return {
@@ -51,7 +52,7 @@ export class GasStationClient {
         headers,
         signal,
     }: ExecuteTransactionParams): Promise<TransactionEffects> {
-        const { effects } = await this.#post<ExecuteTransactionResponse>(
+        return this.#post(
             '/v1/execute_tx',
             {
                 reservation_id: reservationId,
@@ -60,14 +61,20 @@ export class GasStationClient {
                 request_type: requestType,
             },
             { headers, signal },
+            (data: ExecuteTransactionResponse) => data.effects,
         );
-
-        return effects;
     }
 
     async getHealth({ signal }: { signal?: AbortSignal } = {}): Promise<boolean> {
-        const res = await this.#fetch('/', { signal });
-        return res.ok && (await res.text()) === 'OK';
+        try {
+            const res = await this.#fetch('/', { signal });
+            return res.ok && (await res.text()) === 'OK';
+        } catch (error) {
+            if (signal?.aborted) {
+                throw error;
+            }
+            return false;
+        }
     }
 
     async getVersion({ signal }: { signal?: AbortSignal } = {}): Promise<string> {
@@ -80,32 +87,41 @@ export class GasStationClient {
         return res.text();
     }
 
-    async #post<T extends { error?: string | null }>(
+    async #post<T extends { error?: string | null }, R>(
         path: string,
         body: object,
         { headers, signal }: GasStationRequestOptions,
-    ): Promise<T> {
+        select: (data: T) => R | null | undefined,
+    ): Promise<R> {
         const res = await this.#fetch(path, {
             method: 'POST',
             signal,
-            headers: {
-                'Content-Type': 'application/json',
-                ...this.#authHeaders(),
-                ...headers,
-            },
+            headers: mergeHeaders(
+                { 'Content-Type': 'application/json' },
+                this.#authHeaders(),
+                headers,
+            ),
             body: JSON.stringify(body),
         });
 
-        const data: T | null = await res.json().catch(() => null);
+        const text = await res.text();
+        const data = parseJson<T>(text);
 
-        if (!res.ok || !data || data.error) {
-            throw new GasStationError(
-                data?.error ?? `Unexpected status code: ${res.status}`,
-                res.status,
-            );
+        if (data?.error) {
+            throw new GasStationError(data.error, res.status);
         }
 
-        return data;
+        if (!res.ok) {
+            throw new GasStationError(text || `Unexpected status code: ${res.status}`, res.status);
+        }
+
+        const result = data ? select(data) : undefined;
+
+        if (result === null || result === undefined) {
+            throw new GasStationError('Invalid gas station response', res.status);
+        }
+
+        return result;
     }
 
     #fetch(path: string, init: RequestInit): Promise<Response> {
@@ -113,7 +129,7 @@ export class GasStationClient {
 
         return fetchFn(`${this.#url}${path}`, {
             ...init,
-            headers: { ...this.#options.headers, ...init.headers },
+            headers: mergeHeaders(this.#options.headers, init.headers),
         });
     }
 
@@ -121,5 +137,24 @@ export class GasStationClient {
         return this.#options.authToken
             ? { Authorization: `Bearer ${this.#options.authToken}` }
             : {};
+    }
+}
+
+// Header names are case-insensitive, so later sources must replace earlier ones regardless of casing.
+function mergeHeaders(...sources: (HeadersInit | undefined)[]): Headers {
+    const headers = new Headers();
+
+    for (const source of sources) {
+        new Headers(source).forEach((value, key) => headers.set(key, value));
+    }
+
+    return headers;
+}
+
+function parseJson<T>(text: string): T | null {
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
     }
 }
