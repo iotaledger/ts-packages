@@ -1,6 +1,5 @@
 ---
-"@iota/isc-sdk": patch
+"@iota/isc-sdk": minor
 ---
 
-Update zod dependency to ^4.6.6 and update examples
-  
+Upgrade zod to v4. Exported schemas (`AssetsResponseSchema`, `ChainDataSchema`, `CoinJSONSchema`) are now zod v4 types.
