@@ -4,6 +4,7 @@
 
 import type { NetworkId } from '@iota/iota-sdk/client';
 import { getNetwork } from '@iota/iota-sdk/client';
+import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 import type { PaginationArguments, IotaClient } from '@iota/iota-sdk/client';
 
 import { getBaseRules, rules } from '../constants.js';
@@ -12,6 +13,7 @@ import { fetchKiosk, fetchKioskExtension, getOwnedKiosks } from '../query/kiosk.
 import {
     queryOwnedTransferPolicies,
     queryTransferPolicy,
+    queryTransferPolicyByEvents,
     queryTransferPolicyCapsByType,
 } from '../query/transfer-policy.js';
 import type {
@@ -29,12 +31,14 @@ import type {
  */
 export class KioskClient {
     client: IotaClient;
+    graphQlClient?: IotaGraphQLClient | null;
     network: NetworkId;
     rules: TransferPolicyRule[];
     packageIds?: BaseRulePackageIds;
 
     constructor(options: KioskClientOptions) {
         this.client = options.client;
+        this.graphQlClient = options.graphQlClient;
         this.network = options.network;
         this.rules = rules; // add all the default rules.
         this.packageIds = options.packageIds;
@@ -102,7 +106,9 @@ export class KioskClient {
      * @param type The Type we're querying for (E.g `0xMyAddress::hero::Hero`)
      */
     async getTransferPolicies({ type }: { type: string }) {
-        return queryTransferPolicy(this.client, type);
+        if (!this.graphQlClient) return queryTransferPolicyByEvents(this.client, type);
+
+        return queryTransferPolicy(this.graphQlClient, type);
     }
 
     /**

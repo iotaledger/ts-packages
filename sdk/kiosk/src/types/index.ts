@@ -6,6 +6,7 @@ import type { IotaClient, NetworkId } from '@iota/iota-sdk/client';
 import type { TransactionObjectArgument } from '@iota/iota-sdk/transactions';
 
 import type { BaseRulePackageIds } from '../constants.js';
+import type { IotaGraphQLClient } from '@iota/iota-sdk/graphql';
 
 export * from './kiosk.js';
 export * from './transfer-policy.js';
@@ -20,6 +21,7 @@ export type ObjectArgument = string | TransactionObjectArgument;
  */
 export type KioskClientOptions = {
     client: IotaClient;
+    graphQlClient?: IotaGraphQLClient | null;
     network: NetworkId;
     packageIds?: BaseRulePackageIds;
 };
