@@ -26,9 +26,9 @@ const formSchema = z
                 path: ['confirmation'],
                 message: "Passwords don't match",
             }),
-        acceptedTos: z.literal<boolean>(true, {
-            errorMap: () => ({ message: 'Please accept Terms of Service to continue' }),
-        }),
+        acceptedTos: z
+            .boolean()
+            .refine(Boolean, { error: 'Please accept Terms of Service to continue' }),
     })
     .merge(zodSchema);
 

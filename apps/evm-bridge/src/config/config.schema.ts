@@ -6,6 +6,7 @@ import { z } from 'zod';
 const HEX_REGEX = /^0x[0-9a-fA-F]+$/;
 
 export const envSchema = z.record(
+    z.string(),
     z.object({
         L1: z.object({
             networkName: z.string(),
