@@ -266,7 +266,7 @@ function InputRow({ index, input }: { index: number; input: IotaCallArg }): JSX.
     const showRowHighlight = isHighlighted && !isSelfHovered;
 
     return (
-        <tr>
+        <tr data-ptb-target={`input-${index}`}>
             <HighlightCell highlighted={showRowHighlight}>
                 <PtbIndexCell refId={`input-${index}`} onHoverChange={setIsSelfHovered}>
                     {index}

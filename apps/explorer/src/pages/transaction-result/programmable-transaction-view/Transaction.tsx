@@ -2,7 +2,8 @@
 // Modifications Copyright (c) 2024 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { Badge, BadgeSize, BadgeType, Tooltip } from '@iota/apps-ui-kit';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { Badge, BadgeSize, BadgeType, ButtonUnstyled, Tooltip } from '@iota/apps-ui-kit';
 import { useGetDefaultIotaName } from '@iota/core';
 import { type IotaArgument, type IotaCallArg } from '@iota/iota-sdk/client';
 import { formatAddress } from '@iota/iota-sdk/utils';
@@ -15,7 +16,7 @@ import {
     truncateEnd,
     truncateMiddle,
 } from './utils';
-import { HighlightableBadge, HighlightableRef } from './PtbHighlight';
+import { HighlightableBadge, HighlightableRef, usePtbRevealedRows } from './PtbHighlight';
 
 const RESULT_BADGE_TYPE = BadgeType.Neutral;
 const INPUT_BADGE_TYPE = BadgeType.Outlined;
@@ -150,7 +151,56 @@ export function Arg({
     return tooltipText ? <Tooltip text={tooltipText}>{value}</Tooltip> : value;
 }
 
-export function ArgCommaList({
+const PUNCTUATION = 'text-iota-neutral-40 dark:text-iota-neutral-60';
+
+function CollapsibleRows({ children }: { children: React.ReactNode }): JSX.Element {
+    const rowsId = useId();
+    const containerRef = useRef<HTMLSpanElement>(null);
+    const [isExpandedByUser, setIsExpandedByUser] = useState(false);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const { isRevealed, clearRevealed } = usePtbRevealedRows(rowsId);
+    const isExpanded = isExpandedByUser || isRevealed;
+
+    useLayoutEffect(() => {
+        const container = containerRef.current;
+        if (container && !isExpanded) {
+            container.scrollTop = 0;
+            setIsOverflowing(container.scrollHeight > container.clientHeight);
+        }
+    }, [children, isExpanded]);
+
+    return (
+        <span className="inline-flex min-w-0 flex-col items-start gap-xxs">
+            <span
+                ref={containerRef}
+                data-collapsed-rows={isExpanded ? undefined : rowsId}
+                className={clsx(
+                    'flex flex-wrap items-center gap-y-xxs',
+                    isExpanded ? 'max-h-[150px] overflow-y-auto' : 'max-h-[52px] overflow-hidden',
+                )}
+            >
+                {children}
+            </span>
+            {isOverflowing && (
+                <ButtonUnstyled
+                    className="text-label-sm text-iota-primary-30 dark:text-iota-primary-80"
+                    onClick={() => {
+                        if (isExpanded) {
+                            setIsExpandedByUser(false);
+                            clearRevealed();
+                        } else {
+                            setIsExpandedByUser(true);
+                        }
+                    }}
+                >
+                    {isExpanded ? 'Show Less' : 'Show More'}
+                </ButtonUnstyled>
+            )}
+        </span>
+    );
+}
+
+export function BracketedArgList({
     args,
     inputs,
     inputDisplay,
@@ -159,18 +209,23 @@ export function ArgCommaList({
     inputs: IotaCallArg[];
     inputDisplay?: InputDisplay;
 }): JSX.Element {
+    if (args.length === 0) {
+        return <span className={PUNCTUATION}>[]</span>;
+    }
+
     return (
-        <span className="inline-flex w-max flex-nowrap items-baseline whitespace-nowrap">
+        <CollapsibleRows>
             {args.map((arg, index) => (
-                <span key={index} className="inline-flex items-center">
-                    {index > 0 && (
-                        <span className="mr-xs text-iota-neutral-40 dark:text-iota-neutral-60">
-                            ,
-                        </span>
-                    )}
+                <span key={index} className="inline-flex h-6 items-center whitespace-nowrap">
+                    {index === 0 && <span className={clsx('mr-[2px]', PUNCTUATION)}>[</span>}
                     <Arg arg={arg} inputs={inputs} inputDisplay={inputDisplay} />
+                    {index === args.length - 1 ? (
+                        <span className={clsx('ml-[2px]', PUNCTUATION)}>]</span>
+                    ) : (
+                        <span className={clsx('mr-xs', PUNCTUATION)}>,</span>
+                    )}
                 </span>
             ))}
-        </span>
+        </CollapsibleRows>
     );
 }
