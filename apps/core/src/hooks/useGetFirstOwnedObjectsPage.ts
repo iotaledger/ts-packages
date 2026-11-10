@@ -1,7 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-import { useIotaClient } from '@iota/dapp-kit';
+import { useIotaClient, useIotaClientContext } from '@iota/dapp-kit';
 import { type IotaObjectDataFilter } from '@iota/iota-sdk/client';
 import { useQuery } from '@tanstack/react-query';
 import { getFirstOwnedObjectsPage } from '../utils/getFirstOwnedObjectsPage';
@@ -16,8 +16,11 @@ export function useGetFirstOwnedObjectsPage(
     limit: number,
 ) {
     const client = useIotaClient();
+    const { network } = useIotaClientContext();
     return useQuery({
-        queryKey: ['get-owned-objects', address, filter, limit, 'first-non-empty-page', client],
+        // The client can't be told apart in a key, so key on its network instead.
+        // oxlint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: ['get-owned-objects', address, filter, limit, 'first-non-empty-page', network],
         queryFn: () =>
             getFirstOwnedObjectsPage(client, {
                 owner: address!,
