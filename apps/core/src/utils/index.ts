@@ -32,6 +32,7 @@ export * from './formatIotaName';
 export * from './isLegacyBrowser';
 export * from './formatUIErrors';
 export * from './formatFiat';
+export * from './getFirstOwnedObjectsPage';
 
 export * from './coins';
 export * from './stake';
