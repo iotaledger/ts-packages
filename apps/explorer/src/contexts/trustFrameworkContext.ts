@@ -6,12 +6,14 @@
 import type { IdentityClientReadOnly } from '@iota/identity-wasm/web';
 import type { NotarizationClientReadOnly } from '@iota/notarization/web';
 import type { AuditTrailClientReadOnly } from '@iota/audit-trails/web';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import type { QueryStatus } from '@tanstack/react-query';
 
 type IdentityClient = IdentityClientReadOnly | null;
 type NotarizationClient = NotarizationClientReadOnly | null;
 type AuditTrailClient = AuditTrailClientReadOnly | null;
+
+export type TrustFrameworkClientKind = 'identity' | 'notarization' | 'auditTrail';
 
 export interface TrustFrameworkProviderContext {
     identityClient: IdentityClient;
@@ -20,6 +22,7 @@ export interface TrustFrameworkProviderContext {
     notarizationClientStatus: QueryStatus;
     auditTrailClient: AuditTrailClient;
     auditTrailClientStatus: QueryStatus;
+    requestClient: (kind: TrustFrameworkClientKind) => void;
 }
 
 export const TrustFrameworkContext = createContext<TrustFrameworkProviderContext | null>(null);
@@ -34,15 +37,24 @@ export function useTrustFramework(): TrustFrameworkProviderContext {
     return context;
 }
 
-export function useIdentityClient(): { client: IdentityClient; status: QueryStatus } {
+function useRequestClient(kind: TrustFrameworkClientKind, enabled: boolean): void {
+    const { requestClient } = useTrustFramework();
+    useEffect(() => {
+        if (enabled) requestClient(kind);
+    }, [kind, enabled, requestClient]);
+}
+
+export function useIdentityClient(enabled = true): { client: IdentityClient; status: QueryStatus } {
+    useRequestClient('identity', enabled);
     const { identityClient, identityClientStatus } = useTrustFramework();
     return { client: identityClient, status: identityClientStatus };
 }
 
-export function useNotarizationClient(): {
+export function useNotarizationClient(enabled = true): {
     client: NotarizationClient;
     status: QueryStatus;
 } {
+    useRequestClient('notarization', enabled);
     const { notarizationClient, notarizationClientStatus } = useTrustFramework();
     return {
         client: notarizationClient,
@@ -50,7 +62,11 @@ export function useNotarizationClient(): {
     };
 }
 
-export function useAuditTrailClient(): { client: AuditTrailClient; status: QueryStatus } {
+export function useAuditTrailClient(enabled = true): {
+    client: AuditTrailClient;
+    status: QueryStatus;
+} {
+    useRequestClient('auditTrail', enabled);
     const { auditTrailClient, auditTrailClientStatus } = useTrustFramework();
     return { client: auditTrailClient, status: auditTrailClientStatus };
 }
