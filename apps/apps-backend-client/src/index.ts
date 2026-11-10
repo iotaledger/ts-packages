@@ -4,10 +4,17 @@
 export { AppsBackendClient } from './client';
 export type {
     CoinPriceResponse,
+    CoinsFilter,
+    CoinsResponse,
+    CoinsResult,
+    CoinsSort,
+    CoinsSortOrder,
     FeatureDefinition,
     FeaturesResponse,
     FeatureResult,
+    GetCoinsParams,
     MonitorNetworkResponse,
+    OnChainCoin,
 } from './types';
 export {
     AppsBackendClientProvider,

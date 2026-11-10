@@ -12,6 +12,7 @@ import { PricesModule } from './prices/prices.module';
 import { RestrictedModule } from './restricted/restricted.module';
 import { HealthModule } from './health/health.module';
 import { InfoModule } from './info/info.module';
+import { CoinsModule } from './coins/coins.module';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { InfoModule } from './info/info.module';
         }),
         HealthModule,
         InfoModule,
+        CoinsModule,
     ],
 })
 export class AppModule {}

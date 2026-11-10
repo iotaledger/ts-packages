@@ -53,6 +53,12 @@ export interface TableCardProps<DataType extends RowData> {
     heightFull?: boolean;
     rowLimit?: number;
     allowManualTableSort?: boolean;
+    /**
+     * Controlled sorting: when set, the table shows `data` in the order it gets it and
+     * reports header clicks through `onSortingChange`, so the parent can sort on the server.
+     */
+    sorting?: SortingState;
+    onSortingChange?: (sorting: SortingState) => void;
     renderExpandedRow?: (row: DataType) => ReactNode;
     getRowCanExpand?: (row: DataType) => boolean;
     getRowId?: (row: DataType) => string;
@@ -73,6 +79,8 @@ export function TableCard<DataType extends object>({
     heightFull,
     rowLimit,
     allowManualTableSort = true,
+    sorting: controlledSorting,
+    onSortingChange,
     renderExpandedRow,
     getRowCanExpand,
     getRowId,
@@ -80,7 +88,17 @@ export function TableCard<DataType extends object>({
 }: TableCardProps<DataType>): JSX.Element {
     const navigateWithQuery = useNavigateWithQuery();
     const { search } = useLocation();
-    const [sorting, setSorting] = useState<SortingState>(defaultSorting || []);
+    const [internalSorting, setInternalSorting] = useState<SortingState>(defaultSorting || []);
+    const isSortingControlled = controlledSorting !== undefined;
+    const sorting = controlledSorting ?? internalSorting;
+
+    function setSorting(nextSorting: SortingState) {
+        if (isSortingControlled) {
+            onSortingChange?.(nextSorting);
+        } else {
+            setInternalSorting(nextSorting);
+        }
+    }
 
     const table = useReactTable({
         data,
@@ -90,7 +108,9 @@ export function TableCard<DataType extends object>({
         getExpandedRowModel: getExpandedRowModel(),
         getRowCanExpand: (row) => !!renderExpandedRow && (getRowCanExpand?.(row.original) ?? true),
         getRowId,
-        onSortingChange: setSorting,
+        onSortingChange: (updater) =>
+            setSorting(typeof updater === 'function' ? updater(sorting) : updater),
+        manualSorting: isSortingControlled,
         enableSorting: !!sortTable,
         enableSortingRemoval: false,
         initialState: {
