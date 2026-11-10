@@ -9,7 +9,6 @@ export * from './coins';
 export * from './error-boundary';
 export * from './footer';
 export * from './header';
-export * from './home-metrics';
 export * from './layout';
 export * from './module';
 export * from './object';
@@ -27,10 +26,8 @@ export * from './validator';
 
 export * from './AddressesCardGraph';
 export * from './AreaGraph';
-export * from './Sparkline';
 export * from './DateDisplay';
 export * from './GraphTooltipContent';
-export * from './IotaTokenCard';
 export * from './TransactionsCardGraph';
 export * from './ThemedIotaLogo';
 export * from './TableCoinDisplay';

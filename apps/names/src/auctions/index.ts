@@ -1,7 +1,6 @@
 // Copyright (c) 2025 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
-export { AuctionItem } from './components/AuctionItem';
 export { AuctionStatusBadge } from './components/AuctionStatusBadge';
 export { AuctionBidDialog } from './components/dialogs/AuctionBidDialog';
 

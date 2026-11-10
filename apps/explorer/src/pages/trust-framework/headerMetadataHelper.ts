@@ -7,23 +7,12 @@ import { truncateStruct } from '~/lib/utils';
 import { type OnChainNotarization } from '@iota/notarization/web';
 import { type OnChainAuditTrail } from '@iota/audit-trails/web';
 
-const IDENTITY_MODULE = 'identity';
-const IDENTITY_METHOD = 'Identity';
 const NOTARIZATION_MODULE = 'notarization';
 const NOTARIZATION_METHOD = 'Notarization';
 const AUDIT_TRAIL_MODULE = 'main';
 const AUDIT_TRAIL_METHOD = 'AuditTrail';
 
 const metadata = {
-    objectLegacyId: {
-        label: 'Legacy ID',
-        visible: true,
-    },
-    identityType: {
-        label: 'Type',
-        visible: true,
-        badge: 'IOTA Identity',
-    },
     notarizationMethod: {
         label: 'Method',
         visible: true,
@@ -39,56 +28,6 @@ const metadata = {
         badge: 'IOTA Audit Trail',
     },
 };
-
-export function getIdentityType(didObject: IotaObjectData | null, pkgId: string) {
-    if (!didObject || !didObject.type) {
-        return null;
-    }
-    const tooltipText =
-        'The method used to create and resolve this Identity. "IOTA Identity" is the Foundation\'s official identity framework, anchored onchain on IOTA L1.';
-
-    const [_package, _module, _method] = didObject.type.split('::');
-    if (_method === IDENTITY_METHOD && _module === IDENTITY_MODULE && _package === pkgId) {
-        return {
-            label: metadata.identityType.label,
-            value: metadata.identityType.badge,
-            visible: metadata.identityType.visible,
-            tooltipText,
-        };
-    }
-
-    return {
-        label: metadata.identityType.label,
-        value: didObject.type,
-        visible: metadata.identityType.visible,
-        tooltipText,
-    };
-}
-
-export function getLegacyMetadata(didObject: IotaObjectData | null) {
-    if (!didObject) {
-        return null;
-    }
-
-    if (didObject.content?.dataType !== 'moveObject') {
-        return null;
-    }
-
-    if (!('legacy_id' in didObject.content.fields)) {
-        return null;
-    }
-
-    const legacyId = didObject.content.fields.legacy_id;
-    if (!legacyId) {
-        return null;
-    }
-
-    return {
-        label: metadata.objectLegacyId.label,
-        value: legacyId,
-        visible: metadata.objectLegacyId.visible,
-    };
-}
 
 export function getNotarizationMethod(notarizationDocument: OnChainNotarization) {
     return {
