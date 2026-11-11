@@ -21,7 +21,7 @@ const client = new IotaClient({
     transport: new IotaClientGraphQLTransport({
         url: getGraphQLUrl('testnet'),
         // When specified, the transport will fallback to JSON RPC for unsupported method and parameters
-        fallbackFullNodeUrl: getRpcUrl('testnet'),
+        fallbackTransportUrl: getRpcUrl('testnet'),
     }),
 });
 ```
@@ -31,10 +31,8 @@ const client = new IotaClient({
 ### Unsupported methods
 
 The following methods are currently unsupported in IotaClientGraphQLTransport, and will either
-error, or fallback to the JSON RPC API if a `fallbackFullNodeUrl` is provided:
+error, or fallback to the JSON RPC API if a `fallbackTransportUrl` is provided:
 
-- `subscribeTransaction`
-- `subscribeEvents`
 - `call`
 - `getNetworkMetrics`
 - `getMoveCallMetrics`
@@ -46,13 +44,22 @@ error, or fallback to the JSON RPC API if a `fallbackFullNodeUrl` is provided:
 - `getParticipationMetrics`
 - `getCirculatingSupply`
 
+### Subscriptions
+
+`subscribeEvent` and `subscribeTransaction` use GraphQL subscriptions. They never fall back to the
+JSON RPC API, which does not serve subscriptions. A filter that GraphQL cannot express is refused:
+
+- `subscribeEvent` supports only the `Package` and `MoveModule` filters
+- `subscribeTransaction` supports only the `TransactionKind`, `FromAddress`, and `MoveFunction`
+  filters
+
 ### Unsupported parameters
 
 Some supported methods in `IotaClientGraphQLTransport` do not support the full set of parameters
 available in the JSON RPC API.
 
 If an unsupported parameter is used, the request will error, or fallback to JSON RPC API if a
-`fallbackFullNodeUrl` is provided.
+`fallbackTransportUrl` is provided.
 
 - `getOwnedObjects`:
   - missing the `MatchAll`, `MatchAny`, `MatchNone`, and `Version` filters

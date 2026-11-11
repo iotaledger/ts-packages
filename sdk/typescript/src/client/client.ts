@@ -741,7 +741,10 @@ export class IotaClient {
     }
 
     /**
-     * Subscribe to get notifications whenever an event matching the filter occurs
+     * Subscribe to get notifications whenever an event matching the filter occurs.
+     *
+     * Requires `IotaClientGraphQLTransport` from `@iota/graphql-transport`: full nodes do not
+     * serve subscriptions over JSON-RPC.
      */
     async subscribeEvent(
         input: SubscribeEventParams &
@@ -765,6 +768,9 @@ export class IotaClient {
 
     /**
      * Subscribe to transaction events matching the specified filter.
+     *
+     * Requires `IotaClientGraphQLTransport` from `@iota/graphql-transport`: full nodes do not
+     * serve subscriptions over JSON-RPC.
      */
     async subscribeTransaction(
         input: SubscribeTransactionParams &

@@ -25,10 +25,7 @@ import type {
     SubscribeTransactionsSubscriptionVariables,
 } from './generated/queries.js';
 import type { GraphQLWebSocketClientOptions } from './graphql-websocket-client.js';
-import {
-    GraphQLWebSocketClient,
-    GraphQLWebSocketConnectionError,
-} from './graphql-websocket-client.js';
+import { GraphQLWebSocketClient } from './graphql-websocket-client.js';
 import { RPC_METHODS, UnsupportedMethodError, UnsupportedParamError } from './methods.js';
 import {
     mapRpcEventFilterToGraphQL,
@@ -239,38 +236,11 @@ export class IotaClientGraphQLTransport implements IotaTransport {
     ): Promise<() => Promise<boolean>> {
         switch (input.method) {
             case 'iotax_subscribeEvent':
-                return this.#subscribeWithFallback(input, () => this.#subscribeEvents(input));
+                return this.#subscribeEvents(input);
             case 'iotax_subscribeTransaction':
-                return this.#subscribeWithFallback(input, () => this.#subscribeTransactions(input));
+                return this.#subscribeTransactions(input);
             default:
-                break;
-        }
-
-        if (!this.#fallbackTransport) {
-            throw new UnsupportedMethodError(input.method);
-        }
-
-        return this.#fallbackTransport.subscribe(input);
-    }
-
-    async #subscribeWithFallback<T>(
-        input: IotaTransportSubscribeOptions<T>,
-        subscribe: () => Promise<() => Promise<boolean>>,
-    ): Promise<() => Promise<boolean>> {
-        try {
-            return await subscribe();
-        } catch (error) {
-            // JSON-RPC serves both an inexpressible filter and an endpoint with no
-            // subscriptions endpoint at all.
-            const recoverable =
-                error instanceof UnsupportedParamError ||
-                error instanceof GraphQLWebSocketConnectionError;
-
-            if (recoverable && this.#fallbackTransport) {
-                return this.#fallbackTransport.subscribe(input);
-            }
-
-            throw error;
+                throw new UnsupportedMethodError(input.method);
         }
     }
 

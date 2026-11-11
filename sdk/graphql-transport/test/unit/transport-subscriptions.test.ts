@@ -320,7 +320,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         transport.close();
     });
 
-    test('rejects startAfter instead of falling back to JSON-RPC without it', async () => {
+    test('refuses a filter GraphQL cannot express, even with a fallback url', async () => {
         const harness = createMockWebSocket();
         const transport = new IotaClientGraphQLTransport({
             url: 'http://localhost:9125/graphql',
@@ -334,10 +334,9 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
                 method: 'iotax_subscribeEvent',
                 unsubscribe: 'iotax_unsubscribeEvent',
                 params: [{ Sender: '0xabc' }],
-                startAfter: 'tx-0',
                 onMessage: () => {},
             }),
-        ).rejects.toThrow(/startAfter is not supported/);
+        ).rejects.toThrow(/is not supported for iotax_subscribeEvent in the GraphQL API/);
         transport.close();
     });
 
@@ -365,7 +364,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
         transport.close();
     });
 
-    test('an unmapped subscribe method falls back to the JSON-RPC transport', async () => {
+    test('refuses an unknown subscribe method', async () => {
         const { transport } = createTransport();
 
         await expect(
@@ -375,7 +374,7 @@ describe('IotaClientGraphQLTransport subscriptions', () => {
                 params: [],
                 onMessage: () => {},
             }),
-        ).rejects.toThrow();
+        ).rejects.toThrow(/is not supported in the GraphQL API/);
         transport.close();
     });
 });

@@ -9,7 +9,6 @@ import { tmpdir } from 'os';
 import path from 'path';
 import tmp from 'tmp';
 import { expect, vi } from 'vitest';
-import { WebSocket } from 'ws';
 
 import type { IotaObjectChangePublished } from '../../../src/client/index.js';
 import { getRpcUrl, IotaClient, IotaHTTPTransport } from '../../../src/client/index.js';
@@ -102,7 +101,6 @@ export class TestToolbox {
         this.client = new IotaClient({
             transport: new IotaHTTPTransport({
                 url,
-                WebSocketConstructor: WebSocket as never,
             }),
         });
         this.registry = TestPackageRegistry.forUrl(url);
@@ -143,7 +141,6 @@ export function getClient(url = DEFAULT_FULLNODE_URL): IotaClient {
     return new IotaClient({
         transport: new IotaHTTPTransport({
             url,
-            WebSocketConstructor: WebSocket as never,
         }),
     });
 }
