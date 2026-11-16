@@ -20,10 +20,12 @@ export function useGetAllOwnedObjects<Data>(
         queryKey: [...queryKey.ownedObjects(address), filter],
         queryFn: async () => {
             let cursor: string | undefined | null = null;
+            let hasNextPage = true;
             const allData: IotaObjectData[] = [];
-            // keep fetching until cursor is null or undefined
-            do {
-                const { data: objectResponse, nextCursor } = await client.getOwnedObjects({
+            // A page can be empty while more pages follow, so keep fetching until
+            // there is no next page.
+            while (hasNextPage) {
+                const response = await client.getOwnedObjects({
                     owner: address,
                     filter,
                     options: {
@@ -34,17 +36,15 @@ export function useGetAllOwnedObjects<Data>(
                     limit: MAX_OBJECTS_PER_REQ,
                     cursor,
                 });
-                if (!objectResponse || !objectResponse.length) {
-                    break;
-                }
 
-                const mappedData = objectResponse
-                    .map((response) => response?.data)
+                const mappedData = response.data
+                    .map((object) => object?.data)
                     .filter((obj): obj is IotaObjectData => obj !== null && obj !== undefined);
 
                 allData.push(...mappedData);
-                cursor = nextCursor;
-            } while (cursor);
+                cursor = response.nextCursor;
+                hasNextPage = response.hasNextPage && !!cursor;
+            }
 
             return allData;
         },
