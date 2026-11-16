@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 const HEX_REGEX = /^0x[0-9a-fA-F]+$/;
 
 const envSchema = z.record(
+    z.string(),
     z.object({
         L1: z.object({
             networkName: z.string(),

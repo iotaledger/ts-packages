@@ -33,7 +33,6 @@ export function createBridgeFormSchema(
                     },
                 ),
         })
-        .required()
         .superRefine((data, ctx) => {
             const value = data[BridgeFormInputName.DepositAmount];
             const isFromLayer1 = data[BridgeFormInputName.IsFromLayer1];

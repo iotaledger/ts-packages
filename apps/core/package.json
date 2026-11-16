@@ -14,7 +14,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@hookform/resolvers": "^3.9.0",
+        "@hookform/resolvers": "~5.2.2",
         "@iota/apps-backend-client": "workspace:*",
         "@iota/apps-ui-icons": "workspace:*",
         "@iota/apps-ui-kit": "workspace:*",
@@ -35,10 +35,10 @@
         "qrcode.react": "^4.0.1",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-hook-form": "^7.45.2",
+        "react-hook-form": "^7.55.0",
         "react-hot-toast": "^2.4.1",
         "yup": "^1.1.1",
-        "zod": "^3.25.76"
+        "zod": "^4.6.6"
     },
     "devDependencies": {
         "@headlessui/tailwindcss": "^0.1.3",
