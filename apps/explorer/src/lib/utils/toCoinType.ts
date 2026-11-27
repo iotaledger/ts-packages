@@ -1,6 +1,7 @@
 // Copyright (c) 2026 IOTA Stiftung
 // SPDX-License-Identifier: Apache-2.0
 
+import { tryParseStructTag } from '@iota/core';
 import { normalizeStructTag } from '@iota/iota-sdk/utils';
 
 /**
@@ -8,9 +9,8 @@ import { normalizeStructTag } from '@iota/iota-sdk/utils';
  */
 export function toCoinType(value: string): string | null {
     if (value.split('::').length < 3) return null;
-    try {
-        return normalizeStructTag(value);
-    } catch {
-        return null;
-    }
+
+    const tag = tryParseStructTag(value);
+
+    return tag ? normalizeStructTag(tag) : null;
 }

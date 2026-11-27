@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
-import { formatAddress, parseStructTag } from '@iota/iota-sdk/utils';
+import { formatAddress } from '@iota/iota-sdk/utils';
 
 export function formatMoveType(
     type: IotaMoveNormalizedType,
@@ -47,38 +47,4 @@ function normalize(address: string): string {
 
 export function getTypeParameterNames(count: number): string[] {
     return Array.from({ length: count }, (_, index) => `T${index}`);
-}
-
-/**
- * Formats a written type tag (`0x2::balance::Balance<0x2::iota::IOTA>`) the same
- * way as a normalized one, so instantiated type parameters read as `Balance<IOTA>`
- * rather than being cut at the last `::`.
- */
-export function formatTypeTag(type: string): string {
-    try {
-        const { name, typeParams } = parseStructTag(type);
-
-        if (!typeParams.length) {
-            return name;
-        }
-
-        const args = typeParams.map((param) =>
-            typeof param === 'string' ? param : formatTypeTag(structTagToString(param)),
-        );
-
-        return `${name}<${args.join(', ')}>`;
-    } catch {
-        // Primitives and anything unparsable are already written as displayed.
-        return type;
-    }
-}
-
-function structTagToString(tag: ReturnType<typeof parseStructTag>): string {
-    const args = tag.typeParams.length
-        ? `<${tag.typeParams
-              .map((param) => (typeof param === 'string' ? param : structTagToString(param)))
-              .join(', ')}>`
-        : '';
-
-    return `${tag.address}::${tag.module}::${tag.name}${args}`;
 }

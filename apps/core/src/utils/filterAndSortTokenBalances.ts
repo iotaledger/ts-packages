@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type CoinBalance } from '@iota/iota-sdk/client';
-import { getCoinSymbol } from '../hooks';
+import { getCoinSymbol } from './typeTag';
 
 /**
  * Filter and sort token balances by symbol and total balance.

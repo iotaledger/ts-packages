@@ -6,6 +6,7 @@ import { useIotaClient } from '@iota/dapp-kit';
 import { CoinMetadata } from '@iota/iota-sdk/client';
 import { IOTA_DECIMALS, IOTA_TYPE_ARG, formatBalance, CoinFormat } from '@iota/iota-sdk/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { getCoinSymbol } from '../utils/typeTag';
 import { useMemo } from 'react';
 
 import { graphql } from '@iota/iota-sdk/graphql/schemas/latest';
@@ -131,10 +132,7 @@ export function useFormatCoin({
     useGroupSeparator = true,
     truncate = true,
 }: FormatCoinOptions): FormattedCoin {
-    const fallbackSymbol = useMemo(
-        () => (coinType ? (getCoinSymbol(coinType) ?? '') : ''),
-        [coinType],
-    );
+    const fallbackSymbol = useMemo(() => (coinType ? getCoinSymbol(coinType) : ''), [coinType]);
     const queryResult = useCoinMetadata(coinType, truncate);
     const { isFetched, data } = queryResult;
 
@@ -148,9 +146,4 @@ export function useFormatCoin({
     }, [data?.decimals, isFetched, balance, format, useGroupSeparator]);
 
     return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
-}
-
-/** @deprecated use coin metadata instead */
-export function getCoinSymbol(coinTypeArg: string) {
-    return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 }

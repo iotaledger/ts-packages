@@ -5,6 +5,7 @@ export * from './calculateStakeShare';
 export * from './apps-backend';
 export * from './chunkArray';
 export * from './formatDate';
+export * from './typeTag';
 export * from './formatPercentageDisplay';
 export * from './getRefGasPrice';
 export * from './hasDisplayData';
