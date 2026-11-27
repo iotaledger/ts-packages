@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type IotaMoveNormalizedType } from '@iota/iota-sdk/client';
-import { formatTypeTag } from './formatMoveType';
+import { formatTypeTag } from '@iota/core';
 
 type TypeReference =
     | {

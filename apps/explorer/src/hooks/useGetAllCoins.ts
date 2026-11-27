@@ -3,6 +3,7 @@
 
 import {
     chunkArray,
+    formatTypeTag,
     getDefaultIotaNameQueryKey,
     setDefaultIotaNameQueryData,
     useCoinRegistry,
@@ -186,6 +187,31 @@ async function fetchCoinObjects(
     };
 }
 
+/**
+ * A generic coin type never has metadata on chain: `coin::create_currency` takes
+ * a one-time witness, which a type instantiated at runtime cannot have. Its coins
+ * exist all the same, so it is described with what the type itself says and
+ * nothing else.
+ */
+function coinWithoutMetadata(coinType: string): CoinWithoutPublishInfo[] {
+    const { address, typeParams } = parseStructTag(coinType);
+    if (!typeParams.length) return [];
+
+    return [
+        {
+            coinType,
+            // The package defining the coin, for its creator and creation date.
+            originObjectId: address,
+            name: formatTypeTag(coinType),
+            symbol: '',
+            decimals: 0,
+            description: '',
+            iconUrl: null,
+            supply: null,
+        },
+    ];
+}
+
 async function fetchCoinByType(
     graphQLClient: GraphQLClient,
     coinType: string,
@@ -354,7 +380,10 @@ export function useGetCoin(coinType: string): UseQueryResult<OnChainCoin | null,
         queryKey: ['coin', coinType],
         queryFn: async () => {
             const coins = await fetchCoinByType(iotaGraphQLClient!, coinType);
-            const [coin] = await withPublishInfo(client, coins);
+            const [coin] = await withPublishInfo(
+                client,
+                coins.length ? coins : coinWithoutMetadata(coinType),
+            );
             if (!coin) return null;
             await cacheCreatorNames(iotaGraphQLClient!, queryClient, [coin]);
             return coin;

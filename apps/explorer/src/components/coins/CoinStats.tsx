@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TooltipPosition, DisplayStats } from '@iota/apps-ui-kit';
-import { CoinFiatValue, formatFiat, useCoinFiatValue } from '@iota/core';
+import { CoinFiatValue, formatFiat, formatTypeTag, useCoinFiatValue } from '@iota/core';
 import { useIotaClientContext } from '@iota/dapp-kit';
 import type { Network } from '@iota/iota-sdk/client';
 import clsx from 'clsx';
@@ -40,8 +40,10 @@ export function CoinStats({
     supply,
     symbol,
 }: CoinStatsProps): JSX.Element {
-    const truncatedCoinType = `${coinType.slice(0, 8)}…${coinType.slice(-20)}`;
     const { address, module } = parseStructTag(coinType);
+    // Truncating the raw type would cut inside the last type argument, so a
+    // generic coin would read as the coin it was parameterized with.
+    const truncatedCoinType = `${address.slice(0, 8)}…${address.slice(-6)}::${module}::${formatTypeTag(coinType)}`;
     const { network } = useIotaClientContext();
     const unitPrice = useCoinFiatValue(coinType, 10n ** BigInt(decimals), network as Network);
     return (

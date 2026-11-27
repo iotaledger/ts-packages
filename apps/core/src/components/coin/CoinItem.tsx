@@ -14,6 +14,7 @@ import { CoinIcon, ImageIconSize } from '../';
 import { CoinFormat, IOTA_TYPE_ARG } from '@iota/iota-sdk/utils';
 import { type ReactNode } from 'react';
 import { useFormatCoin } from '../../hooks';
+import { formatTypeTag } from '../../utils/typeTag';
 import { BALANCE_MASK, useBalanceVisible } from '../../contexts/BalanceVisibilityContext';
 import { CoinFiatValue } from './CoinFiatValue';
 
@@ -48,7 +49,9 @@ export function CoinItem({
     });
     const isBalanceVisible = useBalanceVisible() || hideMask;
     const isIota = coinType === IOTA_TYPE_ARG;
-    const title = isIota ? (coinMeta?.name || '').toUpperCase() : coinMeta?.name || symbol;
+    const title = isIota
+        ? (coinMeta?.name || '').toUpperCase()
+        : coinMeta?.name || formatTypeTag(coinType);
 
     return (
         <Card type={CardType.Default} onClick={onClick}>
